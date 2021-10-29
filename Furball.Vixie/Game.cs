@@ -4,7 +4,8 @@ using Silk.NET.Windowing;
 
 namespace Furball.Vixie {
     public abstract class Game : IDisposable {
-        private IWindow _gameWindow;
+        private   IWindow _gameWindow;
+        protected GL      gl;
 
         public Game(WindowOptions options) {
             this._gameWindow = Window.Create(options);
@@ -20,6 +21,7 @@ namespace Furball.Vixie {
 
         internal void RendererInitialize() {
             Global.Gl = GL.GetApi(this._gameWindow);
+            this.gl   = Global.Gl;
 
             //TODO: input stuffs
 

@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using Silk.NET.OpenGL;
+using Boolean=Silk.NET.OpenGL.Boolean;
 using Gl=Furball.Vixie.Global;
 
 namespace Furball.Vixie.Gl {
@@ -18,6 +19,8 @@ namespace Furball.Vixie.Gl {
         /// </summary>
         private BufferUsageARB _usage;
 
+        private pT[] _data;
+
         /// <summary>
         /// Creates a Block of Memory on the GPU
         /// </summary>
@@ -33,8 +36,10 @@ namespace Furball.Vixie.Gl {
         /// <summary>
         /// Binds or Selects this buffer
         /// </summary>
-        public void Bind() {
+        public VertexBuffer<pT> Bind() {
             gl.BindBuffer(GLEnum.ArrayBuffer, this._bufferId);
+
+            return this;
         }
 
         /// <summary>
@@ -42,11 +47,56 @@ namespace Furball.Vixie.Gl {
         /// <remarks>Buffer has to be bound for SetData to function</remarks>
         /// </summary>
         /// <param name="data">Data to Upload to the Buffer</param>
-        public unsafe void SetData(Span<pT> data) {
-            fixed (void* d = data) {
-                gl.BufferData(GLEnum.ArrayBuffer, (nuint) (data.Length * sizeof(pT)), d, this._usage);
+        public unsafe VertexBuffer<pT> SetData(pT[] data) {
+            fixed (void* d = data)
+            {
+                gl.BufferData(GLEnum.ArrayBuffer, (nuint) (data.Length * sizeof(pT)), d, BufferUsageARB.StaticDraw);
             }
+
+            this._data = data;
+
+            return this;
         }
+
+        #region Attributes
+
+        private uint _attribIndex  = 0;
+        private uint _attribOffset = 0;
+
+        public unsafe void VertexAttributePointer(uint index, int count, VertexAttribPointerType type, uint vertexSize, int offSet)
+        {
+            gl.VertexAttribPointer(index, count, type, false, vertexSize * (uint)sizeof(pT), (void*)(offSet * sizeof(pT)));
+            gl.EnableVertexAttribArray(index);
+        }
+
+        public unsafe VertexBuffer<pT> AddAttribute<pAttribType>(int size) where pAttribType : unmanaged {
+            GLEnum type = Type.GetTypeCode(typeof(pAttribType)) switch {
+                TypeCode.Single => GLEnum.Float,
+                TypeCode.Byte   => GLEnum.Byte,
+                TypeCode.UInt32 => GLEnum.UnsignedInt,
+                TypeCode.Int16  => GLEnum.Short,
+                TypeCode.UInt16 => GLEnum.UnsignedShort,
+                TypeCode.Int32  => GLEnum.Int
+            };
+
+            uint stride = (uint) (this._data.Length * sizeof(pAttribType));
+
+            //gl.VertexAttribPointer(this._attribIndex, size, type, false, stride, 1);
+
+
+            gl.VertexAttribPointer(this._attribIndex, size, type, false, stride, (void*)(this._attribOffset));
+
+            gl.EnableVertexAttribArray(this._attribIndex);
+
+            this._attribOffset += stride;
+            this._attribIndex++;
+
+            return this;
+        }
+
+        #endregion
+
+
 
         public void Dispose() {
             gl.DeleteBuffer(this._bufferId);
