@@ -1,4 +1,5 @@
 ﻿using System;
+using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 
 namespace Furball.Vixie {
@@ -18,6 +19,8 @@ namespace Furball.Vixie {
         }
 
         internal void RendererInitialize() {
+            Global.Gl = GL.GetApi(this._gameWindow);
+
             //TODO: input stuffs
 
             this.Initialize();
