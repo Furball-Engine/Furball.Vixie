@@ -60,21 +60,13 @@ namespace Furball.Vixie.TestApplication {
             uint buffer;
             gl.GenBuffers(1, out buffer);
             gl.BindBuffer(GLEnum.ArrayBuffer, buffer);
+            
             fixed (void* data = verticies) {
                 gl.BufferData(GLEnum.ArrayBuffer, 6 * sizeof(float), data, GLEnum.StaticDraw);
             }
+            
             gl.EnableVertexAttribArray(0);
             gl.VertexAttribPointer(0, 2, GLEnum.Float, Boolean.False, sizeof(float) * 2, 0);
-
-
-
-            //this._triangleBuffer = new VertexBuffer<float>(BufferUsageARB.StaticDraw);
-            //this._triangleBuffer.Bind();
-            //this._triangleBuffer.SetData(verticies);
-            ////this._triangleBuffer.AddAttribute<float>(2);
-            //this._triangleBuffer.VertexAttributePointer(0, 2, VertexAttribPointerType.Float, sizeof(float) * 6, 0);
-
-
         }
         protected override void Update(double obj) {
 

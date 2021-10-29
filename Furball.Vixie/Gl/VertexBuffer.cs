@@ -1,7 +1,5 @@
 using System;
-using System.Runtime.InteropServices;
 using Silk.NET.OpenGL;
-using Boolean=Silk.NET.OpenGL.Boolean;
 using Gl=Furball.Vixie.Global;
 
 namespace Furball.Vixie.Gl {
@@ -95,9 +93,7 @@ namespace Furball.Vixie.Gl {
         }
 
         #endregion
-
-
-
+        
         public void Dispose() {
             gl.DeleteBuffer(this._bufferId);
         }
