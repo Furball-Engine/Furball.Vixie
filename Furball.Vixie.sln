@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Furball.Vixie", "Furball.Vixie\Furball.Vixie.csproj", "{B26173AB-FF1A-4A9C-928C-BEEDFFD23873}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Furball.Vixie.TestApplication", "Furball.Vixie.TestApplication\Furball.Vixie.TestApplication.csproj", "{FA630295-D563-47E7-BCE3-2DE649714A95}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B26173AB-FF1A-4A9C-928C-BEEDFFD23873}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B26173AB-FF1A-4A9C-928C-BEEDFFD23873}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B26173AB-FF1A-4A9C-928C-BEEDFFD23873}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B26173AB-FF1A-4A9C-928C-BEEDFFD23873}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA630295-D563-47E7-BCE3-2DE649714A95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA630295-D563-47E7-BCE3-2DE649714A95}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA630295-D563-47E7-BCE3-2DE649714A95}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA630295-D563-47E7-BCE3-2DE649714A95}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
