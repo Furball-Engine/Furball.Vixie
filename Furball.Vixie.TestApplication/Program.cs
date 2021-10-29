@@ -1,9 +1,4 @@
-﻿using System;
+﻿using Furball.Vixie.TestApplication;
+using Silk.NET.Windowing;
 
-namespace Furball.Vixie.TestApplication {
-    class Program {
-        static void Main(string[] args) {
-            Console.WriteLine("Hello World!");
-        }
-    }
-}
+new TestGame(WindowOptions.Default).Run();
