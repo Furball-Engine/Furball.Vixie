@@ -11,10 +11,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Include="Shaders\BasicPixelShader.glsl" />
-      <EmbeddedResource Include="Shaders\BasicTexturedPixelShader.glsl" />
-      <EmbeddedResource Include="Shaders\BasicTexturedVertexShader.glsl" />
-      <EmbeddedResource Include="Shaders\BasicVertexShader.glsl" />
+      <EmbeddedResource Include="ShaderCode\BasicPixelShader.glsl" />
+      <EmbeddedResource Include="ShaderCode\BasicTexturedPixelShader.glsl" />
+      <EmbeddedResource Include="ShaderCode\BasicTexturedVertexShader.glsl" />
+      <EmbeddedResource Include="ShaderCode\BasicVertexShader.glsl" />
     </ItemGroup>
 
 </Project>
