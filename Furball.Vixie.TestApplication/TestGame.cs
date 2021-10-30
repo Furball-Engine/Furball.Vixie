@@ -1,8 +1,5 @@
-using System;
 using Furball.Vixie.Gl;
 using Furball.Vixie.Helpers;
-using Silk.NET.Core.Native;
-using Silk.NET.GLFW;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using Shader=Furball.Vixie.Gl.Shader;
@@ -22,7 +19,7 @@ namespace Furball.Vixie.TestApplication {
         }
 
         protected override unsafe void Initialize() {
-            gl.DebugMessageCallback(this.Callback, null);
+
 
             float[] verticies = new float[] {
                  0.5f,  0.5f, //0
@@ -57,11 +54,7 @@ namespace Furball.Vixie.TestApplication {
             this._renderer = new Renderer();
         }
         
-        private void Callback(GLEnum source, GLEnum type, int id, GLEnum severity, int length, nint message, nint userparam) {
-            string messagea = SilkMarshal.PtrToString(message);
-            
-            Console.WriteLine(messagea);
-        }
+
         protected override void Update(double obj) {
 
         }

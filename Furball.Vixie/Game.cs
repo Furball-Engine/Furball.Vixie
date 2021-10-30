@@ -1,5 +1,5 @@
 ﻿using System;
-using Silk.NET.GLFW;
+using Silk.NET.Core.Native;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
@@ -32,7 +32,7 @@ namespace Furball.Vixie {
 
         #region Renderer Actions
 
-        private void RendererInitialize() {
+        private unsafe void RendererInitialize() {
             Global.Gl = GL.GetApi(this._gameWindow);
             this.gl   = Global.Gl;
 
@@ -41,7 +41,15 @@ namespace Furball.Vixie {
 
             //TODO: input stuffs
 
+            gl.DebugMessageCallback(this.Callback, null);
+
             this.Initialize();
+        }
+
+        private void Callback(GLEnum source, GLEnum type, int id, GLEnum severity, int length, nint message, nint userparam) {
+            string messagea = SilkMarshal.PtrToString(message);
+
+            Console.WriteLine(messagea);
         }
 
         private void RendererOnClosing() {
