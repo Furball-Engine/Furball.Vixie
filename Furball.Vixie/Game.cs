@@ -60,7 +60,7 @@ namespace Furball.Vixie {
             gl.Enable(GLEnum.DebugOutput);
             gl.Enable(GLEnum.DebugOutputSynchronous);
             gl.Enable(EnableCap.Blend);
-            gl.BlendFunc(GLEnum.SrcAlpha, BlendingFactor.SrcAlpha);
+            gl.BlendFunc(GLEnum.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
             //TODO: input stuffs
 

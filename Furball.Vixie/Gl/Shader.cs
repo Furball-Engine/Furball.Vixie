@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
+using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 
 namespace Furball.Vixie.Gl {
@@ -8,6 +10,7 @@ namespace Furball.Vixie.Gl {
         GlFloat,
         GlInt,
         GlUint,
+        GlMat4f,
     }
 
     /// <summary>
@@ -94,7 +97,7 @@ namespace Furball.Vixie.Gl {
             return this;
         }
 
-        public Shader SetUniform(string uniformName, UniformType type, params object[] args) {
+        public unsafe Shader SetUniform(string uniformName, UniformType type, params object[] args) {
             //Get location from cache
             int location = this._uniformLocationCache.GetValueOrDefault(uniformName, -2);
 
@@ -231,6 +234,13 @@ namespace Furball.Vixie.Gl {
                         default:
                             throw new ArgumentOutOfRangeException("args", $"You cannot have a uint{args.Length} as a uniform parameter!");
                     }
+                    break;
+                }
+                case UniformType.GlMat4f: {
+                    Matrix4x4 matrix = (Matrix4x4) args[0];
+
+                    gl.UniformMatrix4(location, 1, false, (float*) &matrix);
+
                     break;
                 }
                 default:

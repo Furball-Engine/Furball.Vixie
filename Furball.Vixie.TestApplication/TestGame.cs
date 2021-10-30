@@ -1,6 +1,8 @@
+using System.Numerics;
 using Furball.Vixie.Gl;
 using Furball.Vixie.Helpers;
 using Furball.Vixie.Shaders;
+using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using Shader=Furball.Vixie.Gl.Shader;
@@ -55,8 +57,11 @@ namespace Furball.Vixie.TestApplication {
             //describe layout of VAO
             this._vertexArrayObject.AddBuffer(this._vertexBuffer, layout);
 
+            Matrix4x4 projectionMatrix = Matrix4x4.CreateOrthographic(-8f, 8f, -4.5f, 4.5f);
+
             //Create and initialize shader
             this._shader = new BasicTexturedShader();
+            this._shader.SetUniform("u_ProjectionMatrix", UniformType.GlMat4f, projectionMatrix);
 
             this._texture = new Texture(ResourceHelpers.GetByteResource("Resources.pippidonclear0.png"));
             this._texture.Bind();
