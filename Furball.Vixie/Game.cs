@@ -1,4 +1,5 @@
 ﻿using System;
+using Silk.NET.GLFW;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
@@ -14,15 +15,15 @@ namespace Furball.Vixie {
         protected Game(WindowOptions options) {
             this._gameWindow = Window.Create(options);
 
-            this._gameWindow.Update            += this.Update;
-            this._gameWindow.Render            += this.Draw;
-            this._gameWindow.Load              += this.RendererInitialize;
-            this._gameWindow.Closing           += this.RendererOnClosing;
-            this._gameWindow.FileDrop          += this.OnFileDrop;
-            this._gameWindow.Move              += this.OnWindowMove;
-            this._gameWindow.FocusChanged      += this.EngineOnFocusChanged;
-            this._gameWindow.StateChanged      += this.EngineOnWindowStateChange;
-            this._gameWindow.FramebufferResize += this.EngineFrameBufferResize;
+            this._gameWindow.Update                 += this.Update;
+            this._gameWindow.Render                 += this.Draw;
+            this._gameWindow.Load                   += this.RendererInitialize;
+            this._gameWindow.Closing                += this.RendererOnClosing;
+            this._gameWindow.FileDrop               += this.OnFileDrop;
+            this._gameWindow.Move                   += this.OnWindowMove;
+            this._gameWindow.FocusChanged           += this.EngineOnFocusChanged;
+            this._gameWindow.StateChanged           += this.EngineOnWindowStateChange;
+            this._gameWindow.FramebufferResize      += this.EngineFrameBufferResize;
         }
 
         public void Run() {

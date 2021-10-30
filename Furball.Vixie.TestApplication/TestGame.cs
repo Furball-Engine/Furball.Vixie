@@ -2,6 +2,7 @@ using System;
 using Furball.Vixie.Gl;
 using Furball.Vixie.Helpers;
 using Silk.NET.Core.Native;
+using Silk.NET.GLFW;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using Shader=Furball.Vixie.Gl.Shader;
@@ -64,6 +65,7 @@ namespace Furball.Vixie.TestApplication {
 
         protected override unsafe void Draw(double obj) {
             gl.Clear(ClearBufferMask.ColorBufferBit);
+            gl.ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
             this._vertexArrayObject.Bind();
             this._shader.Bind();
