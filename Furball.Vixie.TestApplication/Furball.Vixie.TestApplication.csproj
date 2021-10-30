@@ -12,9 +12,7 @@
 
     <ItemGroup>
       <None Remove="Shaders\BasicPixelShader.glsl" />
-      <EmbeddedResource Include="Shaders\BasicPixelShader.glsl" />
       <None Remove="Shaders\BasicVertexShader.glsl" />
-      <EmbeddedResource Include="Shaders\BasicVertexShader.glsl" />
     </ItemGroup>
 
 </Project>

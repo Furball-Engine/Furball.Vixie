@@ -9,4 +9,9 @@
       <PackageReference Include="Silk.NET" Version="2.9.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <EmbeddedResource Include="Shaders\BasicPixelShader.glsl" />
+      <EmbeddedResource Include="Shaders\BasicVertexShader.glsl" />
+    </ItemGroup>
+
 </Project>

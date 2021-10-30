@@ -19,29 +19,32 @@ namespace Furball.Vixie.TestApplication {
         }
 
         protected override unsafe void Initialize() {
-
-
+            //Vertex Positions
             float[] verticies = new float[] {
                  0.5f,  0.5f, //0
                  0.5f, -0.5f, //1
                 -0.5f, -0.5f, //2
                 -0.5f,  0.5f, //3
             };
-
+            //Indicies, basically what order to draw both triangles in
+            //because its 2 triangles OpenGL knows to take 3 indicies per triangle
+            //so the first triangle will take index 0 1 and 2 from vertecies
+            //and the 2nd triangle will take index 2 3 and 0, which together forms a quad
             uint[] indicies = new uint[] {
                 0, 1, 2,
                 2, 3, 0
             };
-
-            string vertexSource = ResourceHelpers.GetStringResource("Shaders/BasicVertexShader.glsl");
-            string fragmentSource = ResourceHelpers.GetStringResource("Shaders/BasicPixelShader.glsl");
-
+            //load shader sources
+            string vertexSource = ResourceHelpers.GetStringResource("Shaders/BasicVertexShader.glsl", true);
+            string fragmentSource = ResourceHelpers.GetStringResource("Shaders/BasicPixelShader.glsl", true);
+            //prepare buffers
             this._vertexBuffer      = new BufferObject<float>(verticies, BufferTargetARB.ArrayBuffer);
             this._indexBuffer       = new BufferObject<uint>(indicies, BufferTargetARB.ElementArrayBuffer);
             this._vertexArrayObject = new VertexArrayObject<float, uint>(this._vertexBuffer, this._indexBuffer);
-
+            //describe layout of VAO
             this._vertexArrayObject.AddAttribute<float>(2);
 
+            //Create and initialize shader
             this._shader = new Shader();
 
             this._shader
@@ -51,6 +54,7 @@ namespace Furball.Vixie.TestApplication {
                 .Bind()
                 .SetUniform("u_Color", UniformType.GlFloat, 0.2f, 0.1f, 0.2f, 1.0f);
 
+            //Create renderer
             this._renderer = new Renderer();
         }
         
