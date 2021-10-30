@@ -112,6 +112,8 @@ namespace Furball.Vixie {
         /// </summary>
         /// <param name="newSize">New Size</param>
         private void EngineFrameBufferResize(Vector2D<int> newSize) {
+            gl.Viewport(Vector2D<int>.Zero, newSize);
+
             this.OnFrameBufferResize(newSize);
         }
 
