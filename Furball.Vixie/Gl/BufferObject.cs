@@ -20,6 +20,10 @@ namespace Furball.Vixie.Gl {
         /// </summary>
         private GL gl;
         /// <summary>
+        /// Amount of Data supplied in Constructor
+        /// </summary>
+        public uint DataCount { get; internal set; }
+        /// <summary>
         /// Creates a Buffer Object of type `bufferType`
         /// </summary>
         /// <param name="data">Data to put into the Buffer</param>
@@ -37,6 +41,8 @@ namespace Furball.Vixie.Gl {
                 //Put the Data into the Buffer
                 gl.BufferData(this._bufferType, (nuint) (data.Length * sizeof(pDataType)), d, BufferUsageARB.StaticDraw);
             }
+
+            this.DataCount = (uint) data.Length;
         }
         /// <summary>
         /// Selects this Buffer
@@ -44,6 +50,12 @@ namespace Furball.Vixie.Gl {
         /// <returns>Self, used for chaining Methods</returns>
         public BufferObject<pDataType> Bind() {
             gl.BindBuffer(this._bufferType, this._bufferId);
+
+            return this;
+        }
+
+        public BufferObject<pDataType> Unbind() {
+            gl.BindBuffer(this._bufferType, 0);
 
             return this;
         }

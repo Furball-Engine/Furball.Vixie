@@ -67,7 +67,7 @@ namespace Furball.Vixie.TestApplication {
             this._vertexArrayObject.Bind();
             this._shader.Bind();
 
-            gl.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, null);
+            gl.DrawElements(PrimitiveType.Triangles, this._indexBuffer.DataCount, DrawElementsType.UnsignedInt, null);
         }
 
         public override void Dispose() {
