@@ -5,6 +5,7 @@ using Silk.NET.Core.Native;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using Shader=Furball.Vixie.Gl.Shader;
+using UniformType=Furball.Vixie.Gl.UniformType;
 
 namespace Furball.Vixie.TestApplication {
     public class TestGame : Game {
@@ -46,8 +47,9 @@ namespace Furball.Vixie.TestApplication {
             this._shader
                 .AttachShader(ShaderType.VertexShader, vertexSource)
                 .AttachShader(ShaderType.FragmentShader, fragmentSource)
-                .Link();
-
+                .Link()
+                .Bind()
+                .SetUniform("u_Color", UniformType.glFloat, 0.2f, 0.1f, 0.2f, 1.0f);
         }
         
         private void Callback(GLEnum source, GLEnum type, int id, GLEnum severity, int length, nint message, nint userparam) {

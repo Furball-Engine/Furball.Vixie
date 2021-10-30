@@ -3,6 +3,13 @@ using System.Collections.Generic;
 using Silk.NET.OpenGL;
 
 namespace Furball.Vixie.Gl {
+
+    public enum UniformType {
+        glFloat,
+        glInt,
+        glUint,
+    }
+
     /// <summary>
     /// A Shader, a Program run on the GPU
     /// </summary>
@@ -74,9 +81,147 @@ namespace Furball.Vixie.Gl {
         /// <summary>
         /// Selects this Shader
         /// </summary>
-        public void Bind() {
+        public Shader Bind() {
             gl.UseProgram(this._programId);
+
+            return this;
         }
+
+        public Shader SetUniform(string uniformName, UniformType type, params object[] args) {
+            int location = gl.GetUniformLocation(this._programId, uniformName);
+
+            if(location == -1)
+                Console.WriteLine("");
+
+            switch (type) {
+                case UniformType.glFloat: {
+                    switch (args.Length) {
+                        case 1: {
+                            float arg1 = (float) args[0];
+
+                            gl.Uniform1(location, arg1);
+
+                            break;
+                        }
+                        case 2: {
+                            float arg1 = (float) args[0];
+                            float arg2 = (float) args[1];
+
+                            gl.Uniform2(location, arg1, arg2);
+
+                            break;
+                        }
+                        case 3: {
+                            float arg1 = (float) args[0];
+                            float arg2 = (float) args[1];
+                            float arg3 = (float) args[2];
+
+                            gl.Uniform3(location, arg1, arg2, arg3);
+
+                            break;
+                        }
+                        case 4: {
+                            float arg1 = (float) args[0];
+                            float arg2 = (float) args[1];
+                            float arg3 = (float) args[2];
+                            float arg4 = (float) args[3];
+
+                            gl.Uniform4(location, arg1, arg2, arg3, arg4);
+
+                            break;
+                        }
+                        default:
+                            throw new ArgumentOutOfRangeException("args", $"You cannot have a vec{args.Length} as a uniform parameter!");
+                    }
+                    break;
+                }
+                case UniformType.glInt: {
+                    switch (args.Length) {
+                        case 1: {
+                            int arg1 = (int) args[0];
+
+                            gl.Uniform1(location, arg1);
+
+                            break;
+                        }
+                        case 2: {
+                            int arg1 = (int) args[0];
+                            int arg2 = (int) args[1];
+
+                            gl.Uniform2(location, arg1, arg2);
+
+                            break;
+                        }
+                        case 3: {
+                            int arg1 = (int) args[0];
+                            int arg2 = (int) args[1];
+                            int arg3 = (int) args[2];
+
+                            gl.Uniform3(location, arg1, arg2, arg3);
+
+                            break;
+                        }
+                        case 4: {
+                            int arg1 = (int) args[0];
+                            int arg2 = (int) args[1];
+                            int arg3 = (int) args[2];
+                            int arg4 = (int) args[3];
+
+                            gl.Uniform4(location, arg1, arg2, arg3, arg4);
+
+                            break;
+                        }
+                        default:
+                            throw new ArgumentOutOfRangeException("args", $"You cannot have a int{args.Length} as a uniform parameter!");
+                    }
+                    break;
+                }
+                case UniformType.glUint: {
+                    switch (args.Length) {
+                        case 1: {
+                            uint arg1 = (uint) args[0];
+
+                            gl.Uniform1(location, arg1);
+
+                            break;
+                        }
+                        case 2: {
+                            uint arg1 = (uint) args[0];
+                            uint arg2 = (uint) args[1];
+
+                            gl.Uniform2(location, arg1, arg2);
+
+                            break;
+                        }
+                        case 3: {
+                            uint arg1 = (uint) args[0];
+                            uint arg2 = (uint) args[1];
+                            uint arg3 = (uint) args[2];
+
+                            gl.Uniform3(location, arg1, arg2, arg3);
+
+                            break;
+                        }
+                        case 4: {
+                            uint arg1 = (uint) args[0];
+                            uint arg2 = (uint) args[1];
+                            uint arg3 = (uint) args[2];
+                            uint arg4 = (uint) args[3];
+
+                            gl.Uniform4(location, arg1, arg2, arg3, arg4);
+
+                            break;
+                        }
+                        default:
+                            throw new ArgumentOutOfRangeException("args", $"You cannot have a uint{args.Length} as a uniform parameter!");
+                    }
+                    break;
+                }
+            }
+
+            return this;
+        }
+
         /// <summary>
         /// Cleans up the Shader
         /// </summary>
