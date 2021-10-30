@@ -27,6 +27,7 @@ namespace Furball.Vixie.TestApplication {
                 /* Vertex Coordinates */  0.5f,  0.5f, /* Texture Coordinates */ 1.0f, 1.0f,
                 /* Vertex Coordinates */ -0.5f,  0.5f, /* Texture Coordinates */ 0.0f, 1.0f,
             };
+
             //Indicies, basically what order to draw both triangles in
             //because its 2 triangles OpenGL knows to take 3 indicies per triangle
             //so the first triangle will take index 0 1 and 2 from vertecies
