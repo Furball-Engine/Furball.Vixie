@@ -5,9 +5,9 @@ using Silk.NET.OpenGL;
 namespace Furball.Vixie.Gl {
 
     public enum UniformType {
-        glFloat,
-        glInt,
-        glUint,
+        GlFloat,
+        GlInt,
+        GlUint,
     }
 
     /// <summary>
@@ -94,7 +94,7 @@ namespace Furball.Vixie.Gl {
                 Console.WriteLine("");
 
             switch (type) {
-                case UniformType.glFloat: {
+                case UniformType.GlFloat: {
                     switch (args.Length) {
                         case 1: {
                             float arg1 = (float) args[0];
@@ -135,7 +135,7 @@ namespace Furball.Vixie.Gl {
                     }
                     break;
                 }
-                case UniformType.glInt: {
+                case UniformType.GlInt: {
                     switch (args.Length) {
                         case 1: {
                             int arg1 = (int) args[0];
@@ -172,11 +172,11 @@ namespace Furball.Vixie.Gl {
                             break;
                         }
                         default:
-                            throw new ArgumentOutOfRangeException("args", $"You cannot have a int{args.Length} as a uniform parameter!");
+                            throw new ArgumentOutOfRangeException(nameof(args), $"You cannot have a int{args.Length} as a uniform parameter!");
                     }
                     break;
                 }
-                case UniformType.glUint: {
+                case UniformType.GlUint: {
                     switch (args.Length) {
                         case 1: {
                             uint arg1 = (uint) args[0];
@@ -217,6 +217,8 @@ namespace Furball.Vixie.Gl {
                     }
                     break;
                 }
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
             }
 
             return this;

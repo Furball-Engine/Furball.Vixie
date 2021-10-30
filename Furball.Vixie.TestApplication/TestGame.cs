@@ -49,7 +49,7 @@ namespace Furball.Vixie.TestApplication {
                 .AttachShader(ShaderType.FragmentShader, fragmentSource)
                 .Link()
                 .Bind()
-                .SetUniform("u_Color", UniformType.glFloat, 0.2f, 0.1f, 0.2f, 1.0f);
+                .SetUniform("u_Color", UniformType.GlFloat, 0.2f, 0.1f, 0.2f, 1.0f);
         }
         
         private void Callback(GLEnum source, GLEnum type, int id, GLEnum severity, int length, nint message, nint userparam) {
