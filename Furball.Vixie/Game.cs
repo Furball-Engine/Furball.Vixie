@@ -105,7 +105,7 @@ namespace Furball.Vixie {
         /// </summary>
         /// <param name="newSize"></param>
         private void EngineWindowResize(Vector2D<int> newSize) {
-            this.OnWindowReize(newSize);
+            this.OnWindowResize(newSize);
         }
         /// <summary>
         /// Gets Fired when the Frame Buffer needs/gets resized
@@ -159,7 +159,7 @@ namespace Furball.Vixie {
         /// Gets Fired when The Window gets Resized
         /// </summary>
         /// <param name="newSize"></param>
-        protected virtual void OnWindowReize(Vector2D<int> newSize) {}
+        protected virtual void OnWindowResize(Vector2D<int> newSize) {}
         /// <summary>
         /// Gets Fired when the Frame Buffer needs/gets resized
         /// </summary>
