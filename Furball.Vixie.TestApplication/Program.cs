@@ -1,4 +1,7 @@
 ﻿using Furball.Vixie.TestApplication;
 using Silk.NET.Windowing;
 
-new TestGame(WindowOptions.Default).Run();
+var options = WindowOptions.Default;
+options.WindowBorder = WindowBorder.Fixed;
+
+new TestGame(options).Run();
