@@ -125,13 +125,13 @@ namespace Furball.Vixie {
         /// <summary>
         /// Update Method, Do your Updating work in here
         /// </summary>
-        /// <param name="obj">Delta Time</param>
-        protected abstract void Update(double obj);
+        /// <param name="deltaTime">Delta Time</param>
+        protected abstract void Update(double deltaTime);
         /// <summary>
         /// Draw Method, do your Drawing work in there
         /// </summary>
-        /// <param name="obj"></param>
-        protected abstract void Draw(double obj);
+        /// <param name="deltaTime"></param>
+        protected abstract void Draw(double deltaTime);
         /// <summary>
         /// Dispose any IDisposables and other things left to clean up here
         /// </summary>

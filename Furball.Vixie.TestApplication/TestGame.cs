@@ -71,11 +71,11 @@ namespace Furball.Vixie.TestApplication {
         }
         
 
-        protected override void Update(double obj) {
+        protected override void Update(double deltaTime) {
 
         }
 
-        protected override unsafe void Draw(double obj) {
+        protected override unsafe void Draw(double deltaTime) {
             this._renderer.Clear();
 
             this._renderer.Draw(this._vertexBuffer, this._indexBuffer, this._shader);
