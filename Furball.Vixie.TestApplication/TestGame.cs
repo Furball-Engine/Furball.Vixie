@@ -43,8 +43,8 @@ namespace Furball.Vixie.TestApplication {
             this._vertexBuffer      = new BufferObject<float>(verticies, BufferTargetARB.ArrayBuffer);
             this._indexBuffer       = new BufferObject<uint>(indicies, BufferTargetARB.ElementArrayBuffer);
             this._vertexArrayObject = new VertexArrayObject<float, uint>(this._vertexBuffer, this._indexBuffer);
-            
-            this._vertexArrayObject.AddAttribute(2, VertexAttribPointerType.Float, 2);
+
+            this._vertexArrayObject.AddAttribute(2, VertexAttribPointerType.Float);
 
             this._shader = new Shader();
 
@@ -74,7 +74,10 @@ namespace Furball.Vixie.TestApplication {
         }
 
         public override void Dispose() {
-
+            this._indexBuffer.Dispose();
+            this._vertexBuffer.Dispose();
+            this._vertexArrayObject.Dispose();
+            this._shader.Dispose();
         }
     }
 }

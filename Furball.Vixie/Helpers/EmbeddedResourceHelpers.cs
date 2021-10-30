@@ -4,8 +4,14 @@ using System.Text;
 
 namespace Furball.Vixie.Helpers {
     public static class EmbeddedResourceHelpers {
-        public static MemoryStream GetResource(string path) {
-            Assembly assembly = Assembly.GetCallingAssembly();
+        /// <summary>
+        /// Gets a Embedded Resource Stream
+        /// </summary>
+        /// <param name="path">Path to Resource</param>
+        /// <param name="vixieResource">Is it a resource from Vixie?</param>
+        /// <returns>Stream with the resource</returns>
+        public static MemoryStream GetResource(string path, bool vixieResource = false) {
+            Assembly assembly = vixieResource ? Assembly.GetExecutingAssembly() : Assembly.GetCallingAssembly();
             string actualName = assembly.GetName().Name + "." + path.Replace("/", ".");
 
             MemoryStream stream = new MemoryStream();
@@ -18,9 +24,14 @@ namespace Furball.Vixie.Helpers {
 
             return stream;
         }
-
-        public static string GetStringResource(string path) {
-            Assembly assembly = Assembly.GetCallingAssembly();
+        /// <summary>
+        /// Gets a String Resource
+        /// </summary>
+        /// <param name="path">Path to Resource</param>
+        /// <param name="vixieResource">Is it a resource from Vixie?</param>
+        /// <returns>String with the resource</returns>
+        public static string GetStringResource(string path, bool vixieResource = false) {
+            Assembly assembly = vixieResource ? Assembly.GetExecutingAssembly() : Assembly.GetCallingAssembly();
             string actualName = assembly.GetName().Name + "." + path.Replace("/", ".");
 
             MemoryStream stream = new MemoryStream();

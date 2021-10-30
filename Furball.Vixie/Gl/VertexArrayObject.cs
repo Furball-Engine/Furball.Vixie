@@ -19,7 +19,10 @@ namespace Furball.Vixie.Gl {
             vertexBufferObject.Bind();
             indexBufferObject.Bind();
         }
-
+        /// <summary>
+        /// Selects this Vertex Array
+        /// </summary>
+        /// <returns>Self, used for chaining Methods</returns>
         public VertexArrayObject<pVertexType, pIndexType> Bind() {
             gl.BindVertexArray(this._arrayId);
 
@@ -32,10 +35,17 @@ namespace Furball.Vixie.Gl {
         private long _attribOffset      = 0;
         private int  _attribOffsetCount = 0;
 
-        public unsafe VertexArrayObject<pVertexType, pIndexType> AddAttribute(int count, VertexAttribPointerType type, uint vertexSize)
+        /// <summary>
+        /// Adds a Vertex Attribute, used for memory segmentation
+        /// </summary>
+        /// <param name="count">Count of Elements per Vertex</param>
+        /// <param name="type">Type of Element</param>
+        /// <remarks>Buffer needs to be Bound for this to work</remarks>
+        /// <returns>Self, used for chaining Methods</returns>
+        public unsafe VertexArrayObject<pVertexType, pIndexType> AddAttribute(int count, VertexAttribPointerType type)
         {
             //Setting up a vertex attribute pointer
-            gl.VertexAttribPointer(this._attribIndex, count, type, false, vertexSize * (uint) sizeof(pVertexType), (void*) this._attribOffset);
+            gl.VertexAttribPointer(this._attribIndex, count, type, false, (uint) count * (uint) sizeof(pVertexType), (void*) this._attribOffset);
             gl.EnableVertexAttribArray(this._attribIndex);
 
             this._attribIndex++;
@@ -46,7 +56,9 @@ namespace Furball.Vixie.Gl {
         }
 
         #endregion
-
+        /// <summary>
+        /// Disposes the Vertex Array
+        /// </summary>
         public void Dispose() {
             gl.DeleteVertexArray(this._arrayId);
         }
