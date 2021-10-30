@@ -1,14 +1,9 @@
 using System;
-using System.IO;
-using System.Reflection;
-using System.Text;
 using Furball.Vixie.Gl;
 using Furball.Vixie.Helpers;
 using Silk.NET.Core.Native;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
-using Boolean = Silk.NET.OpenGL.Boolean;
-using Color = System.Drawing.Color;
 using Shader=Furball.Vixie.Gl.Shader;
 
 namespace Furball.Vixie.TestApplication {
@@ -22,8 +17,8 @@ namespace Furball.Vixie.TestApplication {
 
         }
 
-        protected unsafe override void Initialize() {
-            this.gl.DebugMessageCallback(this.Callback, null);
+        protected override unsafe void Initialize() {
+            gl.DebugMessageCallback(this.Callback, null);
 
             float[] verticies = new float[] {
                  0.5f,  0.5f, //0
@@ -64,7 +59,7 @@ namespace Furball.Vixie.TestApplication {
 
         }
 
-        protected unsafe override void Draw(double obj) {
+        protected override unsafe void Draw(double obj) {
             gl.Clear(ClearBufferMask.ColorBufferBit);
 
             this._vertexArrayObject.Bind();
