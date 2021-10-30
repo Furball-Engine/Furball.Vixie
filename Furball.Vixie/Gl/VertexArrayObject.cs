@@ -39,7 +39,6 @@ namespace Furball.Vixie.Gl {
         /// Adds a Vertex Attribute, used for memory segmentation
         /// </summary>
         /// <param name="count">Count of Elements per Vertex</param>
-        /// <param name="type">Type of Element</param>
         /// <remarks>Buffer needs to be Bound for this to work</remarks>
         /// <returns>Self, used for chaining Methods</returns>
         public unsafe VertexArrayObject<pVertexType, pIndexType> AddAttribute<pAttribType>(int count) where pAttribType : unmanaged

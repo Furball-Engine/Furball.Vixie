@@ -18,7 +18,6 @@ namespace Furball.Vixie.Gl {
         /// OpenGL api, used to not have to do Global.Gl.function everytime, saves time and makes code shorter
         /// </summary>
         private GL gl;
-
         /// <summary>
         /// Program ID, used by OpenGL to distingluish different Programs
         /// </summary>
@@ -27,13 +26,19 @@ namespace Furball.Vixie.Gl {
         /// List of intermediate Shaders that can be deleted later.
         /// </summary>
         private List<uint> _shaders;
+        /// <summary>
+        /// A Dictionary for caching uniform locations, so we don't have to re-get the locations for uniforms everytime a Uniform is set
+        /// </summary>
+        private Dictionary<string, int> _uniformLocationCache;
 
         /// <summary>
         /// Creates a unlinked Shader with no source code
         /// </summary>
         public Shader() {
-            this.gl       = Global.Gl;
-            this._shaders = new List<uint>();
+            this.gl = Global.Gl;
+
+            this._shaders              = new List<uint>();
+            this._uniformLocationCache = new Dictionary<string, uint>();
 
             this._programId = gl.CreateProgram();
         }
@@ -67,12 +72,14 @@ namespace Furball.Vixie.Gl {
         /// <returns>Self, used for Chaining methods</returns>
         /// <exception cref="Exception"></exception>
         public Shader Link() {
+            //Link Program and get Error incase something failed
             gl.LinkProgram(this._programId);
             gl.GetProgram(this._programId, ProgramPropertyARB.LinkStatus, out int linkStatus);
 
             if (linkStatus == 0)
                 throw new Exception($"Failed to Link Program, Error Message: { gl.GetProgramInfoLog(this._programId) }");
 
+            //Delete Intermediate Shaders
             for(int i = 0; i != this._shaders.Count; i++)
                 gl.DeleteShader(this._shaders[i]);
 
@@ -88,10 +95,19 @@ namespace Furball.Vixie.Gl {
         }
 
         public Shader SetUniform(string uniformName, UniformType type, params object[] args) {
-            int location = gl.GetUniformLocation(this._programId, uniformName);
+            //Get location from cache
+            int location = this._uniformLocationCache.GetValueOrDefault(uniformName, -2);
+
+            //If cache missed, get from OpenGL and store in cache
+            if (location == -2) {
+                int foundLocation = gl.GetUniformLocation(this._programId, uniformName);
+
+                location = foundLocation;
+                this._uniformLocationCache.Add(uniformName, foundLocation);
+            }
 
             if(location == -1)
-                Console.WriteLine("");
+                Console.WriteLine($"[OpenGL Warning] Uniform Location for {uniformName} seems to not exist. It may have been optimized out or you simply misspelled the Uniform name");
 
             switch (type) {
                 case UniformType.GlFloat: {
