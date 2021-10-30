@@ -22,6 +22,9 @@ namespace Furball.Vixie {
         internal void RendererInitialize() {
             Global.Gl = GL.GetApi(this._gameWindow);
             this.gl   = Global.Gl;
+            
+            this.gl.Enable(GLEnum.DebugOutput);
+            this.gl.Enable(GLEnum.DebugOutputSynchronous);
 
             //TODO: input stuffs
 
