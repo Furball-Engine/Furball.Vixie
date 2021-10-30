@@ -4,10 +4,23 @@ using Silk.NET.OpenGL;
 
 namespace Furball.Vixie.Gl {
     public struct LayoutElement {
+        /// <summary>
+        /// Element Count, for example in a 2 component Vector this would be 2
+        /// </summary>
         public int                     Count;
+        /// <summary>
+        /// Type of the Element
+        /// </summary>
         public VertexAttribPointerType Type;
+        /// <summary>
+        /// Does it need to be Normalized? i.e. does it need to be put into 0.0-1.0 space?
+        /// </summary>
         public bool                    Normalized;
-
+        /// <summary>
+        /// Returns the Size in bytes of `type`
+        /// </summary>
+        /// <param name="type">Type to get size for</param>
+        /// <returns>Size in bytes</returns>
         public static uint GetSizeOfType(VertexAttribPointerType type) {
             switch (type) {
                 case VertexAttribPointerType.Float:
@@ -29,13 +42,25 @@ namespace Furball.Vixie.Gl {
     }
 
     public class VertexBufferLayout {
+        /// <summary>
+        /// All of the Layout Elements
+        /// </summary>
         private List<LayoutElement> _elements;
+        /// <summary>
+        /// Stride, i.e. how many bytes to go forward to go to the next element
+        /// </summary>
         private uint                _stride;
 
         public VertexBufferLayout() {
             this._elements = new List<LayoutElement>();
         }
-
+        /// <summary>
+        /// Adds an Element onto the Layout
+        /// </summary>
+        /// <param name="count">Count of Elements</param>
+        /// <param name="normalized">Do they need to be Normalized?</param>
+        /// <typeparam name="pElementType">Type of Element</typeparam>
+        /// <returns></returns>
         public unsafe VertexBufferLayout AddElement<pElementType>(int count, bool normalized = false) where pElementType : unmanaged {
             VertexAttribPointerType type = Type.GetTypeCode(typeof(pElementType)) switch {
                 TypeCode.Single => VertexAttribPointerType.Float,
@@ -56,9 +81,15 @@ namespace Furball.Vixie.Gl {
 
             return this;
         }
-
+        /// <summary>
+        /// Gets the Current Stride
+        /// </summary>
+        /// <returns>Stride</returns>
         public uint GetStride() => this._stride;
-
+        /// <summary>
+        /// Gets all of the LayoutElements
+        /// </summary>
+        /// <returns>LayoutElements</returns>
         public List<LayoutElement> GetElements() => this._elements;
     }
 }

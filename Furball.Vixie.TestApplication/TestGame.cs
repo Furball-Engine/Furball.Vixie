@@ -10,7 +10,7 @@ namespace Furball.Vixie.TestApplication {
     public class TestGame : Game {
         private BufferObject<uint>             _indexBuffer;
         private BufferObject<float>            _vertexBuffer;
-        private VertexArrayObject<float, uint> _vertexArrayObject;
+        private VertexArrayObject<float> _vertexArrayObject;
         private Shader                         _shader;
         private Texture                        _texture;
 
@@ -41,7 +41,7 @@ namespace Furball.Vixie.TestApplication {
             //prepare buffers
             this._vertexBuffer      = new BufferObject<float>(verticies, BufferTargetARB.ArrayBuffer);
             this._indexBuffer       = new BufferObject<uint>(indicies, BufferTargetARB.ElementArrayBuffer);
-            this._vertexArrayObject = new VertexArrayObject<float, uint>();
+            this._vertexArrayObject = new VertexArrayObject<float>();
 
             VertexBufferLayout layout = new VertexBufferLayout();
 
