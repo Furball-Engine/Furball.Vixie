@@ -15,4 +15,9 @@
       <None Remove="Shaders\BasicVertexShader.glsl" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="Resources\pippidonclear0.png" />
+      <EmbeddedResource Include="Resources\pippidonclear0.png" />
+    </ItemGroup>
+
 </Project>

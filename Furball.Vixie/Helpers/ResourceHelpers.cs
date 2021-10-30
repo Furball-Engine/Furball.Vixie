@@ -44,5 +44,26 @@ namespace Furball.Vixie.Helpers {
 
             return Encoding.UTF8.GetString(stream.ToArray());
         }
+
+        /// <summary>
+        /// Gets a Byte Array Resource
+        /// </summary>
+        /// <param name="path">Path to Resource</param>
+        /// <param name="vixieResource">Is it a resource from Vixie?</param>
+        /// <returns>String with the resource</returns>
+        public static byte[] GetByteResource(string path, bool vixieResource = false) {
+            Assembly assembly = vixieResource ? Assembly.GetExecutingAssembly() : Assembly.GetCallingAssembly();
+            string actualName = assembly.GetName().Name + "." + path.Replace("/", ".");
+
+            MemoryStream stream = new MemoryStream();
+            Stream resStream = assembly.GetManifestResourceStream(actualName);
+
+            if (resStream == null)
+                return null;
+
+            resStream.CopyTo(stream);
+
+            return stream.ToArray();
+        }
     }
 }

@@ -39,6 +39,7 @@ namespace Furball.Vixie.TestApplication {
             //load shader sources
             string vertexSource = ResourceHelpers.GetStringResource("Shaders/BasicTexturedVertexShader.glsl", true);
             string fragmentSource = ResourceHelpers.GetStringResource("Shaders/BasicTexturedPixelShader.glsl", true);
+
             //prepare buffers
             this._vertexBuffer      = new BufferObject<float>(verticies, BufferTargetARB.ArrayBuffer);
             this._indexBuffer       = new BufferObject<uint>(indicies, BufferTargetARB.ElementArrayBuffer);
@@ -46,7 +47,8 @@ namespace Furball.Vixie.TestApplication {
 
             VertexBufferLayout layout = new VertexBufferLayout();
 
-            layout.AddElement<float>(2)
+            layout
+                .AddElement<float>(2)
                 .AddElement<float>(2);
 
             //describe layout of VAO
@@ -63,7 +65,7 @@ namespace Furball.Vixie.TestApplication {
                 //We set it to 0 because we bind our Texture at Index 0
                 .SetUniform("u_Texture", UniformType.GlInt, 0);
 
-            this._texture = new Texture("test.png");
+            this._texture = new Texture(ResourceHelpers.GetByteResource("Resources.pippidonclear0.png"));
             this._texture.Bind();
 
             //Create renderer
