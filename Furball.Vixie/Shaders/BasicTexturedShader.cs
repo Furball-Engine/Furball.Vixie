@@ -4,6 +4,9 @@ using Shader=Furball.Vixie.Gl.Shader;
 using UniformType=Furball.Vixie.Gl.UniformType;
 
 namespace Furball.Vixie.Shaders {
+    /// <summary>
+    /// Basic Textured Shader which expects a Texture bound at index 0
+    /// </summary>
     public class BasicTexturedShader : Shader {
         public BasicTexturedShader() : base() {
             string vertexSource = ResourceHelpers.GetStringResource("ShaderCode/BasicTexturedVertexShader.glsl", true);

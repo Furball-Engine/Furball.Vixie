@@ -3,6 +3,9 @@ using Silk.NET.OpenGL;
 using Shader=Furball.Vixie.Gl.Shader;
 
 namespace Furball.Vixie.Shaders {
+    /// <summary>
+    /// Basic Filled Color Shader, expects a uniform u_Color to be set as the Color
+    /// </summary>
     public class BasicShader : Shader {
         public BasicShader() : base() {
             string vertexSource = ResourceHelpers.GetStringResource("ShaderCode/BasicVertexShader.glsl", true);
