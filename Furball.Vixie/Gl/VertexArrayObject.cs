@@ -42,15 +42,23 @@ namespace Furball.Vixie.Gl {
         /// <param name="type">Type of Element</param>
         /// <remarks>Buffer needs to be Bound for this to work</remarks>
         /// <returns>Self, used for chaining Methods</returns>
-        public unsafe VertexArrayObject<pVertexType, pIndexType> AddAttribute(int count, VertexAttribPointerType type)
+        public unsafe VertexArrayObject<pVertexType, pIndexType> AddAttribute<pAttribType>(int count) where pAttribType : unmanaged
         {
+            VertexAttribPointerType type = Type.GetTypeCode(typeof(pAttribType)) switch {
+                TypeCode.Single => VertexAttribPointerType.Float,
+                TypeCode.Byte   => VertexAttribPointerType.Byte,
+                TypeCode.UInt32 => VertexAttribPointerType.UnsignedInt,
+                TypeCode.Int16  => VertexAttribPointerType.Short,
+                TypeCode.UInt16 => VertexAttribPointerType.UnsignedShort,
+                TypeCode.Int32  => VertexAttribPointerType.Int
+            };
             //Setting up a vertex attribute pointer
-            gl.VertexAttribPointer(this._attribIndex, count, type, false, (uint) count * (uint) sizeof(pVertexType), (void*) this._attribOffset);
+            gl.VertexAttribPointer(this._attribIndex, count, type, false, (uint) count * (uint) sizeof(pAttribType), (void*) this._attribOffset);
             gl.EnableVertexAttribArray(this._attribIndex);
 
             this._attribIndex++;
             this._attribOffsetCount += count;
-            this._attribOffset      += (this._attribOffsetCount * sizeof(pVertexType));
+            this._attribOffset      += (this._attribOffsetCount * sizeof(pAttribType));
 
             return this;
         }
