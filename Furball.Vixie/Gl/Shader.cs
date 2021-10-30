@@ -38,7 +38,7 @@ namespace Furball.Vixie.Gl {
             this.gl = Global.Gl;
 
             this._shaders              = new List<uint>();
-            this._uniformLocationCache = new Dictionary<string, uint>();
+            this._uniformLocationCache = new Dictionary<string, int>();
 
             this._programId = gl.CreateProgram();
         }

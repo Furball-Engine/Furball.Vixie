@@ -15,12 +15,13 @@ namespace Furball.Vixie.TestApplication {
         private VertexArrayObject<float, uint> _vertexArrayObject;
         private Shader                         _shader;
 
+        private Renderer _renderer;
+
         public TestGame(WindowOptions options) : base(options) {
 
         }
 
         protected override unsafe void Initialize() {
-
             gl.DebugMessageCallback(this.Callback, null);
 
             float[] verticies = new float[] {
@@ -52,6 +53,8 @@ namespace Furball.Vixie.TestApplication {
                 .Link()
                 .Bind()
                 .SetUniform("u_Color", UniformType.GlFloat, 0.2f, 0.1f, 0.2f, 1.0f);
+
+            this._renderer = new Renderer();
         }
         
         private void Callback(GLEnum source, GLEnum type, int id, GLEnum severity, int length, nint message, nint userparam) {
@@ -66,10 +69,7 @@ namespace Furball.Vixie.TestApplication {
         protected override unsafe void Draw(double obj) {
             gl.Clear(ClearBufferMask.ColorBufferBit);
 
-            this._vertexArrayObject.Bind();
-            this._shader.Bind();
-
-            gl.DrawElements(PrimitiveType.Triangles, this._indexBuffer.DataCount, DrawElementsType.UnsignedInt, null);
+            this._renderer.Draw(this._vertexBuffer, this._indexBuffer, this._shader);
         }
 
         public override void Dispose() {
