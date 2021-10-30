@@ -1,5 +1,6 @@
 using Furball.Vixie.Gl;
 using Furball.Vixie.Helpers;
+using Furball.Vixie.Shaders;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using Shader=Furball.Vixie.Gl.Shader;
@@ -55,15 +56,7 @@ namespace Furball.Vixie.TestApplication {
             this._vertexArrayObject.AddBuffer(this._vertexBuffer, layout);
 
             //Create and initialize shader
-            this._shader = new Shader();
-
-            this._shader
-                .AttachShader(ShaderType.VertexShader, vertexSource)
-                .AttachShader(ShaderType.FragmentShader, fragmentSource)
-                .Link()
-                .Bind()
-                //We set it to 0 because we bind our Texture at Index 0
-                .SetUniform("u_Texture", UniformType.GlInt, 0);
+            this._shader = new BasicTexturedShader();
 
             this._texture = new Texture(ResourceHelpers.GetByteResource("Resources.pippidonclear0.png"));
             this._texture.Bind();
