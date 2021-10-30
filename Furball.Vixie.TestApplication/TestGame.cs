@@ -1,99 +1,55 @@
 using System;
+using System.IO;
 using Furball.Vixie.Gl;
 using Silk.NET.Core.Native;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using Boolean = Silk.NET.OpenGL.Boolean;
 using Color = System.Drawing.Color;
+using Shader=Furball.Vixie.Gl.Shader;
 
 namespace Furball.Vixie.TestApplication {
     public class TestGame : Game {
-        private VertexBuffer<float> _triangleBuffer;
+        private BufferObject<uint>             _indexBuffer;
+        private BufferObject<float>            _vertexBuffer;
+        private VertexArrayObject<float, uint> _vertexArrayObject;
+        private Shader                         _shader;
 
         public TestGame(WindowOptions options) : base(options) {
 
         }
 
-        public uint Vao;
-
         protected unsafe override void Initialize() {
             this.gl.DebugMessageCallback(this.Callback, null);
-            
-            Vao = gl.GenVertexArray();
-            gl.BindVertexArray(Vao);
 
-            float[] verticies = new [] {
-                -0.5f, -0.5f,
-                 0.0f,  0.5f,
-                 0.5f, -0.5f,
+            float[] verticies = new float[] {
+                 0.5f,  0.5f, //0
+                 0.5f, -0.5f, //1
+                -0.5f, -0.5f, //2
+                -0.5f,  0.5f, //3
             };
 
-            string[] vertexSource = new [] {
-                "#version 330 core\n",
-                "",
-                "layout(location = 0) in vec4 position;",
-                "",
-                "void main() {",
-                "    gl_Position = position;",
-                "}"
+            uint[] indicies = new uint[] {
+                0, 1, 2,
+                2, 3, 0
             };
 
-            string[] fragmentSource = new [] {
-                "#version 330 core\n",
-                "",
-                "layout(location = 0) out vec4 color;",
-                "",
-                "void main() {",
-                "    color = vec4(1.0, 0.0, 0.0, 1.0);",
-                "}"
-            };
+            string vertexSource = File.ReadAllText("Shaders/BasicVertexShader.glsl");
+            string fragmentSource = File.ReadAllText("Shaders/BasicPixelShader.glsl");
 
-            uint program = gl.CreateProgram();
+            this._vertexBuffer      = new BufferObject<float>(verticies, BufferTargetARB.ArrayBuffer);
+            this._indexBuffer       = new BufferObject<uint>(indicies, BufferTargetARB.ElementArrayBuffer);
+            this._vertexArrayObject = new VertexArrayObject<float, uint>(this._vertexBuffer, this._indexBuffer);
 
-            uint vertex = gl.CreateShader(GLEnum.VertexShader);
-            gl.ShaderSource(vertex, 1, vertexSource, (int*) null);
-            gl.CompileShader(vertex);
-            
-            //Checking the shader for compilation errors.
-            string infoLog = gl.GetShaderInfoLog(vertex);
-            if (!string.IsNullOrWhiteSpace(infoLog))
-            {
-                Console.WriteLine($"Error compiling vertex shader {infoLog}");
-            }
+            this._vertexArrayObject.AddAttribute(2, VertexAttribPointerType.Float, 2);
 
-            uint fragment = gl.CreateShader(GLEnum.FragmentShader);
-            gl.ShaderSource(fragment, 1, fragmentSource, (int*) null);
-            gl.CompileShader(fragment);
-            
-            //Checking the shader for compilation errors.
-            infoLog = gl.GetShaderInfoLog(fragment);
-            if (!string.IsNullOrWhiteSpace(infoLog))
-            {
-                Console.WriteLine($"Error compiling fragment shader {infoLog}");
-            }
+            this._shader = new Shader();
 
-            gl.AttachShader(program, vertex);
-            gl.AttachShader(program, fragment);
-            gl.LinkProgram(program);
-            gl.ValidateProgram(program);
+            this._shader
+                .AttachShader(ShaderType.VertexShader, vertexSource)
+                .AttachShader(ShaderType.FragmentShader, fragmentSource)
+                .Link();
 
-            gl.DeleteShader(vertex);
-            gl.DeleteShader(fragment);
-
-            gl.BindVertexArray(Vao);
-            gl.UseProgram(program);
-
-            uint buffer;
-            gl.GenBuffers(1, out buffer);
-            gl.BindBuffer(GLEnum.ArrayBuffer, buffer);
-            
-            fixed (void* data = verticies) {
-                gl.BufferData(GLEnum.ArrayBuffer, 6 * sizeof(float), data, GLEnum.StaticDraw);
-            }
-            
-            gl.EnableVertexAttribArray(0);
-            gl.VertexAttribPointer(0, 2, GLEnum.Float, Boolean.False, sizeof(float) * 2, 0);
-            
         }
         
         private void Callback(GLEnum source, GLEnum type, int id, GLEnum severity, int length, nint message, nint userparam) {
@@ -105,11 +61,13 @@ namespace Furball.Vixie.TestApplication {
 
         }
 
-        protected override void Draw(double obj) {
+        protected unsafe override void Draw(double obj) {
             gl.Clear(ClearBufferMask.ColorBufferBit);
-            // this.gl.ClearColor(Color.White);
-            //this._triangleBuffer.Bind();
-            gl.DrawArrays(PrimitiveType.Triangles, 0, 3);
+
+            this._vertexArrayObject.Bind();
+            this._shader.Bind();
+
+            gl.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, null);
         }
 
         public override void Dispose() {

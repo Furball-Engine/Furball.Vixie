@@ -10,4 +10,13 @@
       <ProjectReference Include="..\Furball.Vixie\Furball.Vixie.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="Shaders\BasicPixelShader.glsl">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Shaders\BasicVertexShader.glsl">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>
