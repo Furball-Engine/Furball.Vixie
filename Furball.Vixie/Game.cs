@@ -24,6 +24,7 @@ namespace Furball.Vixie {
             this._gameWindow.FocusChanged      += this.EngineOnFocusChanged;
             this._gameWindow.StateChanged      += this.EngineOnWindowStateChange;
             this._gameWindow.FramebufferResize += this.EngineFrameBufferResize;
+            this._gameWindow.Resize            += this.EngineWindowResize;
         }
 
         public void Run() {

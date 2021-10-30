@@ -61,7 +61,7 @@ namespace Furball.Vixie.TestApplication {
                 .Bind()
                 .SetUniform("u_Texture", UniformType.GlInt, 0);
 
-            this._texture = new Texture("test.jpg");
+            this._texture = new Texture("test.png");
             this._texture.Bind();
 
             //Create renderer
