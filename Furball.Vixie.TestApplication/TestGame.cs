@@ -59,6 +59,7 @@ namespace Furball.Vixie.TestApplication {
                 .AttachShader(ShaderType.FragmentShader, fragmentSource)
                 .Link()
                 .Bind()
+                //We set it to 0 because we bind our Texture at Index 0
                 .SetUniform("u_Texture", UniformType.GlInt, 0);
 
             this._texture = new Texture("test.png");
@@ -84,6 +85,7 @@ namespace Furball.Vixie.TestApplication {
             this._vertexBuffer.Dispose();
             this._vertexArrayObject.Dispose();
             this._shader.Dispose();
+            this._texture.Dispose();
         }
     }
 }
