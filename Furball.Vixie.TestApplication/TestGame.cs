@@ -3,6 +3,7 @@ using Furball.Vixie.Helpers;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using Shader=Furball.Vixie.Gl.Shader;
+using Texture=Furball.Vixie.Gl.Texture;
 using UniformType=Furball.Vixie.Gl.UniformType;
 
 namespace Furball.Vixie.TestApplication {
@@ -11,6 +12,7 @@ namespace Furball.Vixie.TestApplication {
         private BufferObject<float>            _vertexBuffer;
         private VertexArrayObject<float, uint> _vertexArrayObject;
         private Shader                         _shader;
+        private Texture                        _texture;
 
         private Renderer _renderer;
 
@@ -19,12 +21,11 @@ namespace Furball.Vixie.TestApplication {
         }
 
         protected override unsafe void Initialize() {
-            //Vertex Positions
             float[] verticies = new float[] {
-                 0.5f,  0.5f, //0
-                 0.5f, -0.5f, //1
-                -0.5f, -0.5f, //2
-                -0.5f,  0.5f, //3
+                /* Vertex Coordinates */ -0.5f, -0.5f, /* Texture Coordinates */ 0.0f, 0.0f,
+                /* Vertex Coordinates */  0.5f, -0.5f, /* Texture Coordinates */ 1.0f, 0.0f,
+                /* Vertex Coordinates */  0.5f,  0.5f, /* Texture Coordinates */ 1.0f, 1.0f,
+                /* Vertex Coordinates */ -0.5f,  0.5f, /* Texture Coordinates */ 0.0f, 1.0f,
             };
             //Indicies, basically what order to draw both triangles in
             //because its 2 triangles OpenGL knows to take 3 indicies per triangle
@@ -35,14 +36,20 @@ namespace Furball.Vixie.TestApplication {
                 2, 3, 0
             };
             //load shader sources
-            string vertexSource = ResourceHelpers.GetStringResource("Shaders/BasicVertexShader.glsl", true);
-            string fragmentSource = ResourceHelpers.GetStringResource("Shaders/BasicPixelShader.glsl", true);
+            string vertexSource = ResourceHelpers.GetStringResource("Shaders/BasicTexturedVertexShader.glsl", true);
+            string fragmentSource = ResourceHelpers.GetStringResource("Shaders/BasicTexturedPixelShader.glsl", true);
             //prepare buffers
             this._vertexBuffer      = new BufferObject<float>(verticies, BufferTargetARB.ArrayBuffer);
             this._indexBuffer       = new BufferObject<uint>(indicies, BufferTargetARB.ElementArrayBuffer);
-            this._vertexArrayObject = new VertexArrayObject<float, uint>(this._vertexBuffer, this._indexBuffer);
+            this._vertexArrayObject = new VertexArrayObject<float, uint>();
+
+            VertexBufferLayout layout = new VertexBufferLayout();
+
+            layout.AddElement<float>(2)
+                .AddElement<float>(2);
+
             //describe layout of VAO
-            this._vertexArrayObject.AddAttribute<float>(2);
+            this._vertexArrayObject.AddBuffer(this._vertexBuffer, layout);
 
             //Create and initialize shader
             this._shader = new Shader();
@@ -52,7 +59,10 @@ namespace Furball.Vixie.TestApplication {
                 .AttachShader(ShaderType.FragmentShader, fragmentSource)
                 .Link()
                 .Bind()
-                .SetUniform("u_Color", UniformType.GlFloat, 0.2f, 0.1f, 0.2f, 1.0f);
+                .SetUniform("u_Texture", UniformType.GlInt, 0);
+
+            this._texture = new Texture("test.jpg");
+            this._texture.Bind();
 
             //Create renderer
             this._renderer = new Renderer();

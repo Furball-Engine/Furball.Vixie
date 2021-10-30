@@ -43,6 +43,10 @@ namespace Furball.Vixie {
 
             gl.DebugMessageCallback(this.Callback, null);
 
+            gl.Enable(EnableCap.Blend);
+            gl.BlendFunc(GLEnum.SrcAlpha, BlendingFactor.SrcAlpha);
+
+
             this.Initialize();
         }
 

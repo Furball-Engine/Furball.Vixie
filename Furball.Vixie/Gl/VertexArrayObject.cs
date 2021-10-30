@@ -10,62 +10,38 @@ namespace Furball.Vixie.Gl {
 
         private uint _arrayId;
 
-        public VertexArrayObject(BufferObject<pVertexType> vertexBufferObject, BufferObject<pIndexType> indexBufferObject) {
+        public VertexArrayObject() {
             this.gl = Global.Gl;
 
             this._arrayId = gl.GenVertexArray();
+        }
+
+        public unsafe void AddBuffer(BufferObject<pVertexType> vertexBuffer, VertexBufferLayout layout) {
+            this.Bind();
+            vertexBuffer.Bind();
+
+            var elements = layout.GetElements();
+
+            uint offset = 0;
+
+            for (uint i = 0; i != elements.Count; i++) {
+                LayoutElement currentElement = elements[(int) i];
+
+                gl.EnableVertexAttribArray(i);
+                gl.VertexAttribPointer(i, currentElement.Count, currentElement.Type, currentElement.Normalized, layout.GetStride(), (void*) offset);
+
+                offset += (uint) currentElement.Count * LayoutElement.GetSizeOfType(currentElement.Type);
+            }
+        }
+
+        public void Bind() {
             gl.BindVertexArray(this._arrayId);
-
-            vertexBufferObject.Bind();
-            indexBufferObject.Bind();
-        }
-        /// <summary>
-        /// Selects this Vertex Array
-        /// </summary>
-        /// <returns>Self, used for chaining Methods</returns>
-        public VertexArrayObject<pVertexType, pIndexType> Bind() {
-            gl.BindVertexArray(this._arrayId);
-
-            return this;
         }
 
-        #region Attributes
-
-        private uint _attribIndex       = 0;
-        private long _attribOffset      = 0;
-        private int  _attribOffsetCount = 0;
-
-        /// <summary>
-        /// Adds a Vertex Attribute, used for memory segmentation
-        /// </summary>
-        /// <param name="count">Count of Elements per Vertex</param>
-        /// <remarks>Buffer needs to be Bound for this to work</remarks>
-        /// <returns>Self, used for chaining Methods</returns>
-        public unsafe VertexArrayObject<pVertexType, pIndexType> AddAttribute<pAttribType>(int count) where pAttribType : unmanaged
-        {
-            VertexAttribPointerType type = Type.GetTypeCode(typeof(pAttribType)) switch {
-                TypeCode.Single => VertexAttribPointerType.Float,
-                TypeCode.Byte   => VertexAttribPointerType.Byte,
-                TypeCode.UInt32 => VertexAttribPointerType.UnsignedInt,
-                TypeCode.Int16  => VertexAttribPointerType.Short,
-                TypeCode.UInt16 => VertexAttribPointerType.UnsignedShort,
-                TypeCode.Int32  => VertexAttribPointerType.Int
-            };
-            //Setting up a vertex attribute pointer
-            gl.VertexAttribPointer(this._attribIndex, count, type, false, (uint) count * (uint) sizeof(pAttribType), (void*) this._attribOffset);
-            gl.EnableVertexAttribArray(this._attribIndex);
-
-            this._attribIndex++;
-            this._attribOffsetCount += count;
-            this._attribOffset      += (this._attribOffsetCount * sizeof(pAttribType));
-
-            return this;
+        public void Unbind() {
+            gl.BindVertexArray(0);
         }
 
-        #endregion
-        /// <summary>
-        /// Disposes the Vertex Array
-        /// </summary>
         public void Dispose() {
             gl.DeleteVertexArray(this._arrayId);
         }
