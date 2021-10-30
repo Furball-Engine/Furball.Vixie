@@ -17,5 +17,9 @@ namespace Furball.Vixie {
 
             gl.DrawElements(PrimitiveType.Triangles, indexBuffer.DataCount, DrawElementsType.UnsignedInt, null);
         }
+
+        public void Clear() {
+            gl.Clear(ClearBufferMask.ColorBufferBit);
+        }
     }
 }

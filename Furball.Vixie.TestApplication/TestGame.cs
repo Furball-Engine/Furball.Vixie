@@ -67,7 +67,7 @@ namespace Furball.Vixie.TestApplication {
         }
 
         protected override unsafe void Draw(double obj) {
-            gl.Clear(ClearBufferMask.ColorBufferBit);
+            this._renderer.Clear();
 
             this._renderer.Draw(this._vertexBuffer, this._indexBuffer, this._shader);
         }
