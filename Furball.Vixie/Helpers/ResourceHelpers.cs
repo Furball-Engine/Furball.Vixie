@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Text;
 
 namespace Furball.Vixie.Helpers {
-    public static class EmbeddedResourceHelpers {
+    public static class ResourceHelpers {
         /// <summary>
         /// Gets a Embedded Resource Stream
         /// </summary>

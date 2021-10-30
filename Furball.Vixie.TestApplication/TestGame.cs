@@ -19,6 +19,7 @@ namespace Furball.Vixie.TestApplication {
         }
 
         protected override unsafe void Initialize() {
+
             gl.DebugMessageCallback(this.Callback, null);
 
             float[] verticies = new float[] {
@@ -33,8 +34,8 @@ namespace Furball.Vixie.TestApplication {
                 2, 3, 0
             };
 
-            string vertexSource = EmbeddedResourceHelpers.GetStringResource("Shaders/BasicVertexShader.glsl");
-            string fragmentSource = EmbeddedResourceHelpers.GetStringResource("Shaders/BasicPixelShader.glsl");
+            string vertexSource = ResourceHelpers.GetStringResource("Shaders/BasicVertexShader.glsl");
+            string fragmentSource = ResourceHelpers.GetStringResource("Shaders/BasicPixelShader.glsl");
 
             this._vertexBuffer      = new BufferObject<float>(verticies, BufferTargetARB.ArrayBuffer);
             this._indexBuffer       = new BufferObject<uint>(indicies, BufferTargetARB.ElementArrayBuffer);
