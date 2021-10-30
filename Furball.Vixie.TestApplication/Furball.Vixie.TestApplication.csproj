@@ -11,12 +11,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="Shaders\BasicPixelShader.glsl">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Shaders\BasicVertexShader.glsl">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
+      <None Remove="Shaders\BasicPixelShader.glsl" />
+      <EmbeddedResource Include="Shaders\BasicPixelShader.glsl" />
+      <None Remove="Shaders\BasicVertexShader.glsl" />
+      <EmbeddedResource Include="Shaders\BasicVertexShader.glsl" />
     </ItemGroup>
 
 </Project>

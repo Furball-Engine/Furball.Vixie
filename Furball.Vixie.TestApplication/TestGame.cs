@@ -1,6 +1,9 @@
 using System;
 using System.IO;
+using System.Reflection;
+using System.Text;
 using Furball.Vixie.Gl;
+using Furball.Vixie.Helpers;
 using Silk.NET.Core.Native;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
@@ -34,13 +37,13 @@ namespace Furball.Vixie.TestApplication {
                 2, 3, 0
             };
 
-            string vertexSource = File.ReadAllText("Shaders/BasicVertexShader.glsl");
-            string fragmentSource = File.ReadAllText("Shaders/BasicPixelShader.glsl");
+            string vertexSource = EmbeddedResourceHelpers.GetStringResource("Shaders/BasicVertexShader.glsl");
+            string fragmentSource = EmbeddedResourceHelpers.GetStringResource("Shaders/BasicPixelShader.glsl");
 
             this._vertexBuffer      = new BufferObject<float>(verticies, BufferTargetARB.ArrayBuffer);
             this._indexBuffer       = new BufferObject<uint>(indicies, BufferTargetARB.ElementArrayBuffer);
             this._vertexArrayObject = new VertexArrayObject<float, uint>(this._vertexBuffer, this._indexBuffer);
-
+            
             this._vertexArrayObject.AddAttribute(2, VertexAttribPointerType.Float, 2);
 
             this._shader = new Shader();
