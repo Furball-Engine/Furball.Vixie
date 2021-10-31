@@ -18,7 +18,7 @@ namespace Furball.Vixie.TestApplication {
         private Texture                        _texture;
 
         //Used for putting everything into a Coordinate space that we can work with
-        private Matrix4x4 _projectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, 1280, 0, 720, 0f, 1f);
+        private Matrix4x4 _projectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, 1280, 720, 0, 1f, 0f);
         //Used for simulating a camera
         private Matrix4x4 _viewMatrix = Matrix4x4.CreateTranslation(new Vector3(0, 0, 0));
         //Used for putting the model/object into a certain position
@@ -32,11 +32,10 @@ namespace Furball.Vixie.TestApplication {
 
         protected override unsafe void Initialize() {
             float[] verticies = new float[] {
-
-                /* Vertex Coordinates */  100f,  (100f), /* Texture Coordinates */ 0.0f, 0.0f, //Bottom Left corner
-                /* Vertex Coordinates */  200f,  (100f), /* Texture Coordinates */ 1.0f, 0.0f, //Bottom Right corner
-                /* Vertex Coordinates */  200f,  (200f), /* Texture Coordinates */ 1.0f, 1.0f, //Top Right Corner
-                /* Vertex Coordinates */  100f,  (200f), /* Texture Coordinates */ 0.0f, 1.0f, //Top Left Corner
+                /* Vertex Coordinates */  100f,  (200f), /* Texture Coordinates */ 0.0f, 0.0f, //Bottom Left corner
+                /* Vertex Coordinates */  200f,  (200f), /* Texture Coordinates */ 1.0f, 0.0f, //Bottom Right corner
+                /* Vertex Coordinates */  200f,  (100f), /* Texture Coordinates */ 1.0f, 1.0f, //Top Right Corner
+                /* Vertex Coordinates */  100f,  (100f), /* Texture Coordinates */ 0.0f, 1.0f, //Top Left Corner
             };
 
             //Indicies, basically what order to draw both triangles in
