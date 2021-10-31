@@ -1,5 +1,3 @@
-using System;
-using System.Globalization;
 using System.Numerics;
 using Furball.Vixie.Gl;
 using Furball.Vixie.Helpers;
@@ -10,7 +8,6 @@ using Silk.NET.OpenGL.Extensions.ImGui;
 using Silk.NET.Windowing;
 using Shader=Furball.Vixie.Gl.Shader;
 using Texture=Furball.Vixie.Gl.Texture;
-using ImGui=ImGuiNET.ImGui;
 using UniformType=Furball.Vixie.Gl.UniformType;
 
 namespace Furball.Vixie.TestApplication {
