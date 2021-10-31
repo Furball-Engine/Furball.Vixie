@@ -7,10 +7,6 @@ using Silk.NET.Windowing;
 namespace Furball.Vixie {
     public abstract class Game : IDisposable {
         /// <summary>
-        /// Actual Game Window
-        /// </summary>
-        private   IWindow _gameWindow;
-        /// <summary>
         /// OpenGL API, used to not do Global.Gl everytime
         /// </summary>
         protected GL      gl;
@@ -20,33 +16,36 @@ namespace Furball.Vixie {
         /// </summary>
         public bool IsActive { get; private set; }
         /// <summary>
-        /// Current Window State
+        /// Window Manager, handles everything Window Related, from Creation to the Window Projection Matrix
         /// </summary>
-        public WindowState WindowState { get; private set; }
+        public readonly WindowManager WindowManager;
 
         /// <summary>
         /// Creates a Game Window using `options`
         /// </summary>
         /// <param name="options">Window Creation Options</param>
         protected Game(WindowOptions options) {
-            this._gameWindow = Window.Create(options);
+            this.WindowManager = new WindowManager(options);
+            this.WindowManager.Create();
 
-            this._gameWindow.Update            += this.Update;
-            this._gameWindow.Render            += this.Draw;
-            this._gameWindow.Load              += this.RendererInitialize;
-            this._gameWindow.Closing           += this.RendererOnClosing;
-            this._gameWindow.FileDrop          += this.OnFileDrop;
-            this._gameWindow.Move              += this.OnWindowMove;
-            this._gameWindow.FocusChanged      += this.EngineOnFocusChanged;
-            this._gameWindow.StateChanged      += this.EngineOnWindowStateChange;
-            this._gameWindow.FramebufferResize += this.EngineFrameBufferResize;
-            this._gameWindow.Resize            += this.EngineWindowResize;
+            this.WindowManager.GameWindow.Update            += this.Update;
+            this.WindowManager.GameWindow.Render            += this.Draw;
+            this.WindowManager.GameWindow.Load              += this.RendererInitialize;
+            this.WindowManager.GameWindow.Closing           += this.RendererOnClosing;
+            this.WindowManager.GameWindow.FileDrop          += this.OnFileDrop;
+            this.WindowManager.GameWindow.Move              += this.OnWindowMove;
+            this.WindowManager.GameWindow.FocusChanged      += this.EngineOnFocusChanged;
+            this.WindowManager.GameWindow.StateChanged      += this.EngineOnWindowStateChange;
+            this.WindowManager.GameWindow.FramebufferResize += this.EngineFrameBufferResize;
+            this.WindowManager.GameWindow.Resize            += this.EngineWindowResize;
+
+            Global.GameInstance = this;
         }
         /// <summary>
         /// Runs the Game
         /// </summary>
         public void Run() {
-            this._gameWindow.Run();
+            this.WindowManager.RunWindow();
         }
 
         #region Renderer Actions
@@ -54,17 +53,18 @@ namespace Furball.Vixie {
         /// Used to Initialize the Renderer and stuff,
         /// </summary>
         private unsafe void RendererInitialize() {
-            Global.Gl = GL.GetApi(this._gameWindow);
+            Global.Gl = this.WindowManager.GetGlApi();
             this.gl   = Global.Gl;
 
+            //Enables Debugging
             gl.Enable(GLEnum.DebugOutput);
             gl.Enable(GLEnum.DebugOutputSynchronous);
+            gl.DebugMessageCallback(this.Callback, null);
+            //Enables Blending (Required for Transparent Objects)
             gl.Enable(EnableCap.Blend);
             gl.BlendFunc(GLEnum.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
             //TODO: input stuffs
-
-            gl.DebugMessageCallback(this.Callback, null);
 
             this.Initialize();
         }
@@ -96,7 +96,7 @@ namespace Furball.Vixie {
         /// </summary>
         /// <param name="newState"></param>
         private void EngineOnWindowStateChange(WindowState newState) {
-            this.WindowState = newState;
+            this.WindowManager.WindowState = newState;
 
             this.OnWindowStateChange(newState);
         }

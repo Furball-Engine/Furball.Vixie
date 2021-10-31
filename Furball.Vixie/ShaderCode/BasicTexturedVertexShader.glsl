@@ -5,10 +5,10 @@ layout(location = 1) in vec2 texCoord;
 
 out vec2 v_TexCoord;
 
-uniform mat4 u_ProjectionMatrix;
+uniform mat4 vx_WindowProjectionMatrix;
 
 void main() {
-    gl_Position = u_ProjectionMatrix * position;
+    gl_Position = vx_WindowProjectionMatrix * position;
 
     v_TexCoord = texCoord;
 }
