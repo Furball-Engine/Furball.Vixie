@@ -1,6 +1,5 @@
 ﻿using Kettu;
 using System;
-using System.Collections.Generic;
 using Furball.Vixie.Helpers;
 using Silk.NET.Core.Native;
 using Silk.NET.Maths;
