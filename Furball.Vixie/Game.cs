@@ -25,7 +25,7 @@ namespace Furball.Vixie {
         /// <summary>
         /// All of the Game Components
         /// </summary>
-        protected GameComponentCollection Components;
+        public GameComponentCollection Components;
 
         /// <summary>
         /// Creates a Game Window using `options`
@@ -48,7 +48,7 @@ namespace Furball.Vixie {
 
             Global.GameInstance = this;
 
-            this.Components = new GameComponentCollection();
+            this.Components = new GameComponentCollection(this);
         }
         /// <summary>
         /// Runs the Game

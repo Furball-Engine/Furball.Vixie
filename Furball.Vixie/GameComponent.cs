@@ -2,6 +2,14 @@ using System;
 
 namespace Furball.Vixie {
     public abstract class GameComponent : IDisposable {
+        protected Game BaseGame;
+        /// <summary>
+        /// Initializes the GameComponent with a Game Instance
+        /// </summary>
+        /// <param name="game">Game</param>
+        public GameComponent(Game game) {
+            this.BaseGame = game;
+        }
         /// <summary>
         /// Processing Order, higher order means drawn and updated first
         /// </summary>
