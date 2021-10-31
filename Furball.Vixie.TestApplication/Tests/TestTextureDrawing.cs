@@ -1,8 +1,13 @@
+using System;
+using System.Globalization;
 using System.Numerics;
 using Furball.Vixie.Gl;
 using Furball.Vixie.Helpers;
+using Furball.Vixie.ImGuiHelpers;
 using Furball.Vixie.Shaders;
+using ImGuiNET;
 using Silk.NET.OpenGL;
+using Silk.NET.OpenGL.Extensions.ImGui;
 using Texture=Furball.Vixie.Gl.Texture;
 using UniformType=Furball.Vixie.Gl.UniformType;
 
@@ -16,6 +21,8 @@ namespace Furball.Vixie.TestApplication.Tests {
         private Texture             _texture;
 
         private VertexArrayObject<float> _vertexArrayObject;
+
+        private ImGuiController _imGuiController;
 
         public TestTextureDrawing(Game game) : base(game) {}
 
@@ -58,6 +65,8 @@ namespace Furball.Vixie.TestApplication.Tests {
             //Load the Texture
             this._texture = new Texture(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
 
+            this._imGuiController = ImGuiCreator.CreateController();
+
             base.Initialize();
         }
 
@@ -71,6 +80,23 @@ namespace Furball.Vixie.TestApplication.Tests {
                 .SetUniform("u_Translation", UniformType.GlMat4f, Matrix4x4.CreateTranslation(200, 200, 0));
 
             this._instancedRenderer.Draw(this._vertexBuffer, this._indexBuffer, this._shader);
+
+            #region ImGui menu
+
+            this._imGuiController.Update((float) deltaTime);
+
+            ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
+                       $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
+            );
+
+            if (ImGui.Button("Go back to test selector")) {
+                this.BaseGame.Components.Add(new BaseTestSelector(this.BaseGame));
+                this.BaseGame.Components.Remove(this);
+            }
+
+            this._imGuiController.Render();
+
+            #endregion
 
             base.Draw(deltaTime);
         }

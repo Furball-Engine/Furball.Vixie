@@ -2,12 +2,15 @@ using System;
 
 namespace Furball.Vixie {
     public abstract class GameComponent : IDisposable {
+        /// <summary>
+        /// Game Instance
+        /// </summary>
         protected Game BaseGame;
         /// <summary>
         /// Initializes the GameComponent with a Game Instance
         /// </summary>
         /// <param name="game">Game</param>
-        public GameComponent(Game game) {
+        protected GameComponent(Game game) {
             this.BaseGame = game;
         }
         /// <summary>
