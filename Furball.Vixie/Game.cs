@@ -11,7 +11,7 @@ namespace Furball.Vixie {
         /// <summary>
         /// OpenGL API, used to not do Global.Gl everytime
         /// </summary>
-        protected GL      gl;
+        internal GL      gl;
 
         /// <summary>
         /// Is the Window Active/Focused?
@@ -20,7 +20,7 @@ namespace Furball.Vixie {
         /// <summary>
         /// Window Manager, handles everything Window Related, from Creation to the Window Projection Matrix
         /// </summary>
-        public readonly WindowManager WindowManager;
+        protected readonly WindowManager WindowManager;
 
         /// <summary>
         /// Creates a Game Window using `options`
@@ -66,6 +66,7 @@ namespace Furball.Vixie {
             gl.Enable(GLEnum.DebugOutput);
             gl.Enable(GLEnum.DebugOutputSynchronous);
             gl.DebugMessageCallback(this.Callback, null);
+            
             //Enables Blending (Required for Transparent Objects)
             gl.Enable(EnableCap.Blend);
             gl.BlendFunc(GLEnum.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
@@ -80,22 +81,14 @@ namespace Furball.Vixie {
         private void Callback(GLEnum source, GLEnum type, int id, GLEnum severity, int length, nint message, nint userparam) {
             string stringMessage = SilkMarshal.PtrToString(message);
 
-            LoggerLevel level = null;
-            switch (severity) {
-                case GLEnum.DebugSeverityHigh:
-                    level = LoggerLevelDebugMessageCallback.InstanceHigh;
-                    break;
-                case GLEnum.DebugSeverityMedium:
-                    level = LoggerLevelDebugMessageCallback.InstanceMedium;
-                    break;
-                case GLEnum.DebugSeverityLow:
-                    level = LoggerLevelDebugMessageCallback.InstanceLow;
-                    break;
-                case GLEnum.DebugSeverityNotification:
-                    level = LoggerLevelDebugMessageCallback.InstanceNotification;
-                    break;
-            }
-             
+            LoggerLevel level = severity switch {
+                GLEnum.DebugSeverityHigh         => LoggerLevelDebugMessageCallback.InstanceHigh,
+                GLEnum.DebugSeverityMedium       => LoggerLevelDebugMessageCallback.InstanceMedium,
+                GLEnum.DebugSeverityLow          => LoggerLevelDebugMessageCallback.InstanceLow,
+                GLEnum.DebugSeverityNotification => LoggerLevelDebugMessageCallback.InstanceNotification,
+                _                                => null
+            };
+
             Logger.Log($"{stringMessage}", level);
         }
         /// <summary>
