@@ -17,6 +17,13 @@ namespace Furball.Vixie.TestApplication {
         private Shader                         _shader;
         private Texture                        _texture;
 
+        //Used for putting everything into a Coordinate space that we can work with
+        private Matrix4x4 _projectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, 1280, 0, 720, 0f, 1f);
+        //Used for simulating a camera
+        private Matrix4x4 _viewMatrix = Matrix4x4.CreateTranslation(new Vector3(0, 0, 0));
+        //Used for putting the model/object into a certain position
+        private Matrix4x4 _modelMatrix = Matrix4x4.CreateTranslation(new Vector3(0, 0f, 0));
+
         private Renderer _renderer;
 
         public TestGame(WindowOptions options) : base(options) {
@@ -57,23 +64,15 @@ namespace Furball.Vixie.TestApplication {
             //describe layout of VAO
             this._vertexArrayObject.AddBuffer(this._vertexBuffer, layout);
 
-            //Used for putting everything into a Coordinate space that we can work with
-            Matrix4x4 projectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, 1280, 0, 720, 0f, 1f);;
 
 
-            //Used for simulating a camera
-            Matrix4x4 viewMatrix = Matrix4x4.CreateTranslation(new Vector3(0, 0, 0));
-            //Used for putting the model/object into a certain position
-            Matrix4x4 modelMatrix = Matrix4x4.CreateTranslation(new Vector3(0, 0.5f, 0));
 
-            Matrix4x4 mvp = projectionMatrix * viewMatrix * modelMatrix;
 
             //Create and initialize shader
             this._shader = new BasicTexturedShader();
-            this._shader.SetUniform("u_ProjectionMatrix", UniformType.GlMat4f, mvp);
             //this._shader.SetUniform("u_WindowSize", UniformType.GlFloat, 1280f, 720f);
 
-            this._texture = new Texture(ResourceHelpers.GetByteResource("Resources.pippidonclear0.png"));
+            this._texture = new Texture(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
             this._texture.Bind();
 
             //Create renderer
@@ -88,6 +87,10 @@ namespace Furball.Vixie.TestApplication {
         protected override unsafe void Draw(double deltaTime) {
             this._renderer.Clear();
 
+            this._shader.Bind();
+            Matrix4x4 mvp = this._projectionMatrix * this._viewMatrix * this._modelMatrix;
+            this._shader.SetUniform("u_ProjectionMatrix", UniformType.GlMat4f, mvp);
+
             this._renderer.Draw(this._vertexBuffer, this._indexBuffer, this._shader);
         }
 
@@ -97,6 +100,10 @@ namespace Furball.Vixie.TestApplication {
             this._vertexArrayObject.Dispose();
             this._shader.Dispose();
             this._texture.Dispose();
+        }
+
+        protected override void OnFrameBufferResize(Vector2D<int> newSize) {
+            this._projectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, newSize.X, 0, newSize.Y, 0f, 1f);
         }
     }
 }
