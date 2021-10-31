@@ -1,13 +1,10 @@
-using System.Numerics;
 using Furball.Vixie.Gl;
 using Furball.Vixie.Helpers;
 using Furball.Vixie.Shaders;
-using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using Shader=Furball.Vixie.Gl.Shader;
 using Texture=Furball.Vixie.Gl.Texture;
-using UniformType=Furball.Vixie.Gl.UniformType;
 
 namespace Furball.Vixie.TestApplication {
     public class TestGame : Game {
