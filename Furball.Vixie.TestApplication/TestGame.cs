@@ -1,10 +1,15 @@
+using System;
+using System.Globalization;
 using Furball.Vixie.Gl;
 using Furball.Vixie.Helpers;
+using Furball.Vixie.ImGuiHelpers;
 using Furball.Vixie.Shaders;
 using Silk.NET.OpenGL;
+using Silk.NET.OpenGL.Extensions.ImGui;
 using Silk.NET.Windowing;
 using Shader=Furball.Vixie.Gl.Shader;
 using Texture=Furball.Vixie.Gl.Texture;
+using ImGui=ImGuiNET.ImGui;
 
 namespace Furball.Vixie.TestApplication {
     public class TestGame : Game {
@@ -15,6 +20,8 @@ namespace Furball.Vixie.TestApplication {
         private Texture                        _texture;
 
         private Renderer _renderer;
+
+        private ImGuiController _imGui;
 
         public TestGame(WindowOptions options) : base(options) {}
 
@@ -59,6 +66,8 @@ namespace Furball.Vixie.TestApplication {
 
             //Create renderer
             this._renderer = new Renderer();
+
+            this._imGui = ImGuiCreator.CreateController();
         }
 
         protected override void Update(double deltaTime) {}
@@ -66,10 +75,19 @@ namespace Furball.Vixie.TestApplication {
         protected override unsafe void Draw(double deltaTime) {
             this._renderer.Clear();
 
+            this._imGui.Update((float)deltaTime);
+
+            ImGui.Text($"Frametime: {Math.Round(1000.0f    / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
+                          $"Framerate: {Math.Round(ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)}"
+            );
+
+            this._imGui.Render();
+
             this._renderer.Draw(this._vertexBuffer, this._indexBuffer, this._shader);
         }
 
         public override void Dispose() {
+            this._imGui.Dispose();
             this._indexBuffer.Dispose();
             this._vertexBuffer.Dispose();
             this._vertexArrayObject.Dispose();

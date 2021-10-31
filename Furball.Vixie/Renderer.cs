@@ -1,3 +1,4 @@
+using System.Drawing;
 using Furball.Vixie.Gl;
 using Silk.NET.OpenGL;
 using Shader=Furball.Vixie.Gl.Shader;
@@ -23,6 +24,7 @@ namespace Furball.Vixie {
         }
 
         public void Clear() {
+            gl.ClearColor(Color.FromArgb(255, (int) (.45f * 255), (int) (.55f * 255), (int) (.60f * 255)));
             gl.Clear(ClearBufferMask.ColorBufferBit);
         }
     }
