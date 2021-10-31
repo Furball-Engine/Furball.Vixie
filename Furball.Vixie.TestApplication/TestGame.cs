@@ -78,13 +78,17 @@ namespace Furball.Vixie.TestApplication {
         protected override unsafe void Draw(double deltaTime) {
             this._renderer.Clear();
 
-            //this._imGui.Update((float)deltaTime);
-//
-            //ImGui.Text($"Frametime: {Math.Round(1000.0f    / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
-            //              $"Framerate: {Math.Round(ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)}"
-            //);
-//
-            //this._imGui.Render();
+#if !DEBUGNOIMGUI
+
+             this._imGui.Update((float)deltaTime);
+
+             ImGui.Text($"Frametime: {Math.Round(1000.0f    / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
+                           $"Framerate: {Math.Round(ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)}"
+             );
+
+             this._imGui.Render();
+
+#endif
 
             this._shader
                 .Bind().
