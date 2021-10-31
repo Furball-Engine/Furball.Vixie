@@ -3,6 +3,10 @@ using System;
 namespace Furball.Vixie {
     public abstract class GameComponent : IDisposable {
         /// <summary>
+        /// Processing Order, higher order means drawn and updated first
+        /// </summary>
+        public double ProcessOrder = 0;
+        /// <summary>
         /// Gets fired when the GameComponent first gets added to the Component List
         /// </summary>
         public virtual void Initialize() {}

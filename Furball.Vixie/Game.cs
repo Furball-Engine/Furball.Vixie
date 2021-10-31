@@ -1,5 +1,6 @@
 ﻿using Kettu;
 using System;
+using System.Collections.Generic;
 using Furball.Vixie.Helpers;
 using Silk.NET.Core.Native;
 using Silk.NET.Maths;
@@ -20,7 +21,11 @@ namespace Furball.Vixie {
         /// <summary>
         /// Window Manager, handles everything Window Related, from Creation to the Window Projection Matrix
         /// </summary>
-        protected readonly WindowManager WindowManager;
+        public readonly WindowManager WindowManager;
+        /// <summary>
+        /// All of the Game Components
+        /// </summary>
+        protected GameComponentCollection Components;
 
         /// <summary>
         /// Creates a Game Window using `options`
@@ -42,6 +47,8 @@ namespace Furball.Vixie {
             this.WindowManager.GameWindow.Resize            += this.EngineWindowResize;
 
             Global.GameInstance = this;
+
+            this.Components = new GameComponentCollection();
         }
         /// <summary>
         /// Runs the Game
@@ -66,7 +73,7 @@ namespace Furball.Vixie {
             gl.Enable(GLEnum.DebugOutput);
             gl.Enable(GLEnum.DebugOutputSynchronous);
             gl.DebugMessageCallback(this.Callback, null);
-            
+
             //Enables Blending (Required for Transparent Objects)
             gl.Enable(EnableCap.Blend);
             gl.BlendFunc(GLEnum.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
@@ -138,21 +145,27 @@ namespace Furball.Vixie {
         /// <summary>
         /// Used to Initialize any Game Stuff before the Game Begins
         /// </summary>
-        protected abstract void Initialize();
+        protected virtual void Initialize() {}
         /// <summary>
         /// Update Method, Do your Updating work in here
         /// </summary>
         /// <param name="deltaTime">Delta Time</param>
-        protected abstract void Update(double deltaTime);
+        protected virtual void Update(double deltaTime) {
+            this.Components.Update(deltaTime);
+        }
         /// <summary>
         /// Draw Method, do your Drawing work in there
         /// </summary>
         /// <param name="deltaTime"></param>
-        protected abstract void Draw(double deltaTime);
+        protected virtual void Draw(double deltaTime) {
+            this.Components.Draw(deltaTime);
+        }
         /// <summary>
         /// Dispose any IDisposables and other things left to clean up here
         /// </summary>
-        public abstract void Dispose();
+        public virtual void Dispose() {
+            this.Components.Dispose();
+        }
         /// <summary>
         /// Gets fired when The Window is being closed
         /// </summary>

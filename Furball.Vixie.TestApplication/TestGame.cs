@@ -68,9 +68,9 @@ namespace Furball.Vixie.TestApplication {
             this._renderer = new Renderer();
 
             this._imGui = ImGuiCreator.CreateController();
-        }
 
-        protected override void Update(double deltaTime) {}
+            base.Initialize();
+        }
 
         protected override unsafe void Draw(double deltaTime) {
             this._renderer.Clear();
@@ -86,6 +86,8 @@ namespace Furball.Vixie.TestApplication {
                 SetUniform("u_Translation", UniformType.GlMat4f, Matrix4x4.CreateTranslation(new Vector3(400, 100, 0)));
 
             this._renderer.Draw(this._vertexBuffer, this._indexBuffer, this._shader);
+
+            base.Draw(deltaTime);
         }
 
         public override void Dispose() {
@@ -95,6 +97,8 @@ namespace Furball.Vixie.TestApplication {
             this._vertexArrayObject.Dispose();
             this._shader.Dispose();
             this._texture.Dispose();
+
+            base.Dispose();
         }
     }
 }
