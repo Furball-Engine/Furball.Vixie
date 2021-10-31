@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 
 namespace Furball.Vixie.Gl {

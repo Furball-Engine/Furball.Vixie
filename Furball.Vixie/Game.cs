@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Kettu;
+using System;
+using Furball.Vixie.Helpers;
 using Silk.NET.Core.Native;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
@@ -45,6 +47,10 @@ namespace Furball.Vixie {
         /// Runs the Game
         /// </summary>
         public void Run() {
+            Logger.AddLogger(new ConsoleLogger());
+            
+            Logger.StartLogging();
+            
             this.WindowManager.RunWindow();
         }
 
@@ -72,9 +78,25 @@ namespace Furball.Vixie {
         /// Debug Callback
         /// </summary>
         private void Callback(GLEnum source, GLEnum type, int id, GLEnum severity, int length, nint message, nint userparam) {
-            string messagea = SilkMarshal.PtrToString(message);
+            string stringMessage = SilkMarshal.PtrToString(message);
 
-            Console.WriteLine(messagea);
+            LoggerLevel level = null;
+            switch (severity) {
+                case GLEnum.DebugSeverityHigh:
+                    level = LoggerLevelDebugMessageCallback.InstanceHigh;
+                    break;
+                case GLEnum.DebugSeverityMedium:
+                    level = LoggerLevelDebugMessageCallback.InstanceMedium;
+                    break;
+                case GLEnum.DebugSeverityLow:
+                    level = LoggerLevelDebugMessageCallback.InstanceLow;
+                    break;
+                case GLEnum.DebugSeverityNotification:
+                    level = LoggerLevelDebugMessageCallback.InstanceNotification;
+                    break;
+            }
+             
+            Logger.Log($"{stringMessage}", level);
         }
         /// <summary>
         /// Gets Fired when the Window Gets Closed
