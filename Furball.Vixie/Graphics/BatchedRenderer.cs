@@ -38,7 +38,7 @@ namespace Furball.Vixie.Graphics {
         private uint[] _textureSlots;
 
         public unsafe BatchedRenderer() {
-            nuint vertexSize = (4 * sizeof(float)) + 1 * sizeof(int);
+            int vertexSize = (4 * sizeof(float)) + 1 * sizeof(int);
 
             this._vertexBuffer = new BufferObject(vertexSize * MAX_VERTICIES, BufferTargetARB.ArrayBuffer, BufferUsageARB.DynamicDraw);
 

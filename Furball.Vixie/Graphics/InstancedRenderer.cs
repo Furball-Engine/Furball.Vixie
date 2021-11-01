@@ -4,11 +4,11 @@ using Silk.NET.OpenGL;
 using Shader=Furball.Vixie.Gl.Shader;
 using UniformType=Furball.Vixie.Gl.UniformType;
 
-namespace Furball.Vixie {
-    public class Renderer {
+namespace Furball.Vixie.Graphics {
+    public class InstancedRenderer {
         private GL gl;
 
-        public Renderer() {
+        public InstancedRenderer() {
             this.gl = Global.Gl;
         }
 
@@ -19,12 +19,12 @@ namespace Furball.Vixie {
                 //vx_WindowProjectionMatrix is a uniform provided by Vixie which can optionally be used to scale things into the window
                 .SetUniform("vx_WindowProjectionMatrix", UniformType.GlMat4f, Global.GameInstance.WindowManager.ProjectionMatrix);
 
-            gl.DrawElements(PrimitiveType.Triangles, indexBuffer.DataCount, DrawElementsType.UnsignedInt, null);
+            this.gl.DrawElements(PrimitiveType.Triangles, indexBuffer.DataCount, DrawElementsType.UnsignedInt, null);
         }
 
         public void Clear() {
-            gl.ClearColor(Color.FromArgb(255, (int) (.45f * 255), (int) (.55f * 255), (int) (.60f * 255)));
-            gl.Clear(ClearBufferMask.ColorBufferBit);
+            this.gl.ClearColor(Color.FromArgb(255, (int) (.45f * 255), (int) (.55f * 255), (int) (.60f * 255)));
+            this.gl.Clear(ClearBufferMask.ColorBufferBit);
         }
     }
 }

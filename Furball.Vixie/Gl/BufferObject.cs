@@ -25,44 +25,73 @@ namespace Furball.Vixie.Gl {
         /// <summary>
         /// Amount of Data supplied in Constructor
         /// </summary>
-        public uint DataCount { get; internal set; }
+        public uint DataCount { get; set; }
         /// <summary>
-        /// Creates a Buffer Object of type `bufferType`
+        /// Creates a Empty buffer of size `size`
         /// </summary>
-        /// <param name="data">Data to put into the Buffer</param>
+        /// <param name="size">Size of the Buffer</param>
         /// <param name="bufferType">What kind of buffer is it?</param>
-        public unsafe BufferObject(nuint size, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StaticDraw) {
+        /// <param name="usage">How is this buffer going to be used?</param>
+        public unsafe BufferObject(int size, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StaticDraw) {
             gl                = Global.Gl;
             this._bufferType  = bufferType;
             this._bufferUsage = usage;
             //Generate Buffer
             this._bufferId = gl.GenBuffer();
-            //Select buffer, as we're going to put data there now
+            //Select buffer, as we're going to allocate memory in it
             gl.BindBuffer(this._bufferType, this._bufferId);
             //Allocate Memory
-            gl.BufferData(this._bufferType, size, null, this._bufferUsage);
+            gl.BufferData(this._bufferType, (nuint) size, null, this._bufferUsage);
         }
-
+        /// <summary>
+        /// Creates a Empty buffer
+        /// </summary>
+        /// <param name="bufferType">What kind of Buffer is it</param>
+        /// <param name="usage">How is this buffer going to be used?</param>
         public BufferObject(BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StaticDraw) {
             gl                = Global.Gl;
             this._bufferType  = bufferType;
             this._bufferUsage = usage;
             //Generate Buffer
             this._bufferId = gl.GenBuffer();
-            //Select buffer, as we're going to put data there now
-            gl.BindBuffer(this._bufferType, this._bufferId);
         }
-
+        /// <summary>
+        /// Puts data into the Buffer
+        /// </summary>
+        /// <param name="data">Data to put there</param>
+        /// <param name="size">Size of the Data</param>
+        /// <returns></returns>
         public unsafe BufferObject SetData(void* data, nuint size) {
             gl.BufferData(this._bufferType, size, data, this._bufferUsage);
 
             return this;
         }
+        /// <summary>
+        /// Puts data into the buffer in a easier way
+        /// </summary>
+        /// <param name="data">Data to put</param>
+        /// <typeparam name="pDataType">Type of data to put</typeparam>
+        /// <returns>Self, used for chaining Methods</returns>
+        public unsafe BufferObject SetData<pDataType>(Span<pDataType> data) where pDataType : unmanaged {
+            fixed (void* d = data) {
+                this.SetData(d, (nuint)(data.Length * sizeof(pDataType)));
+            }
 
+            return this;
+        }
+        /// <summary>
+        /// Creates a BufferObject with the old constructor
+        /// </summary>
+        /// <param name="data">Data</param>
+        /// <param name="bufferType">What type of buffer is it?</param>
+        /// <param name="usage">How is this buffer going to be used?</param>
+        /// <typeparam name="pDataType">Type of Data to initially store</typeparam>
+        /// <returns>Self, used for chaining Methods</returns>
         public static unsafe BufferObject CreateNew<pDataType>(Span<pDataType> data, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StaticDraw)
             where pDataType : unmanaged
         {
             BufferObject bufferObject = new BufferObject(bufferType, usage);
+            bufferObject.Bind();
 
             fixed (void* d = data) {
                 bufferObject.SetData(d, (nuint)(data.Length * sizeof(pDataType)));
@@ -82,7 +111,10 @@ namespace Furball.Vixie.Gl {
 
             return this;
         }
-
+        /// <summary>
+        /// Unbinds any bound Buffer
+        /// </summary>
+        /// <returns>Self, used for chaining Methods</returns>
         public BufferObject Unbind() {
             gl.BindBuffer(this._bufferType, 0);
 
