@@ -46,6 +46,8 @@ namespace Furball.Vixie.Graphics {
 
             this._vertexArray = new VertexArrayObject();
             this._vertexArray.Bind().AddBuffer(this._vertexBuffer, layout);
+
+            this.ChangeShader(this._shader);
         }
 
         public unsafe void Draw(BufferObject vertexBuffer, BufferObject indexBuffer, Shader shader) {
@@ -63,17 +65,27 @@ namespace Furball.Vixie.Graphics {
             this._indexBuffer.Bind();
             this._vertexArray.Bind();
             this._indexBuffer.Bind();
+            this._currentShader.Bind();
         }
 
         public void End() {
 
         }
 
-        public unsafe void Draw(Texture texture, Vector2 position, Vector2? size = null, Color? colorOverride = null, Shader customShader = null) {
-            //Initialize defaults
+        private Shader _currentShader;
+
+        public void ChangeShader(Shader shader) {
+            this._currentShader = shader;
+
+            this._currentShader
+                .Bind()
+                .SetUniform("vx_WindowProjectionMatrix", UniformType.GlMat4f, Global.GameInstance.WindowManager.ProjectionMatrix);
+        }
+
+        public unsafe void Draw(Texture texture, Vector2 position, Vector2? size = null, Color? colorOverride = null) {
+                //Initialize defaults
             colorOverride ??= Color.White;
             size          ??= texture.Size;
-            customShader  ??= this._shader;
 
             float[] verticies = new float[] {
                 /* Vertex Coordinates */  0,             size.Value.Y,  /* Texture Coordinates */  0.0f, 0.0f,  /* Color */  colorOverride.Value.R, colorOverride.Value.G, colorOverride.Value.B, colorOverride.Value.A, //Bottom Left corner
@@ -85,9 +97,7 @@ namespace Furball.Vixie.Graphics {
             this._vertexBuffer.SetData<float>(verticies);
             texture.Bind();
 
-            customShader
-                .Bind()
-                .SetUniform("vx_WindowProjectionMatrix", UniformType.GlMat4f, Global.GameInstance.WindowManager.ProjectionMatrix)
+            this._currentShader
                 .SetUniform("u_Translation",             UniformType.GlMat4f, Matrix4x4.CreateTranslation(position.X, position.Y, 0));
 
             gl.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, null);

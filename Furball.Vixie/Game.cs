@@ -69,9 +69,9 @@ namespace Furball.Vixie {
             this.gl   = Global.Gl;
 
             //Enables Debugging
-            gl.Enable(GLEnum.DebugOutput);
-            gl.Enable(GLEnum.DebugOutputSynchronous);
-            gl.DebugMessageCallback(this.Callback, null);
+            //gl.Enable(GLEnum.DebugOutput);
+            //gl.Enable(GLEnum.DebugOutputSynchronous);
+            //gl.DebugMessageCallback(this.Callback, null);
 
             //Enables Blending (Required for Transparent Objects)
             gl.Enable(EnableCap.Blend);
