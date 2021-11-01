@@ -3,17 +3,15 @@ using System.Runtime.InteropServices;
 using Furball.Vixie.Gl;
 using Furball.Vixie.Helpers;
 using Silk.NET.OpenGL;
-using SixLabors.ImageSharp;
 using Shader=Furball.Vixie.Gl.Shader;
 using Texture=Furball.Vixie.Gl.Texture;
 using UniformType=Furball.Vixie.Gl.UniformType;
 
 namespace Furball.Vixie.Graphics {
     [StructLayout(LayoutKind.Sequential)]
-    public struct TexturedColoredQuadVertex {
+    public struct BatchedVertex {
         public Vector2 Position;
         public Vector2 TexCoord;
-        public Vector4 Color;
         public float   TexIndex;
     }
 
@@ -21,11 +19,11 @@ namespace Furball.Vixie.Graphics {
         /// <summary>
         /// How many Quads are allowed to be drawn in 1 draw
         /// </summary>
-        public const int MAX_QUADS     = 64;
+        public const int MAX_QUADS     = 1024;
         /// <summary>
         /// How many Verticies are gonna be stored inside the Vertex Buffer
         /// </summary>
-        public const int MAX_VERTICIES = MAX_QUADS * 4;
+        public const int MAX_VERTICIES = MAX_QUADS * 20;
         /// <summary>
         /// How many Indicies are gonna be stored inside the Index Buffer
         /// </summary>
@@ -58,7 +56,7 @@ namespace Furball.Vixie.Graphics {
         /// <summary>
         /// Local Vertex Buffer
         /// </summary>
-        private TexturedColoredQuadVertex[] _localVertexBuffer;
+        private float[] _localVertexBuffer;
 
         public int QuadsDrawn = 0;
         public int DrawCalls  = 0;
@@ -102,10 +100,10 @@ namespace Furball.Vixie.Graphics {
                 this._textureSlots[i] = 0;
             }
 
-            this._localVertexBuffer = new TexturedColoredQuadVertex[MAX_VERTICIES];
+            this._localVertexBuffer = new float[MAX_VERTICIES];
 
-            string vertSource = ResourceHelpers.GetStringResource("ShaderCode/BatchRendererVertexShader.glsl", true);
-            string fragSource = ResourceHelpers.GetStringResource("ShaderCode/BatchRendererPixelShader.glsl", true);
+            string vertSource = ResourceHelpers.GetStringResource("ShaderCode/BatchRenderer/BatchRendererVertexShader.glsl", true);
+            string fragSource = ResourceHelpers.GetStringResource("ShaderCode/BatchRenderer/BatchRendererPixelShader.glsl", true);
 
             this._batchShader =
                 new Shader()
@@ -153,31 +151,29 @@ namespace Furball.Vixie.Graphics {
                 this._textureSlotIndex++;
             }
 
+            this._localVertexBuffer[this._vertexBufferIndex++] = position.X;
+            this._localVertexBuffer[this._vertexBufferIndex++] = position.Y + size.Y;
+            this._localVertexBuffer[this._vertexBufferIndex++] = 0f;
+            this._localVertexBuffer[this._vertexBufferIndex++] = 0f;
+            this._localVertexBuffer[this._vertexBufferIndex++] = textureIndex;
 
+            this._localVertexBuffer[this._vertexBufferIndex++] = position.X + size.X;
+            this._localVertexBuffer[this._vertexBufferIndex++] = position.Y + size.Y;
+            this._localVertexBuffer[this._vertexBufferIndex++] = 1f;
+            this._localVertexBuffer[this._vertexBufferIndex++] = 0f;
+            this._localVertexBuffer[this._vertexBufferIndex++] = textureIndex;
 
-            this._localVertexBuffer[this._vertexBufferIndex].Position.X = position.X;
-            this._localVertexBuffer[this._vertexBufferIndex].Position.Y = position.Y + size.Y;
-            this._localVertexBuffer[this._vertexBufferIndex].TexCoord.X = 0f;
-            this._localVertexBuffer[this._vertexBufferIndex].TexCoord.Y = 0f;
-            this._localVertexBuffer[this._vertexBufferIndex++].TexIndex   = textureIndex;
+            this._localVertexBuffer[this._vertexBufferIndex++] = position.X + size.X;
+            this._localVertexBuffer[this._vertexBufferIndex++] = position.Y;
+            this._localVertexBuffer[this._vertexBufferIndex++] = 1f;
+            this._localVertexBuffer[this._vertexBufferIndex++] = 1f;
+            this._localVertexBuffer[this._vertexBufferIndex++] = textureIndex;
 
-            this._localVertexBuffer[this._vertexBufferIndex].Position.X = position.X + size.X;
-            this._localVertexBuffer[this._vertexBufferIndex].Position.Y = position.Y + size.Y;
-            this._localVertexBuffer[this._vertexBufferIndex].TexCoord.X = 1f;
-            this._localVertexBuffer[this._vertexBufferIndex].TexCoord.Y = 0f;
-            this._localVertexBuffer[this._vertexBufferIndex++].TexIndex   = textureIndex;
-
-            this._localVertexBuffer[this._vertexBufferIndex].Position.X = position.X + size.X;
-            this._localVertexBuffer[this._vertexBufferIndex].Position.Y = position.Y;
-            this._localVertexBuffer[this._vertexBufferIndex].TexCoord.X = 1f;
-            this._localVertexBuffer[this._vertexBufferIndex].TexCoord.Y = 1f;
-            this._localVertexBuffer[this._vertexBufferIndex++].TexIndex   = textureIndex;
-
-            this._localVertexBuffer[this._vertexBufferIndex].Position.X = position.X;
-            this._localVertexBuffer[this._vertexBufferIndex].Position.Y = position.Y;
-            this._localVertexBuffer[this._vertexBufferIndex].TexCoord.X = 0f;
-            this._localVertexBuffer[this._vertexBufferIndex].TexCoord.Y = 1f;
-            this._localVertexBuffer[this._vertexBufferIndex++].TexIndex   = textureIndex;
+            this._localVertexBuffer[this._vertexBufferIndex++] = position.X;
+            this._localVertexBuffer[this._vertexBufferIndex++] = position.Y;
+            this._localVertexBuffer[this._vertexBufferIndex++] = 0f;
+            this._localVertexBuffer[this._vertexBufferIndex++] = 1f;
+            this._localVertexBuffer[this._vertexBufferIndex++] = textureIndex;
 
             this._indexCount += 6;
             this.QuadsDrawn++;

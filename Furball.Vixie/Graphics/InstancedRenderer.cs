@@ -41,8 +41,7 @@ namespace Furball.Vixie.Graphics {
             VertexBufferLayout layout =
                 new VertexBufferLayout()
                     .AddElement<float>(2)
-                    .AddElement<float>(2)
-                    .AddElement<float>(4, true);
+                    .AddElement<float>(2);
 
             this._vertexArray = new VertexArrayObject();
             this._vertexArray.Bind().AddBuffer(this._vertexBuffer, layout);
@@ -82,23 +81,19 @@ namespace Furball.Vixie.Graphics {
                 .SetUniform("vx_WindowProjectionMatrix", UniformType.GlMat4f, Global.GameInstance.WindowManager.ProjectionMatrix);
         }
 
-        public unsafe void Draw(Texture texture, Vector2 position, Vector2? size = null, Color? colorOverride = null) {
-                //Initialize defaults
-            colorOverride ??= Color.White;
-            size          ??= texture.Size;
+        private float[] _verticies;
 
-            float[] verticies = new float[] {
-                /* Vertex Coordinates */  0,             size.Value.Y,  /* Texture Coordinates */  0.0f, 0.0f,  /* Color */  colorOverride.Value.R, colorOverride.Value.G, colorOverride.Value.B, colorOverride.Value.A, //Bottom Left corner
-                /* Vertex Coordinates */  size.Value.X,  size.Value.Y,  /* Texture Coordinates */  1.0f, 0.0f,  /* Color */  colorOverride.Value.R, colorOverride.Value.G, colorOverride.Value.B, colorOverride.Value.A, //Bottom Right corner
-                /* Vertex Coordinates */  size.Value.X,  0f,            /* Texture Coordinates */  1.0f, 1.0f,  /* Color */  colorOverride.Value.R, colorOverride.Value.G, colorOverride.Value.B, colorOverride.Value.A, //Top Right Corner
-                /* Vertex Coordinates */  0,             0f,            /* Texture Coordinates */  0.0f, 1.0f,  /* Color */  colorOverride.Value.R, colorOverride.Value.G, colorOverride.Value.B, colorOverride.Value.A, //Top Left Corner
+        public unsafe void Draw(Texture texture, Vector2 position, Vector2? size = null, Color? colorOverride = null) {
+            _verticies = new float[] {
+                /* Vertex Coordinates */  position.X,                   position.Y + texture.Size.Y,  /* Texture Coordinates */  0.0f, 0.0f,  //Bottom Left corner
+                /* Vertex Coordinates */  position.X + texture.Size.X,  position.Y + texture.Size.Y,  /* Texture Coordinates */  1.0f, 0.0f,  //Bottom Right corner
+                /* Vertex Coordinates */  position.X + texture.Size.X,  position.Y,                   /* Texture Coordinates */  1.0f, 1.0f,  //Top Right Corner
+                /* Vertex Coordinates */  position.X,                   position.Y,                   /* Texture Coordinates */  0.0f, 1.0f,  //Top Left Corner
             };
 
-            this._vertexBuffer.SetData<float>(verticies);
-            texture.Bind();
 
-            this._currentShader
-                .SetUniform("u_Translation",             UniformType.GlMat4f, Matrix4x4.CreateTranslation(position.X, position.Y, 0));
+            this._vertexBuffer.SetData<float>(_verticies);
+            texture.Bind();
 
             gl.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, null);
         }
