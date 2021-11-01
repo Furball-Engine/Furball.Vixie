@@ -23,7 +23,7 @@ namespace Furball.Vixie.Gl {
         /// </summary>
         /// <param name="vertexBuffer">Vertex Buffer to add</param>
         /// <param name="layout">Layout of said Vertex Buffer</param>
-        public unsafe void AddBuffer(BufferObject vertexBuffer, VertexBufferLayout layout) {
+        public unsafe VertexArrayObject AddBuffer(BufferObject vertexBuffer, VertexBufferLayout layout) {
             //Bind both this and the Vertex Buffer
             this.Bind();
             vertexBuffer.Bind();
@@ -40,18 +40,24 @@ namespace Furball.Vixie.Gl {
 
                 offset += (uint) currentElement.Count * LayoutElement.GetSizeOfType(currentElement.Type);
             }
+
+            return this;
         }
         /// <summary>
         /// Binds or Selects this current Vertex Array
         /// </summary>
-        public void Bind() {
+        public VertexArrayObject Bind() {
             gl.BindVertexArray(this._arrayId);
+
+            return this;
         }
         /// <summary>
         /// Unbinds all Vertex Arrays
         /// </summary>
-        public void Unbind() {
+        public VertexArrayObject Unbind() {
             gl.BindVertexArray(0);
+
+            return this;
         }
         /// <summary>
         /// Disposes this Vertex Array

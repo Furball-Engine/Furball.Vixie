@@ -3,15 +3,17 @@ using System.Runtime.InteropServices;
 using Furball.Vixie.Gl;
 using Furball.Vixie.Helpers;
 using Silk.NET.OpenGL;
+using SixLabors.ImageSharp;
 using Shader=Furball.Vixie.Gl.Shader;
 using Texture=Furball.Vixie.Gl.Texture;
 using UniformType=Furball.Vixie.Gl.UniformType;
 
 namespace Furball.Vixie.Graphics {
     [StructLayout(LayoutKind.Sequential)]
-    public struct BatchedVertex {
+    public struct TexturedColoredQuadVertex {
         public Vector2 Position;
         public Vector2 TexCoord;
+        public Vector4 Color;
         public float   TexIndex;
     }
 
@@ -56,7 +58,7 @@ namespace Furball.Vixie.Graphics {
         /// <summary>
         /// Local Vertex Buffer
         /// </summary>
-        private BatchedVertex[] _localVertexBuffer;
+        private TexturedColoredQuadVertex[] _localVertexBuffer;
 
         public int QuadsDrawn = 0;
         public int DrawCalls  = 0;
@@ -100,7 +102,7 @@ namespace Furball.Vixie.Graphics {
                 this._textureSlots[i] = 0;
             }
 
-            this._localVertexBuffer = new BatchedVertex[MAX_VERTICIES];
+            this._localVertexBuffer = new TexturedColoredQuadVertex[MAX_VERTICIES];
 
             string vertSource = ResourceHelpers.GetStringResource("ShaderCode/BatchRendererVertexShader.glsl", true);
             string fragSource = ResourceHelpers.GetStringResource("ShaderCode/BatchRendererPixelShader.glsl", true);

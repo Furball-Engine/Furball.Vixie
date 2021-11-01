@@ -33,6 +33,11 @@ namespace Furball.Vixie.TestApplication {
                 this.BaseGame.Components.Remove(this);
             }
 
+            if (ImGui.Button("Instanced Rendering Test")) {
+                this.BaseGame.Components.Add(new TestInstancedRendering(this.BaseGame));
+                this.BaseGame.Components.Remove(this);
+            }
+
             this._imGuiController.Render();
 
             base.Draw(deltaTime);

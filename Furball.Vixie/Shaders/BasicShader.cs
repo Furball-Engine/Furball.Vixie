@@ -8,8 +8,8 @@ namespace Furball.Vixie.Shaders {
     /// </summary>
     public class BasicShader : Shader {
         public BasicShader() : base() {
-            string vertexSource = ResourceHelpers.GetStringResource("ShaderCode/BasicVertexShader.glsl", true);
-            string fragmentSource = ResourceHelpers.GetStringResource("ShaderCode/BasicPixelShader.glsl", true);
+            string vertexSource = ResourceHelpers.GetStringResource("ShaderCode/BasicShader/BasicVertexShader.glsl", true);
+            string fragmentSource = ResourceHelpers.GetStringResource("ShaderCode/BasicShader/BasicPixelShader.glsl", true);
 
             this.AttachShader(ShaderType.VertexShader,   vertexSource)
                 .AttachShader(ShaderType.FragmentShader, fragmentSource)

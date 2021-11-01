@@ -32,7 +32,7 @@ namespace Furball.Vixie.Gl {
         /// <param name="size">Size of the Buffer</param>
         /// <param name="bufferType">What kind of buffer is it?</param>
         /// <param name="usage">How is this buffer going to be used?</param>
-        public unsafe BufferObject(int size, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StaticDraw) {
+        public unsafe BufferObject(int size, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StreamDraw) {
             gl                = Global.Gl;
             this._bufferType  = bufferType;
             this._bufferUsage = usage;
@@ -48,7 +48,7 @@ namespace Furball.Vixie.Gl {
         /// </summary>
         /// <param name="bufferType">What kind of Buffer is it</param>
         /// <param name="usage">How is this buffer going to be used?</param>
-        public BufferObject(BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StaticDraw) {
+        public BufferObject(BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StreamDraw) {
             gl                = Global.Gl;
             this._bufferType  = bufferType;
             this._bufferUsage = usage;
@@ -94,7 +94,7 @@ namespace Furball.Vixie.Gl {
         /// <param name="usage">How is this buffer going to be used?</param>
         /// <typeparam name="pDataType">Type of Data to initially store</typeparam>
         /// <returns>Self, used for chaining Methods</returns>
-        public static unsafe BufferObject CreateNew<pDataType>(Span<pDataType> data, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StaticDraw)
+        public static unsafe BufferObject CreateNew<pDataType>(Span<pDataType> data, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StreamDraw)
             where pDataType : unmanaged
         {
             BufferObject bufferObject = new BufferObject(bufferType, usage);

@@ -94,8 +94,11 @@ namespace Furball.Vixie {
                 GLEnum.DebugSeverityNotification => LoggerLevelDebugMessageCallback.InstanceNotification,
                 _                                => null
             };
+            //before u say something beyley, i commented this out cuz it was crashing
+            //smth about array not being able to fit somewhere which i went like ???????????? what fuckin array
+            //Logger.Log($"{stringMessage}", level);
 
-            Logger.Log($"{stringMessage}", level);
+            Console.WriteLine(stringMessage);
         }
         /// <summary>
         /// Gets Fired when the Window Gets Closed

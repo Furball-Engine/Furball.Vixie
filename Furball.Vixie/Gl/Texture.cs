@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using Silk.NET.OpenGL;
 using SixLabors.ImageSharp;
@@ -20,6 +21,10 @@ namespace Furball.Vixie.Gl {
         /// Local Image, possibly useful to Sample on the CPU Side if necessary
         /// </summary>
         private Image<Rgba32> _localBuffer;
+        /// <summary>
+        /// Size of the Texture
+        /// </summary>
+        public Vector2 Size { get; private set; }
 
         /// <summary>
         /// Creates a Texture from a File
@@ -35,9 +40,14 @@ namespace Furball.Vixie.Gl {
 
             this._localBuffer = image;
 
+            int width = image.Width;
+            int height = image.Height;
+
             fixed (void* data = &MemoryMarshal.GetReference(image.GetPixelRowSpan(0))) {
-                this.Load(data, image.Width, image.Height);
+                this.Load(data, width, height);
             }
+
+            this.Size = new Vector2(width, height);
         }
         /// <summary>
         /// Creates a Texture from a byte array which contains Image Data
@@ -53,9 +63,14 @@ namespace Furball.Vixie.Gl {
 
             this._localBuffer = image;
 
+            int width = image.Width;
+            int height = image.Height;
+
             fixed (void* data = &MemoryMarshal.GetReference(image.GetPixelRowSpan(0))) {
-                this.Load(data, image.Width, image.Height);
+                this.Load(data, width, height);
             }
+
+            this.Size = new Vector2(width, height);
         }
 
         public unsafe Texture() {
@@ -75,6 +90,8 @@ namespace Furball.Vixie.Gl {
             gl.TexImage2D(GLEnum.Texture2D, 0, InternalFormat.Rgba8, 1, 1, 0, PixelFormat.Rgba, PixelType.UnsignedByte, &color);
             //Unbind as we have finished
             gl.BindTexture(TextureTarget.Texture2D, 0);
+
+            this.Size = new Vector2(1, 1);
         }
         /// <summary>
         /// Creates a Texture from a Stream which Contains Image Data
@@ -90,9 +107,14 @@ namespace Furball.Vixie.Gl {
 
             this._localBuffer = image;
 
+            int width = image.Width;
+            int height = image.Height;
+
             fixed (void* data = &MemoryMarshal.GetReference(image.GetPixelRowSpan(0))) {
-                this.Load(data, image.Width, image.Height);
+                this.Load(data, width, height);
             }
+
+            this.Size = new Vector2(width, height);
         }
         /// <summary>
         /// Generates the Texture on the GPU, Sets Parameters and Uploads the Image Data
