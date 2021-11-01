@@ -15,18 +15,18 @@ namespace Furball.Vixie.TestApplication.Tests {
     public class TestTextureDrawing : GameComponent {
         private Renderer _instancedRenderer;
 
-        private BufferObject<float> _vertexBuffer;
-        private BufferObject<uint>  _indexBuffer;
+        private BufferObject _vertexBuffer;
+        private BufferObject  _indexBuffer;
         private BasicTexturedShader _shader;
         private Texture             _texture;
 
-        private VertexArrayObject<float> _vertexArrayObject;
+        private VertexArrayObject _vertexArrayObject;
 
         private ImGuiController _imGuiController;
 
         public TestTextureDrawing(Game game) : base(game) {}
 
-        public override void Initialize() {
+        public unsafe override void Initialize() {
             this._instancedRenderer = new Renderer();
 
             //pippidonclear0.png is 371x326 pixels
@@ -49,8 +49,8 @@ namespace Furball.Vixie.TestApplication.Tests {
             };
 
             //Initialize all the buffers and the Textured Shader
-            this._vertexBuffer = new BufferObject<float>(verticies, BufferTargetARB.ArrayBuffer);
-            this._indexBuffer  = new BufferObject<uint>(indicies, BufferTargetARB.ElementArrayBuffer);
+            this._vertexBuffer = BufferObject.CreateNew<float>(verticies, BufferTargetARB.ArrayBuffer);
+            this._indexBuffer  = BufferObject.CreateNew<uint>(indicies, BufferTargetARB.ElementArrayBuffer);
             this._shader       = new BasicTexturedShader();
 
             VertexBufferLayout layout = new VertexBufferLayout();
@@ -59,7 +59,7 @@ namespace Furball.Vixie.TestApplication.Tests {
                 .AddElement<float>(2)   //Vertex Positions
                 .AddElement<float>(2);  //Texture Coordinates
 
-            this._vertexArrayObject = new VertexArrayObject<float>();
+            this._vertexArrayObject = new VertexArrayObject();
             this._vertexArrayObject.AddBuffer(this._vertexBuffer, layout);
 
             //Load the Texture

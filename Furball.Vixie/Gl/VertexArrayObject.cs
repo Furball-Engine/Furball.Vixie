@@ -2,8 +2,7 @@ using System;
 using Silk.NET.OpenGL;
 
 namespace Furball.Vixie.Gl {
-    public class VertexArrayObject<pVertexType> : IDisposable
-        where pVertexType : unmanaged
+    public class VertexArrayObject : IDisposable
     {
         /// <summary>
         /// OpenGL Api, used to not have to write Global.GL.function everytime
@@ -24,7 +23,7 @@ namespace Furball.Vixie.Gl {
         /// </summary>
         /// <param name="vertexBuffer">Vertex Buffer to add</param>
         /// <param name="layout">Layout of said Vertex Buffer</param>
-        public unsafe void AddBuffer(BufferObject<pVertexType> vertexBuffer, VertexBufferLayout layout) {
+        public unsafe void AddBuffer(BufferObject vertexBuffer, VertexBufferLayout layout) {
             //Bind both this and the Vertex Buffer
             this.Bind();
             vertexBuffer.Bind();

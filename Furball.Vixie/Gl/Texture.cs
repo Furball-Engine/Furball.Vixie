@@ -57,6 +57,25 @@ namespace Furball.Vixie.Gl {
                 this.Load(data, image.Width, image.Height);
             }
         }
+
+        public unsafe Texture() {
+            this.gl = Global.Gl;
+
+            this._textureId = gl.GenTexture();
+            //Bind as we will be working on the Texture
+            gl.BindTexture(TextureTarget.Texture2D, this._textureId);
+            //Apply Linear filtering, and make Image wrap around and repeat
+            gl.TexParameter(GLEnum.Texture2D, TextureParameterName.TextureMinFilter, (int) GLEnum.Linear);
+            gl.TexParameter(GLEnum.Texture2D, TextureParameterName.TextureMagFilter, (int) GLEnum.Linear);
+            gl.TexParameter(TextureTarget.Texture2D, GLEnum.TextureWrapS, (int) GLEnum.Repeat);
+            gl.TexParameter(TextureTarget.Texture2D, GLEnum.TextureWrapT, (int) GLEnum.Repeat);
+            //White color
+            uint color = 0xffffffff;
+            //Upload Image Data
+            gl.TexImage2D(GLEnum.Texture2D, 0, InternalFormat.Rgba8, 1, 1, 0, PixelFormat.Rgba, PixelType.UnsignedByte, &color);
+            //Unbind as we have finished
+            gl.BindTexture(TextureTarget.Texture2D, 0);
+        }
         /// <summary>
         /// Creates a Texture from a Stream which Contains Image Data
         /// </summary>

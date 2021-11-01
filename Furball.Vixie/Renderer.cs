@@ -12,7 +12,7 @@ namespace Furball.Vixie {
             this.gl = Global.Gl;
         }
 
-        public unsafe void Draw(BufferObject<float> vertexBuffer, BufferObject<uint> indexBuffer, Shader shader) {
+        public unsafe void Draw(BufferObject vertexBuffer, BufferObject indexBuffer, Shader shader) {
             vertexBuffer.Bind();
             indexBuffer.Bind();
             shader.Bind()
