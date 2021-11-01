@@ -4,13 +4,14 @@ using Furball.Vixie.Helpers;
 using Silk.NET.OpenGL;
 using Shader=Furball.Vixie.Gl.Shader;
 using Texture=Furball.Vixie.Gl.Texture;
+using UniformType=Furball.Vixie.Gl.UniformType;
 
 namespace Furball.Vixie.Graphics {
     public class BatchedRenderer {
         /// <summary>
         /// How many Quads are allowed to be drawn in 1 draw
         /// </summary>
-        public const int MAX_QUADS     = 2048;
+        public const int MAX_QUADS     = 512;
         /// <summary>
         /// How many Verticies are gonna be stored inside the Vertex Buffer
         /// </summary>
@@ -78,6 +79,7 @@ namespace Furball.Vixie.Graphics {
             this._indexBuffer = new BufferObject(BufferTargetARB.ElementArrayBuffer);
 
             fixed (void* data = indicies) {
+                this._indexBuffer.Bind();
                 this._indexBuffer.SetData(data, MAX_INDICIES * sizeof(uint));
             }
 
@@ -138,24 +140,28 @@ namespace Furball.Vixie.Graphics {
             }
 
             this._localVertexBuffer[this._vertexBufferIndex++] = position.X;
-            this._localVertexBuffer[this._vertexBufferIndex++] = position.Y;
+            this._localVertexBuffer[this._vertexBufferIndex++] = position.Y + size.Y;
             this._localVertexBuffer[this._vertexBufferIndex++] = 0f;
-            this._localVertexBuffer[this._vertexBufferIndex++] = 0f;
-
-            this._localVertexBuffer[this._vertexBufferIndex++] = position.X + size.X;
-            this._localVertexBuffer[this._vertexBufferIndex++] = position.Y;
             this._localVertexBuffer[this._vertexBufferIndex++] = 1f;
-            this._localVertexBuffer[this._vertexBufferIndex++] = 0f;
+            this._localVertexBuffer[this._vertexBufferIndex++] = textureIndex;
 
             this._localVertexBuffer[this._vertexBufferIndex++] = position.X + size.X;
             this._localVertexBuffer[this._vertexBufferIndex++] = position.Y + size.Y;
             this._localVertexBuffer[this._vertexBufferIndex++] = 1f;
             this._localVertexBuffer[this._vertexBufferIndex++] = 1f;
+            this._localVertexBuffer[this._vertexBufferIndex++] = textureIndex;
+
+            this._localVertexBuffer[this._vertexBufferIndex++] = position.X + size.X;
+            this._localVertexBuffer[this._vertexBufferIndex++] = position.Y;
+            this._localVertexBuffer[this._vertexBufferIndex++] = 1f;
+            this._localVertexBuffer[this._vertexBufferIndex++] = 0f;
+            this._localVertexBuffer[this._vertexBufferIndex++] = textureIndex;
 
             this._localVertexBuffer[this._vertexBufferIndex++] = position.X;
-            this._localVertexBuffer[this._vertexBufferIndex++] = position.Y + size.Y;
+            this._localVertexBuffer[this._vertexBufferIndex++] = position.Y;
             this._localVertexBuffer[this._vertexBufferIndex++] = 0f;
-            this._localVertexBuffer[this._vertexBufferIndex++] = 1f;
+            this._localVertexBuffer[this._vertexBufferIndex++] = 0f;
+            this._localVertexBuffer[this._vertexBufferIndex++] = textureIndex;
 
             this._indexCount += 6;
         }
@@ -164,7 +170,6 @@ namespace Furball.Vixie.Graphics {
             nuint size = (nuint) (this._localVertexBuffer.Length - this._vertexBufferIndex);
 
             fixed (void* data = this._localVertexBuffer) {
-
                 this._vertexBuffer
                     .Bind()
                     .SetSubData(data, size);
@@ -173,7 +178,9 @@ namespace Furball.Vixie.Graphics {
             this._vertexArray.Bind();
             this._vertexBuffer.Bind();
             this._indexBuffer.Bind();
-            this._batchShader.Bind();
+            this._batchShader
+                .Bind()
+                .SetUniform("vx_WindowProjectionMatrix", UniformType.GlMat4f, Global.GameInstance.WindowManager.ProjectionMatrix);
 
             Global.Gl.DrawElements(PrimitiveType.Triangles, (uint) this._indexCount, DrawElementsType.UnsignedInt, null);
         }

@@ -42,7 +42,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._texture.Bind();
 
             this._batchedRenderer.Begin();
-            this._batchedRenderer.Draw(this._texture, new Vector2(100, 100), new Vector2(100, 100));
+            this._batchedRenderer.Draw(this._texture, new Vector2(0, 0), new Vector2(371, 326));
             this._batchedRenderer.End();
 
             #region ImGui menu
