@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Runtime.InteropServices;
 using Furball.Vixie.Gl;
 using Furball.Vixie.Helpers;
 using Silk.NET.OpenGL;
@@ -7,15 +8,22 @@ using Texture=Furball.Vixie.Gl.Texture;
 using UniformType=Furball.Vixie.Gl.UniformType;
 
 namespace Furball.Vixie.Graphics {
+    [StructLayout(LayoutKind.Sequential)]
+    public struct BatchedVertex {
+        public Vector2 Position;
+        public Vector2 TexCoord;
+        public float   TexIndex;
+    }
+
     public class BatchedRenderer {
         /// <summary>
         /// How many Quads are allowed to be drawn in 1 draw
         /// </summary>
-        public const int MAX_QUADS     = 512;
+        public const int MAX_QUADS     = 64;
         /// <summary>
         /// How many Verticies are gonna be stored inside the Vertex Buffer
         /// </summary>
-        public const int MAX_VERTICIES = MAX_QUADS * 4;
+        public const int MAX_VERTICIES = MAX_QUADS * 20;
         /// <summary>
         /// How many Indicies are gonna be stored inside the Index Buffer
         /// </summary>
@@ -23,7 +31,7 @@ namespace Furball.Vixie.Graphics {
         /// <summary>
         /// Max amount of Texture Slots, 16 to support a bit older GPUs
         /// </summary>
-        public const int MAX_TEX_SLOTS = 16;
+        public const int MAX_TEX_SLOTS = 32;
 
         /// <summary>
         /// Vertex Array that holds the Index and Vertex Buffers
@@ -49,6 +57,9 @@ namespace Furball.Vixie.Graphics {
         /// Local Vertex Buffer
         /// </summary>
         private float[] _localVertexBuffer;
+
+        public int QuadsDrawn = 0;
+        public int DrawCalls  = 0;
 
         public unsafe BatchedRenderer() {
             int vertexSize = (4 * sizeof(float)) + 1 * sizeof(int);
@@ -108,18 +119,18 @@ namespace Furball.Vixie.Graphics {
         private int _textureSlotIndex  = 0;
         private int _vertexBufferIndex = 0;
 
-        public void Begin() {
-            this._indexCount        = 0;
-            this._textureSlotIndex  = 0;
-            this._vertexBufferIndex = 0;
-
-            Global.Gl.Clear(ClearBufferMask.ColorBufferBit);
+        public void Begin(bool clear = true) {
+            if (clear) {
+                Global.Gl.Clear(ClearBufferMask.ColorBufferBit);
+                this.DrawCalls  = 0;
+                this.QuadsDrawn = 0;
+            }
         }
 
         public void Draw(Texture texture, Vector2 position, Vector2 size) {
             if (this._indexCount >= MAX_INDICIES || this._textureSlotIndex >= MAX_TEX_SLOTS - 1) {
                 this.End();
-                this.Begin();
+                this.Begin(false);
             }
 
             float textureIndex = -1f;
@@ -134,7 +145,8 @@ namespace Furball.Vixie.Graphics {
             }
 
             if (textureIndex == -1f) {
-                textureIndex = this._textureSlotIndex;
+                textureIndex                               = this._textureSlotIndex;
+                this._textureSlots[this._textureSlotIndex] = texture.GetTextureId();
 
                 this._textureSlotIndex++;
             }
@@ -164,9 +176,13 @@ namespace Furball.Vixie.Graphics {
             this._localVertexBuffer[this._vertexBufferIndex++] = textureIndex;
 
             this._indexCount += 6;
+            this.QuadsDrawn++;
         }
 
         public unsafe void End() {
+            for(uint i = 0; i != this._textureSlotIndex; i++)
+                Global.Gl.BindTextureUnit(i, this._textureSlots[i]);
+
             nuint size = (nuint) (this._localVertexBuffer.Length - this._vertexBufferIndex);
 
             fixed (void* data = this._localVertexBuffer) {
@@ -176,13 +192,22 @@ namespace Furball.Vixie.Graphics {
             }
 
             this._vertexArray.Bind();
-            this._vertexBuffer.Bind();
             this._indexBuffer.Bind();
+            this._vertexBuffer.Bind();
+
             this._batchShader
                 .Bind()
                 .SetUniform("vx_WindowProjectionMatrix", UniformType.GlMat4f, Global.GameInstance.WindowManager.ProjectionMatrix);
 
-            Global.Gl.DrawElements(PrimitiveType.Triangles, (uint) this._indexCount, DrawElementsType.UnsignedInt, null);
+            Global.Gl.DrawElements(PrimitiveType.Triangles, (uint) MAX_INDICIES, DrawElementsType.UnsignedInt, null);
+
+            this._indexCount        = 0;
+            this._textureSlotIndex  = 1;
+            this._vertexBufferIndex = 0;
+
+            this.DrawCalls++;
+
+            //this._localVertexBuffer = new float[MAX_VERTICIES];
         }
     }
 }

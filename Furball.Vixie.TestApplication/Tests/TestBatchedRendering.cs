@@ -38,43 +38,42 @@ namespace Furball.Vixie.TestApplication.Tests {
             base.Initialize();
         }
 
+        private int CirnoDons = 63;
+
         public override void Draw(double deltaTime) {
             this._texture.Bind();
 
             this._batchedRenderer.Begin();
-            this._batchedRenderer.Draw(this._texture, new Vector2(0, 0), new Vector2(371, 326));
+
+            for (int i = 0; i != 63; i++) {
+                this._batchedRenderer.Draw(this._texture, new Vector2(i, 0), new Vector2(371, 326));
+            }
+
             this._batchedRenderer.End();
 
             #region ImGui menu
 
-            //this._imGuiController.Update((float) deltaTime);
-//
-            //ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
-            //           $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
-            //);
-//
-            //if (ImGui.Button("Go back to test selector")) {
-            //    this.BaseGame.Components.Add(new BaseTestSelector(this.BaseGame));
-            //    this.BaseGame.Components.Remove(this);
-            //}
-//
-            //this._imGuiController.Render();
+            this._imGuiController.Update((float) deltaTime);
+
+            ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
+                       $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
+            );
+
+            if (ImGui.Button("Go back to test selector")) {
+                this.BaseGame.Components.Add(new BaseTestSelector(this.BaseGame));
+                this.BaseGame.Components.Remove(this);
+            }
+
+            ImGui.Text($"Quads: {this._batchedRenderer.QuadsDrawn}");
+            ImGui.Text($"Draws: {this._batchedRenderer.DrawCalls}");
+
+            ImGui.SliderInt("Draws", ref this.CirnoDons, 63, 65);
+
+            this._imGuiController.Render();
 
             #endregion
 
             base.Draw(deltaTime);
-        }
-
-        public override void Dispose() {
-            this._indexBuffer.Dispose();
-            this._vertexBuffer.Dispose();
-            this._vertexArrayObject.Dispose();
-            this._shader.Dispose();
-            this._texture.Dispose();
-
-            base.Dispose();
-
-            base.Dispose();
         }
     }
 }
