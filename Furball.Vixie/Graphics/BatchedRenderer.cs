@@ -1,3 +1,4 @@
+using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Furball.Vixie.Gl;
@@ -8,12 +9,6 @@ using Texture=Furball.Vixie.Gl.Texture;
 using UniformType=Furball.Vixie.Gl.UniformType;
 
 namespace Furball.Vixie.Graphics {
-    [StructLayout(LayoutKind.Sequential)]
-    public struct BatchedVertex {
-        public Vector2 Position;
-        public Vector2 TexCoord;
-        public float   TexIndex;
-    }
 
     public class BatchedRenderer {
         /// <summary>
@@ -31,7 +26,7 @@ namespace Furball.Vixie.Graphics {
         /// <summary>
         /// Max amount of Texture Slots, 16 to support a bit older GPUs
         /// </summary>
-        public const int MAX_TEX_SLOTS = 32;
+        public const int MAX_TEX_SLOTS = 16;
 
         /// <summary>
         /// Vertex Array that holds the Index and Vertex Buffers
@@ -178,7 +173,7 @@ namespace Furball.Vixie.Graphics {
                 this._textureSlotIndex++;
             }
 
-            //Theres most likely a way better way to deal with this but i dont quite know it yet
+            //Theres most likely a way better way to deal with this using structs and pointer magic but i dont know how to do it
 
             //Vertex 1
             this._localVertexBuffer[this._vertexBufferIndex++] = position.X;
@@ -218,9 +213,19 @@ namespace Furball.Vixie.Graphics {
                 Global.Gl.BindTextureUnit(i, this._textureSlots[i]);
 
             //Calculate how many verticies have to be uploaded to the GPU
-            nuint size = (nuint) (this._localVertexBuffer.Length - this._vertexBufferIndex);
+            nuint size = (nuint) (this._localVertexBuffer.Length);
+
+            //this._localVertexBuffer[1020 * 4] = 6969696f;
+            this._localVertexBuffer[size-1] = 6969696f;
+            this._localVertexBuffer[size-120] = 6969696f;
+            this._localVertexBuffer[size-220] = 6969696f;
+            this._localVertexBuffer[size-420] = 6969696f;
+            this._localVertexBuffer[size-520] = 6969696f;
+            //this._localVertexBuffer[size-620] = 6969696f;
 
             fixed (void* data = this._localVertexBuffer) {
+                Console.WriteLine($"Size: {size}");
+
                 this._vertexBuffer
                     .Bind()
                     .SetSubData(data, size);

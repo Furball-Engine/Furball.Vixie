@@ -38,6 +38,9 @@ namespace Furball.Vixie.TestApplication.Tests {
             base.Initialize();
         }
 
+        /// <summary>
+        /// Amount of Dons to draw on screen each frame
+        /// </summary>
         private int CirnoDons = 128;
 
         public override void Draw(double deltaTime) {
@@ -50,6 +53,12 @@ namespace Furball.Vixie.TestApplication.Tests {
             }
 
             this._batchedRenderer.End();
+
+
+
+
+
+
 
             #region ImGui menu
 
@@ -67,11 +76,15 @@ namespace Furball.Vixie.TestApplication.Tests {
             ImGui.Text($"Quads: {this._batchedRenderer.QuadsDrawn}");
             ImGui.Text($"Draws: {this._batchedRenderer.DrawCalls}");
 
-            ImGui.SliderInt("Draws", ref this.CirnoDons, 0, 128);
+            ImGui.SliderInt("Draws", ref this.CirnoDons, 0, 512);
 
             this._imGuiController.Render();
 
             #endregion
+
+
+
+
 
             base.Draw(deltaTime);
         }
