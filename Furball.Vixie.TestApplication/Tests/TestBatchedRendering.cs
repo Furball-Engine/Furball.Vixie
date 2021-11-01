@@ -45,7 +45,7 @@ namespace Furball.Vixie.TestApplication.Tests {
 
             this._batchedRenderer.Begin();
 
-            for (int i = 0; i != 63; i++) {
+            for (int i = 0; i != CirnoDons; i++) {
                 this._batchedRenderer.Draw(this._texture, new Vector2(i, 0), new Vector2(371, 326));
             }
 
@@ -67,7 +67,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             ImGui.Text($"Quads: {this._batchedRenderer.QuadsDrawn}");
             ImGui.Text($"Draws: {this._batchedRenderer.DrawCalls}");
 
-            ImGui.SliderInt("Draws", ref this.CirnoDons, 63, 65);
+            ImGui.SliderInt("Draws", ref this.CirnoDons, 0, 128);
 
             this._imGuiController.Render();
 
