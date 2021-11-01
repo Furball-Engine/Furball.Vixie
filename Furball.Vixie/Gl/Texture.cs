@@ -135,6 +135,12 @@ namespace Furball.Vixie.Gl {
             return this;
         }
         /// <summary>
+        /// Gets the OpenGL texture ID
+        /// </summary>
+        /// <returns>Texture ID</returns>
+        internal uint GetTextureId() => this._textureId;
+
+        /// <summary>
         /// Disposes the Texture and the Local Image Buffer
         /// </summary>
         public void Dispose() {

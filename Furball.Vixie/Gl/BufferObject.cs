@@ -66,6 +66,13 @@ namespace Furball.Vixie.Gl {
 
             return this;
         }
+
+        public unsafe BufferObject SetSubData(void* data, nuint size, nint offset = 0) {
+            gl.BufferSubData(this._bufferType, offset, size, data);
+
+            return this;
+        }
+
         /// <summary>
         /// Puts data into the buffer in a easier way
         /// </summary>

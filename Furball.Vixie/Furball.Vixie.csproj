@@ -24,6 +24,10 @@
       <EmbeddedResource Include="ShaderCode\BasicTexturedPixelShader.glsl" />
       <EmbeddedResource Include="ShaderCode\BasicTexturedVertexShader.glsl" />
       <EmbeddedResource Include="ShaderCode\BasicVertexShader.glsl" />
+      <None Remove="ShaderCode\BatchRendererPixelShader.glsl" />
+      <EmbeddedResource Include="ShaderCode\BatchRendererPixelShader.glsl" />
+      <None Remove="ShaderCode\BatchRendererVertexShader.glsl" />
+      <EmbeddedResource Include="ShaderCode\BatchRendererVertexShader.glsl" />
     </ItemGroup>
 
 </Project>

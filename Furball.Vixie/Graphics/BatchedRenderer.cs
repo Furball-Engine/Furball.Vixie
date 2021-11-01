@@ -1,5 +1,9 @@
+using System.Numerics;
 using Furball.Vixie.Gl;
+using Furball.Vixie.Helpers;
 using Silk.NET.OpenGL;
+using Shader=Furball.Vixie.Gl.Shader;
+using Texture=Furball.Vixie.Gl.Texture;
 
 namespace Furball.Vixie.Graphics {
     public class BatchedRenderer {
@@ -33,9 +37,17 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         private BufferObject      _indexBuffer;
         /// <summary>
+        /// Shader used to draw everything
+        /// </summary>
+        private Shader _batchShader;
+        /// <summary>
         /// All Available Texture Slots
         /// </summary>
         private uint[] _textureSlots;
+        /// <summary>
+        /// Local Vertex Buffer
+        /// </summary>
+        private float[] _localVertexBuffer;
 
         public unsafe BatchedRenderer() {
             int vertexSize = (4 * sizeof(float)) + 1 * sizeof(int);
@@ -47,7 +59,7 @@ namespace Furball.Vixie.Graphics {
             layout
                 .AddElement<float>(2) //Position
                 .AddElement<float>(2) //Tex Coord
-                .AddElement<int>(1); //Tex Id
+                .AddElement<float>(1); //Tex Id
 
             uint[] indicies = new uint[MAX_INDICIES];
             uint offset = 0;
@@ -75,7 +87,95 @@ namespace Furball.Vixie.Graphics {
                 this._textureSlots[i] = 0;
             }
 
+            this._localVertexBuffer = new float[MAX_VERTICIES];
 
+            string vertSource = ResourceHelpers.GetStringResource("ShaderCode/BatchRendererVertexShader.glsl", true);
+            string fragSource = ResourceHelpers.GetStringResource("ShaderCode/BatchRendererPixelShader.glsl", true);
+
+            this._batchShader =
+                new Shader()
+                    .AttachShader(ShaderType.VertexShader, vertSource)
+                    .AttachShader(ShaderType.FragmentShader, fragSource)
+                    .Link();
+
+            this._vertexArray = new VertexArrayObject();
+            this._vertexArray.AddBuffer(this._vertexBuffer, layout);
+        }
+
+        private int _indexCount        = 0;
+        private int _textureSlotIndex  = 0;
+        private int _vertexBufferIndex = 0;
+
+        public void Begin() {
+            this._indexCount        = 0;
+            this._textureSlotIndex  = 0;
+            this._vertexBufferIndex = 0;
+
+            Global.Gl.Clear(ClearBufferMask.ColorBufferBit);
+        }
+
+        public void Draw(Texture texture, Vector2 position, Vector2 size) {
+            if (this._indexCount >= MAX_INDICIES || this._textureSlotIndex >= MAX_TEX_SLOTS - 1) {
+                this.End();
+                this.Begin();
+            }
+
+            float textureIndex = -1f;
+
+            for (int i = 0; i != this._textureSlotIndex; i++) {
+                uint texId = texture.GetTextureId();
+
+                if (this._textureSlots[i] == texId) {
+                    textureIndex = i;
+                    break;
+                }
+            }
+
+            if (textureIndex == -1f) {
+                textureIndex = this._textureSlotIndex;
+
+                this._textureSlotIndex++;
+            }
+
+            this._localVertexBuffer[this._vertexBufferIndex++] = position.X;
+            this._localVertexBuffer[this._vertexBufferIndex++] = position.Y;
+            this._localVertexBuffer[this._vertexBufferIndex++] = 0f;
+            this._localVertexBuffer[this._vertexBufferIndex++] = 0f;
+
+            this._localVertexBuffer[this._vertexBufferIndex++] = position.X + size.X;
+            this._localVertexBuffer[this._vertexBufferIndex++] = position.Y;
+            this._localVertexBuffer[this._vertexBufferIndex++] = 1f;
+            this._localVertexBuffer[this._vertexBufferIndex++] = 0f;
+
+            this._localVertexBuffer[this._vertexBufferIndex++] = position.X + size.X;
+            this._localVertexBuffer[this._vertexBufferIndex++] = position.Y + size.Y;
+            this._localVertexBuffer[this._vertexBufferIndex++] = 1f;
+            this._localVertexBuffer[this._vertexBufferIndex++] = 1f;
+
+            this._localVertexBuffer[this._vertexBufferIndex++] = position.X;
+            this._localVertexBuffer[this._vertexBufferIndex++] = position.Y + size.Y;
+            this._localVertexBuffer[this._vertexBufferIndex++] = 0f;
+            this._localVertexBuffer[this._vertexBufferIndex++] = 1f;
+
+            this._indexCount += 6;
+        }
+
+        public unsafe void End() {
+            nuint size = (nuint) (this._localVertexBuffer.Length - this._vertexBufferIndex);
+
+            fixed (void* data = this._localVertexBuffer) {
+
+                this._vertexBuffer
+                    .Bind()
+                    .SetSubData(data, size);
+            }
+
+            this._vertexArray.Bind();
+            this._vertexBuffer.Bind();
+            this._indexBuffer.Bind();
+            this._batchShader.Bind();
+
+            Global.Gl.DrawElements(PrimitiveType.Triangles, (uint) this._indexCount, DrawElementsType.UnsignedInt, null);
         }
     }
 }

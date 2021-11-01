@@ -23,8 +23,13 @@ namespace Furball.Vixie.TestApplication {
 
             this._imGuiController.Update((float) deltaTime);
 
-            if (ImGui.Button("Texture Drawing Text")) {
+            if (ImGui.Button("Texture Drawing Test")) {
                 this.BaseGame.Components.Add(new TestTextureDrawing(this.BaseGame));
+                this.BaseGame.Components.Remove(this);
+            }
+
+            if (ImGui.Button("Batched Rendering Test")) {
+                this.BaseGame.Components.Add(new TestBatchedRendering(this.BaseGame));
                 this.BaseGame.Components.Remove(this);
             }
 
