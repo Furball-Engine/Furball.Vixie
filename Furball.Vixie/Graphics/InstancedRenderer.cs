@@ -91,7 +91,6 @@ namespace Furball.Vixie.Graphics {
                 /* Vertex Coordinates */  position.X,                   position.Y,                   /* Texture Coordinates */  0.0f, 1.0f,  //Top Left Corner
             };
 
-
             this._vertexBuffer.SetData<float>(_verticies);
             texture.Bind();
 
