@@ -142,25 +142,25 @@ namespace Furball.Vixie.Graphics {
             this._localVertexBuffer[this._vertexBufferIndex++] = position.X;
             this._localVertexBuffer[this._vertexBufferIndex++] = position.Y + size.Y;
             this._localVertexBuffer[this._vertexBufferIndex++] = 0f;
-            this._localVertexBuffer[this._vertexBufferIndex++] = 1f;
+            this._localVertexBuffer[this._vertexBufferIndex++] = 0f;
             this._localVertexBuffer[this._vertexBufferIndex++] = textureIndex;
 
             this._localVertexBuffer[this._vertexBufferIndex++] = position.X + size.X;
             this._localVertexBuffer[this._vertexBufferIndex++] = position.Y + size.Y;
             this._localVertexBuffer[this._vertexBufferIndex++] = 1f;
-            this._localVertexBuffer[this._vertexBufferIndex++] = 1f;
+            this._localVertexBuffer[this._vertexBufferIndex++] = 0f;
             this._localVertexBuffer[this._vertexBufferIndex++] = textureIndex;
 
             this._localVertexBuffer[this._vertexBufferIndex++] = position.X + size.X;
             this._localVertexBuffer[this._vertexBufferIndex++] = position.Y;
             this._localVertexBuffer[this._vertexBufferIndex++] = 1f;
-            this._localVertexBuffer[this._vertexBufferIndex++] = 0f;
+            this._localVertexBuffer[this._vertexBufferIndex++] = 1f;
             this._localVertexBuffer[this._vertexBufferIndex++] = textureIndex;
 
             this._localVertexBuffer[this._vertexBufferIndex++] = position.X;
             this._localVertexBuffer[this._vertexBufferIndex++] = position.Y;
             this._localVertexBuffer[this._vertexBufferIndex++] = 0f;
-            this._localVertexBuffer[this._vertexBufferIndex++] = 0f;
+            this._localVertexBuffer[this._vertexBufferIndex++] = 1f;
             this._localVertexBuffer[this._vertexBufferIndex++] = textureIndex;
 
             this._indexCount += 6;
