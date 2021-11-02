@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -10,10 +9,23 @@ using Texture=Furball.Vixie.Gl.Texture;
 using UniformType=Furball.Vixie.Gl.UniformType;
 
 namespace Furball.Vixie.Graphics {
+    //Makes sure everything is layed out one after the other in memory,
+    //Important because of how we're uploading data to the vertex buffer,
+    //If this wasnt there there is a chance they wouldnt lie next to each other in memory
+    //making the void* we take in End() be completly garbled and we'd be sending invalid data to the GPU
     [StructLayout(LayoutKind.Sequential)]
     public unsafe struct BatchedVertex {
+        /// <summary>
+        /// Position of the Vertex
+        /// </summary>
         public fixed float Positions[2];
+        /// <summary>
+        /// Texture Coordinate of the Vertex
+        /// </summary>
         public fixed float TexCoords[2];
+        /// <summary>
+        /// Texture ID of the Vertex
+        /// </summary>
         public float   TexId;
     }
 
