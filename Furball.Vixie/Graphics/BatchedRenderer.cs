@@ -38,35 +38,31 @@ namespace Furball.Vixie.Graphics {
         /// <summary>
         /// Vertex Array that holds the Index and Vertex Buffers
         /// </summary>
-        private VertexArrayObject _vertexArray;
+        private readonly VertexArrayObject _vertexArray;
         /// <summary>
         /// Vertex Buffer which holds all the Verticies
         /// </summary>
-        private BufferObject      _vertexBuffer;
+        private readonly BufferObject _vertexBuffer;
         /// <summary>
         /// Index Buffer which holds all the indicies
         /// </summary>
-        private BufferObject      _indexBuffer;
+        private readonly BufferObject _indexBuffer;
         /// <summary>
         /// Shader used to draw everything
         /// </summary>
-        private Shader _batchShader;
-        /// <summary>
-        /// All Available Texture Slots
-        /// </summary>
-        private uint[] _textureSlots;
+        private readonly Shader _batchShader;
         /// <summary>
         /// Local Vertex Buffer
         /// </summary>
-        private BatchedVertex[] _localVertexBuffer;
+        private readonly BatchedVertex[] _localVertexBuffer;
         /// <summary>
         /// Cache for Texture ID lookups
         /// </summary>
-        private Dictionary<uint, float> _glTexIdToTexIdLookup;
+        private readonly Dictionary<uint, float> _glTexIdToTexIdLookup;
         /// <summary>
         /// Cache for OpenGL Texture ID Lookups
         /// </summary>
-        private Dictionary<float, uint> _texIdToGlTexIdLookup;
+        private readonly Dictionary<float, uint> _texIdToGlTexIdLookup;
 
         /// <summary>
         /// Purely for Statistics, stores how many Quads have been drawn
@@ -115,12 +111,6 @@ namespace Furball.Vixie.Graphics {
                 this._indexBuffer.SetData(data, MAX_INDICIES * sizeof(uint));
             }
 
-            this._textureSlots = new uint[MAX_TEX_SLOTS];
-
-            for (uint i = 0; i != MAX_TEX_SLOTS; i++) {
-                this._textureSlots[i] = 0;
-            }
-
             //Prepare a Local Vertex Buffer, this is what will be uploaded to the GPU each frame
             this._localVertexBuffer = new BatchedVertex[MAX_VERTICIES];
 
@@ -152,28 +142,32 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         private int _textureSlotIndex  = 0;
         /// <summary>
-        /// Index into the Local Vertex Buffer
+        /// Index into the Local Vertex Buffer (technically doesnt exist but its here for size calc)
         /// </summary>
         private int _vertexBufferIndex = 0;
-
+        /// <summary>
+        /// Current Pointer into the Local Vertex Buffer
+        /// </summary>
         private unsafe BatchedVertex* _vertexPointer;
 
         public unsafe void Begin(bool clear = true) {
+            this._glTexIdToTexIdLookup.Clear();
+            this._texIdToGlTexIdLookup.Clear();
+
+            fixed (BatchedVertex* data = this._localVertexBuffer)
+                this._vertexPointer = data;
+
             if (clear) {
                 Global.Gl.Clear(ClearBufferMask.ColorBufferBit);
+                //Clear stats
                 this.DrawCalls  = 0;
                 this.QuadsDrawn = 0;
-                this._glTexIdToTexIdLookup.Clear();
-                this._texIdToGlTexIdLookup.Clear();
-
-                fixed (BatchedVertex* data = this._localVertexBuffer)
-                    this._vertexPointer = data;
             }
         }
 
         private float _textureIndex;
-        private float _posX ;
-        private float _posy ;
+        private float _posX;
+        private float _posy;
         private float _sizeX;
         private float _sizeY;
 
