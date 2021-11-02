@@ -50,6 +50,12 @@ namespace Furball.Vixie.TestApplication {
                 this.BaseGame.Components.Remove(this);
             }
 
+            if (ImGui.Button("TextureRenderTarget Test")) {
+                this.BaseGame.Components.Add(new TextureRenderTargetTest());
+                this.BaseGame.Components.Remove(this);
+            }
+
+
             ImGui.End();
 
             this._imGuiController.Render();

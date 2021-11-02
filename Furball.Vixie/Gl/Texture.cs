@@ -116,6 +116,13 @@ namespace Furball.Vixie.Gl {
 
             this.Size = new Vector2(width, height);
         }
+
+        internal Texture(uint textureId, uint width, uint height) {
+            this.gl = Global.Gl;
+
+            this._textureId = textureId;
+            this.Size       = new Vector2(width, height);
+        }
         /// <summary>
         /// Generates the Texture on the GPU, Sets Parameters and Uploads the Image Data
         /// </summary>
