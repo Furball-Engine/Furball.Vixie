@@ -45,6 +45,11 @@ namespace Furball.Vixie.TestApplication {
                 this.BaseGame.Components.Remove(this);
             }
 
+            if (ImGui.Button("Batched Line Rendering Test")) {
+                this.BaseGame.Components.Add(new TestBatchedLineRendering());
+                this.BaseGame.Components.Remove(this);
+            }
+
             ImGui.End();
 
             this._imGuiController.Render();
