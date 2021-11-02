@@ -7,7 +7,14 @@ using Shader=Furball.Vixie.Gl.Shader;
 using UniformType=Furball.Vixie.Gl.UniformType;
 
 namespace Furball.Vixie.Graphics {
+    /// <summary>
+    /// Line Renderer which draws in an Instanced fashion.
+    /// </summary>
     public class InstancedLineRenderer {
+        /// <summary>
+        /// OpenGL API, used to shorten code
+        /// </summary>
+        private GL gl;
         /// <summary>
         /// The Shader for Drawing Lines. Vertex, Fragment & Geometry Shaders
         /// </summary>
@@ -24,6 +31,7 @@ namespace Furball.Vixie.Graphics {
         /// Line Renderer which draws in an Instanced fashion.
         /// </summary>
         public InstancedLineRenderer() {
+            this.gl = Global.Gl;
             //Load Shader Source
             string vertexSource = ResourceHelpers.GetStringResource("ShaderCode/LineRenderer/VertexShader.glsl", true);
             string fragmentSource = ResourceHelpers.GetStringResource("ShaderCode/LineRenderer/PixelShader.glsl", true);
@@ -39,11 +47,10 @@ namespace Furball.Vixie.Graphics {
                     .Link();
 
             //Define Layout of the Vertex Buffer
-            VertexBufferLayout layout = new VertexBufferLayout();
-
-            layout
-                .AddElement<float>(4)                  //Position
-                .AddElement<float>(4, true); //Color
+            VertexBufferLayout layout =
+                new VertexBufferLayout()
+                    .AddElement<float>(4)                  //Position
+                    .AddElement<float>(4, true); //Color
 
             this._vertexBuffer = new BufferObject(128, BufferTargetARB.ArrayBuffer);
 
@@ -88,7 +95,7 @@ namespace Furball.Vixie.Graphics {
             //Upload to GPU
             this._vertexBuffer.SetData<float>(this._verticies);
             //Draw
-            Global.Gl.DrawArrays(PrimitiveType.Lines, 0, 2);
+            gl.DrawArrays(PrimitiveType.Lines, 0, 2);
         }
     }
 }

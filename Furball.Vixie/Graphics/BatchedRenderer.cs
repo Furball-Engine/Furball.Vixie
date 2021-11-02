@@ -48,6 +48,10 @@ namespace Furball.Vixie.Graphics {
         public const int MAX_TEX_SLOTS = 16;
 
         /// <summary>
+        /// OpenGL API, used to shorten code
+        /// </summary>
+        private readonly GL gl;
+        /// <summary>
         /// Vertex Array that holds the Index and Vertex Buffers
         /// </summary>
         private readonly VertexArrayObject _vertexArray;
@@ -170,17 +174,35 @@ namespace Furball.Vixie.Graphics {
                 this._vertexPointer = data;
 
             if (clear) {
-                Global.Gl.Clear(ClearBufferMask.ColorBufferBit);
+                //TODO(Eevee): renderers shouldnt have to clear.. that should be done either automatically in game or manually with a easy to use clear function or smth
+                gl.Clear(ClearBufferMask.ColorBufferBit);
                 //Clear stats
                 this.DrawCalls  = 0;
                 this.QuadsDrawn = 0;
             }
         }
 
+        //These members exist to not redefine variables in Draw every time
+
+        /// <summary>
+        /// Pulled Texture Index
+        /// </summary>
         private float _textureIndex;
+        /// <summary>
+        /// X Position
+        /// </summary>
         private float _posX;
+        /// <summary>
+        /// Y Position
+        /// </summary>
         private float _posy;
+        /// <summary>
+        /// Width
+        /// </summary>
         private float _sizeX;
+        /// <summary>
+        /// Height
+        /// </summary>
         private float _sizeY;
 
         public unsafe void Draw(Texture texture, Vector2 position, Vector2 size) {
@@ -242,7 +264,7 @@ namespace Furball.Vixie.Graphics {
         public unsafe void End() {
             //Bind all textures
             for (uint i = 0; i != this._textureSlotIndex; i++) {
-                Global.Gl.BindTextureUnit(i, this._texIdToGlTexIdLookup[i]);
+                gl.BindTextureUnit(i, this._texIdToGlTexIdLookup[i]);
             }
 
             //Calculate how many verticies have to be uploaded to the GPU
@@ -265,7 +287,7 @@ namespace Furball.Vixie.Graphics {
                 .SetUniform("vx_WindowProjectionMatrix", UniformType.GlMat4f, Global.GameInstance.WindowManager.ProjectionMatrix);
 
             //Draw
-            Global.Gl.DrawElements(PrimitiveType.Triangles, (uint) this._indexCount, DrawElementsType.UnsignedInt, null);
+            gl.DrawElements(PrimitiveType.Triangles, (uint) this._indexCount, DrawElementsType.UnsignedInt, null);
 
             //Reset counts
             this._indexCount        = 0;

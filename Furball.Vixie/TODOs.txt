@@ -1,0 +1,2 @@
+TODO: RenderTarget (RenderTarget2D)
+TODO: Input Code, hopefully Silk.NET has a similar way of getting input like monogame

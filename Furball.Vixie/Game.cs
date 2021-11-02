@@ -77,7 +77,7 @@ namespace Furball.Vixie {
             gl.Enable(EnableCap.Blend);
             gl.BlendFunc(GLEnum.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
-            //TODO: input stuffs
+            //TODO(Eevee): input stuffs
 
             this.Initialize();
         }
