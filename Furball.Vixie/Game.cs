@@ -2,6 +2,8 @@
 using System;
 using Furball.Vixie.Helpers;
 using Silk.NET.Core.Native;
+using Silk.NET.Input;
+using Silk.NET.Input.Extensions;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
@@ -12,6 +14,8 @@ namespace Furball.Vixie {
         /// OpenGL API, used to not do Global.Gl everytime
         /// </summary>
         internal GL      gl;
+
+        internal IInputContext _inputContext;
 
         /// <summary>
         /// Is the Window Active/Focused?
@@ -86,7 +90,7 @@ namespace Furball.Vixie {
             gl.Enable(EnableCap.Blend);
             gl.BlendFunc(GLEnum.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
-            //TODO(Eevee): input stuffs
+            this._inputContext = this.WindowManager.GameWindow.CreateInput();
 
             this.GraphicsDevice  = new GraphicsDevice(gl);
             Global.Device        = this.GraphicsDevice;
