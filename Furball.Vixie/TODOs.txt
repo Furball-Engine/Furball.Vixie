@@ -1,2 +1,0 @@
-TODO: RenderTarget (RenderTarget2D)
-TODO: More input Methods, Mouse and Keyboard are there but im too lazy to add the rest rn
