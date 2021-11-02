@@ -66,7 +66,7 @@ namespace Furball.Vixie.Graphics {
         /// <summary>
         /// Cache for OpenGL Texture ID Lookups
         /// </summary>
-        private Dictionary<float, uint> _TexIdToGlTexIdLookup;
+        private Dictionary<float, uint> _texIdToGlTexIdLookup;
 
         /// <summary>
         /// Purely for Statistics, stores how many Quads have been drawn
@@ -140,7 +140,7 @@ namespace Furball.Vixie.Graphics {
             this._vertexArray.AddBuffer(this._vertexBuffer, layout);
 
             this._glTexIdToTexIdLookup = new Dictionary<uint, float>(MAX_TEX_SLOTS);
-            this._TexIdToGlTexIdLookup = new Dictionary<float, uint>(MAX_TEX_SLOTS);
+            this._texIdToGlTexIdLookup = new Dictionary<float, uint>(MAX_TEX_SLOTS);
         }
 
         /// <summary>
@@ -164,12 +164,18 @@ namespace Furball.Vixie.Graphics {
                 this.DrawCalls  = 0;
                 this.QuadsDrawn = 0;
                 this._glTexIdToTexIdLookup.Clear();
-                this._TexIdToGlTexIdLookup.Clear();
+                this._texIdToGlTexIdLookup.Clear();
 
                 fixed (BatchedVertex* data = this._localVertexBuffer)
                     this._vertexPointer = data;
             }
         }
+
+        private float _textureIndex;
+        private float _posX ;
+        private float _posy ;
+        private float _sizeX;
+        private float _sizeY;
 
         public unsafe void Draw(Texture texture, Vector2 position, Vector2 size) {
             //If we ran out of Texture Slots or are out of space in out Vertex/Index buffer, flush whats already there and start a new Batch
@@ -178,45 +184,48 @@ namespace Furball.Vixie.Graphics {
                 this.Begin(false);
             }
 
-            float textureIndex;
+            this._posX  = position.X;
+            this._posy  = position.Y;
+            this._sizeX = size.X;
+            this._sizeY = size.Y;
 
-            if (this._glTexIdToTexIdLookup.TryGetValue(texture._textureId, out textureIndex)) {
+            if (this._glTexIdToTexIdLookup.TryGetValue(texture._textureId, out this._textureIndex)) {
                 this._glTexIdToTexIdLookup.Add(texture._textureId, this._textureSlotIndex);
-                this._TexIdToGlTexIdLookup.Add(this._textureSlotIndex, texture._textureId);
+                this._texIdToGlTexIdLookup.Add(this._textureSlotIndex, texture._textureId);
 
                 this._textureSlotIndex++;
             }
 
             //Vertex 1
-            this._vertexPointer->Positions[0] = position.X;
-            this._vertexPointer->Positions[1] = position.Y + size.Y;
+            this._vertexPointer->Positions[0] = this._posX;
+            this._vertexPointer->Positions[1] = this._posy + this._sizeY;
             this._vertexPointer->TexCoords[0] = 0f;
             this._vertexPointer->TexCoords[1] = 0f;
-            this._vertexPointer->TexId        = textureIndex;
+            this._vertexPointer->TexId        = this._textureIndex;
             this._vertexPointer++;
 
             //Vertex 2
-            this._vertexPointer->Positions[0] = position.X + size.X;
-            this._vertexPointer->Positions[1] = position.Y + size.Y;
+            this._vertexPointer->Positions[0] = this._posX + this._sizeX;
+            this._vertexPointer->Positions[1] = this._posy + this._sizeY;
             this._vertexPointer->TexCoords[0] = 1f;
             this._vertexPointer->TexCoords[1] = 0f;
-            this._vertexPointer->TexId        = textureIndex;
+            this._vertexPointer->TexId        = this._textureIndex;
             this._vertexPointer++;
 
             //Vertex 3
-            this._vertexPointer->Positions[0] = position.X + size.X;
-            this._vertexPointer->Positions[1] = position.Y;
+            this._vertexPointer->Positions[0] = this._posX + this._sizeX;
+            this._vertexPointer->Positions[1] = this._posy;
             this._vertexPointer->TexCoords[0] = 1f;
             this._vertexPointer->TexCoords[1] = 1f;
-            this._vertexPointer->TexId        = textureIndex;
+            this._vertexPointer->TexId        = this._textureIndex;
             this._vertexPointer++;
 
             //Vertex 4
-            this._vertexPointer->Positions[0] = position.X;
-            this._vertexPointer->Positions[1] = position.Y;
+            this._vertexPointer->Positions[0] = this._posX;
+            this._vertexPointer->Positions[1] = this._posy;
             this._vertexPointer->TexCoords[0] = 0f;
             this._vertexPointer->TexCoords[1] = 1f;
-            this._vertexPointer->TexId        = textureIndex;
+            this._vertexPointer->TexId        = this._textureIndex;
             this._vertexPointer++;
 
             this._indexCount        += 6;
@@ -227,7 +236,7 @@ namespace Furball.Vixie.Graphics {
         public unsafe void End() {
             //Bind all textures
             for (uint i = 0; i != this._textureSlotIndex; i++) {
-                Global.Gl.BindTextureUnit(i, this._TexIdToGlTexIdLookup[i]);
+                Global.Gl.BindTextureUnit(i, this._texIdToGlTexIdLookup[i]);
             }
 
             //Calculate how many verticies have to be uploaded to the GPU
