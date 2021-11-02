@@ -25,7 +25,7 @@ namespace Furball.Vixie.TestApplication.Tests {
 
         private ImGuiController _imGuiController;
 
-        public TestTextureDrawing(Game game) : base(game) {}
+        public TestTextureDrawing() {}
 
         public override void Initialize() {
             this._instancedRenderer = new InstancedRenderer();
@@ -72,8 +72,6 @@ namespace Furball.Vixie.TestApplication.Tests {
         }
 
         public override void Draw(double deltaTime) {
-            this._instancedRenderer.Clear();
-
             this._texture.Bind();
 
             this._shader
@@ -91,7 +89,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             );
 
             if (ImGui.Button("Go back to test selector")) {
-                this.BaseGame.Components.Add(new BaseTestSelector(this.BaseGame));
+                this.BaseGame.Components.Add(new BaseTestSelector());
                 this.BaseGame.Components.Remove(this);
             }
 

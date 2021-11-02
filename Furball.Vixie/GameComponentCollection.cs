@@ -13,7 +13,7 @@ namespace Furball.Vixie {
         /// <summary>
         /// Creates a GameComponentCollection
         /// </summary>
-        public GameComponentCollection(Game game) : base(game) {
+        public GameComponentCollection() {
             this._components = new List<GameComponent>();
         }
         /// <summary>

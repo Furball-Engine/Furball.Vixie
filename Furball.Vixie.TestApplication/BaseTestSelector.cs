@@ -9,7 +9,7 @@ namespace Furball.Vixie.TestApplication {
         private ImGuiController _imGuiController;
         private InstancedRenderer        _instancedRenderer;
 
-        public BaseTestSelector(Game game) : base(game) {}
+        public BaseTestSelector()  {}
 
         public override void Initialize() {
             this._imGuiController   = ImGuiCreator.CreateController();
@@ -19,29 +19,27 @@ namespace Furball.Vixie.TestApplication {
         }
 
         public override void Draw(double deltaTime) {
-            this._instancedRenderer.Clear();
-
             this._imGuiController.Update((float) deltaTime);
 
             ImGui.Begin("Test Selector");
 
             if (ImGui.Button("Texture Drawing Test")) {
-                this.BaseGame.Components.Add(new TestTextureDrawing(this.BaseGame));
+                this.BaseGame.Components.Add(new TestTextureDrawing());
                 this.BaseGame.Components.Remove(this);
             }
 
             if (ImGui.Button("Batched Rendering Test")) {
-                this.BaseGame.Components.Add(new TestBatchedRendering(this.BaseGame));
+                this.BaseGame.Components.Add(new TestBatchedRendering());
                 this.BaseGame.Components.Remove(this);
             }
 
             if (ImGui.Button("Instanced Rendering Test")) {
-                this.BaseGame.Components.Add(new TestInstancedRendering(this.BaseGame));
+                this.BaseGame.Components.Add(new TestInstancedRendering());
                 this.BaseGame.Components.Remove(this);
             }
 
             if (ImGui.Button("Line Rendering Test")) {
-                this.BaseGame.Components.Add(new TestLineRenderer(this.BaseGame));
+                this.BaseGame.Components.Add(new TestLineRenderer());
                 this.BaseGame.Components.Remove(this);
             }
 

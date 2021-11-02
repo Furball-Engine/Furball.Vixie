@@ -5,7 +5,7 @@ namespace Furball.Vixie.TestApplication {
         public TestGame(WindowOptions options) : base(options) {}
 
         protected override unsafe void Initialize() {
-            this.Components.Add(new BaseTestSelector(this));
+            this.Components.Add(new BaseTestSelector());
 
             base.Initialize();
         }

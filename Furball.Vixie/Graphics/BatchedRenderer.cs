@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -33,19 +34,19 @@ namespace Furball.Vixie.Graphics {
         /// <summary>
         /// How many Quads are allowed to be drawn in 1 draw
         /// </summary>
-        public const int MAX_QUADS     = 8192;
+        public int MaxQuads { get; private set; }
         /// <summary>
         /// How many Verticies are gonna be stored inside the Vertex Buffer
         /// </summary>
-        public const int MAX_VERTICIES = (MAX_QUADS * 20) * 4;
+        public int MaxVerticies { get; private set; }
         /// <summary>
         /// How many Indicies are gonna be stored inside the Index Buffer
         /// </summary>
-        public const int MAX_INDICIES  = MAX_QUADS * 6;
+        public uint MaxIndicies { get; private set; }
         /// <summary>
-        /// Max amount of Texture Slots, 16 to support a bit older GPUs
+        /// Max amount of Texture Slots
         /// </summary>
-        public const int MAX_TEX_SLOTS = 16;
+        public int MaxTexSlots { get; private set; }
 
         /// <summary>
         /// OpenGL API, used to shorten code
@@ -89,25 +90,25 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         public int DrawCalls  = 0;
 
-        public unsafe BatchedRenderer() {
+        public unsafe BatchedRenderer(int capacity = 4096) {
             //Size of 1 Vertex
             int vertexSize = (4 * sizeof(float)) + 1 * sizeof(int);
             //Create the Vertex Buffer
-            this._vertexBuffer = new BufferObject(vertexSize * MAX_VERTICIES, BufferTargetARB.ArrayBuffer, BufferUsageARB.DynamicDraw);
+            this._vertexBuffer = new BufferObject(vertexSize * this.MaxVerticies, BufferTargetARB.ArrayBuffer, BufferUsageARB.DynamicDraw);
 
             //Define the Layout of the Vertex Buffer
             VertexBufferLayout layout = new VertexBufferLayout();
 
             layout
-                .AddElement<float>(2) //Position
-                .AddElement<float>(2) //Tex Coord
+                .AddElement<float>(2)  //Position
+                .AddElement<float>(2)  //Tex Coord
                 .AddElement<float>(1); //Tex Id
 
-            uint[] indicies = new uint[MAX_INDICIES];
+            uint[] indicies = new uint[this.MaxIndicies];
             uint offset = 0;
 
             //Generate the Indicies
-            for (int i = 0; i < MAX_INDICIES; i += 6) {
+            for (int i = 0; i < this.MaxIndicies; i += 6) {
                 indicies[i + 0] = 0 + offset;
                 indicies[i + 1] = 1 + offset;
                 indicies[i + 2] = 2 + offset;
@@ -124,11 +125,11 @@ namespace Furball.Vixie.Graphics {
             //Put the Indicies into the Index Buffer
             fixed (void* data = indicies) {
                 this._indexBuffer.Bind();
-                this._indexBuffer.SetData(data, MAX_INDICIES * sizeof(uint));
+                this._indexBuffer.SetData(data, this.MaxIndicies * sizeof(uint));
             }
 
             //Prepare a Local Vertex Buffer, this is what will be uploaded to the GPU each frame
-            this._localVertexBuffer = new BatchedVertex[MAX_VERTICIES];
+            this._localVertexBuffer = new BatchedVertex[this.MaxVerticies];
 
             //Prepare Shader Sources
             string vertSource = ResourceHelpers.GetStringResource("ShaderCode/BatchRenderer/BatchRendererVertexShader.glsl", true);
@@ -145,8 +146,17 @@ namespace Furball.Vixie.Graphics {
             this._vertexArray = new VertexArrayObject();
             this._vertexArray.AddBuffer(this._vertexBuffer, layout);
 
-            this._glTexIdToTexIdLookup = new Dictionary<uint, float>(MAX_TEX_SLOTS);
-            this._texIdToGlTexIdLookup = new Dictionary<float, uint>(MAX_TEX_SLOTS);
+            this._glTexIdToTexIdLookup = new Dictionary<uint, float>(this.MaxTexSlots);
+            this._texIdToGlTexIdLookup = new Dictionary<float, uint>(this.MaxTexSlots);
+
+            this.InitializeConstants(capacity);
+        }
+
+        private void InitializeConstants(int quads) {
+            this.MaxQuads     = quads;
+            this.MaxVerticies = this.MaxQuads * 20 * 4;
+            this.MaxIndicies  = (uint) this.MaxQuads * 6;
+            this.MaxTexSlots  = Math.Min(31, Global.DeviceCaptabilities.MaxTextureImageUnits); //Adjusts based on how many Texture the GPU has
         }
 
         /// <summary>
@@ -166,16 +176,14 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         private unsafe BatchedVertex* _vertexPointer;
 
-        public unsafe void Begin(bool clear = true) {
+        public unsafe void Begin(bool clearStats = true) {
             this._glTexIdToTexIdLookup.Clear();
             this._texIdToGlTexIdLookup.Clear();
 
             fixed (BatchedVertex* data = this._localVertexBuffer)
                 this._vertexPointer = data;
 
-            if (clear) {
-                //TODO(Eevee): renderers shouldnt have to clear.. that should be done either automatically in game or manually with a easy to use clear function or smth
-                gl.Clear(ClearBufferMask.ColorBufferBit);
+            if (clearStats) {
                 //Clear stats
                 this.DrawCalls  = 0;
                 this.QuadsDrawn = 0;
@@ -207,7 +215,7 @@ namespace Furball.Vixie.Graphics {
 
         public unsafe void Draw(Texture texture, Vector2 position, Vector2 size) {
             //If we ran out of Texture Slots or are out of space in out Vertex/Index buffer, flush whats already there and start a new Batch
-            if (this._indexCount >= MAX_INDICIES || this._textureSlotIndex >= MAX_TEX_SLOTS - 1) {
+            if (this._indexCount >= this.MaxIndicies || this._textureSlotIndex >= this.MaxTexSlots - 1) {
                 this.End();
                 this.Begin(false);
             }
@@ -264,7 +272,7 @@ namespace Furball.Vixie.Graphics {
         public unsafe void End() {
             //Bind all textures
             for (uint i = 0; i != this._textureSlotIndex; i++) {
-                gl.BindTextureUnit(i, this._texIdToGlTexIdLookup[i]);
+                gl.BindTexture((GLEnum)((uint)GLEnum.Texture0 + i), this._texIdToGlTexIdLookup[i]);
             }
 
             //Calculate how many verticies have to be uploaded to the GPU

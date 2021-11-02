@@ -22,6 +22,10 @@ namespace Furball.Vixie {
         /// </summary>
         public readonly WindowManager WindowManager;
         /// <summary>
+        /// What is the Graphics Device captable of doing.
+        /// </summary>
+        public GraphicsDeviceCaptabilities DeviceCaptabilities;
+        /// <summary>
         /// All of the Game Components
         /// </summary>
         public GameComponentCollection Components;
@@ -31,6 +35,9 @@ namespace Furball.Vixie {
         /// </summary>
         /// <param name="options">Window Creation Options</param>
         protected Game(WindowOptions options) {
+            if (Global.AlreadyInitialized)
+                throw new Exception("no we dont support multiple game instances yet");
+
             this.WindowManager = new WindowManager(options);
             this.WindowManager.Create();
 
@@ -47,7 +54,7 @@ namespace Furball.Vixie {
 
             Global.GameInstance = this;
 
-            this.Components = new GameComponentCollection(this);
+            this.Components = new GameComponentCollection();
         }
         /// <summary>
         /// Runs the Game
@@ -64,7 +71,7 @@ namespace Furball.Vixie {
         /// <summary>
         /// Used to Initialize the Renderer and stuff,
         /// </summary>
-        private unsafe void RendererInitialize() {
+        private void RendererInitialize() {
             Global.Gl = this.WindowManager.GetGlApi();
             this.gl   = Global.Gl;
 
@@ -78,6 +85,8 @@ namespace Furball.Vixie {
             gl.BlendFunc(GLEnum.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
             //TODO(Eevee): input stuffs
+
+            this.DeviceCaptabilities = new GraphicsDeviceCaptabilities(gl);
 
             this.Initialize();
         }

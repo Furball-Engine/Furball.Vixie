@@ -10,8 +10,8 @@ namespace Furball.Vixie {
         /// Initializes the GameComponent with a Game Instance
         /// </summary>
         /// <param name="game">Game</param>
-        protected GameComponent(Game game) {
-            this.BaseGame = game;
+        protected GameComponent() {
+            this.BaseGame = Global.GameInstance;
         }
         /// <summary>
         /// Processing Order, higher order means drawn and updated first

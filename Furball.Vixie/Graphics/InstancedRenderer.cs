@@ -149,12 +149,5 @@ namespace Furball.Vixie.Graphics {
 
             gl.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, null);
         }
-        /// <summary>
-        /// Clears the Screen
-        /// </summary>
-        public void Clear() {
-            this.gl.ClearColor(Color.FromArgb(255, (int) (.45f * 255), (int) (.55f * 255), (int) (.60f * 255)));
-            this.gl.Clear(ClearBufferMask.ColorBufferBit);
-        }
     }
 }

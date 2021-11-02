@@ -24,7 +24,7 @@ namespace Furball.Vixie.TestApplication.Tests {
 
         private ImGuiController _imGuiController;
 
-        public TestInstancedRendering(Game game) : base(game) {}
+        public TestInstancedRendering() {}
 
         public override void Initialize() {
             this._instancedRenderer = new InstancedRenderer();
@@ -57,7 +57,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             );
 
             if (ImGui.Button("Go back to test selector")) {
-                this.BaseGame.Components.Add(new BaseTestSelector(this.BaseGame));
+                this.BaseGame.Components.Add(new BaseTestSelector());
                 this.BaseGame.Components.Remove(this);
             }
 
