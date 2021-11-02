@@ -14,11 +14,11 @@ namespace Furball.Vixie.Graphics {
         /// <summary>
         /// How many Quads are allowed to be drawn in 1 draw
         /// </summary>
-        public const int MAX_QUADS     = 1024;
+        public const int MAX_QUADS     = 16;
         /// <summary>
         /// How many Verticies are gonna be stored inside the Vertex Buffer
         /// </summary>
-        public const int MAX_VERTICIES = MAX_QUADS * 20;
+        public const int MAX_VERTICIES = (MAX_QUADS * 20) * 4;
         /// <summary>
         /// How many Indicies are gonna be stored inside the Index Buffer
         /// </summary>
@@ -215,17 +215,7 @@ namespace Furball.Vixie.Graphics {
             //Calculate how many verticies have to be uploaded to the GPU
             nuint size = (nuint) (this._localVertexBuffer.Length);
 
-            //this._localVertexBuffer[1020 * 4] = 6969696f;
-            this._localVertexBuffer[size-1] = 6969696f;
-            this._localVertexBuffer[size-120] = 6969696f;
-            this._localVertexBuffer[size-220] = 6969696f;
-            this._localVertexBuffer[size-420] = 6969696f;
-            this._localVertexBuffer[size-520] = 6969696f;
-            //this._localVertexBuffer[size-620] = 6969696f;
-
             fixed (void* data = this._localVertexBuffer) {
-                Console.WriteLine($"Size: {size}");
-
                 this._vertexBuffer
                     .Bind()
                     .SetSubData(data, size);
