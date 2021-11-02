@@ -5,7 +5,6 @@ using System.Numerics;
 using Furball.Vixie.Graphics;
 using Furball.Vixie.ImGuiHelpers;
 using ImGuiNET;
-using Silk.NET.OpenGL;
 using Silk.NET.OpenGL.Extensions.ImGui;
 
 namespace Furball.Vixie.TestApplication.Tests {

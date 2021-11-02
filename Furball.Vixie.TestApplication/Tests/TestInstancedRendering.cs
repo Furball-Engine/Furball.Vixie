@@ -7,7 +7,6 @@ using Furball.Vixie.Helpers;
 using Furball.Vixie.ImGuiHelpers;
 using Furball.Vixie.Shaders;
 using ImGuiNET;
-using Silk.NET.OpenGL;
 using Silk.NET.OpenGL.Extensions.ImGui;
 using Texture=Furball.Vixie.Gl.Texture;
 
