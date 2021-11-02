@@ -10,6 +10,12 @@ using Texture=Furball.Vixie.Gl.Texture;
 using UniformType=Furball.Vixie.Gl.UniformType;
 
 namespace Furball.Vixie.Graphics {
+    [StructLayout(LayoutKind.Sequential)]
+    public unsafe struct BatchedVertex {
+        public fixed float Positions[2];
+        public fixed float TexCoords[2];
+        public float   TexId;
+    }
 
     public class BatchedRenderer {
         /// <summary>
@@ -52,7 +58,7 @@ namespace Furball.Vixie.Graphics {
         /// <summary>
         /// Local Vertex Buffer
         /// </summary>
-        private float[] _localVertexBuffer;
+        private BatchedVertex[] _localVertexBuffer;
         /// <summary>
         /// Cache for Texture ID lookups
         /// </summary>
@@ -116,7 +122,7 @@ namespace Furball.Vixie.Graphics {
             }
 
             //Prepare a Local Vertex Buffer, this is what will be uploaded to the GPU each frame
-            this._localVertexBuffer = new float[MAX_VERTICIES];
+            this._localVertexBuffer = new BatchedVertex[MAX_VERTICIES];
 
             //Prepare Shader Sources
             string vertSource = ResourceHelpers.GetStringResource("ShaderCode/BatchRenderer/BatchRendererVertexShader.glsl", true);
@@ -150,17 +156,22 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         private int _vertexBufferIndex = 0;
 
-        public void Begin(bool clear = true) {
+        private unsafe BatchedVertex* _vertexPointer;
+
+        public unsafe void Begin(bool clear = true) {
             if (clear) {
                 Global.Gl.Clear(ClearBufferMask.ColorBufferBit);
                 this.DrawCalls  = 0;
                 this.QuadsDrawn = 0;
                 this._glTexIdToTexIdLookup.Clear();
                 this._TexIdToGlTexIdLookup.Clear();
+
+                fixed (BatchedVertex* data = this._localVertexBuffer)
+                    this._vertexPointer = data;
             }
         }
 
-        public void Draw(Texture texture, Vector2 position, Vector2 size) {
+        public unsafe void Draw(Texture texture, Vector2 position, Vector2 size) {
             //If we ran out of Texture Slots or are out of space in out Vertex/Index buffer, flush whats already there and start a new Batch
             if (this._indexCount >= MAX_INDICIES || this._textureSlotIndex >= MAX_TEX_SLOTS - 1) {
                 this.End();
@@ -176,37 +187,40 @@ namespace Furball.Vixie.Graphics {
                 this._textureSlotIndex++;
             }
 
-            //Theres most likely a way better way to deal with this using structs and pointer magic but i dont know how to do it
-
             //Vertex 1
-            this._localVertexBuffer[this._vertexBufferIndex++] = position.X;
-            this._localVertexBuffer[this._vertexBufferIndex++] = position.Y + size.Y;
-            this._localVertexBuffer[this._vertexBufferIndex++] = 0f;
-            this._localVertexBuffer[this._vertexBufferIndex++] = 0f;
-            this._localVertexBuffer[this._vertexBufferIndex++] = textureIndex;
+            this._vertexPointer->Positions[0] = position.X;
+            this._vertexPointer->Positions[1] = position.Y + size.Y;
+            this._vertexPointer->TexCoords[0] = 0f;
+            this._vertexPointer->TexCoords[1] = 0f;
+            this._vertexPointer->TexId        = textureIndex;
+            this._vertexPointer++;
 
             //Vertex 2
-            this._localVertexBuffer[this._vertexBufferIndex++] = position.X + size.X;
-            this._localVertexBuffer[this._vertexBufferIndex++] = position.Y + size.Y;
-            this._localVertexBuffer[this._vertexBufferIndex++] = 1f;
-            this._localVertexBuffer[this._vertexBufferIndex++] = 0f;
-            this._localVertexBuffer[this._vertexBufferIndex++] = textureIndex;
+            this._vertexPointer->Positions[0] = position.X + size.X;
+            this._vertexPointer->Positions[1] = position.Y + size.Y;
+            this._vertexPointer->TexCoords[0] = 1f;
+            this._vertexPointer->TexCoords[1] = 0f;
+            this._vertexPointer->TexId        = textureIndex;
+            this._vertexPointer++;
 
             //Vertex 3
-            this._localVertexBuffer[this._vertexBufferIndex++] = position.X + size.X;
-            this._localVertexBuffer[this._vertexBufferIndex++] = position.Y;
-            this._localVertexBuffer[this._vertexBufferIndex++] = 1f;
-            this._localVertexBuffer[this._vertexBufferIndex++] = 1f;
-            this._localVertexBuffer[this._vertexBufferIndex++] = textureIndex;
+            this._vertexPointer->Positions[0] = position.X + size.X;
+            this._vertexPointer->Positions[1] = position.Y;
+            this._vertexPointer->TexCoords[0] = 1f;
+            this._vertexPointer->TexCoords[1] = 1f;
+            this._vertexPointer->TexId        = textureIndex;
+            this._vertexPointer++;
 
             //Vertex 4
-            this._localVertexBuffer[this._vertexBufferIndex++] = position.X;
-            this._localVertexBuffer[this._vertexBufferIndex++] = position.Y;
-            this._localVertexBuffer[this._vertexBufferIndex++] = 0f;
-            this._localVertexBuffer[this._vertexBufferIndex++] = 1f;
-            this._localVertexBuffer[this._vertexBufferIndex++] = textureIndex;
+            this._vertexPointer->Positions[0] = position.X;
+            this._vertexPointer->Positions[1] = position.Y;
+            this._vertexPointer->TexCoords[0] = 0f;
+            this._vertexPointer->TexCoords[1] = 1f;
+            this._vertexPointer->TexId        = textureIndex;
+            this._vertexPointer++;
 
-            this._indexCount += 6;
+            this._indexCount        += 6;
+            this._vertexBufferIndex += 80;
             this.QuadsDrawn++;
         }
 
@@ -217,7 +231,7 @@ namespace Furball.Vixie.Graphics {
             }
 
             //Calculate how many verticies have to be uploaded to the GPU
-            nuint size = (nuint) (this._vertexBufferIndex * 4);
+            nuint size = (nuint) (this._vertexBufferIndex);
 
             fixed (void* data = this._localVertexBuffer) {
                 this._vertexBuffer
