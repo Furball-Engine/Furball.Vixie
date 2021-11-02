@@ -91,6 +91,10 @@ namespace Furball.Vixie.Graphics {
         public int DrawCalls  = 0;
 
         public unsafe BatchedRenderer(int capacity = 4096) {
+            gl = Global.Gl;
+            //Initializes MaxQuad/Vertex/Index counts and figures out how many texture slots to use max
+            this.InitializeConstants(capacity);
+
             //Size of 1 Vertex
             int vertexSize = (4 * sizeof(float)) + 1 * sizeof(int);
             //Create the Vertex Buffer
@@ -148,15 +152,13 @@ namespace Furball.Vixie.Graphics {
 
             this._glTexIdToTexIdLookup = new Dictionary<uint, float>(this.MaxTexSlots);
             this._texIdToGlTexIdLookup = new Dictionary<float, uint>(this.MaxTexSlots);
-
-            this.InitializeConstants(capacity);
         }
 
         private void InitializeConstants(int quads) {
             this.MaxQuads     = quads;
             this.MaxVerticies = this.MaxQuads * 20 * 4;
             this.MaxIndicies  = (uint) this.MaxQuads * 6;
-            this.MaxTexSlots  = Math.Min(31, Global.DeviceCaptabilities.MaxTextureImageUnits); //Adjusts based on how many Texture the GPU has
+            this.MaxTexSlots  = Math.Min(31, Global.Device.MaxTextureImageUnits); //Adjusts based on how many Texture the GPU has
         }
 
         /// <summary>

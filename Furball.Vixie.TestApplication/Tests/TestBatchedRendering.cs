@@ -1,4 +1,5 @@
 using System;
+using System.Drawing;
 using System.Globalization;
 using System.Numerics;
 using Furball.Vixie.Graphics;
@@ -25,6 +26,8 @@ namespace Furball.Vixie.TestApplication.Tests {
 
             this._imGuiController = ImGuiCreator.CreateController();
 
+            this.GraphicsDevice.GlClearColor(Color.BlueViolet);
+
             base.Initialize();
         }
 
@@ -34,6 +37,8 @@ namespace Furball.Vixie.TestApplication.Tests {
         private int CirnoDons = 128;
 
         public override void Draw(double deltaTime) {
+            this.GraphicsDevice.GlClear();
+
             this._texture.Bind();
 
             this._batchedRenderer.Begin();

@@ -40,7 +40,7 @@ namespace Furball.Vixie.TestApplication.Tests {
         private int CirnoDons = 128;
 
         public override void Draw(double deltaTime) {
-            Global.Gl.Clear(ClearBufferMask.ColorBufferBit);
+            this.GraphicsDevice.GlClear();
 
             this._instancedRenderer.Begin();
 

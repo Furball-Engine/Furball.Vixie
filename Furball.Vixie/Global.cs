@@ -1,11 +1,11 @@
 using Silk.NET.OpenGL;
 
 namespace Furball.Vixie {
-    public static class Global {
-        public static bool                        AlreadyInitialized;
-        public static GL                          Gl;
-        public static Game                        GameInstance;
-        public static WindowManager               WindowManager;
-        public static GraphicsDeviceCaptabilities DeviceCaptabilities;
+    internal static class Global {
+        internal static bool                        AlreadyInitialized;
+        internal static GL                          Gl;
+        internal static Game                        GameInstance;
+        internal static WindowManager               WindowManager;
+        internal static GraphicsDevice Device;
     }
 }

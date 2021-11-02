@@ -72,6 +72,8 @@ namespace Furball.Vixie.TestApplication.Tests {
         }
 
         public override void Draw(double deltaTime) {
+            this.GraphicsDevice.GlClear();
+
             this._texture.Bind();
 
             this._shader

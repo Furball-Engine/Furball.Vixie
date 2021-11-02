@@ -7,11 +7,16 @@ namespace Furball.Vixie {
         /// </summary>
         protected Game BaseGame;
         /// <summary>
+        /// Graphics Device, useful for Clearing
+        /// </summary>
+        protected GraphicsDevice GraphicsDevice;
+        /// <summary>
         /// Initializes the GameComponent with a Game Instance
         /// </summary>
         /// <param name="game">Game</param>
         protected GameComponent() {
-            this.BaseGame = Global.GameInstance;
+            this.BaseGame       = Global.GameInstance;
+            this.GraphicsDevice = Global.Device;
         }
         /// <summary>
         /// Processing Order, higher order means drawn and updated first

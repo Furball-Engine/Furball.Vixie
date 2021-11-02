@@ -24,7 +24,7 @@ namespace Furball.Vixie {
         /// <summary>
         /// What is the Graphics Device captable of doing.
         /// </summary>
-        public GraphicsDeviceCaptabilities DeviceCaptabilities;
+        public GraphicsDevice GraphicsDevice;
         /// <summary>
         /// All of the Game Components
         /// </summary>
@@ -37,6 +37,8 @@ namespace Furball.Vixie {
         protected Game(WindowOptions options) {
             if (Global.AlreadyInitialized)
                 throw new Exception("no we dont support multiple game instances yet");
+
+            Global.AlreadyInitialized = true;
 
             this.WindowManager = new WindowManager(options);
             this.WindowManager.Create();
@@ -86,7 +88,9 @@ namespace Furball.Vixie {
 
             //TODO(Eevee): input stuffs
 
-            this.DeviceCaptabilities = new GraphicsDeviceCaptabilities(gl);
+            this.GraphicsDevice  = new GraphicsDevice(gl);
+            Global.Device        = this.GraphicsDevice;
+            Global.WindowManager = this.WindowManager;
 
             this.Initialize();
         }

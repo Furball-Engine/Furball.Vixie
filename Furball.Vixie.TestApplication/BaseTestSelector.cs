@@ -19,6 +19,8 @@ namespace Furball.Vixie.TestApplication {
         }
 
         public override void Draw(double deltaTime) {
+            this.GraphicsDevice.GlClear();
+
             this._imGuiController.Update((float) deltaTime);
 
             ImGui.Begin("Test Selector");
