@@ -1,4 +1,5 @@
 using System;
+using System.Drawing;
 using System.Globalization;
 using System.Numerics;
 using Furball.Vixie.Graphics;
@@ -30,7 +31,7 @@ namespace Furball.Vixie.TestApplication.Tests {
 
             this._lineRenderer.Begin();
 
-            this._lineRenderer.Draw(new Vector2(0,0), new Vector2(1280, 720));
+            this._lineRenderer.Draw(new Vector2(0,0), new Vector2(1280, 720), 4, Color.Red);
 
 
 

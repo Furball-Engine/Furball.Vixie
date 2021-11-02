@@ -1,3 +1,4 @@
+using System.Drawing;
 using System.Numerics;
 using Furball.Vixie.Gl;
 using Furball.Vixie.Helpers;
@@ -28,7 +29,7 @@ namespace Furball.Vixie.Graphics {
 
             layout
                 .AddElement<float>(4)  //Position
-                .AddElement<float>(4); //Color
+                .AddElement<float>(4, true); //Color
 
             this._vertexBuffer = new BufferObject(128, BufferTargetARB.ArrayBuffer);
 
@@ -36,23 +37,22 @@ namespace Furball.Vixie.Graphics {
             this._vertexArray
                 .Bind()
                 .AddBuffer(this._vertexBuffer, layout);
-
-
         }
 
         public void Begin() {
+
         }
 
-        public unsafe void Draw(Vector2 begin, Vector2 end) {
+        public unsafe void Draw(Vector2 begin, Vector2 end, float thickness, Color color) {
             this._lineShader
                 .Bind()
                 .SetUniform("u_mvp",           UniformType.GlMat4f, Global.GameInstance.WindowManager.ProjectionMatrix)
                 .SetUniform("u_viewport_size", UniformType.GlFloat, (float) Global.GameInstance.WindowManager.GameWindow.Size.X, (float) Global.GameInstance.WindowManager.GameWindow.Size.Y)
-                .SetUniform("u_aa_radius",     UniformType.GlFloat, 2f, 2f);
+                .SetUniform("u_aa_radius",     UniformType.GlFloat, 6f, 6f);
 
             float[] verticies = new float[] {
-                begin.X, begin.Y, 0.0f, 16.0f, 1.0f, 2.0f, 3.0f, 1.0f,
-                end.X,   end.Y,   0.0f, 16.0f, 1.0f, 2.0f, 3.0f, 1.0f,
+                begin.X, begin.Y, 0.0f, thickness, color.R, color.G, color.B, color.A,
+                end.X,   end.Y,   0.0f, thickness, color.R, color.G, color.B, color.A,
             };
 
             this._vertexBuffer

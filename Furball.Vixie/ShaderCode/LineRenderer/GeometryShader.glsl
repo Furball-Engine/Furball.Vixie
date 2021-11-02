@@ -1,4 +1,5 @@
-#version 440 core
+#version 330 core
+#extension GL_ARB_explicit_uniform_location : enable
 
 layout(lines) in;
 layout(triangle_strip, max_vertices = 4) out;
@@ -7,13 +8,13 @@ layout(location = 1) uniform vec2 u_viewport_size;
 layout(location = 2) uniform vec2 u_aa_radius;
 
 in vec4 v_col[];
-in noperspective float v_line_width[];
+in float v_line_width[];
 
 out vec4 g_col;
-out noperspective float g_line_width;
-out noperspective float g_line_length;
-out noperspective float g_u;
-out noperspective float g_v;
+out float g_line_width;
+out float g_line_length;
+out float g_u;
+out float g_v;
 
 void main()
 {

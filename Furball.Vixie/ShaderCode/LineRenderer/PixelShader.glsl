@@ -1,13 +1,13 @@
-#version 440 core
+#version 330 core
 #extension GL_ARB_explicit_uniform_location : enable
 
 layout(location = 2) uniform vec2 u_aa_radius;
 
 in vec4 g_col;
-in noperspective float g_u;
-in noperspective float g_v;
-in noperspective float g_line_width;
-in noperspective float g_line_length;
+in float g_u;
+in float g_v;
+in float g_line_width;
+in float g_line_length;
 
 out vec4 frag_color;
 void main()
