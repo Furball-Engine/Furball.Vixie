@@ -23,6 +23,8 @@ namespace Furball.Vixie.TestApplication {
 
             this._imGuiController.Update((float) deltaTime);
 
+            ImGui.Begin("Test Selector");
+
             if (ImGui.Button("Texture Drawing Test")) {
                 this.BaseGame.Components.Add(new TestTextureDrawing(this.BaseGame));
                 this.BaseGame.Components.Remove(this);
@@ -37,6 +39,13 @@ namespace Furball.Vixie.TestApplication {
                 this.BaseGame.Components.Add(new TestInstancedRendering(this.BaseGame));
                 this.BaseGame.Components.Remove(this);
             }
+
+            if (ImGui.Button("Line Rendering Test")) {
+                this.BaseGame.Components.Add(new TestLineRenderer(this.BaseGame));
+                this.BaseGame.Components.Remove(this);
+            }
+
+            ImGui.End();
 
             this._imGuiController.Render();
 

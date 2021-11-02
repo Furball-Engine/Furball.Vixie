@@ -2,50 +2,35 @@ using System;
 using System.Globalization;
 using System.Numerics;
 using Furball.Vixie.Graphics;
-using Furball.Vixie.Helpers;
 using Furball.Vixie.ImGuiHelpers;
 using ImGuiNET;
+using Silk.NET.OpenGL;
 using Silk.NET.OpenGL.Extensions.ImGui;
-using Texture=Furball.Vixie.Gl.Texture;
 
 namespace Furball.Vixie.TestApplication.Tests {
-    public class TestBatchedRendering : GameComponent {
-        private BatchedRenderer _batchedRenderer;
-        private Texture         _texture;
+    public class TestLineRenderer : GameComponent {
+        private LineRenderer _lineRenderer;
 
         private ImGuiController _imGuiController;
 
-        public TestBatchedRendering(Game game) : base(game) {}
+        public TestLineRenderer(Game game) : base(game) {}
 
         public override void Initialize() {
-            this._batchedRenderer = new BatchedRenderer();
-
-            //Load the Texture
-            this._texture = new Texture(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
+            this._lineRenderer = new LineRenderer();
 
             this._imGuiController = ImGuiCreator.CreateController();
 
             base.Initialize();
         }
 
-        /// <summary>
-        /// Amount of Dons to draw on screen each frame
-        /// </summary>
         private int CirnoDons = 128;
 
         public override void Draw(double deltaTime) {
-            this._texture.Bind();
+            Global.Gl.Clear(ClearBufferMask.ColorBufferBit);
 
-            this._batchedRenderer.Begin();
+            this._lineRenderer.Begin();
 
-            for (int i = 0; i != 1024; i++) {
-                this._batchedRenderer.Draw(this._texture, new Vector2(i % 1024, 0), new Vector2(371, 326));
-            }
-
-            this._batchedRenderer.End();
-
-
-
+            this._lineRenderer.Draw(new Vector2(0,0), new Vector2(1280, 720));
 
 
 
@@ -63,20 +48,12 @@ namespace Furball.Vixie.TestApplication.Tests {
                 this.BaseGame.Components.Remove(this);
             }
 
-            ImGui.Text($"Quads: {this._batchedRenderer.QuadsDrawn}");
-            ImGui.Text($"Draws: {this._batchedRenderer.DrawCalls}");
-
-            ImGui.SliderInt("Draws", ref this.CirnoDons, 0, 4096);
-
             this._imGuiController.Render();
 
             #endregion
-
-
-
-
 
             base.Draw(deltaTime);
         }
     }
 }
+
