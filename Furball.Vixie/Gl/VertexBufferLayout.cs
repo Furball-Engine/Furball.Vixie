@@ -68,7 +68,8 @@ namespace Furball.Vixie.Gl {
                 TypeCode.UInt32 => VertexAttribPointerType.UnsignedInt,
                 TypeCode.Int16  => VertexAttribPointerType.Short,
                 TypeCode.UInt16 => VertexAttribPointerType.UnsignedShort,
-                TypeCode.Int32  => VertexAttribPointerType.Int
+                TypeCode.Int32  => VertexAttribPointerType.Int,
+                _ => throw new ArgumentOutOfRangeException("pElementType", "Generic Argument pElementType currently not supported")
             };
 
             this._elements.Add(new LayoutElement {

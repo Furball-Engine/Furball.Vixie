@@ -32,7 +32,7 @@ namespace Furball.Vixie.Graphics {
             this.gl = Global.Gl;
 
             this.MaxLines     = capacity;
-            this.MaxVerticies = capacity * 2;
+            this.MaxVerticies = capacity * 32;
 
             //Load Shader Source
             string vertexSource = ResourceHelpers.GetStringResource("ShaderCode/LineRenderer/VertexShader.glsl",     true);
@@ -116,13 +116,13 @@ namespace Furball.Vixie.Graphics {
             this._vertexPointer->Color[3]     = color.A;
             this._vertexPointer++;
 
-            this._vertexBufferIndex  += 36;
+            this._vertexBufferIndex  += 32;
             this._processedVerticies += 2;
             this.Lines++;
         }
 
         public unsafe void End() {
-            nuint size = (nuint)this._vertexBufferIndex;
+            nuint size = (nuint)this._vertexBufferIndex * 4;
 
             fixed (void* data = this._localVertexBuffer) {
                 this._vertexBuffer
@@ -130,7 +130,7 @@ namespace Furball.Vixie.Graphics {
                     .SetSubData(data, size);
             }
 
-            gl.DrawArrays(PrimitiveType.Lines, 0, (uint) (this._processedVerticies / 2));
+            gl.DrawArrays(PrimitiveType.Lines, 0, (uint) (this._processedVerticies));
 
             this._processedVerticies = 0;
             this._vertexBufferIndex = 0;

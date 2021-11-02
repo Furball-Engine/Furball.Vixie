@@ -9,7 +9,7 @@ in float g_v;
 in float g_line_width;
 in float g_line_length;
 
-out vec4 frag_color;
+layout(location = 0) out vec4 frag_color;
 void main()
 {
 	/* We render a quad that is fattened by r, giving total width of the line to be w+r. We want smoothing to happen
