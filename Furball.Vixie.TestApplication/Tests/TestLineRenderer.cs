@@ -31,7 +31,9 @@ namespace Furball.Vixie.TestApplication.Tests {
 
             this._lineRenderer.Begin();
 
-            this._lineRenderer.Draw(new Vector2(0,0), new Vector2(1280, 720), 4, Color.Red);
+            for (int i = 0; i != 1280; i++) {
+                this._lineRenderer.Draw(new Vector2(i, 0), new Vector2(1280 - i, 720), 4, Color.White);
+            }
 
 
 

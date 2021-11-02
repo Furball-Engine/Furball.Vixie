@@ -40,26 +40,25 @@ namespace Furball.Vixie.Graphics {
         }
 
         public void Begin() {
-
-        }
-
-        public unsafe void Draw(Vector2 begin, Vector2 end, float thickness, Color color) {
             this._lineShader
                 .Bind()
                 .SetUniform("u_mvp",           UniformType.GlMat4f, Global.GameInstance.WindowManager.ProjectionMatrix)
                 .SetUniform("u_viewport_size", UniformType.GlFloat, (float) Global.GameInstance.WindowManager.GameWindow.Size.X, (float) Global.GameInstance.WindowManager.GameWindow.Size.Y)
-                .SetUniform("u_aa_radius",     UniformType.GlFloat, 6f, 6f);
+                .SetUniform("u_aa_radius",     UniformType.GlFloat, 6f,                                                          6f);
 
-            float[] verticies = new float[] {
+            this._vertexBuffer.Bind();
+            this._vertexArray.Bind();
+        }
+
+        private float[] _verticies;
+
+        public void Draw(Vector2 begin, Vector2 end, float thickness, Color color) {
+            this._verticies = new float[] {
                 begin.X, begin.Y, 0.0f, thickness, color.R, color.G, color.B, color.A,
                 end.X,   end.Y,   0.0f, thickness, color.R, color.G, color.B, color.A,
             };
 
-            this._vertexBuffer
-                .Bind()
-                .SetData<float>(verticies);
-
-            this._vertexArray.Bind();
+            this._vertexBuffer.SetData<float>(this._verticies);
 
             Global.Gl.DrawArrays(PrimitiveType.Lines, 0, 2);
         }
