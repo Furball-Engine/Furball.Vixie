@@ -10,14 +10,14 @@ using Silk.NET.OpenGL.Extensions.ImGui;
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestLineRenderer : GameComponent {
-        private LineRenderer _lineRenderer;
+        private InstancedLineRenderer _instancedLineRenderer;
 
         private ImGuiController _imGuiController;
 
         public TestLineRenderer(Game game) : base(game) {}
 
         public override void Initialize() {
-            this._lineRenderer = new LineRenderer();
+            this._instancedLineRenderer = new InstancedLineRenderer();
 
             this._imGuiController = ImGuiCreator.CreateController();
 
@@ -29,10 +29,10 @@ namespace Furball.Vixie.TestApplication.Tests {
         public override void Draw(double deltaTime) {
             Global.Gl.Clear(ClearBufferMask.ColorBufferBit);
 
-            this._lineRenderer.Begin();
+            this._instancedLineRenderer.Begin();
 
             for (int i = 0; i != 1280; i++) {
-                this._lineRenderer.Draw(new Vector2(i, 0), new Vector2(1280 - i, 720), 4, Color.White);
+                this._instancedLineRenderer.Draw(new Vector2(i, 0), new Vector2(1280 - i, 720), 4, Color.White);
             }
 
 

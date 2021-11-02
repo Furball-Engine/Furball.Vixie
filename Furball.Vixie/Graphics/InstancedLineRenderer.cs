@@ -7,12 +7,12 @@ using Shader=Furball.Vixie.Gl.Shader;
 using UniformType=Furball.Vixie.Gl.UniformType;
 
 namespace Furball.Vixie.Graphics {
-    public class LineRenderer {
+    public class InstancedLineRenderer {
         private Shader            _lineShader;
         private VertexArrayObject _vertexArray;
         private BufferObject      _vertexBuffer;
 
-        public LineRenderer() {
+        public InstancedLineRenderer() {
             string vertexSource = ResourceHelpers.GetStringResource("ShaderCode/LineRenderer/VertexShader.glsl", true);
             string fragmentSource = ResourceHelpers.GetStringResource("ShaderCode/LineRenderer/PixelShader.glsl", true);
             string geometrySource = ResourceHelpers.GetStringResource("ShaderCode/LineRenderer/GeometryShader.glsl", true);
@@ -28,7 +28,7 @@ namespace Furball.Vixie.Graphics {
             VertexBufferLayout layout = new VertexBufferLayout();
 
             layout
-                .AddElement<float>(4)  //Position
+                .AddElement<float>(4)                  //Position
                 .AddElement<float>(4, true); //Color
 
             this._vertexBuffer = new BufferObject(128, BufferTargetARB.ArrayBuffer);
