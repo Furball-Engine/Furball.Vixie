@@ -72,6 +72,14 @@ namespace Furball.Vixie.Gl {
             return this;
         }
 
+        public unsafe BufferObject SetSubData<pDataType>(Span<pDataType> data) where pDataType : unmanaged {
+            fixed (void* d = data) {
+                this.SetSubData(d, (nuint)(data.Length * sizeof(pDataType)));
+            }
+
+            return this;
+        }
+
         /// <summary>
         /// Puts data into the buffer in a easier way
         /// </summary>

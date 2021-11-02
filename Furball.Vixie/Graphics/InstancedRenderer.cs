@@ -20,7 +20,7 @@ namespace Furball.Vixie.Graphics {
         public InstancedRenderer() {
             this.gl = Global.Gl;
 
-            this._vertexBuffer = new BufferObject(16, BufferTargetARB.ArrayBuffer, BufferUsageARB.StreamDraw);
+            this._vertexBuffer = new BufferObject(64, BufferTargetARB.ArrayBuffer, BufferUsageARB.StreamDraw);
 
             uint[] indicies = new uint[] {
                 0, 1, 2,

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Furball.Vixie.Gl;
@@ -14,7 +15,7 @@ namespace Furball.Vixie.Graphics {
         /// <summary>
         /// How many Quads are allowed to be drawn in 1 draw
         /// </summary>
-        public const int MAX_QUADS     = 16;
+        public const int MAX_QUADS     = 8192;
         /// <summary>
         /// How many Verticies are gonna be stored inside the Vertex Buffer
         /// </summary>
@@ -52,6 +53,14 @@ namespace Furball.Vixie.Graphics {
         /// Local Vertex Buffer
         /// </summary>
         private float[] _localVertexBuffer;
+        /// <summary>
+        /// Cache for Texture ID lookups
+        /// </summary>
+        private Dictionary<uint, float> _glTexIdToTexIdLookup;
+        /// <summary>
+        /// Cache for OpenGL Texture ID Lookups
+        /// </summary>
+        private Dictionary<float, uint> _TexIdToGlTexIdLookup;
 
         /// <summary>
         /// Purely for Statistics, stores how many Quads have been drawn
@@ -123,6 +132,9 @@ namespace Furball.Vixie.Graphics {
             //Create VAO and put the layout defined earlier in it
             this._vertexArray = new VertexArrayObject();
             this._vertexArray.AddBuffer(this._vertexBuffer, layout);
+
+            this._glTexIdToTexIdLookup = new Dictionary<uint, float>(MAX_TEX_SLOTS);
+            this._TexIdToGlTexIdLookup = new Dictionary<float, uint>(MAX_TEX_SLOTS);
         }
 
         /// <summary>
@@ -143,6 +155,8 @@ namespace Furball.Vixie.Graphics {
                 Global.Gl.Clear(ClearBufferMask.ColorBufferBit);
                 this.DrawCalls  = 0;
                 this.QuadsDrawn = 0;
+                this._glTexIdToTexIdLookup.Clear();
+                this._TexIdToGlTexIdLookup.Clear();
             }
         }
 
@@ -153,22 +167,11 @@ namespace Furball.Vixie.Graphics {
                 this.Begin(false);
             }
 
-            float textureIndex = -1f;
+            float textureIndex;
 
-            //See if the Texture has already been used
-            for (int i = 0; i != this._textureSlotIndex; i++) {
-                uint texId = texture.GetTextureId();
-
-                if (this._textureSlots[i] == texId) {
-                    textureIndex = i;
-                    break;
-                }
-            }
-
-            //If no, reserve a new slot for the Texture
-            if (textureIndex == -1f) {
-                textureIndex                               = this._textureSlotIndex;
-                this._textureSlots[this._textureSlotIndex] = texture.GetTextureId();
+            if (this._glTexIdToTexIdLookup.TryGetValue(texture._textureId, out textureIndex)) {
+                this._glTexIdToTexIdLookup.Add(texture._textureId, this._textureSlotIndex);
+                this._TexIdToGlTexIdLookup.Add(this._textureSlotIndex, texture._textureId);
 
                 this._textureSlotIndex++;
             }
@@ -209,11 +212,12 @@ namespace Furball.Vixie.Graphics {
 
         public unsafe void End() {
             //Bind all textures
-            for(uint i = 0; i != this._textureSlotIndex; i++)
-                Global.Gl.BindTextureUnit(i, this._textureSlots[i]);
+            for (uint i = 0; i != this._textureSlotIndex; i++) {
+                Global.Gl.BindTextureUnit(i, this._TexIdToGlTexIdLookup[i]);
+            }
 
             //Calculate how many verticies have to be uploaded to the GPU
-            nuint size = (nuint) (this._localVertexBuffer.Length);
+            nuint size = (nuint) (this._vertexBufferIndex * 4);
 
             fixed (void* data = this._localVertexBuffer) {
                 this._vertexBuffer
@@ -236,7 +240,7 @@ namespace Furball.Vixie.Graphics {
 
             //Reset counts
             this._indexCount        = 0;
-            this._textureSlotIndex  = 1;
+            this._textureSlotIndex  = 0;
             this._vertexBufferIndex = 0;
 
             this.DrawCalls++;

@@ -16,7 +16,7 @@ namespace Furball.Vixie.Gl {
         /// <summary>
         /// Unique ID which identifies this Texture
         /// </summary>
-        private uint          _textureId;
+        internal uint          _textureId;
         /// <summary>
         /// Local Image, possibly useful to Sample on the CPU Side if necessary
         /// </summary>
