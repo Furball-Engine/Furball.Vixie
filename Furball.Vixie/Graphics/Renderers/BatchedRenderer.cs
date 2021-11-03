@@ -221,7 +221,14 @@ namespace Furball.Vixie.Graphics {
         /// Height
         /// </summary>
         private float _sizeY;
-
+        /// <summary>
+        /// Batches a Texture Draw
+        /// </summary>
+        /// <param name="texture">Texture to Draw</param>
+        /// <param name="position">Where to Draw</param>
+        /// <param name="size">How big to draw (Vector2.Zero makes it use Texture.Size)</param>
+        /// <param name="scale">How much to scale it up</param>
+        /// <param name="rotation">How much to rotate</param>
         public unsafe void Draw(Texture texture, Vector2 position, Vector2 size, float scale = 1f, float rotation = 0f) {
             //If we ran out of Texture Slots or are out of space in out Vertex/Index buffer, flush whats already there and start a new Batch
             if (this._indexCount >= this.MaxIndicies || this._textureSlotIndex >= this.MaxTexSlots - 1) {
@@ -282,7 +289,10 @@ namespace Furball.Vixie.Graphics {
             this._vertexBufferIndex += 80;
             this.QuadsDrawn++;
         }
-
+        /// <summary>
+        /// Ends the Batch and draws contents to the Screen
+        /// </summary>
+        /// <param name="unlock">Whether or not to unlock all buffers, you probably wanna leave this alone</param>
         public unsafe void End(bool unlock = true) {
             //Bind all textures
             for (uint i = 0; i != this._textureSlotIndex; i++) {
