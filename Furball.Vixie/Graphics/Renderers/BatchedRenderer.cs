@@ -227,7 +227,7 @@ namespace Furball.Vixie.Graphics {
             this._sizeX = size.X;
             this._sizeY = size.Y;
 
-            if (this._glTexIdToTexIdLookup.TryGetValue(texture._textureId, out this._textureIndex)) {
+            if (!this._glTexIdToTexIdLookup.TryGetValue(texture._textureId, out this._textureIndex)) {
                 this._glTexIdToTexIdLookup.Add(texture._textureId, this._textureSlotIndex);
                 this._texIdToGlTexIdLookup.Add(this._textureSlotIndex, texture._textureId);
 

@@ -9,32 +9,59 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         private GL gl;
 
+        /// <summary>
+        /// Unique ID of this FrameBuffer
+        /// </summary>
         private uint _frameBufferId;
+        /// <summary>
+        /// Texture ID of the Texture that this RenderTarget draws to
+        /// </summary>
         private uint _textureId;
+        /// <summary>
+        /// Depth Buffer of this RenderTarget
+        /// </summary>
         private uint _depthRenderBufferId;
 
+        /// <summary>
+        /// When binding, it saves the old viewport here so it can reset it upon Unbinding
+        /// </summary>
         private int[] _oldViewPort;
+        /// <summary>
+        /// The RenderTarget Width
+        /// </summary>
         private uint  _targetWidth;
+        /// <summary>
+        /// The RenderTarget Height
+        /// </summary>
         private uint  _targetHeight;
-
+        /// <summary>
+        /// Creates a TextureRenderTarget
+        /// </summary>
+        /// <param name="width">Desired Width</param>
+        /// <param name="height">Desired Width</param>
+        /// <exception cref="Exception">Throws Exception if the Target didn't create properly</exception>
         public unsafe TextureRenderTarget(uint width, uint height) {
             this.gl = Global.Gl;
 
+            //Generate and bind a FrameBuffer
             this._frameBufferId = gl.GenFramebuffer();
             gl.BindFramebuffer(FramebufferTarget.Framebuffer, this._frameBufferId);
 
+            //Generate a Texture
             this._textureId = gl.GenTexture();
             gl.BindTexture(TextureTarget.Texture2D, this._textureId);
+            //Set it to Empty
             gl.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat.Rgb, width, height, 0, PixelFormat.Rgb, PixelType.UnsignedByte, null);
-
+            //Set The Filtering to nearest (apperantly necessary, idk)
             gl.TexParameterI(TextureTarget.Texture2D, GLEnum.TextureMagFilter, (int)GLEnum.Nearest);
             gl.TexParameterI(TextureTarget.Texture2D, GLEnum.TextureMinFilter, (int)GLEnum.Nearest);
 
+            //Generate the Depth buffer
             this._depthRenderBufferId = gl.GenRenderbuffer();
             gl.BindRenderbuffer(RenderbufferTarget.Renderbuffer, this._depthRenderBufferId);
             gl.RenderbufferStorage(RenderbufferTarget.Renderbuffer, InternalFormat.DepthComponent, width, height);
             gl.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, RenderbufferTarget.Renderbuffer, this._depthRenderBufferId);
-
+            //Connect the bound texture to the FrameBuffer object
             gl.FramebufferTexture(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, this._textureId, 0);
 
             GLEnum[] drawBuffers = new GLEnum[1] {
@@ -42,6 +69,7 @@ namespace Furball.Vixie.Graphics {
             };
             gl.DrawBuffers(1, drawBuffers);
 
+            //Check if FrameBuffer created successfully
             if (gl.CheckFramebufferStatus(FramebufferTarget.Framebuffer) != GLEnum.FramebufferComplete) {
                 throw new Exception("Failed to create TextureRenderTarget!");
             }
@@ -50,19 +78,26 @@ namespace Furball.Vixie.Graphics {
             this._targetWidth  = width;
             this._targetHeight = height;
         }
-
+        /// <summary>
+        /// Binds the Target, from now on drawing will draw to this RenderTarget,
+        /// </summary>
         public void Bind() {
             gl.BindFramebuffer(FramebufferTarget.Framebuffer, this._frameBufferId);
             //Store the old viewport for later
             gl.GetInteger(GetPName.Viewport, this._oldViewPort);
             gl.Viewport(0, 0, this._targetWidth, this._targetHeight);
         }
-
+        /// <summary>
+        /// Unbinds the Target and resets the Viewport, drawing is now back to normal
+        /// </summary>
         public void Unbind() {
             gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
             gl.Viewport(this._oldViewPort[0], this._oldViewPort[1], (uint) this._oldViewPort[2], (uint) this._oldViewPort[3]);
         }
-
+        /// <summary>
+        /// Retrieves the Texture from this RenderTarget
+        /// </summary>
+        /// <returns>Texture of this RenderTarget</returns>
         public Texture GetTexture() => new Texture(this._textureId, this._targetWidth, this._targetHeight);
     }
 }
