@@ -1,4 +1,5 @@
 using System;
+using Furball.Vixie.Graphics;
 using Silk.NET.OpenGL;
 
 namespace Furball.Vixie.Gl {

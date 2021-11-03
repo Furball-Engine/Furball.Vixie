@@ -1,7 +1,7 @@
 using System;
 using Silk.NET.OpenGL;
 
-namespace Furball.Vixie.Gl {
+namespace Furball.Vixie.Graphics {
     /// <summary>
     /// OpenGL Buffer Objecct
     /// </summary>
@@ -33,15 +33,15 @@ namespace Furball.Vixie.Gl {
         /// <param name="bufferType">What kind of buffer is it?</param>
         /// <param name="usage">How is this buffer going to be used?</param>
         public unsafe BufferObject(int size, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StreamDraw) {
-            gl                = Global.Gl;
+            this.gl                = Global.Gl;
             this._bufferType  = bufferType;
             this._bufferUsage = usage;
             //Generate Buffer
-            this._bufferId = gl.GenBuffer();
+            this._bufferId = this.gl.GenBuffer();
             //Select buffer, as we're going to allocate memory in it
-            gl.BindBuffer(this._bufferType, this._bufferId);
+            this.gl.BindBuffer(this._bufferType, this._bufferId);
             //Allocate Memory
-            gl.BufferData(this._bufferType, (nuint) size, null, this._bufferUsage);
+            this.gl.BufferData(this._bufferType, (nuint) size, null, this._bufferUsage);
         }
         /// <summary>
         /// Creates a Empty buffer
@@ -49,11 +49,11 @@ namespace Furball.Vixie.Gl {
         /// <param name="bufferType">What kind of Buffer is it</param>
         /// <param name="usage">How is this buffer going to be used?</param>
         public BufferObject(BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StreamDraw) {
-            gl                = Global.Gl;
+            this.gl                = Global.Gl;
             this._bufferType  = bufferType;
             this._bufferUsage = usage;
             //Generate Buffer
-            this._bufferId = gl.GenBuffer();
+            this._bufferId = this.gl.GenBuffer();
         }
         /// <summary>
         /// Puts data into the Buffer
@@ -62,13 +62,13 @@ namespace Furball.Vixie.Gl {
         /// <param name="size">Size of the Data</param>
         /// <returns></returns>
         public unsafe BufferObject SetData(void* data, nuint size) {
-            gl.BufferData(this._bufferType, size, data, this._bufferUsage);
+            this.gl.BufferData(this._bufferType, size, data, this._bufferUsage);
 
             return this;
         }
 
         public unsafe BufferObject SetSubData(void* data, nuint size, nint offset = 0) {
-            gl.BufferSubData(this._bufferType, offset, size, data);
+            this.gl.BufferSubData(this._bufferType, offset, size, data);
             return this;
         }
 
@@ -121,7 +121,7 @@ namespace Furball.Vixie.Gl {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         public BufferObject Bind() {
-            gl.BindBuffer(this._bufferType, this._bufferId);
+            this.gl.BindBuffer(this._bufferType, this._bufferId);
 
             return this;
         }
@@ -130,7 +130,7 @@ namespace Furball.Vixie.Gl {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         public BufferObject Unbind() {
-            gl.BindBuffer(this._bufferType, 0);
+            this.gl.BindBuffer(this._bufferType, 0);
 
             return this;
         }
@@ -138,7 +138,7 @@ namespace Furball.Vixie.Gl {
         /// Disposes the Buffer
         /// </summary>
         public void Dispose() {
-            gl.DeleteBuffer(this._bufferId);
+            this.gl.DeleteBuffer(this._bufferId);
         }
     }
 }
