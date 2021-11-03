@@ -25,8 +25,6 @@ namespace Furball.Vixie.TestApplication.Tests {
 
         private ImGuiController _imGuiController;
 
-        public TestTextureDrawing() {}
-
         public override void Initialize() {
             this._instancedRenderer = new InstancedRenderer();
 
@@ -74,12 +72,6 @@ namespace Furball.Vixie.TestApplication.Tests {
         public override void Draw(double deltaTime) {
             this.GraphicsDevice.GlClear();
 
-            //this._shader
-            //    .Bind()
-            //    .SetUniform("u_Translation", UniformType.GlMat4f, Matrix4x4.CreateTranslation(200, 200, 0));
-
-            //this._instancedRenderer.Draw(this._vertexBuffer, this._indexBuffer, this._shader);
-
             this._instancedRenderer.Begin();
             this._instancedRenderer.Draw(this._texture, new Vector2(200, 200));
             this._instancedRenderer.End();
@@ -110,8 +102,6 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._vertexArrayObject.Dispose();
             this._shader.Dispose();
             this._texture.Dispose();
-
-            base.Dispose();
 
             base.Dispose();
         }

@@ -16,8 +16,6 @@ namespace Furball.Vixie.TestApplication.Tests {
 
         private ImGuiController _imGuiController;
 
-        public TestBatchedRendering(){}
-
         public override void Initialize() {
             this._batchedRenderer = new BatchedRenderer();
 

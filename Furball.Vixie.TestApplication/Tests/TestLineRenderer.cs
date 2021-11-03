@@ -13,8 +13,6 @@ namespace Furball.Vixie.TestApplication.Tests {
 
         private ImGuiController _imGuiController;
 
-        public TestLineRenderer() {}
-
         public override void Initialize() {
             this._instancedLineRenderer = new InstancedLineRenderer();
 

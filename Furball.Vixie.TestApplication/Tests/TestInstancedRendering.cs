@@ -13,17 +13,9 @@ using Texture=Furball.Vixie.Gl.Texture;
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestInstancedRendering : GameComponent {
         private InstancedRenderer _instancedRenderer;
-
-        private BufferObject _vertexBuffer;
-        private BufferObject  _indexBuffer;
-        private BasicTexturedShader _shader;
-        private Texture             _texture;
-
-        private VertexArrayObject _vertexArrayObject;
+        private Texture           _texture;
 
         private ImGuiController _imGuiController;
-
-        public TestInstancedRendering() {}
 
         public override void Initialize() {
             this._instancedRenderer = new InstancedRenderer();
