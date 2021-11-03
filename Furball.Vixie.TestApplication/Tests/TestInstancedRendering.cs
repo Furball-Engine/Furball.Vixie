@@ -28,14 +28,14 @@ namespace Furball.Vixie.TestApplication.Tests {
             base.Initialize();
         }
 
-        private int CirnoDons = 128;
+        private int CirnoDons = 1024;
 
         public override void Draw(double deltaTime) {
             this.GraphicsDevice.GlClear();
 
             this._instancedRenderer.Begin();
 
-            for (int i = 0; i != 1024; i++) {
+            for (int i = 0; i != this.CirnoDons; i++) {
                 this._instancedRenderer.Draw(this._texture, new Vector2(i, 0), new Vector2(371, 326));
             }
 
@@ -53,6 +53,9 @@ namespace Furball.Vixie.TestApplication.Tests {
                 this.BaseGame.Components.Add(new BaseTestSelector());
                 this.BaseGame.Components.Remove(this);
             }
+
+            ImGui.SliderInt("Draws", ref this.CirnoDons, 0, 1024);
+
 
             this._imGuiController.Render();
 

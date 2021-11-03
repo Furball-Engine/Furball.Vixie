@@ -32,7 +32,7 @@ namespace Furball.Vixie.TestApplication.Tests {
         /// <summary>
         /// Amount of Dons to draw on screen each frame
         /// </summary>
-        private int CirnoDons = 128;
+        private int CirnoDons = 1024;
 
         public override void Draw(double deltaTime) {
             this.GraphicsDevice.GlClear();
@@ -41,7 +41,7 @@ namespace Furball.Vixie.TestApplication.Tests {
 
             this._batchedRenderer.Begin();
 
-            for (int i = 0; i != 1024; i++) {
+            for (int i = 0; i != this.CirnoDons; i++) {
                 this._batchedRenderer.Draw(this._texture, new Vector2(i % 1024, 0), new Vector2(371, 326));
             }
 
@@ -69,7 +69,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             ImGui.Text($"Quads: {this._batchedRenderer.QuadsDrawn}");
             ImGui.Text($"Draws: {this._batchedRenderer.DrawCalls}");
 
-            ImGui.SliderInt("Draws", ref this.CirnoDons, 0, 4096);
+            ImGui.SliderInt("Draws", ref this.CirnoDons, 0, 1024);
 
             this._imGuiController.Render();
 
