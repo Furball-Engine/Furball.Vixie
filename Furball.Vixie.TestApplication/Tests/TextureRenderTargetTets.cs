@@ -14,6 +14,7 @@ namespace Furball.Vixie.TestApplication.Tests {
         private TextureRenderTarget _renderTarget;
         private Texture             _resultTexture;
         private InstancedRenderer   _instancedRenderer;
+        private BatchedRenderer   _batchedRenderer;
 
         private ImGuiController _imGuiController;
 
@@ -21,6 +22,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._batchedLineRenderer = new BatchedLineRenderer();
             this._renderTarget        = new TextureRenderTarget(1280, 720);
             this._instancedRenderer   = new InstancedRenderer();
+            this._batchedRenderer   = new BatchedRenderer();
 
             this._imGuiController = ImGuiCreator.CreateController();
 
@@ -40,9 +42,9 @@ namespace Furball.Vixie.TestApplication.Tests {
 
             this._resultTexture = this._renderTarget.GetTexture();
 
-            this._instancedRenderer.Begin();
-            this._instancedRenderer.Draw(this._resultTexture, Vector2.Zero, Vector2.Zero, Color.White);
-            this._instancedRenderer.End();
+            this._batchedRenderer.Begin();
+            this._batchedRenderer.Draw(this._resultTexture, Vector2.Zero, new Vector2(1280, 720));
+            this._batchedRenderer.End();
 
 
 

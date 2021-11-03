@@ -190,6 +190,12 @@ namespace Furball.Vixie.Graphics {
                 this.DrawCalls  = 0;
                 this.QuadsDrawn = 0;
             }
+
+            //Bind everything
+            this._vertexArray.LockingBind();
+            this._indexBuffer.LockingBind();
+            this._vertexBuffer.LockingBind();
+            this._batchShader.LockingBind();
         }
 
         //These members exist to not redefine variables in Draw every time
@@ -271,7 +277,7 @@ namespace Furball.Vixie.Graphics {
             this.QuadsDrawn++;
         }
 
-        public unsafe void End() {
+        public unsafe void End(bool unlock = true) {
             //Bind all textures
             for (uint i = 0; i != this._textureSlotIndex; i++) {
                 gl.BindTexture((GLEnum)((uint)GLEnum.Texture0 + i), this._texIdToGlTexIdLookup[i]);
@@ -282,18 +288,11 @@ namespace Furball.Vixie.Graphics {
 
             fixed (void* data = this._localVertexBuffer) {
                 this._vertexBuffer
-                    .Bind()
                     .SetSubData(data, size);
             }
 
-            //Bind everything
-            this._vertexArray.Bind();
-            this._indexBuffer.Bind();
-            this._vertexBuffer.Bind();
-
             //Bind the Shader and provide the Window projection matrix, to give us normal pixel space from 0,0 to whatever the window size is in the bottom right
             this._batchShader
-                .Bind()
                 .SetUniform("vx_WindowProjectionMatrix", UniformType.GlMat4f, Global.GameInstance.WindowManager.ProjectionMatrix);
 
             //Draw
@@ -305,6 +304,14 @@ namespace Furball.Vixie.Graphics {
             this._vertexBufferIndex = 0;
 
             this.DrawCalls++;
+
+            if (unlock) {
+                //Bind everything
+                this._vertexArray.Unlock();
+                this._indexBuffer.Unlock();
+                this._vertexBuffer.Unlock();
+                this._batchShader.Unlock();
+            }
         }
     }
 }

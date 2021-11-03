@@ -80,19 +80,19 @@ namespace Furball.Vixie.Graphics {
 
             //Bind the Shader and set the necessary uniforms
             this._lineShader
-                .Bind()
+                .LockingBind()
                 .SetUniform("u_mvp",           UniformType.GlMat4f, Global.GameInstance.WindowManager.ProjectionMatrix)
                 .SetUniform("u_viewport_size", UniformType.GlFloat, (float) Global.GameInstance.WindowManager.GameWindow.Size.X, (float) Global.GameInstance.WindowManager.GameWindow.Size.Y)
                 .SetUniform("u_aa_radius",     UniformType.GlFloat, 6f,                                                          6f);
 
             //Bind the Buffer and Array
-            this._vertexBuffer.Bind();
-            this._vertexArray.Bind();
+            this._vertexBuffer.LockingBind();
+            this._vertexArray.LockingBind();
         }
 
         public unsafe void Draw(Vector2 start, Vector2 end, float thickness, Color color) {
             if (this._processedVerticies >= MaxVerticies) {
-                this.End();
+                this.End(false);
                 this.Begin(false);
             }
 
@@ -121,12 +121,11 @@ namespace Furball.Vixie.Graphics {
             this.Lines++;
         }
 
-        public unsafe void End() {
+        public unsafe void End(bool unlock = true) {
             nuint size = (nuint)this._vertexBufferIndex * 4;
 
             fixed (void* data = this._localVertexBuffer) {
                 this._vertexBuffer
-                    .Bind()
                     .SetSubData(data, size);
             }
 
@@ -135,6 +134,12 @@ namespace Furball.Vixie.Graphics {
             this._processedVerticies = 0;
             this._vertexBufferIndex = 0;
             this.DrawCalls++;
+
+            if (unlock) {
+                this._lineShader.Unlock();
+                this._vertexBuffer.Unlock();
+                this._vertexArray.Unlock();
+            }
         }
     }
 }

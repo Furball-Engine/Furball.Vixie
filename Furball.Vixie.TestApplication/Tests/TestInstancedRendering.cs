@@ -47,6 +47,8 @@ namespace Furball.Vixie.TestApplication.Tests {
                 this._instancedRenderer.Draw(this._texture, new Vector2(i, 0), new Vector2(371, 326));
             }
 
+            this._instancedRenderer.End();
+
             #region ImGui menu
 
             this._imGuiController.Update((float) deltaTime);

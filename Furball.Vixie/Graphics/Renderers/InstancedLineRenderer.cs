@@ -66,14 +66,14 @@ namespace Furball.Vixie.Graphics {
         public void Begin() {
             //Bind the Shader and set the necessary uniforms
             this._lineShader
-                .Bind()
+                .LockingBind()
                 .SetUniform("u_mvp",           UniformType.GlMat4f, Global.GameInstance.WindowManager.ProjectionMatrix)
                 .SetUniform("u_viewport_size", UniformType.GlFloat, (float) Global.GameInstance.WindowManager.GameWindow.Size.X, (float) Global.GameInstance.WindowManager.GameWindow.Size.Y)
                 .SetUniform("u_aa_radius",     UniformType.GlFloat, 6f,                                                          6f);
 
             //Bind the Buffer and Array
-            this._vertexBuffer.Bind();
-            this._vertexArray.Bind();
+            this._vertexBuffer.LockingBind();
+            this._vertexArray.LockingBind();
         }
         /// <summary>
         /// Temporary Vertex Buffer, placed here to not redefine it every time
@@ -96,6 +96,14 @@ namespace Furball.Vixie.Graphics {
             this._vertexBuffer.SetData<float>(this._verticies);
             //Draw
             gl.DrawArrays(PrimitiveType.Lines, 0, 2);
+        }
+        /// <summary>
+        /// Ends the Instanced Renderer, unlocking all buffers
+        /// </summary>
+        public void End() {
+            this._lineShader.Unlock();
+            this._vertexBuffer.Unlock();
+            this._vertexArray.Unlock();
         }
     }
 }

@@ -74,13 +74,15 @@ namespace Furball.Vixie.TestApplication.Tests {
         public override void Draw(double deltaTime) {
             this.GraphicsDevice.GlClear();
 
-            this._texture.Bind();
+            //this._shader
+            //    .Bind()
+            //    .SetUniform("u_Translation", UniformType.GlMat4f, Matrix4x4.CreateTranslation(200, 200, 0));
 
-            this._shader
-                .Bind()
-                .SetUniform("u_Translation", UniformType.GlMat4f, Matrix4x4.CreateTranslation(200, 200, 0));
+            //this._instancedRenderer.Draw(this._vertexBuffer, this._indexBuffer, this._shader);
 
-            this._instancedRenderer.Draw(this._vertexBuffer, this._indexBuffer, this._shader);
+            this._instancedRenderer.Begin();
+            this._instancedRenderer.Draw(this._texture, new Vector2(200, 200));
+            this._instancedRenderer.End();
 
             #region ImGui menu
 

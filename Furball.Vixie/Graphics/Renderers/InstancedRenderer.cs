@@ -106,7 +106,11 @@ namespace Furball.Vixie.Graphics {
         }
 
         public void End() {
-
+            this._vertexBuffer.Unlock();
+            this._indexBuffer.Unlock();
+            this._vertexArray.Unlock();
+            this._indexBuffer.Unlock();
+            this._currentShader.Unlock();
         }
         /// <summary>
         /// Stores the currently in use Shader
@@ -117,10 +121,12 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         /// <param name="shader">New Shader</param>
         public void ChangeShader(Shader shader) {
+            this._currentShader?.Unlock();
+
             this._currentShader = shader;
             //Bind and give it the Window Projection Matrix
             this._currentShader
-                .Bind()
+                .LockingBind()
                 .SetUniform("vx_WindowProjectionMatrix", UniformType.GlMat4f, Global.GameInstance.WindowManager.ProjectionMatrix);
         }
         /// <summary>
@@ -132,7 +138,6 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         /// <param name="texture">Texture to Draw</param>
         /// <param name="position">Where to Draw</param>
-        /// TODO(Eevee): readd
         /// <param name="size">How big to draw</param>
         /// TODO(Eevee): make this work somehow
         /// <param name="colorOverride">Color Tint</param>
