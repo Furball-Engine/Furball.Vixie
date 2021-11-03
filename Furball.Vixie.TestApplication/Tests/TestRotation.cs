@@ -31,7 +31,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             this.GraphicsDevice.GlClear();
 
             this._batchedRenderer.Begin();
-            this._batchedRenderer.Draw(this._whiteTexture, new Vector2(25, 25), new Vector2(371, 356));
+            this._batchedRenderer.Draw(this._whiteTexture, new Vector2(25, 25), new Vector2(371, 356), Vector2.Zero);
             this._batchedRenderer.End();
 
 

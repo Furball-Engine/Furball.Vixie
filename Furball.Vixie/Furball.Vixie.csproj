@@ -13,6 +13,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="FontStashSharp" Version="1.0.4" />
       <PackageReference Include="Kettu" Version="1.2.0" />
       <PackageReference Include="Silk.NET" Version="2.9.0" />
       <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.9.0" />

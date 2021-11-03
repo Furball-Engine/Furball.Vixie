@@ -73,7 +73,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             this.GraphicsDevice.GlClear();
 
             this._instancedRenderer.Begin();
-            this._instancedRenderer.Draw(this._texture, new Vector2(200, 200), Vector2.Zero);
+            this._instancedRenderer.Draw(this._texture, new Vector2(200, 200), Vector2.Zero, Vector2.Zero);
             this._instancedRenderer.End();
 
             #region ImGui menu

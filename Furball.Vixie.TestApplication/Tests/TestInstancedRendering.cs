@@ -36,7 +36,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._instancedRenderer.Begin();
 
             for (int i = 0; i != this.CirnoDons; i++) {
-                this._instancedRenderer.Draw(this._texture, new Vector2(i, 0), new Vector2(371, 326));
+                this._instancedRenderer.Draw(this._texture, new Vector2(i, 0), new Vector2(371, 326), Vector2.Zero);
             }
 
             this._instancedRenderer.End();

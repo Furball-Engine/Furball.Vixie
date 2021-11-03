@@ -142,9 +142,12 @@ namespace Furball.Vixie.Graphics {
         /// <param name="scale">How much to scale it up</param>
         /// TODO(Eevee): make this work somehow
         /// <param name="colorOverride">Color Tint</param>
-        public unsafe void Draw(Texture texture, Vector2 position, Vector2 size, float scale = 1f, Color? colorOverride = null) {
+        public unsafe void Draw(Texture texture, Vector2 position, Vector2 size, Vector2 scale, Color? colorOverride = null) {
             if (size == Vector2.Zero)
                 size = texture.Size;
+
+            if(scale == Vector2.Zero)
+                scale = Vector2.One;
 
             size *= scale;
 

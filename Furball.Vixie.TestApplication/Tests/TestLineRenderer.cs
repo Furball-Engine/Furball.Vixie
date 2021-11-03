@@ -21,8 +21,6 @@ namespace Furball.Vixie.TestApplication.Tests {
             base.Initialize();
         }
 
-        private int CirnoDons = 128;
-
         public override void Draw(double deltaTime) {
             this.GraphicsDevice.GlClear();
 

@@ -43,7 +43,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._resultTexture = this._renderTarget.GetTexture();
 
             this._batchedRenderer.Begin();
-            this._batchedRenderer.Draw(this._resultTexture, Vector2.Zero, new Vector2(1280, 720));
+            this._batchedRenderer.Draw(this._resultTexture, Vector2.Zero, new Vector2(1280, 720), Vector2.Zero);
             this._batchedRenderer.End();
 
 

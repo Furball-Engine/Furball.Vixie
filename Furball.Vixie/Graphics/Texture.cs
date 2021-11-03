@@ -93,6 +93,26 @@ namespace Furball.Vixie.Gl {
 
             this.Size = new Vector2(1, 1);
         }
+
+        public unsafe Texture(uint width, uint height) {
+            this.gl = Global.Gl;
+
+            this._textureId = gl.GenTexture();
+            //Bind as we will be working on the Texture
+            gl.BindTexture(TextureTarget.Texture2D, this._textureId);
+            //Apply Linear filtering, and make Image wrap around and repeat
+            gl.TexParameter(GLEnum.Texture2D, TextureParameterName.TextureMinFilter, (int) GLEnum.Linear);
+            gl.TexParameter(GLEnum.Texture2D, TextureParameterName.TextureMagFilter, (int) GLEnum.Linear);
+            gl.TexParameter(TextureTarget.Texture2D, GLEnum.TextureWrapS, (int) GLEnum.Repeat);
+            gl.TexParameter(TextureTarget.Texture2D, GLEnum.TextureWrapT, (int) GLEnum.Repeat);
+            //Upload Image Data
+            gl.TexImage2D(GLEnum.Texture2D, 0, InternalFormat.Rgba8, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, null);
+            //Unbind as we have finished
+            gl.BindTexture(TextureTarget.Texture2D, 0);
+
+            this.Size = new Vector2(width, height);
+        }
+
         /// <summary>
         /// Creates a Texture from a Stream which Contains Image Data
         /// </summary>
@@ -143,6 +163,31 @@ namespace Furball.Vixie.Gl {
             //Unbind as we have finished
             gl.BindTexture(TextureTarget.Texture2D, 0);
         }
+
+        public unsafe Texture SetData<pDataType>(int level, pDataType[] data) where pDataType : unmanaged {
+            this.LockingBind();
+
+            fixed(void* d = data)
+                gl.TexImage2D(TextureTarget.Texture2D, level, InternalFormat.Rgba, (uint) this.Size.X, (uint) this.Size.Y, 0, PixelFormat.Rgba, PixelType.UnsignedByte, d);
+
+            gl.Finish();
+
+            this.UnlockingUnbind();
+
+            return this;
+        }
+
+        public unsafe Texture SetData<pDataType>(int level, System.Drawing.Rectangle rect, pDataType[] data) where pDataType : unmanaged {
+            this.LockingBind();
+
+            fixed(void* d = data)
+                gl.TexSubImage2D(TextureTarget.Texture2D, level, rect.X, rect.Y, (uint) rect.Width, (uint) rect.Height, PixelFormat.Rgba, PixelType.UnsignedByte, d);
+
+            this.UnlockingUnbind();
+
+            return this;
+        }
+
         /// <summary>
         /// Binds the Texture to a certain Texture Slot
         /// </summary>

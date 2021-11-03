@@ -229,17 +229,20 @@ namespace Furball.Vixie.Graphics {
         /// <param name="size">How big to draw (Vector2.Zero makes it use Texture.Size)</param>
         /// <param name="scale">How much to scale it up</param>
         /// <param name="rotation">How much to rotate</param>
-        public unsafe void Draw(Texture texture, Vector2 position, Vector2 size, float scale = 1f, float rotation = 0f) {
+        public unsafe void Draw(Texture texture, Vector2 position, Vector2 size, Vector2 scale, float rotation = 0f) {
             //If we ran out of Texture Slots or are out of space in out Vertex/Index buffer, flush whats already there and start a new Batch
             if (this._indexCount >= this.MaxIndicies || this._textureSlotIndex >= this.MaxTexSlots - 1) {
                 this.End();
                 this.Begin(false);
             }
 
-            size *= scale;
+            if(scale == Vector2.Zero)
+                scale = Vector2.One;
 
             if (size == Vector2.Zero)
                 size = texture.Size;
+
+            size *= scale;
 
             this._posX  = position.X;
             this._posy  = position.Y;
@@ -300,12 +303,9 @@ namespace Furball.Vixie.Graphics {
                 gl.BindTexture(GLEnum.Texture2D, this._texIdToGlTexIdLookup[i]);
             }
 
-            //Calculate how many verticies have to be uploaded to the GPU
-            nuint size = (nuint) (this._vertexBufferIndex);
-
             fixed (void* data = this._localVertexBuffer) {
                 this._vertexBuffer
-                    .SetSubData(data, size);
+                    .SetSubData(data, (nuint) (this._vertexBufferIndex));
             }
 
             //Bind the Shader and provide the Window projection matrix, to give us normal pixel space from 0,0 to whatever the window size is in the bottom right
