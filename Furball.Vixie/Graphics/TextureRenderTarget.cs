@@ -82,15 +82,63 @@ namespace Furball.Vixie.Graphics {
         /// Binds the Target, from now on drawing will draw to this RenderTarget,
         /// </summary>
         public void Bind() {
+            if (this._locked)
+                return;
+
             gl.BindFramebuffer(FramebufferTarget.Framebuffer, this._frameBufferId);
             //Store the old viewport for later
             gl.GetInteger(GetPName.Viewport, this._oldViewPort);
             gl.Viewport(0, 0, this._targetWidth, this._targetHeight);
         }
+
+        private bool _locked = false;
+
+        /// <summary>
+        /// Binds and sets a Lock so that the Target cannot be unbound/rebound
+        /// </summary>
+        /// <returns>Self, used for chaining Methods</returns>
+        internal TextureRenderTarget LockingBind() {
+            this.Bind();
+            this.Lock();
+
+            return this;
+        }
+        /// <summary>
+        /// Locks the Target so that other Targets cannot be bound/unbound/rebound
+        /// </summary>
+        /// <returns>Self, used for chaining Methods</returns>
+        internal TextureRenderTarget Lock() {
+            this._locked = true;
+
+            return this;
+        }
+        /// <summary>
+        /// Unlocks the Target, so that other Targets can be bound
+        /// </summary>
+        /// <returns>Self, used for chaining Methods</returns>
+        internal TextureRenderTarget Unlock() {
+            this._locked = false;
+
+            return this;
+        }
+        /// <summary>
+        /// Uninds and unlocks the Target so that other Targets can be bound/rebound
+        /// </summary>
+        /// <returns>Self, used for chaining Methods</returns>
+        internal TextureRenderTarget UnlockingUnbind() {
+            this.Unlock();
+            this.Unbind();
+
+            return this;
+        }
+
         /// <summary>
         /// Unbinds the Target and resets the Viewport, drawing is now back to normal
         /// </summary>
         public void Unbind() {
+            if (this._locked)
+                return;
+
             gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
             gl.Viewport(this._oldViewPort[0], this._oldViewPort[1], (uint) this._oldViewPort[2], (uint) this._oldViewPort[3]);
         }

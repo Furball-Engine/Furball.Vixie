@@ -121,7 +121,53 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         public BufferObject Bind() {
+            if (this._locked)
+                return null;
+
             this.gl.BindBuffer(this._bufferType, this._bufferId);
+
+            return this;
+        }
+
+        private bool _locked = false;
+
+        /// <summary>
+        /// Binds and sets a Lock so that the Buffer cannot be unbound/rebound
+        /// </summary>
+        /// <returns>Self, used for chaining Methods</returns>
+        internal BufferObject LockingBind() {
+            this.Bind();
+            this.Lock();
+
+            return this;
+        }
+
+        /// <summary>
+        /// Locks the Buffer so that other Buffers cannot be bound/unbound/rebound
+        /// </summary>
+        /// <returns>Self, used for chaining Methods</returns>
+        internal BufferObject Lock() {
+            this._locked = true;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Unlocks the Buffer, so that other buffers can be bound
+        /// </summary>
+        /// <returns>Self, used for chaining Methods</returns>
+        internal BufferObject Unlock() {
+            this._locked = false;
+
+            return this;
+        }
+        /// <summary>
+        /// Uninds and unlocks the Buffer so that other buffers can be bound/rebound
+        /// </summary>
+        /// <returns>Self, used for chaining Methods</returns>
+        internal BufferObject UnlockingUnbind() {
+            this.Unlock();
+            this.Unbind();
 
             return this;
         }
@@ -130,6 +176,9 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         public BufferObject Unbind() {
+            if (this._locked)
+                return null;
+
             this.gl.BindBuffer(this._bufferType, 0);
 
             return this;

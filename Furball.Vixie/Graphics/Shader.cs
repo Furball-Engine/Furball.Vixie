@@ -91,7 +91,53 @@ namespace Furball.Vixie.Gl {
         /// Selects this Shader
         /// </summary>
         public Shader Bind() {
+            if (this._locked)
+                return null;
+
             gl.UseProgram(this._programId);
+
+            return this;
+        }
+
+        private bool _locked = false;
+
+        /// <summary>
+        /// Binds and sets a Lock so that the Shader cannot be unbound/rebound
+        /// </summary>
+        /// <returns>Self, used for chaining Methods</returns>
+        internal Shader LockingBind() {
+            this.Bind();
+            this.Lock();
+
+            return this;
+        }
+
+        /// <summary>
+        /// Locks the Shader so that other Shaders cannot be bound/unbound/rebound
+        /// </summary>
+        /// <returns>Self, used for chaining Methods</returns>
+        internal Shader Lock() {
+            this._locked = true;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Unlocks the Shader, so that other Shaders can be bound
+        /// </summary>
+        /// <returns>Self, used for chaining Methods</returns>
+        internal Shader Unlock() {
+            this._locked = false;
+
+            return this;
+        }
+        /// <summary>
+        /// Uninds and unlocks the Shader so that other Shaders can be bound/rebound
+        /// </summary>
+        /// <returns>Self, used for chaining Methods</returns>
+        internal Shader UnlockingUnbind() {
+            this.Unlock();
+            this.Unbind();
 
             return this;
         }
@@ -245,6 +291,15 @@ namespace Furball.Vixie.Gl {
                 default:
                     throw new ArgumentOutOfRangeException(nameof(type), type, null);
             }
+
+            return this;
+        }
+
+        public Shader Unbind() {
+            if (this._locked)
+                return null;
+
+            gl.UseProgram(0);
 
             return this;
         }

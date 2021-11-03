@@ -48,14 +48,62 @@ namespace Furball.Vixie.Gl {
         /// Binds or Selects this current Vertex Array
         /// </summary>
         public VertexArrayObject Bind() {
+            if (this._locked)
+                return null;
+
             gl.BindVertexArray(this._arrayId);
 
             return this;
         }
+
+        private bool _locked = false;
+
+        /// <summary>
+        /// Binds and sets a Lock so that the Texture cannot be unbound/rebound
+        /// </summary>
+        /// <returns>Self, used for chaining Methods</returns>
+        internal VertexArrayObject LockingBind() {
+            this.Bind();
+            this.Lock();
+
+            return this;
+        }
+        /// <summary>
+        /// Locks the Texture so that other Textures cannot be bound/unbound/rebound
+        /// </summary>
+        /// <returns>Self, used for chaining Methods</returns>
+        internal VertexArrayObject Lock() {
+            this._locked = true;
+
+            return this;
+        }
+        /// <summary>
+        /// Unlocks the Texture, so that other Textures can be bound
+        /// </summary>
+        /// <returns>Self, used for chaining Methods</returns>
+        internal VertexArrayObject Unlock() {
+            this._locked = false;
+
+            return this;
+        }
+        /// <summary>
+        /// Uninds and unlocks the Texture so that other Textures can be bound/rebound
+        /// </summary>
+        /// <returns>Self, used for chaining Methods</returns>
+        internal VertexArrayObject UnlockingUnbind() {
+            this.Unlock();
+            this.Unbind();
+
+            return this;
+        }
+
         /// <summary>
         /// Unbinds all Vertex Arrays
         /// </summary>
         public VertexArrayObject Unbind() {
+            if (this._locked)
+                return null;
+
             gl.BindVertexArray(0);
 
             return this;

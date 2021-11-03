@@ -149,16 +149,64 @@ namespace Furball.Vixie.Gl {
         /// <param name="textureSlot">Desired Texture Slot</param>
         /// <returns>Self, used for chaining methods</returns>
         public Texture Bind(TextureUnit textureSlot = TextureUnit.Texture0) {
+            if (this._locked)
+                return null;
+
             gl.ActiveTexture(textureSlot);
             gl.BindTexture(TextureTarget.Texture2D, this._textureId);
 
             return this;
         }
+
+        private bool _locked = false;
+
+        /// <summary>
+        /// Binds and sets a Lock so that the Texture cannot be unbound/rebound
+        /// </summary>
+        /// <returns>Self, used for chaining Methods</returns>
+        internal Texture LockingBind() {
+            this.Bind();
+            this.Lock();
+
+            return this;
+        }
+        /// <summary>
+        /// Locks the Texture so that other Textures cannot be bound/unbound/rebound
+        /// </summary>
+        /// <returns>Self, used for chaining Methods</returns>
+        internal Texture Lock() {
+            this._locked = true;
+
+            return this;
+        }
+        /// <summary>
+        /// Unlocks the Texture, so that other Textures can be bound
+        /// </summary>
+        /// <returns>Self, used for chaining Methods</returns>
+        internal Texture Unlock() {
+            this._locked = false;
+
+            return this;
+        }
+        /// <summary>
+        /// Uninds and unlocks the Texture so that other Textures can be bound/rebound
+        /// </summary>
+        /// <returns>Self, used for chaining Methods</returns>
+        internal Texture UnlockingUnbind() {
+            this.Unlock();
+            this.Unbind();
+
+            return this;
+        }
+
         /// <summary>
         /// Unbinds the Texture
         /// </summary>
         /// <returns>Self, used for chaining methods</returns>
         public Texture Unbind() {
+            if (this._locked)
+                return null;
+
             gl.BindTexture(TextureTarget.Texture2D, 0);
 
             return this;
