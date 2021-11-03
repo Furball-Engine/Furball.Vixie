@@ -55,6 +55,11 @@ namespace Furball.Vixie.TestApplication {
                 this.BaseGame.Components.Remove(this);
             }
 
+            if (ImGui.Button("Rotation Test")) {
+                this.BaseGame.Components.Add(new TestRotation());
+                this.BaseGame.Components.Remove(this);
+            }
+
 
             ImGui.End();
 

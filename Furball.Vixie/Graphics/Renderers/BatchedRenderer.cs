@@ -280,7 +280,8 @@ namespace Furball.Vixie.Graphics {
         public unsafe void End(bool unlock = true) {
             //Bind all textures
             for (uint i = 0; i != this._textureSlotIndex; i++) {
-                gl.BindTexture((GLEnum)((uint)GLEnum.Texture0 + i), this._texIdToGlTexIdLookup[i]);
+                gl.ActiveTexture((GLEnum)((uint)GLEnum.Texture0 + i));
+                gl.BindTexture(GLEnum.Texture2D, this._texIdToGlTexIdLookup[i]);
             }
 
             //Calculate how many verticies have to be uploaded to the GPU
