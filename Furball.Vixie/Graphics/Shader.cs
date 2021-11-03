@@ -294,7 +294,10 @@ namespace Furball.Vixie.Gl {
 
             return this;
         }
-
+        /// <summary>
+        /// Unbinds all Shaders
+        /// </summary>
+        /// <returns>Self, used for chaining Methods</returns>
         public Shader Unbind() {
             if (this._locked)
                 return null;

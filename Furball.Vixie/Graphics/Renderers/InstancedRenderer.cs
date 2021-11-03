@@ -139,17 +139,24 @@ namespace Furball.Vixie.Graphics {
         /// <param name="texture">Texture to Draw</param>
         /// <param name="position">Where to Draw</param>
         /// <param name="size">How big to draw</param>
+        /// <param name="scale">How much to scale it up</param>
         /// TODO(Eevee): make this work somehow
         /// <param name="colorOverride">Color Tint</param>
-        public unsafe void Draw(Texture texture, Vector2 position, Vector2? size = null, Color? colorOverride = null) {
+        public unsafe void Draw(Texture texture, Vector2 position, Vector2 size, float scale = 1f, Color? colorOverride = null) {
+            if (size == Vector2.Zero)
+                size = texture.Size;
+
+            size *= scale;
+
             _verticies = new float[] {
-                /* Vertex Coordinates */  position.X,                   position.Y + texture.Size.Y,  /* Texture Coordinates */  0.0f, 0.0f,  //Bottom Left corner
-                /* Vertex Coordinates */  position.X + texture.Size.X,  position.Y + texture.Size.Y,  /* Texture Coordinates */  1.0f, 0.0f,  //Bottom Right corner
-                /* Vertex Coordinates */  position.X + texture.Size.X,  position.Y,                   /* Texture Coordinates */  1.0f, 1.0f,  //Top Right Corner
-                /* Vertex Coordinates */  position.X,                   position.Y,                   /* Texture Coordinates */  0.0f, 1.0f,  //Top Left Corner
+                /* Vertex Coordinates */  position.X,                   position.Y + size.Y,  /* Texture Coordinates */  0.0f, 0.0f,  //Bottom Left corner
+                /* Vertex Coordinates */  position.X + size.X,          position.Y + size.Y,  /* Texture Coordinates */  1.0f, 0.0f,  //Bottom Right corner
+                /* Vertex Coordinates */  position.X + size.X,          position.Y,           /* Texture Coordinates */  1.0f, 1.0f,  //Top Right Corner
+                /* Vertex Coordinates */  position.X,                   position.Y,           /* Texture Coordinates */  0.0f, 1.0f,  //Top Left Corner
             };
 
             this._vertexBuffer.SetData<float>(_verticies);
+
             texture.Bind();
 
             gl.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, null);

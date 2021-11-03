@@ -4,6 +4,7 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using Furball.Vixie.Gl;
 using Furball.Vixie.Helpers;
+using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Shader=Furball.Vixie.Gl.Shader;
 using Texture=Furball.Vixie.Gl.Texture;
@@ -221,12 +222,17 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         private float _sizeY;
 
-        public unsafe void Draw(Texture texture, Vector2 position, Vector2 size) {
+        public unsafe void Draw(Texture texture, Vector2 position, Vector2 size, float scale = 1f, float rotation = 0f) {
             //If we ran out of Texture Slots or are out of space in out Vertex/Index buffer, flush whats already there and start a new Batch
             if (this._indexCount >= this.MaxIndicies || this._textureSlotIndex >= this.MaxTexSlots - 1) {
                 this.End();
                 this.Begin(false);
             }
+
+            size *= scale;
+
+            if (size == Vector2.Zero)
+                size = texture.Size;
 
             this._posX  = position.X;
             this._posy  = position.Y;
