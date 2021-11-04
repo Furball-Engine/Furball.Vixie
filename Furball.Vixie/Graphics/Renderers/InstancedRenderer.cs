@@ -142,7 +142,7 @@ namespace Furball.Vixie.Graphics {
         /// <param name="scale">How much to scale it up</param>
         /// TODO(Eevee): make this work somehow
         /// <param name="colorOverride">Color Tint</param>
-        public unsafe void Draw(Texture texture, Vector2 position, Vector2 size, Vector2 scale, Color? colorOverride = null) {
+        public unsafe void Draw(Texture texture, Vector2 position, Vector2 size, Vector2 scale, float rotation = 0f, Color? colorOverride = null) {
             if (size == Vector2.Zero)
                 size = texture.Size;
 
@@ -158,7 +158,9 @@ namespace Furball.Vixie.Graphics {
                 /* Vertex Coordinates */  position.X,                   position.Y,           /* Texture Coordinates */  0.0f, 1.0f,  //Top Left Corner
             };
 
+            //var matrix = Matrix4x4.CreateFromYawPitchRoll(rotation, rotation, rotation);
             this._vertexBuffer.SetData<float>(_verticies);
+            //this._currentShader.SetUniform("u_RotationMatrix", UniformType.GlMat4f, matrix);
 
             texture.Bind();
 
