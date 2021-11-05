@@ -235,7 +235,8 @@ namespace Furball.Vixie.Graphics.Renderers {
                 this.Begin(false);
             }
 
-            var matrix = Matrix4x4.CreateRotationX(rotation) * Matrix4x4.CreateRotationY(rotation);
+            var matrix = Matrix4x4.CreateRotationZ(rotation, new Vector3(position.X, position.Y, 0));
+            position = Vector2.Transform(position, matrix);
 
             if(scale == Vector2.Zero)
                 scale = Vector2.One;

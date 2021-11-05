@@ -27,14 +27,14 @@ namespace Furball.Vixie.TestApplication.Tests {
             base.Initialize();
         }
 
-        private float _rotation = 0f;
+        private float _rotation = 1f;
 
         public override void Draw(double deltaTime) {
             this.GraphicsDevice.GlClear();
 
-            this._instancedRenderer.Begin();
-            this._instancedRenderer.Draw(this._whiteTexture, new Vector2(1280/2, 720/2), new Vector2(371, 356), Vector2.Zero, _rotation);
-            this._instancedRenderer.End();
+            this._batchedRenderer.Begin();
+            this._batchedRenderer.Draw(this._whiteTexture, new Vector2(1280/2, 720/2), new Vector2(371, 356), Vector2.Zero, _rotation);
+            this._batchedRenderer.End();
 
 
 
