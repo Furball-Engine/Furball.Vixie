@@ -26,7 +26,7 @@ namespace Furball.Vixie.Graphics.Renderers {
         public float   TexId;
     }
 
-    public class BatchedRenderer {
+    public class BatchedRenderer : IDisposable {
         /// <summary>
         /// How many Quads are allowed to be drawn in 1 draw
         /// </summary>
@@ -246,9 +246,9 @@ namespace Furball.Vixie.Graphics.Renderers {
             this._sizeX = size.X;
             this._sizeY = size.Y;
 
-            if (!this._glTexIdToTexIdLookup.TryGetValue(texture._textureId, out this._textureIndex)) {
-                this._glTexIdToTexIdLookup.Add(texture._textureId, this._textureSlotIndex);
-                this._texIdToGlTexIdLookup.Add(this._textureSlotIndex, texture._textureId);
+            if (!this._glTexIdToTexIdLookup.TryGetValue(texture.TextureId, out this._textureIndex)) {
+                this._glTexIdToTexIdLookup.Add(texture.TextureId, this._textureSlotIndex);
+                this._texIdToGlTexIdLookup.Add(this._textureSlotIndex, texture.TextureId);
 
                 this._textureSlotIndex++;
             }
@@ -326,6 +326,22 @@ namespace Furball.Vixie.Graphics.Renderers {
                 this._vertexBuffer.Unlock();
                 this._batchShader.Unlock();
             }
+        }
+        public void Dispose() {
+            //Unlock Shaders and other things
+            if (this._batchShader.Locked)
+                this._batchShader.Unlock();
+            if (this._vertexBuffer.Locked)
+                this._vertexBuffer.Unlock();
+            if (this._vertexArray.Locked)
+                this._vertexArray.Unlock();
+            if (this._indexBuffer.Locked)
+                this._indexBuffer.Unlock();
+
+            this._batchShader.Dispose();
+            this._vertexBuffer.Dispose();
+            this._vertexArray.Dispose();
+            this._indexBuffer.Dispose();
         }
     }
 }

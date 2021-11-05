@@ -16,7 +16,7 @@ namespace Furball.Vixie.Graphics {
         /// <summary>
         /// Unique ID which identifies this Texture
         /// </summary>
-        internal uint          _textureId;
+        internal uint          TextureId;
         /// <summary>
         /// Local Image, possibly useful to Sample on the CPU Side if necessary
         /// </summary>
@@ -76,9 +76,9 @@ namespace Furball.Vixie.Graphics {
         public unsafe Texture() {
             this.gl = Global.Gl;
 
-            this._textureId = this.gl.GenTexture();
+            this.TextureId = this.gl.GenTexture();
             //Bind as we will be working on the Texture
-            this.gl.BindTexture(TextureTarget.Texture2D, this._textureId);
+            this.gl.BindTexture(TextureTarget.Texture2D, this.TextureId);
             //Apply Linear filtering, and make Image wrap around and repeat
             this.gl.TexParameter(GLEnum.Texture2D,        TextureParameterName.TextureMinFilter, (int) GLEnum.Linear);
             this.gl.TexParameter(GLEnum.Texture2D,        TextureParameterName.TextureMagFilter, (int) GLEnum.Linear);
@@ -97,9 +97,9 @@ namespace Furball.Vixie.Graphics {
         public unsafe Texture(uint width, uint height) {
             this.gl = Global.Gl;
 
-            this._textureId = this.gl.GenTexture();
+            this.TextureId = this.gl.GenTexture();
             //Bind as we will be working on the Texture
-            this.gl.BindTexture(TextureTarget.Texture2D, this._textureId);
+            this.gl.BindTexture(TextureTarget.Texture2D, this.TextureId);
             //Apply Linear filtering, and make Image wrap around and repeat
             this.gl.TexParameter(GLEnum.Texture2D,        TextureParameterName.TextureMinFilter, (int) GLEnum.Linear);
             this.gl.TexParameter(GLEnum.Texture2D,        TextureParameterName.TextureMagFilter, (int) GLEnum.Linear);
@@ -140,7 +140,7 @@ namespace Furball.Vixie.Graphics {
         internal Texture(uint textureId, uint width, uint height) {
             this.gl = Global.Gl;
 
-            this._textureId = textureId;
+            this.TextureId = textureId;
             this.Size       = new Vector2(width, height);
         }
         /// <summary>
@@ -150,9 +150,9 @@ namespace Furball.Vixie.Graphics {
         /// <param name="width">Width of Image</param>
         /// <param name="height">Height of Imgae</param>
         private unsafe void Load(void* data, int width, int height) {
-            this._textureId = this.gl.GenTexture();
+            this.TextureId = this.gl.GenTexture();
             //Bind as we will be working on the Texture
-            this.gl.BindTexture(TextureTarget.Texture2D, this._textureId);
+            this.gl.BindTexture(TextureTarget.Texture2D, this.TextureId);
             //Apply Linear filtering, and make Image wrap around and repeat
             this.gl.TexParameter(GLEnum.Texture2D,        TextureParameterName.TextureMinFilter, (int) GLEnum.Linear);
             this.gl.TexParameter(GLEnum.Texture2D,        TextureParameterName.TextureMagFilter, (int) GLEnum.Linear);
@@ -194,16 +194,16 @@ namespace Furball.Vixie.Graphics {
         /// <param name="textureSlot">Desired Texture Slot</param>
         /// <returns>Self, used for chaining methods</returns>
         public Texture Bind(TextureUnit textureSlot = TextureUnit.Texture0) {
-            if (this._locked)
+            if (this.Locked)
                 return null;
 
             this.gl.ActiveTexture(textureSlot);
-            this.gl.BindTexture(TextureTarget.Texture2D, this._textureId);
+            this.gl.BindTexture(TextureTarget.Texture2D, this.TextureId);
 
             return this;
         }
 
-        private bool _locked = false;
+        internal bool Locked = false;
 
         /// <summary>
         /// Binds and sets a Lock so that the Texture cannot be unbound/rebound
@@ -220,7 +220,7 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         internal Texture Lock() {
-            this._locked = true;
+            this.Locked = true;
 
             return this;
         }
@@ -229,7 +229,7 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         internal Texture Unlock() {
-            this._locked = false;
+            this.Locked = false;
 
             return this;
         }
@@ -249,7 +249,7 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         /// <returns>Self, used for chaining methods</returns>
         public Texture Unbind() {
-            if (this._locked)
+            if (this.Locked)
                 return null;
 
             this.gl.BindTexture(TextureTarget.Texture2D, 0);
@@ -260,13 +260,13 @@ namespace Furball.Vixie.Graphics {
         /// Gets the OpenGL texture ID
         /// </summary>
         /// <returns>Texture ID</returns>
-        internal uint GetTextureId() => this._textureId;
+        internal uint GetTextureId() => this.TextureId;
 
         /// <summary>
         /// Disposes the Texture and the Local Image Buffer
         /// </summary>
         public void Dispose() {
-            this.gl.DeleteTexture(this._textureId);
+            this.gl.DeleteTexture(this.TextureId);
             this._localBuffer.Dispose();
         }
     }

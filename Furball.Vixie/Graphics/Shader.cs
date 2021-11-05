@@ -91,7 +91,7 @@ namespace Furball.Vixie.Graphics {
         /// Selects this Shader
         /// </summary>
         public Shader Bind() {
-            if (this._locked)
+            if (this.Locked)
                 return null;
 
             this.gl.UseProgram(this._programId);
@@ -99,7 +99,7 @@ namespace Furball.Vixie.Graphics {
             return this;
         }
 
-        private bool _locked = false;
+        internal bool Locked = false;
 
         /// <summary>
         /// Binds and sets a Lock so that the Shader cannot be unbound/rebound
@@ -117,7 +117,7 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         internal Shader Lock() {
-            this._locked = true;
+            this.Locked = true;
 
             return this;
         }
@@ -127,7 +127,7 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         internal Shader Unlock() {
-            this._locked = false;
+            this.Locked = false;
 
             return this;
         }
@@ -299,7 +299,7 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         public Shader Unbind() {
-            if (this._locked)
+            if (this.Locked)
                 return null;
 
             this.gl.UseProgram(0);

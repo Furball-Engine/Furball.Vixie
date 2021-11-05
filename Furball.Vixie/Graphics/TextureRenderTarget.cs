@@ -3,7 +3,7 @@ using Silk.NET.OpenGL;
 using Texture=Furball.Vixie.Graphics.Texture;
 
 namespace Furball.Vixie.Graphics {
-    public class TextureRenderTarget {
+    public class TextureRenderTarget : IDisposable {
         /// <summary>
         /// OpenGL API, used to shorten code.
         /// </summary>
@@ -82,7 +82,7 @@ namespace Furball.Vixie.Graphics {
         /// Binds the Target, from now on drawing will draw to this RenderTarget,
         /// </summary>
         public void Bind() {
-            if (this._locked)
+            if (this.Locked)
                 return;
 
             gl.BindFramebuffer(FramebufferTarget.Framebuffer, this._frameBufferId);
@@ -91,7 +91,7 @@ namespace Furball.Vixie.Graphics {
             gl.Viewport(0, 0, this._targetWidth, this._targetHeight);
         }
 
-        private bool _locked = false;
+        internal bool Locked = false;
 
         /// <summary>
         /// Binds and sets a Lock so that the Target cannot be unbound/rebound
@@ -108,7 +108,7 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         internal TextureRenderTarget Lock() {
-            this._locked = true;
+            this.Locked = true;
 
             return this;
         }
@@ -117,7 +117,7 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         internal TextureRenderTarget Unlock() {
-            this._locked = false;
+            this.Locked = false;
 
             return this;
         }
@@ -136,7 +136,7 @@ namespace Furball.Vixie.Graphics {
         /// Unbinds the Target and resets the Viewport, drawing is now back to normal
         /// </summary>
         public void Unbind() {
-            if (this._locked)
+            if (this.Locked)
                 return;
 
             gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
@@ -147,5 +147,11 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         /// <returns>Texture of this RenderTarget</returns>
         public Texture GetTexture() => new Texture(this._textureId, this._targetWidth, this._targetHeight);
+
+        public void Dispose() {
+            gl.DeleteFramebuffer(this._frameBufferId);
+            gl.DeleteTexture(this._textureId);
+            gl.DeleteRenderbuffer(this._depthRenderBufferId);
+        }
     }
 }

@@ -47,7 +47,7 @@ namespace Furball.Vixie.Graphics {
         /// Binds or Selects this current Vertex Array
         /// </summary>
         public VertexArrayObject Bind() {
-            if (this._locked)
+            if (this.Locked)
                 return null;
 
             this.gl.BindVertexArray(this._arrayId);
@@ -55,7 +55,7 @@ namespace Furball.Vixie.Graphics {
             return this;
         }
 
-        private bool _locked = false;
+        internal bool Locked = false;
 
         /// <summary>
         /// Binds and sets a Lock so that the Texture cannot be unbound/rebound
@@ -72,7 +72,7 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         internal VertexArrayObject Lock() {
-            this._locked = true;
+            this.Locked = true;
 
             return this;
         }
@@ -81,7 +81,7 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         internal VertexArrayObject Unlock() {
-            this._locked = false;
+            this.Locked = false;
 
             return this;
         }
@@ -100,7 +100,7 @@ namespace Furball.Vixie.Graphics {
         /// Unbinds all Vertex Arrays
         /// </summary>
         public VertexArrayObject Unbind() {
-            if (this._locked)
+            if (this.Locked)
                 return null;
 
             this.gl.BindVertexArray(0);

@@ -5,7 +5,7 @@ namespace Furball.Vixie.Graphics {
     /// <summary>
     /// OpenGL Buffer Objecct
     /// </summary>
-    public class BufferObject {
+    public class BufferObject : IDisposable {
         /// <summary>
         /// Unique Identifier for this Buffer object used by OpenGL to distingluish different buffers
         /// </summary>
@@ -121,7 +121,7 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         public BufferObject Bind() {
-            if (this._locked)
+            if (this.Locked)
                 return null;
 
             this.gl.BindBuffer(this._bufferType, this._bufferId);
@@ -129,7 +129,7 @@ namespace Furball.Vixie.Graphics {
             return this;
         }
 
-        private bool _locked = false;
+        internal bool Locked = false;
 
         /// <summary>
         /// Binds and sets a Lock so that the Buffer cannot be unbound/rebound
@@ -147,7 +147,7 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         internal BufferObject Lock() {
-            this._locked = true;
+            this.Locked = true;
 
             return this;
         }
@@ -157,7 +157,7 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         internal BufferObject Unlock() {
-            this._locked = false;
+            this.Locked = false;
 
             return this;
         }
@@ -176,7 +176,7 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         public BufferObject Unbind() {
-            if (this._locked)
+            if (this.Locked)
                 return null;
 
             this.gl.BindBuffer(this._bufferType, 0);

@@ -1,3 +1,4 @@
+using System;
 using System.Drawing;
 using System.Numerics;
 using Furball.Vixie.Helpers;
@@ -7,7 +8,7 @@ namespace Furball.Vixie.Graphics.Renderers {
     /// <summary>
     /// Line Renderer which draws in an Instanced fashion.
     /// </summary>
-    public class InstancedLineRenderer {
+    public class InstancedLineRenderer : IDisposable {
         /// <summary>
         /// OpenGL API, used to shorten code
         /// </summary>
@@ -101,6 +102,20 @@ namespace Furball.Vixie.Graphics.Renderers {
             this._lineShader.Unlock();
             this._vertexBuffer.Unlock();
             this._vertexArray.Unlock();
+        }
+
+        public void Dispose() {
+            //Unlock Shaders and other things
+            if (this._lineShader.Locked)
+                this._lineShader.Unlock();
+            if (this._vertexBuffer.Locked)
+                this._vertexBuffer.Unlock();
+            if (this._vertexArray.Locked)
+                this._vertexArray.Unlock();
+
+            this._lineShader.Dispose();
+            this._vertexBuffer.Dispose();
+            this._vertexArray.Dispose();
         }
     }
 }

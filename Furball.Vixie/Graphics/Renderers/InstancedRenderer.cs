@@ -1,3 +1,4 @@
+using System;
 using System.Drawing;
 using System.Numerics;
 using Furball.Vixie.Helpers;
@@ -7,7 +8,7 @@ namespace Furball.Vixie.Graphics.Renderers {
     /// <summary>
     /// Renderer which draws in an Instanced fashion.
     /// </summary>
-    public class InstancedRenderer {
+    public class InstancedRenderer : IDisposable {
         /// <summary>
         /// OpenGL API, used to shorten code
         /// </summary>
@@ -162,6 +163,25 @@ namespace Furball.Vixie.Graphics.Renderers {
             texture.Bind();
 
             this.gl.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, null);
+        }
+        public void Dispose() {
+            //Unlock Shaders and other things
+            if (this._currentShader.Locked)
+                this._currentShader.Unlock();
+            if (this._shader.Locked)
+                this._shader.Unlock();
+            if (this._vertexBuffer.Locked)
+                this._vertexBuffer.Unlock();
+            if (this._vertexArray.Locked)
+                this._vertexArray.Unlock();
+            if (this._indexBuffer.Locked)
+                this._indexBuffer.Unlock();
+
+            this._currentShader.Dispose();
+            this._vertexBuffer.Dispose();
+            this._vertexArray.Dispose();
+            this._shader.Dispose();
+            this._indexBuffer.Dispose();
         }
     }
 }
