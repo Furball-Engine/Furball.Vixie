@@ -220,6 +220,13 @@ namespace Furball.Vixie.Graphics.Renderers {
         /// Height
         /// </summary>
         private float _sizeY;
+
+        private Matrix4x4 _rotationMatrix;
+        private Vector2 _pos1;
+        private Vector2 _pos2;
+        private Vector2 _pos3;
+        private Vector2 _pos4;
+
         /// <summary>
         /// Batches a Texture Draw
         /// </summary>
@@ -234,9 +241,6 @@ namespace Furball.Vixie.Graphics.Renderers {
                 this.End();
                 this.Begin(false);
             }
-
-            var matrix = Matrix4x4.CreateRotationZ(rotation, new Vector3(position.X, position.Y, 0));
-            position = Vector2.Transform(position, matrix);
 
             if(scale == Vector2.Zero)
                 scale = Vector2.One;
@@ -258,33 +262,39 @@ namespace Furball.Vixie.Graphics.Renderers {
                 this._textureSlotIndex++;
             }
 
+            _rotationMatrix = Matrix4x4.CreateRotationZ(rotation, new Vector3(position.X, position.Y, 0));
+            _pos1           = Vector2.Transform(new Vector2(this._posX,                 this._posy + this._sizeY),  _rotationMatrix);
+            _pos2           = Vector2.Transform(new Vector2(this._posX + this._sizeX, this._posy + this._sizeY),  _rotationMatrix);
+            _pos3           = Vector2.Transform(new Vector2(this._posX + this._sizeX, this._posy),                _rotationMatrix);
+            _pos4           = Vector2.Transform(new Vector2(this._posX,                 this._posy),                _rotationMatrix);
+
             //Vertex 1
-            this._vertexPointer->Positions[0] = this._posX;
-            this._vertexPointer->Positions[1] = this._posy + this._sizeY;
+            this._vertexPointer->Positions[0] = _pos1.X;
+            this._vertexPointer->Positions[1] = _pos1.Y;
             this._vertexPointer->TexCoords[0] = 0f;
             this._vertexPointer->TexCoords[1] = 0f;
             this._vertexPointer->TexId        = this._textureIndex;
             this._vertexPointer++;
 
             //Vertex 2
-            this._vertexPointer->Positions[0] = this._posX + this._sizeX;
-            this._vertexPointer->Positions[1] = this._posy + this._sizeY;
+            this._vertexPointer->Positions[0] = _pos2.X;
+            this._vertexPointer->Positions[1] = _pos2.Y;
             this._vertexPointer->TexCoords[0] = 1f;
             this._vertexPointer->TexCoords[1] = 0f;
             this._vertexPointer->TexId        = this._textureIndex;
             this._vertexPointer++;
 
             //Vertex 3
-            this._vertexPointer->Positions[0] = this._posX + this._sizeX;
-            this._vertexPointer->Positions[1] = this._posy;
+            this._vertexPointer->Positions[0] = _pos3.X;
+            this._vertexPointer->Positions[1] = _pos3.Y;
             this._vertexPointer->TexCoords[0] = 1f;
             this._vertexPointer->TexCoords[1] = 1f;
             this._vertexPointer->TexId        = this._textureIndex;
             this._vertexPointer++;
 
             //Vertex 4
-            this._vertexPointer->Positions[0] = this._posX;
-            this._vertexPointer->Positions[1] = this._posy;
+            this._vertexPointer->Positions[0] = _pos4.X;
+            this._vertexPointer->Positions[1] = _pos4.Y;
             this._vertexPointer->TexCoords[0] = 0f;
             this._vertexPointer->TexCoords[1] = 1f;
             this._vertexPointer->TexId        = this._textureIndex;
