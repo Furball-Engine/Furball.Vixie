@@ -12,7 +12,7 @@ namespace Furball.Vixie.Graphics.Renderers {
         public fixed float Color[4];
     }
 
-    public class BatchedLineRenderer : IDisposable {
+    public class BatchedLineRenderer : IDisposable, ILineRenderer {
         public int MaxLines { get; private set; }
         public int MaxVerticies { get; private set; }
         private readonly GL gl;
@@ -20,9 +20,6 @@ namespace Furball.Vixie.Graphics.Renderers {
         private readonly VertexArrayObject _vertexArray;
         private readonly BufferObject      _vertexBuffer;
         private readonly Shader            _lineShader;
-
-        public int DrawCalls { get; private set; }
-        public int Lines { get; private set; }
 
         private readonly BatchedLineVertex[] _localVertexBuffer;
 
@@ -71,14 +68,9 @@ namespace Furball.Vixie.Graphics.Renderers {
         private        int                _processedVerticies = 0;
         private unsafe BatchedLineVertex* _vertexPointer;
 
-        public unsafe void Begin(bool clearStats = true) {
+        public unsafe void Begin() {
             fixed (BatchedLineVertex* data = this._localVertexBuffer)
                 this._vertexPointer = data;
-
-            if (clearStats) {
-                this.DrawCalls = 0;
-                this.Lines     = 0;
-            }
 
             //Bind the Shader and set the necessary uniforms
             this._lineShader
@@ -92,14 +84,21 @@ namespace Furball.Vixie.Graphics.Renderers {
             this._vertexArray.LockingBind();
         }
 
-        public unsafe void Draw(Vector2 start, Vector2 end, float thickness, Color color) {
+        /// <summary>
+        /// Draws a Line
+        /// </summary>
+        /// <param name="begin">Starting Point</param>
+        /// <param name="end">End Point</param>
+        /// <param name="thickness">Thickness of the Line</param>
+        /// <param name="color">Color of the Line</param>
+        public unsafe void Draw(Vector2 begin, Vector2 end, float thickness, Color color) {
             if (this._processedVerticies >= this.MaxVerticies) {
-                this.End(false);
-                this.Begin(false);
+                this.End();
+                this.Begin();
             }
 
-            this._vertexPointer->Positions[0] = start.X;
-            this._vertexPointer->Positions[1] = start.Y;
+            this._vertexPointer->Positions[0] = begin.X;
+            this._vertexPointer->Positions[1] = begin.Y;
             this._vertexPointer->Positions[2] = 0;
             this._vertexPointer->Positions[3] = thickness;
             this._vertexPointer->Color[0]     = color.R;
@@ -120,10 +119,9 @@ namespace Furball.Vixie.Graphics.Renderers {
 
             this._vertexBufferIndex  += 32;
             this._processedVerticies += 2;
-            this.Lines++;
         }
 
-        public unsafe void End(bool unlock = true) {
+        public unsafe void End() {
             nuint size = (nuint)this._vertexBufferIndex * 4;
 
             fixed (void* data = this._localVertexBuffer) {
@@ -135,13 +133,10 @@ namespace Furball.Vixie.Graphics.Renderers {
 
             this._processedVerticies = 0;
             this._vertexBufferIndex = 0;
-            this.DrawCalls++;
 
-            if (unlock) {
-                this._lineShader.Unlock();
-                this._vertexBuffer.Unlock();
-                this._vertexArray.Unlock();
-            }
+            this._lineShader.Unlock();
+            this._vertexBuffer.Unlock();
+            this._vertexArray.Unlock();
         }
 
         public void Dispose() {

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Furball.Vixie.Helpers;
@@ -24,9 +25,13 @@ namespace Furball.Vixie.Graphics.Renderers {
         /// Texture ID of the Vertex
         /// </summary>
         public float   TexId;
+        /// <summary>
+        /// Color Override
+        /// </summary>
+        public fixed float Color[4];
     }
 
-    public class BatchedRenderer : IDisposable {
+    public class BatchedRenderer : IDisposable, ITextureRenderer {
         /// <summary>
         /// How many Quads are allowed to be drawn in 1 draw
         /// </summary>
@@ -77,15 +82,6 @@ namespace Furball.Vixie.Graphics.Renderers {
         /// </summary>
         private readonly Dictionary<float, uint> _texIdToGlTexIdLookup;
 
-        /// <summary>
-        /// Purely for Statistics, stores how many Quads have been drawn
-        /// </summary>
-        public int QuadsDrawn = 0;
-        /// <summary>
-        /// Purely for Statistics, stores how many times DrawElements has been called
-        /// </summary>
-        public int DrawCalls  = 0;
-
         public unsafe BatchedRenderer(int capacity = 4096) {
             this.gl = Global.Gl;
             //Initializes MaxQuad/Vertex/Index counts and figures out how many texture slots to use max
@@ -102,7 +98,8 @@ namespace Furball.Vixie.Graphics.Renderers {
             layout
                 .AddElement<float>(2)  //Position
                 .AddElement<float>(2)  //Tex Coord
-                .AddElement<float>(1); //Tex Id
+                .AddElement<float>(1)  //Tex Id
+                .AddElement<float>(4); //Color
 
             uint[] indicies = new uint[this.MaxIndicies];
             uint offset = 0;
@@ -178,18 +175,12 @@ namespace Furball.Vixie.Graphics.Renderers {
         /// </summary>
         private unsafe BatchedVertex* _vertexPointer;
 
-        public unsafe void Begin(bool clearStats = true) {
+        public unsafe void Begin() {
             this._glTexIdToTexIdLookup.Clear();
             this._texIdToGlTexIdLookup.Clear();
 
             fixed (BatchedVertex* data = this._localVertexBuffer)
                 this._vertexPointer = data;
-
-            if (clearStats) {
-                //Clear stats
-                this.DrawCalls  = 0;
-                this.QuadsDrawn = 0;
-            }
 
             //Bind everything
             this._vertexArray.LockingBind();
@@ -228,18 +219,19 @@ namespace Furball.Vixie.Graphics.Renderers {
         private Vector2 _pos4;
 
         /// <summary>
-        /// Batches a Texture Draw
+        /// Batches a Texture to Draw
         /// </summary>
         /// <param name="texture">Texture to Draw</param>
         /// <param name="position">Where to Draw</param>
-        /// <param name="size">How big to draw (Vector2.Zero makes it use Texture.Size)</param>
+        /// <param name="size">How big to draw</param>
         /// <param name="scale">How much to scale it up</param>
-        /// <param name="rotation">How much to rotate</param>
-        public unsafe void Draw(Texture texture, Vector2 position, Vector2 size, Vector2 scale, float rotation = 0f) {
+        /// <param name="rotation">Rotation in Radians</param>
+        /// <param name="colorOverride">Color Tint</param>
+        public unsafe void Draw(Texture texture, Vector2 position, Vector2 size, Vector2 scale, float rotation = 0f, Color? colorOverride = null) {
             //If we ran out of Texture Slots or are out of space in out Vertex/Index buffer, flush whats already there and start a new Batch
             if (this._indexCount >= this.MaxIndicies || this._textureSlotIndex >= this.MaxTexSlots - 1) {
                 this.End();
-                this.Begin(false);
+                this.Begin();
             }
 
             if(scale == Vector2.Zero)
@@ -247,6 +239,9 @@ namespace Furball.Vixie.Graphics.Renderers {
 
             if (size == Vector2.Zero)
                 size = texture.Size;
+
+            if(colorOverride == null)
+                colorOverride = Color.White;
 
             size *= scale;
 
@@ -274,6 +269,10 @@ namespace Furball.Vixie.Graphics.Renderers {
             this._vertexPointer->TexCoords[0] = 0f;
             this._vertexPointer->TexCoords[1] = 0f;
             this._vertexPointer->TexId        = this._textureIndex;
+            this._vertexPointer->Color[0]     = colorOverride.Value.R;
+            this._vertexPointer->Color[1]     = colorOverride.Value.G;
+            this._vertexPointer->Color[2]     = colorOverride.Value.B;
+            this._vertexPointer->Color[3]     = colorOverride.Value.A;
             this._vertexPointer++;
 
             //Vertex 2
@@ -282,6 +281,10 @@ namespace Furball.Vixie.Graphics.Renderers {
             this._vertexPointer->TexCoords[0] = 1f;
             this._vertexPointer->TexCoords[1] = 0f;
             this._vertexPointer->TexId        = this._textureIndex;
+            this._vertexPointer->Color[0]     = colorOverride.Value.R;
+            this._vertexPointer->Color[1]     = colorOverride.Value.G;
+            this._vertexPointer->Color[2]     = colorOverride.Value.B;
+            this._vertexPointer->Color[3]     = colorOverride.Value.A;
             this._vertexPointer++;
 
             //Vertex 3
@@ -290,6 +293,10 @@ namespace Furball.Vixie.Graphics.Renderers {
             this._vertexPointer->TexCoords[0] = 1f;
             this._vertexPointer->TexCoords[1] = 1f;
             this._vertexPointer->TexId        = this._textureIndex;
+            this._vertexPointer->Color[0]     = colorOverride.Value.R;
+            this._vertexPointer->Color[1]     = colorOverride.Value.G;
+            this._vertexPointer->Color[2]     = colorOverride.Value.B;
+            this._vertexPointer->Color[3]     = colorOverride.Value.A;
             this._vertexPointer++;
 
             //Vertex 4
@@ -298,17 +305,19 @@ namespace Furball.Vixie.Graphics.Renderers {
             this._vertexPointer->TexCoords[0] = 0f;
             this._vertexPointer->TexCoords[1] = 1f;
             this._vertexPointer->TexId        = this._textureIndex;
+            this._vertexPointer->Color[0]     = colorOverride.Value.R;
+            this._vertexPointer->Color[1]     = colorOverride.Value.G;
+            this._vertexPointer->Color[2]     = colorOverride.Value.B;
+            this._vertexPointer->Color[3]     = colorOverride.Value.A;
             this._vertexPointer++;
 
             this._indexCount        += 6;
-            this._vertexBufferIndex += 80;
-            this.QuadsDrawn++;
+            this._vertexBufferIndex += 128;
         }
         /// <summary>
         /// Ends the Batch and draws contents to the Screen
         /// </summary>
-        /// <param name="unlock">Whether or not to unlock all buffers, you probably wanna leave this alone</param>
-        public unsafe void End(bool unlock = true) {
+        public unsafe void End() {
             //Bind all textures
             for (uint i = 0; i != this._textureSlotIndex; i++) {
                 this.gl.ActiveTexture((GLEnum)((uint)GLEnum.Texture0 + i));
@@ -332,15 +341,10 @@ namespace Furball.Vixie.Graphics.Renderers {
             this._textureSlotIndex  = 0;
             this._vertexBufferIndex = 0;
 
-            this.DrawCalls++;
-
-            if (unlock) {
-                //Bind everything
-                this._vertexArray.Unlock();
-                this._indexBuffer.Unlock();
-                this._vertexBuffer.Unlock();
-                this._batchShader.Unlock();
-            }
+            this._vertexArray.Unlock();
+            this._indexBuffer.Unlock();
+            this._vertexBuffer.Unlock();
+            this._batchShader.Unlock();
         }
         public void Dispose() {
             try {

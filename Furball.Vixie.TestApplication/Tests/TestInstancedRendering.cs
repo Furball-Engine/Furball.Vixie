@@ -1,4 +1,5 @@
 using System;
+using System.Drawing;
 using System.Globalization;
 using System.Numerics;
 using Furball.Vixie.Graphics;
@@ -36,7 +37,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._immediateRenderer.Begin();
 
             for (int i = 0; i != this.CirnoDons; i++) {
-                this._immediateRenderer.Draw(this._texture, new Vector2(i, 0), new Vector2(371, 326), Vector2.Zero);
+                this._immediateRenderer.Draw(this._texture, new Vector2(i, 0), new Vector2(371, 326), Vector2.Zero, 0, Color.White);
             }
 
             this._immediateRenderer.End();

@@ -43,7 +43,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._batchedRenderer.Begin();
 
             for (int i = 0; i != this.CirnoDons; i++) {
-                this._batchedRenderer.Draw(this._texture, new Vector2(i % 1024, 0), Vector2.Zero, Vector2.Zero);
+                this._batchedRenderer.Draw(this._texture, new Vector2(i % 1024, 0), Vector2.Zero, Vector2.Zero, 0, Color.White);
             }
 
             this._batchedRenderer.End();
@@ -66,9 +66,6 @@ namespace Furball.Vixie.TestApplication.Tests {
                 this.BaseGame.Components.Add(new BaseTestSelector());
                 this.BaseGame.Components.Remove(this);
             }
-
-            ImGui.Text($"Quads: {this._batchedRenderer.QuadsDrawn}");
-            ImGui.Text($"Draws: {this._batchedRenderer.DrawCalls}");
 
             ImGui.SliderInt("Draws", ref this.CirnoDons, 0, 1024);
 
