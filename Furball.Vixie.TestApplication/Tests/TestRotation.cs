@@ -33,7 +33,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             this.GraphicsDevice.GlClear();
 
             this._instancedRenderer.Begin();
-            this._instancedRenderer.Draw(this._whiteTexture, new Vector2(100, 100), new Vector2(371, 356), Vector2.Zero, _rotation);
+            this._instancedRenderer.Draw(this._whiteTexture, new Vector2(0, 0), new Vector2(371, 356), Vector2.Zero, _rotation);
             this._instancedRenderer.End();
 
 

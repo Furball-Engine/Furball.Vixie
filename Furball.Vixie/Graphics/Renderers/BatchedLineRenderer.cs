@@ -154,9 +154,9 @@ namespace Furball.Vixie.Graphics.Renderers {
                 if (this._vertexArray.Locked)
                     this._vertexArray.Unlock();
 
+                this._vertexArray.Dispose();
                 this._lineShader.Dispose();
                 this._vertexBuffer.Dispose();
-                this._vertexArray.Dispose();
             }
             catch {
 

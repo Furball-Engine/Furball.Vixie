@@ -153,13 +153,13 @@ namespace Furball.Vixie.Graphics.Renderers {
 
             size *= scale;
 
-            var matrix = Matrix4x4.CreateFromYawPitchRoll(0, 0, rotation);
+            var matrix = Matrix4x4.CreateTranslation(-(0.5f) * size.X, -(0.5f) * size.Y, 0) * Matrix4x4.CreateFromYawPitchRoll(0, 0, rotation) * Matrix4x4.CreateTranslation((0.5f) * size.X, (0.5f) * size.Y, 0);
 
             this._verticies = new float[] {
-                /* Vertex Coordinates */  position.X,                   position.Y + size.Y,  /* Texture Coordinates */  0.0f, 0.0f,  //Bottom Left corner
-                /* Vertex Coordinates */  position.X + size.X,          position.Y + size.Y,  /* Texture Coordinates */  1.0f, 0.0f,  //Bottom Right corner
-                /* Vertex Coordinates */  position.X + size.X,          position.Y,           /* Texture Coordinates */  1.0f, 1.0f,  //Top Right Corner
-                /* Vertex Coordinates */  position.X,                   position.Y,           /* Texture Coordinates */  0.0f, 1.0f,  //Top Left Corner
+                /* Vertex Coordinates */  position.X,          position.Y + size.Y,  /* Texture Coordinates */  0.0f, 0.0f,  //Bottom Left corner
+                /* Vertex Coordinates */  position.X + size.X, position.Y + size.Y,  /* Texture Coordinates */  1.0f, 0.0f,  //Bottom Right corner
+                /* Vertex Coordinates */  position.X + size.X, position.Y,           /* Texture Coordinates */  1.0f, 1.0f,  //Top Right Corner
+                /* Vertex Coordinates */  position.X,          position.Y,           /* Texture Coordinates */  0.0f, 1.0f,  //Top Left Corner
             };
 
             this._vertexBuffer.SetData<float>(this._verticies);
@@ -183,11 +183,11 @@ namespace Furball.Vixie.Graphics.Renderers {
                 if (this._indexBuffer.Locked)
                     this._indexBuffer.Unlock();
 
-                this._currentShader.Dispose();
-                this._vertexBuffer.Dispose();
                 this._vertexArray.Dispose();
+                this._currentShader.Dispose();
+                //this._vertexBuffer.Dispose();
                 this._shader.Dispose();
-                this._indexBuffer.Dispose();
+                //this._indexBuffer.Dispose();
             }
             catch {
 

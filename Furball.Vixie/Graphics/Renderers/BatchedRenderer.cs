@@ -343,9 +343,9 @@ namespace Furball.Vixie.Graphics.Renderers {
                 if (this._indexBuffer.Locked)
                     this._indexBuffer.Unlock();
 
+                this._vertexArray.Dispose();
                 this._batchShader.Dispose();
                 this._vertexBuffer.Dispose();
-                this._vertexArray.Dispose();
                 this._indexBuffer.Dispose();
             }
             catch {
