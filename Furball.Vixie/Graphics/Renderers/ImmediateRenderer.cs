@@ -8,7 +8,7 @@ namespace Furball.Vixie.Graphics.Renderers {
     /// <summary>
     /// Renderer which draws in an Instanced fashion.
     /// </summary>
-    public class InstancedRenderer : IDisposable {
+    public class ImmediateRenderer : IDisposable {
         /// <summary>
         /// OpenGL API, used to shorten code
         /// </summary>
@@ -33,7 +33,7 @@ namespace Furball.Vixie.Graphics.Renderers {
         /// <summary>
         /// Renderer which draws in an Instanced fashion.
         /// </summary>
-        public InstancedRenderer() {
+        public ImmediateRenderer() {
             this.gl = Global.Gl;
 
             //Create Vertex Buffer
@@ -49,8 +49,8 @@ namespace Furball.Vixie.Graphics.Renderers {
             this._indexBuffer = BufferObject.CreateNew<uint>(indicies, BufferTargetARB.ElementArrayBuffer);
 
             //Load Shader Sources
-            string vertSource = ResourceHelpers.GetStringResource("ShaderCode/InstanceRenderer/InstanceRendererVertexShader.glsl");
-            string fragSource = ResourceHelpers.GetStringResource("ShaderCode/InstanceRenderer/InstanceRendererPixelShader.glsl");
+            string vertSource = ResourceHelpers.GetStringResource("ShaderCode/ImmediateRenderer/VertexShader.glsl");
+            string fragSource = ResourceHelpers.GetStringResource("ShaderCode/ImmediateRenderer/PixelShader.glsl");
 
             //Create Attach Vertex and Fragment Shader, Compile and Link
             this._shader =
@@ -77,7 +77,7 @@ namespace Furball.Vixie.Graphics.Renderers {
             this.ChangeShader(this._shader);
         }
 
-        ~InstancedRenderer() {
+        ~ImmediateRenderer() {
             this.Dispose();
         }
 

@@ -11,14 +11,14 @@ using Silk.NET.OpenGL.Extensions.ImGui;
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestRotation : GameComponent {
-        private InstancedRenderer _instancedRenderer;
+        private ImmediateRenderer _immediateRenderer;
         private BatchedRenderer   _batchedRenderer;
         private Texture           _whiteTexture;
 
         private ImGuiController _imGuiController;
 
         public override void Initialize() {
-            this._instancedRenderer = new InstancedRenderer();
+            this._immediateRenderer = new ImmediateRenderer();
             this._batchedRenderer   = new BatchedRenderer();
             this._whiteTexture      = new Texture(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
 

@@ -12,13 +12,13 @@ using Texture=Furball.Vixie.Graphics.Texture;
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestInstancedRendering : GameComponent {
-        private InstancedRenderer _instancedRenderer;
+        private ImmediateRenderer _immediateRenderer;
         private Texture           _texture;
 
         private ImGuiController _imGuiController;
 
         public override void Initialize() {
-            this._instancedRenderer = new InstancedRenderer();
+            this._immediateRenderer = new ImmediateRenderer();
 
             //Load the Texture
             this._texture = new Texture(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
@@ -33,13 +33,13 @@ namespace Furball.Vixie.TestApplication.Tests {
         public override void Draw(double deltaTime) {
             this.GraphicsDevice.GlClear();
 
-            this._instancedRenderer.Begin();
+            this._immediateRenderer.Begin();
 
             for (int i = 0; i != this.CirnoDons; i++) {
-                this._instancedRenderer.Draw(this._texture, new Vector2(i, 0), new Vector2(371, 326), Vector2.Zero);
+                this._immediateRenderer.Draw(this._texture, new Vector2(i, 0), new Vector2(371, 326), Vector2.Zero);
             }
 
-            this._instancedRenderer.End();
+            this._immediateRenderer.End();
 
             #region ImGui menu
 

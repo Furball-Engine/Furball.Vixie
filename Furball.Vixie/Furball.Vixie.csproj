@@ -21,15 +21,15 @@
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Include="ShaderCode\BasicShader\BasicPixelShader.glsl" />
-      <EmbeddedResource Include="ShaderCode\BasicShader\BasicVertexShader.glsl" />
-      <EmbeddedResource Include="ShaderCode\BasicTexturedShader\BasicTexturedPixelShader.glsl" />
-      <EmbeddedResource Include="ShaderCode\BatchRenderer\BatchRendererPixelShader.glsl" />
-      <EmbeddedResource Include="ShaderCode\BatchRenderer\BatchRendererVertexShader.glsl" />
-      <EmbeddedResource Include="ShaderCode\InstanceRenderer\InstanceRendererPixelShader.glsl" />
-      <EmbeddedResource Include="ShaderCode\InstanceRenderer\InstanceRendererVertexShader.glsl" />
+      <EmbeddedResource Include="ShaderCode\BasicShader\PixelShader.glsl" />
+      <EmbeddedResource Include="ShaderCode\BasicShader\VertexShader.glsl" />
+      <EmbeddedResource Include="ShaderCode\BasicTexturedShader\PixelShader.glsl" />
+      <EmbeddedResource Include="ShaderCode\BatchRenderer\PixelShader.glsl" />
+      <EmbeddedResource Include="ShaderCode\BatchRenderer\VertexShader.glsl" />
+      <EmbeddedResource Include="ShaderCode\ImmediateRenderer\PixelShader.glsl" />
+      <EmbeddedResource Include="ShaderCode\ImmediateRenderer\VertexShader.glsl" />
       <None Remove="ShaderCode\BatchRendererPixelShader.glsl" />
-      <EmbeddedResource Include="ShaderCode\BasicTexturedShader\BasicTexturedVertexShader.glsl" />
+      <EmbeddedResource Include="ShaderCode\BasicTexturedShader\VertexShader.glsl" />
       <None Remove="ShaderCode\BatchRendererVertexShader.glsl" />
       <None Remove="ShaderCode\LineRenderer\GeometryShader.glsl" />
       <EmbeddedResource Include="ShaderCode\LineRenderer\GeometryShader.glsl" />

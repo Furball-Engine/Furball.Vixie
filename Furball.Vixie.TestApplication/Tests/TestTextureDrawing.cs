@@ -14,7 +14,7 @@ using UniformType=Furball.Vixie.Graphics.UniformType;
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestTextureDrawing : GameComponent {
-        private InstancedRenderer _instancedRenderer;
+        private ImmediateRenderer _immediateRenderer;
 
         private BufferObject _vertexBuffer;
         private BufferObject  _indexBuffer;
@@ -26,7 +26,7 @@ namespace Furball.Vixie.TestApplication.Tests {
         private ImGuiController _imGuiController;
 
         public override void Initialize() {
-            this._instancedRenderer = new InstancedRenderer();
+            this._immediateRenderer = new ImmediateRenderer();
 
             //pippidonclear0.png is 371x326 pixels
             float[] verticies = new float[] {
@@ -72,9 +72,9 @@ namespace Furball.Vixie.TestApplication.Tests {
         public override void Draw(double deltaTime) {
             this.GraphicsDevice.GlClear();
 
-            this._instancedRenderer.Begin();
-            this._instancedRenderer.Draw(this._texture, new Vector2(0, 0), Vector2.Zero, Vector2.Zero);
-            this._instancedRenderer.End();
+            this._immediateRenderer.Begin();
+            this._immediateRenderer.Draw(this._texture, new Vector2(0, 0), Vector2.Zero, Vector2.Zero);
+            this._immediateRenderer.End();
 
             #region ImGui menu
 

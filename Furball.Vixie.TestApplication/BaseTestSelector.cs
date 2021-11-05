@@ -8,13 +8,13 @@ using Silk.NET.OpenGL.Extensions.ImGui;
 namespace Furball.Vixie.TestApplication {
     public class BaseTestSelector : GameComponent {
         private ImGuiController _imGuiController;
-        private InstancedRenderer        _instancedRenderer;
+        private ImmediateRenderer        _immediateRenderer;
 
         public BaseTestSelector()  {}
 
         public override void Initialize() {
             this._imGuiController   = ImGuiCreator.CreateController();
-            this._instancedRenderer = new InstancedRenderer();
+            this._immediateRenderer = new ImmediateRenderer();
 
             base.Initialize();
         }

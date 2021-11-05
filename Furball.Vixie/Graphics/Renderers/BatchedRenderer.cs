@@ -132,8 +132,8 @@ namespace Furball.Vixie.Graphics.Renderers {
             this._localVertexBuffer = new BatchedVertex[this.MaxVerticies];
 
             //Prepare Shader Sources
-            string vertSource = ResourceHelpers.GetStringResource("ShaderCode/BatchRenderer/BatchRendererVertexShader.glsl", true);
-            string fragSource = ResourceHelpers.GetStringResource("ShaderCode/BatchRenderer/BatchRendererPixelShader.glsl", true);
+            string vertSource = ResourceHelpers.GetStringResource("ShaderCode/BatchRenderer/VertexShader.glsl", true);
+            string fragSource = ResourceHelpers.GetStringResource("ShaderCode/BatchRenderer/PixelShader.glsl", true);
 
             //Create BatchShader
             this._batchShader =

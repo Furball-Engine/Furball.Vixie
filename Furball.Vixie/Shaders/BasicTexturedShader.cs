@@ -9,8 +9,8 @@ namespace Furball.Vixie.Shaders {
     /// </summary>
     public class BasicTexturedShader : Graphics.Shader {
         public BasicTexturedShader() : base() {
-            string vertexSource = ResourceHelpers.GetStringResource("ShaderCode/BasicTexturedShader/BasicTexturedVertexShader.glsl", true);
-            string fragmentSource = ResourceHelpers.GetStringResource("ShaderCode/BasicTexturedShader/BasicTexturedPixelShader.glsl", true);
+            string vertexSource   = ResourceHelpers.GetStringResource("ShaderCode/BasicTexturedShader/VertexShader.glsl", true);
+            string fragmentSource = ResourceHelpers.GetStringResource("ShaderCode/BasicTexturedShader/PixelShader.glsl",  true);
 
             this.AttachShader(ShaderType.VertexShader,   vertexSource)
                 .AttachShader(ShaderType.FragmentShader, fragmentSource)

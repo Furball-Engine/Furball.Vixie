@@ -8,7 +8,7 @@ namespace Furball.Vixie.Graphics.Renderers {
     /// <summary>
     /// Line Renderer which draws in an Instanced fashion.
     /// </summary>
-    public class InstancedLineRenderer : IDisposable {
+    public class ImmediateLineRenderer : IDisposable {
         /// <summary>
         /// OpenGL API, used to shorten code
         /// </summary>
@@ -28,11 +28,11 @@ namespace Furball.Vixie.Graphics.Renderers {
         /// <summary>
         /// Line Renderer which draws in an Instanced fashion.
         /// </summary>
-        public InstancedLineRenderer() {
+        public ImmediateLineRenderer() {
             this.gl = Global.Gl;
             //Load Shader Source
-            string vertexSource = ResourceHelpers.GetStringResource("ShaderCode/LineRenderer/VertexShader.glsl", true);
-            string fragmentSource = ResourceHelpers.GetStringResource("ShaderCode/LineRenderer/PixelShader.glsl", true);
+            string vertexSource   = ResourceHelpers.GetStringResource("ShaderCode/LineRenderer/VertexShader.glsl",   true);
+            string fragmentSource = ResourceHelpers.GetStringResource("ShaderCode/LineRenderer/PixelShader.glsl",    true);
             string geometrySource = ResourceHelpers.GetStringResource("ShaderCode/LineRenderer/GeometryShader.glsl", true);
 
             //Create, Bind, Attach, Compile and Link the Vertex Fragment and Geometry Shaders
@@ -59,7 +59,7 @@ namespace Furball.Vixie.Graphics.Renderers {
                 .AddBuffer(this._vertexBuffer, layout);
         }
 
-        ~InstancedLineRenderer() {
+        ~ImmediateLineRenderer() {
             this.Dispose();
         }
 
