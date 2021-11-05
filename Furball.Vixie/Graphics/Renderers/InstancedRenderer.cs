@@ -153,7 +153,7 @@ namespace Furball.Vixie.Graphics.Renderers {
 
             size *= scale;
 
-            var matrix = Matrix4x4.CreateTranslation(-(0.5f) * size.X, -(0.5f) * size.Y, 0) * Matrix4x4.CreateFromYawPitchRoll(0, 0, rotation) * Matrix4x4.CreateTranslation((0.5f) * size.X, (0.5f) * size.Y, 0);
+            var matrix = Matrix4x4.CreateRotationZ(rotation, new Vector3(position.X, position.Y, 0));
 
             this._verticies = new float[] {
                 /* Vertex Coordinates */  position.X,          position.Y + size.Y,  /* Texture Coordinates */  0.0f, 0.0f,  //Bottom Left corner
@@ -185,9 +185,9 @@ namespace Furball.Vixie.Graphics.Renderers {
 
                 this._vertexArray.Dispose();
                 this._currentShader.Dispose();
-                //this._vertexBuffer.Dispose();
+                this._vertexBuffer.Dispose();
                 this._shader.Dispose();
-                //this._indexBuffer.Dispose();
+                this._indexBuffer.Dispose();
             }
             catch {
 
