@@ -197,7 +197,12 @@ namespace Furball.Vixie.Graphics {
         /// Disposes the Buffer
         /// </summary>
         public void Dispose() {
-            this.gl.DeleteBuffer(this._bufferId);
+            try {
+                this.gl.DeleteBuffer(this._bufferId);
+            }
+            catch {
+
+            }
         }
     }
 }

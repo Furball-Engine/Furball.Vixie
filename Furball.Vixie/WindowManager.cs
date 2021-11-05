@@ -59,8 +59,13 @@ namespace Furball.Vixie {
         /// Disposes the Window Manager
         /// </summary>
         public void Dispose() {
-            this.GameWindow?.Dispose();
-            this._glApi?.Dispose();
+            try {
+                this.GameWindow?.Dispose();
+                this._glApi?.Dispose();
+            }
+            catch {
+
+            }
         }
     }
 }

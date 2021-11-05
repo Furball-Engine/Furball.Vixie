@@ -276,8 +276,13 @@ namespace Furball.Vixie.Graphics {
         /// Disposes the Texture and the Local Image Buffer
         /// </summary>
         public void Dispose() {
-            this.gl.DeleteTexture(this.TextureId);
-            this._localBuffer.Dispose();
+            try {
+                this.gl.DeleteTexture(this.TextureId);
+                this._localBuffer.Dispose();
+            }
+            catch {
+
+            }
         }
     }
 }

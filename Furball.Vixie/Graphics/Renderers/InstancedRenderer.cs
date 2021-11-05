@@ -154,39 +154,44 @@ namespace Furball.Vixie.Graphics.Renderers {
             size *= scale;
 
             var matrix = Matrix4x4.CreateFromYawPitchRoll(0, 0, rotation);
-            var outpos = Vector4.Transform(position, matrix);
 
             this._verticies = new float[] {
-                /* Vertex Coordinates */  outpos.X,                   outpos.Y + size.Y,  /* Texture Coordinates */  0.0f, 0.0f,  //Bottom Left corner
-                /* Vertex Coordinates */  outpos.X + size.X,          outpos.Y + size.Y,  /* Texture Coordinates */  1.0f, 0.0f,  //Bottom Right corner
-                /* Vertex Coordinates */  outpos.X + size.X,          outpos.Y,           /* Texture Coordinates */  1.0f, 1.0f,  //Top Right Corner
-                /* Vertex Coordinates */  outpos.X,                   outpos.Y,           /* Texture Coordinates */  0.0f, 1.0f,  //Top Left Corner
+                /* Vertex Coordinates */  position.X,                   position.Y + size.Y,  /* Texture Coordinates */  0.0f, 0.0f,  //Bottom Left corner
+                /* Vertex Coordinates */  position.X + size.X,          position.Y + size.Y,  /* Texture Coordinates */  1.0f, 0.0f,  //Bottom Right corner
+                /* Vertex Coordinates */  position.X + size.X,          position.Y,           /* Texture Coordinates */  1.0f, 1.0f,  //Top Right Corner
+                /* Vertex Coordinates */  position.X,                   position.Y,           /* Texture Coordinates */  0.0f, 1.0f,  //Top Left Corner
             };
 
             this._vertexBuffer.SetData<float>(this._verticies);
+            this._currentShader.SetUniform("u_RotationMatrix", UniformType.GlMat4f, matrix);
 
             texture.Bind();
 
             this.gl.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, null);
         }
         public void Dispose() {
-            //Unlock Shaders and other things
-            if (this._currentShader.Locked)
-                this._currentShader.Unlock();
-            if (this._shader.Locked)
-                this._shader.Unlock();
-            if (this._vertexBuffer.Locked)
-                this._vertexBuffer.Unlock();
-            if (this._vertexArray.Locked)
-                this._vertexArray.Unlock();
-            if (this._indexBuffer.Locked)
-                this._indexBuffer.Unlock();
+            try {
+                //Unlock Shaders and other things
+                if (this._currentShader.Locked)
+                    this._currentShader.Unlock();
+                if (this._shader.Locked)
+                    this._shader.Unlock();
+                if (this._vertexBuffer.Locked)
+                    this._vertexBuffer.Unlock();
+                if (this._vertexArray.Locked)
+                    this._vertexArray.Unlock();
+                if (this._indexBuffer.Locked)
+                    this._indexBuffer.Unlock();
 
-            this._currentShader.Dispose();
-            this._vertexBuffer.Dispose();
-            this._vertexArray.Dispose();
-            this._shader.Dispose();
-            this._indexBuffer.Dispose();
+                this._currentShader.Dispose();
+                this._vertexBuffer.Dispose();
+                this._vertexArray.Dispose();
+                this._shader.Dispose();
+                this._indexBuffer.Dispose();
+            }
+            catch {
+
+            }
         }
     }
 }

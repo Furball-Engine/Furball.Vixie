@@ -321,7 +321,12 @@ namespace Furball.Vixie.Graphics {
         /// Cleans up the Shader
         /// </summary>
         public void Dispose() {
-            this.gl.DeleteProgram(this._programId);
+            try {
+                this.gl.DeleteProgram(this._programId);
+            }
+            catch {
+
+            }
         }
     }
 }

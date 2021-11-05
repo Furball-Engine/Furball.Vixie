@@ -145,17 +145,22 @@ namespace Furball.Vixie.Graphics.Renderers {
         }
 
         public void Dispose() {
-            //Unlock Shaders and other things
-            if (this._lineShader.Locked)
-                this._lineShader.Unlock();
-            if (this._vertexBuffer.Locked)
-                this._vertexBuffer.Unlock();
-            if (this._vertexArray.Locked)
-                this._vertexArray.Unlock();
+            try {
+                //Unlock Shaders and other things
+                if (this._lineShader.Locked)
+                    this._lineShader.Unlock();
+                if (this._vertexBuffer.Locked)
+                    this._vertexBuffer.Unlock();
+                if (this._vertexArray.Locked)
+                    this._vertexArray.Unlock();
 
-            this._lineShader.Dispose();
-            this._vertexBuffer.Dispose();
-            this._vertexArray.Dispose();
+                this._lineShader.Dispose();
+                this._vertexBuffer.Dispose();
+                this._vertexArray.Dispose();
+            }
+            catch {
+
+            }
         }
     }
 }

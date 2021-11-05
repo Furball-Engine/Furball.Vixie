@@ -121,7 +121,12 @@ namespace Furball.Vixie.Graphics {
         /// Disposes this Vertex Array
         /// </summary>
         public void Dispose() {
-            this.gl.DeleteVertexArray(this._arrayId);
+            try {
+                this.gl.DeleteVertexArray(this._arrayId);
+            }
+            catch {
+
+            }
         }
     }
 }

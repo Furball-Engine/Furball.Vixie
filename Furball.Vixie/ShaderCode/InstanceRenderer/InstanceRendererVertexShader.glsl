@@ -10,8 +10,7 @@ uniform mat4 vx_WindowProjectionMatrix;
 uniform mat4 u_RotationMatrix;
 
 void main() {
-    //gl_Position = vx_WindowProjectionMatrix * position;
-    gl_Position = vx_WindowProjectionMatrix * position;
+    gl_Position = vx_WindowProjectionMatrix * u_RotationMatrix * position;
 
     v_TexCoord = texCoord;
 }

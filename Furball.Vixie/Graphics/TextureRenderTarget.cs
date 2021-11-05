@@ -159,9 +159,14 @@ namespace Furball.Vixie.Graphics {
         public Texture GetTexture() => new Texture(this._textureId, this._targetWidth, this._targetHeight);
 
         public void Dispose() {
-            gl.DeleteFramebuffer(this._frameBufferId);
-            gl.DeleteTexture(this._textureId);
-            gl.DeleteRenderbuffer(this._depthRenderBufferId);
+            try {
+                gl.DeleteFramebuffer(this._frameBufferId);
+                gl.DeleteTexture(this._textureId);
+                gl.DeleteRenderbuffer(this._depthRenderBufferId);
+            }
+            catch {
+
+            }
         }
     }
 }
