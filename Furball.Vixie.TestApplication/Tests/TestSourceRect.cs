@@ -32,9 +32,9 @@ namespace Furball.Vixie.TestApplication.Tests {
         public override void Draw(double deltaTime) {
             this.GraphicsDevice.GlClear();
 
-            this._batchedRenderer.Begin();
-            this._batchedRenderer.Draw(this._whiteTexture, new Vector2(1280 /2, 720 /2), new Vector2(371/2, 326), null, 0, Color.White, new Rectangle(371/2, 0, 371, 326));
-            this._batchedRenderer.End();
+            this._immediateRenderer.Begin();
+            this._immediateRenderer.Draw(this._whiteTexture, new Vector2(1280 /2, 720 /2), new Vector2(371/2, 326), null, 0, Color.White, new Rectangle(371/2, 0, 371, 326));
+            this._immediateRenderer.End();
 
 
 
