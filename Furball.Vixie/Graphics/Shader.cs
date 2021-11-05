@@ -16,6 +16,9 @@ namespace Furball.Vixie.Graphics {
     /// A Shader, a Program run on the GPU
     /// </summary>
     public class Shader : IDisposable {
+        internal static Shader CurrentlyBound;
+        public bool Bound => CurrentlyBound == this;
+
         /// <summary>
         /// OpenGL api, used to not have to do Global.Gl.function everytime, saves time and makes code shorter
         /// </summary>
@@ -100,6 +103,8 @@ namespace Furball.Vixie.Graphics {
                 return null;
 
             this.gl.UseProgram(this._programId);
+
+            CurrentlyBound = this;
 
             return this;
         }
@@ -314,6 +319,8 @@ namespace Furball.Vixie.Graphics {
 
             this.gl.UseProgram(0);
 
+            CurrentlyBound = null;
+
             return this;
         }
 
@@ -321,6 +328,9 @@ namespace Furball.Vixie.Graphics {
         /// Cleans up the Shader
         /// </summary>
         public void Dispose() {
+            if (this.Bound)
+                this.UnlockingUnbind();
+
             try {
                 this.gl.DeleteProgram(this._programId);
             }

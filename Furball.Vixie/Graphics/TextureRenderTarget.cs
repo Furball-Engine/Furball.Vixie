@@ -4,6 +4,9 @@ using Texture=Furball.Vixie.Graphics.Texture;
 
 namespace Furball.Vixie.Graphics {
     public class TextureRenderTarget : IDisposable {
+        internal static TextureRenderTarget CurrentlyBound;
+        public bool Bound => CurrentlyBound == this;
+
         /// <summary>
         /// OpenGL API, used to shorten code.
         /// </summary>
@@ -94,6 +97,8 @@ namespace Furball.Vixie.Graphics {
             //Store the old viewport for later
             gl.GetInteger(GetPName.Viewport, this._oldViewPort);
             gl.Viewport(0, 0, this._targetWidth, this._targetHeight);
+
+            CurrentlyBound = this;
         }
 
         /// <summary>
@@ -151,6 +156,8 @@ namespace Furball.Vixie.Graphics {
 
             gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
             gl.Viewport(this._oldViewPort[0], this._oldViewPort[1], (uint) this._oldViewPort[2], (uint) this._oldViewPort[3]);
+
+            CurrentlyBound = null;
         }
         /// <summary>
         /// Retrieves the Texture from this RenderTarget
@@ -159,6 +166,9 @@ namespace Furball.Vixie.Graphics {
         public Texture GetTexture() => new Texture(this._textureId, this._targetWidth, this._targetHeight);
 
         public void Dispose() {
+            if (this.Bound)
+                this.UnlockingUnbind();
+
             try {
                 gl.DeleteFramebuffer(this._frameBufferId);
                 gl.DeleteTexture(this._textureId);

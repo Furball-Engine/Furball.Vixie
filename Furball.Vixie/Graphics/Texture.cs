@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -9,6 +10,48 @@ using SixLabors.ImageSharp.Processing;
 
 namespace Furball.Vixie.Graphics {
     public class Texture : IDisposable {
+        /// <summary>
+        /// All the Currently Bound Textures
+        /// </summary>
+        internal static Dictionary<TextureUnit, uint> BoundTextures = new() {
+            { TextureUnit.Texture0,  0 },
+            { TextureUnit.Texture1,  0 },
+            { TextureUnit.Texture2,  0 },
+            { TextureUnit.Texture3,  0 },
+            { TextureUnit.Texture4,  0 },
+            { TextureUnit.Texture5,  0 },
+            { TextureUnit.Texture6,  0 },
+            { TextureUnit.Texture7,  0 },
+            { TextureUnit.Texture8,  0 },
+            { TextureUnit.Texture9,  0 },
+            { TextureUnit.Texture10, 0 },
+            { TextureUnit.Texture11, 0 },
+            { TextureUnit.Texture12, 0 },
+            { TextureUnit.Texture13, 0 },
+            { TextureUnit.Texture14, 0 },
+            { TextureUnit.Texture15, 0 },
+            { TextureUnit.Texture16, 0 },
+            { TextureUnit.Texture17, 0 },
+            { TextureUnit.Texture18, 0 },
+            { TextureUnit.Texture19, 0 },
+            { TextureUnit.Texture20, 0 },
+            { TextureUnit.Texture21, 0 },
+            { TextureUnit.Texture22, 0 },
+            { TextureUnit.Texture23, 0 },
+            { TextureUnit.Texture24, 0 },
+            { TextureUnit.Texture25, 0 },
+            { TextureUnit.Texture26, 0 },
+            { TextureUnit.Texture27, 0 },
+            { TextureUnit.Texture28, 0 },
+            { TextureUnit.Texture29, 0 },
+            { TextureUnit.Texture30, 0 },
+            { TextureUnit.Texture31, 0 },
+        };
+
+        public bool Bound => BoundTextures[this.BoundAt] == this.TextureId;
+
+        internal TextureUnit BoundAt;
+
         /// <summary>
         /// OpenGL API, used to not write Global.Gl everytime
         /// </summary>
@@ -205,6 +248,9 @@ namespace Furball.Vixie.Graphics {
             this.gl.ActiveTexture(textureSlot);
             this.gl.BindTexture(TextureTarget.Texture2D, this.TextureId);
 
+            BoundTextures[textureSlot] = this.TextureId;
+            this.BoundAt               = textureSlot;
+
             return this;
         }
 
@@ -262,7 +308,10 @@ namespace Furball.Vixie.Graphics {
             if (this.Locked)
                 return null;
 
+            this.gl.ActiveTexture(this.BoundAt);
             this.gl.BindTexture(TextureTarget.Texture2D, 0);
+
+            BoundTextures[this.BoundAt] = this.TextureId;
 
             return this;
         }
@@ -276,6 +325,9 @@ namespace Furball.Vixie.Graphics {
         /// Disposes the Texture and the Local Image Buffer
         /// </summary>
         public void Dispose() {
+            if (this.Bound)
+                this.UnlockingUnbind();
+
             try {
                 this.gl.DeleteTexture(this.TextureId);
                 this._localBuffer.Dispose();

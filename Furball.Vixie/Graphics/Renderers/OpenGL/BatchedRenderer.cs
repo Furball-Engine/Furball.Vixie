@@ -323,8 +323,14 @@ namespace Furball.Vixie.Graphics.Renderers {
         public unsafe void End() {
             //Bind all textures
             for (uint i = 0; i != this._textureSlotIndex; i++) {
-                this.gl.ActiveTexture((GLEnum)((uint)GLEnum.Texture0 + i));
-                this.gl.BindTexture(GLEnum.Texture2D, this._texIdToGlTexIdLookup[i]);
+                TextureUnit textureSlot = (TextureUnit)((uint)TextureUnit.Texture0 + i);
+
+                uint lookup = this._texIdToGlTexIdLookup[i];
+
+                this.gl.ActiveTexture(textureSlot);
+                this.gl.BindTexture(GLEnum.Texture2D, lookup);
+
+                Texture.BoundTextures[textureSlot] = lookup;
             }
 
             fixed (void* data = this._localVertexBuffer) {

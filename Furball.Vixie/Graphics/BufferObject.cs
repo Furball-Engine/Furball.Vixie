@@ -6,6 +6,9 @@ namespace Furball.Vixie.Graphics {
     /// OpenGL Buffer Objecct
     /// </summary>
     public class BufferObject : IDisposable {
+        internal static BufferObject CurrentlyBound;
+        public bool Bound => CurrentlyBound == this;
+
         /// <summary>
         /// Unique Identifier for this Buffer object used by OpenGL to distingluish different buffers
         /// </summary>
@@ -131,6 +134,8 @@ namespace Furball.Vixie.Graphics {
 
             this.gl.BindBuffer(this._bufferType, this._bufferId);
 
+            CurrentlyBound = this;
+
             return this;
         }
 
@@ -191,12 +196,17 @@ namespace Furball.Vixie.Graphics {
 
             this.gl.BindBuffer(this._bufferType, 0);
 
+            CurrentlyBound = null;
+
             return this;
         }
         /// <summary>
         /// Disposes the Buffer
         /// </summary>
         public void Dispose() {
+            if (this.Bound)
+                this.UnlockingUnbind();
+
             try {
                 this.gl.DeleteBuffer(this._bufferId);
             }

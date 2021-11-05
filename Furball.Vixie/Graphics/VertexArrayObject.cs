@@ -2,8 +2,10 @@ using System;
 using Silk.NET.OpenGL;
 
 namespace Furball.Vixie.Graphics {
-    public class VertexArrayObject : IDisposable
-    {
+    public class VertexArrayObject : IDisposable {
+        internal static VertexArrayObject CurrentlyBound;
+        public bool Bound => CurrentlyBound == this;
+
         /// <summary>
         /// OpenGL Api, used to not have to write Global.GL.function everytime
         /// </summary>
@@ -56,6 +58,8 @@ namespace Furball.Vixie.Graphics {
                 return null;
 
             this.gl.BindVertexArray(this._arrayId);
+
+            CurrentlyBound = this;
 
             return this;
         }
@@ -115,14 +119,19 @@ namespace Furball.Vixie.Graphics {
 
             this.gl.BindVertexArray(0);
 
+            CurrentlyBound = null;
+
             return this;
         }
         /// <summary>
         /// Disposes this Vertex Array
         /// </summary>
         public void Dispose() {
+            if (this.Bound)
+                this.UnlockingUnbind();
+
             try {
-                //this.gl.DeleteVertexArray(this._arrayId);
+                this.gl.DeleteVertexArray(this._arrayId);
             }
             catch {
 
