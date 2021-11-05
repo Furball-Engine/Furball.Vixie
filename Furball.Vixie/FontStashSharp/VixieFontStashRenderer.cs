@@ -14,8 +14,7 @@ namespace Furball.Vixie.FontStashSharp {
         }
 
         public void Draw(object texture, Vector2 pos, Rectangle? src, Color color, float rotation, Vector2 origin, Vector2 scale, float depth) {
-            //TODO(Eevee): color tint, source rectangle, proper rotation
-            this._renderer.Draw(texture as Texture, pos, Vector2.Zero, scale, rotation);
+            this._renderer.Draw(texture as Texture, pos, Vector2.Zero, scale, rotation, color, src);
         }
 
         public ITexture2DManager TextureManager { get; }
