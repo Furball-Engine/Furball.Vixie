@@ -104,6 +104,11 @@ namespace Furball.Vixie.Graphics {
             return this;
         }
 
+        /// <summary>
+        /// Indicates whether Object is Locked or not,
+        /// This is done internally to not be able to switch Shaders while a Batch is happening
+        /// or really anything that would possibly get screwed over by switching Shaders
+        /// </summary>
         internal bool Locked = false;
 
         /// <summary>

@@ -96,6 +96,11 @@ namespace Furball.Vixie.Graphics {
             gl.Viewport(0, 0, this._targetWidth, this._targetHeight);
         }
 
+        /// <summary>
+        /// Indicates whether Object is Locked or not,
+        /// This is done internally to not be able to switch RenderTargets while some important operation is happening
+        /// or really anything that would possibly get screwed over by switching RenderTargets
+        /// </summary>
         internal bool Locked = false;
 
         /// <summary>
