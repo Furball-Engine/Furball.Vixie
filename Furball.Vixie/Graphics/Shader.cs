@@ -44,6 +44,11 @@ namespace Furball.Vixie.Graphics {
 
             this._programId = this.gl.CreateProgram();
         }
+
+        ~Shader() {
+            this.Dispose();
+        }
+
         /// <summary>
         /// Attaches and Compiles a Shader Source
         /// </summary>

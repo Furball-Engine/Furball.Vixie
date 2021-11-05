@@ -78,6 +78,11 @@ namespace Furball.Vixie.Graphics {
             this._targetWidth  = width;
             this._targetHeight = height;
         }
+
+        ~TextureRenderTarget() {
+            this.Dispose();
+        }
+
         /// <summary>
         /// Binds the Target, from now on drawing will draw to this RenderTarget,
         /// </summary>

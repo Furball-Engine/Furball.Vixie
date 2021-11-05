@@ -58,6 +58,11 @@ namespace Furball.Vixie.Graphics.Renderers {
                 .Bind()
                 .AddBuffer(this._vertexBuffer, layout);
         }
+
+        ~InstancedLineRenderer() {
+            this.Dispose();
+        }
+
         /// <summary>
         /// Initializes the InstancedLineRenderer, do this before drawing
         /// </summary>

@@ -143,6 +143,11 @@ namespace Furball.Vixie.Graphics {
             this.TextureId = textureId;
             this.Size       = new Vector2(width, height);
         }
+
+        ~Texture() {
+            this.Dispose();
+        }
+
         /// <summary>
         /// Generates the Texture on the GPU, Sets Parameters and Uploads the Image Data
         /// </summary>

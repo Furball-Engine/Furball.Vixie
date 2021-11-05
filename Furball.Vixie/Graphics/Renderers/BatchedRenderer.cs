@@ -150,6 +150,10 @@ namespace Furball.Vixie.Graphics.Renderers {
             this._texIdToGlTexIdLookup = new Dictionary<float, uint>(this.MaxTexSlots);
         }
 
+        ~BatchedRenderer() {
+            this.Dispose();
+        }
+
         private void InitializeConstants(int quads) {
             this.MaxQuads     = quads;
             this.MaxVerticies = this.MaxQuads * 20 * 4;
