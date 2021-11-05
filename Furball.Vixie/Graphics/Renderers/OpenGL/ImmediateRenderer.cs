@@ -146,25 +146,28 @@ namespace Furball.Vixie.Graphics.Renderers {
         /// <param name="rotation">Rotation in Radians</param>
         /// TODO(Eevee): make this work somehow
         /// <param name="colorOverride">Color Tint</param>
-        public unsafe void Draw(Texture texture, Vector2 position, Vector2 size, Vector2 scale, float rotation = 0f, Color? colorOverride = null) {
-            if (size == Vector2.Zero)
-                size = texture.Size;
-
-            if(scale == Vector2.Zero)
+        public unsafe void Draw(Texture texture, Vector2 position, Vector2? size = null, Vector2? scale = null, float rotation = 0f, Color? colorOverride = null, Rectangle? sourceRect = null) {
+            if(scale == null)
                 scale = Vector2.One;
+
+            if (size == null)
+                size = texture.Size;
 
             if(colorOverride == null)
                 colorOverride = Color.White;
+
+            if (sourceRect == null)
+                sourceRect = new Rectangle(0, 0, (int) size.Value.X, (int) size.Value.Y);
 
             size *= scale;
 
             var matrix = Matrix4x4.CreateRotationZ(rotation, new Vector3(position.X, position.Y, 0));
 
             this._verticies = new float[] {
-                /* Vertex Coordinates */  position.X,          position.Y + size.Y,  /* Texture Coordinates */  0.0f, 0.0f, /* Color */ colorOverride.Value.R, colorOverride.Value.G, colorOverride.Value.B, colorOverride.Value.A, //Bottom Left corner
-                /* Vertex Coordinates */  position.X + size.X, position.Y + size.Y,  /* Texture Coordinates */  1.0f, 0.0f, /* Color */ colorOverride.Value.R, colorOverride.Value.G, colorOverride.Value.B, colorOverride.Value.A, //Bottom Right corner
-                /* Vertex Coordinates */  position.X + size.X, position.Y,           /* Texture Coordinates */  1.0f, 1.0f, /* Color */ colorOverride.Value.R, colorOverride.Value.G, colorOverride.Value.B, colorOverride.Value.A, //Top Right Corner
-                /* Vertex Coordinates */  position.X,          position.Y,           /* Texture Coordinates */  0.0f, 1.0f, /* Color */ colorOverride.Value.R, colorOverride.Value.G, colorOverride.Value.B, colorOverride.Value.A, //Top Left Corner
+                /* Vertex Coordinates */  position.X,                position.Y + size.Value.Y,  /* Texture Coordinates */  0.0f, 0.0f, /* Color */ colorOverride.Value.R, colorOverride.Value.G, colorOverride.Value.B, colorOverride.Value.A, //Bottom Left corner
+                /* Vertex Coordinates */  position.X + size.Value.X, position.Y + size.Value.Y,  /* Texture Coordinates */  1.0f, 0.0f, /* Color */ colorOverride.Value.R, colorOverride.Value.G, colorOverride.Value.B, colorOverride.Value.A, //Bottom Right corner
+                /* Vertex Coordinates */  position.X + size.Value.X, position.Y,                 /* Texture Coordinates */  1.0f, 1.0f, /* Color */ colorOverride.Value.R, colorOverride.Value.G, colorOverride.Value.B, colorOverride.Value.A, //Top Right Corner
+                /* Vertex Coordinates */  position.X,                position.Y,                 /* Texture Coordinates */  0.0f, 1.0f, /* Color */ colorOverride.Value.R, colorOverride.Value.G, colorOverride.Value.B, colorOverride.Value.A, //Top Left Corner
             };
 
             this._vertexBuffer.SetData<float>(this._verticies);

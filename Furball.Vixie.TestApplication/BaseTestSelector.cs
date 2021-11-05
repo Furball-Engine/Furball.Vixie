@@ -61,6 +61,11 @@ namespace Furball.Vixie.TestApplication {
                 this.BaseGame.Components.Remove(this);
             }
 
+            if (ImGui.Button("Source Rectangle Rendering Test")) {
+                this.BaseGame.Components.Add(new TestSourceRect());
+                this.BaseGame.Components.Remove(this);
+            }
+
 
             ImGui.End();
 
