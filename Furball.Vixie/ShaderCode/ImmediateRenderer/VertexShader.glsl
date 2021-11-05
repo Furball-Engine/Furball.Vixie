@@ -13,6 +13,6 @@ uniform mat4 u_RotationMatrix;
 void main() {
     gl_Position = vx_WindowProjectionMatrix * u_RotationMatrix * position;
 
-    v_TexCoord = texCoord;
+    v_TexCoord = vec2(clamp(TexCoord.x, 0.0, 1.0), clamp(TexCoord.y, 0.0, 1.0));
     v_Color = colorOverride / vec4(255, 255, 255, 255);
 }

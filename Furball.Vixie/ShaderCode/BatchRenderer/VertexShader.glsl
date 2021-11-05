@@ -12,7 +12,7 @@ out float v_TexIndex;
 out vec4 v_Color;
 
 void main() {
-    v_TexCoord = TexCoord;
+    v_TexCoord = vec2(clamp(TexCoord.x, 0.0, 1.0), clamp(TexCoord.y, 0.0, 1.0));
     v_TexIndex = TexIndex;
     v_Color = Color / vec4(255, 255, 255, 255);
 
