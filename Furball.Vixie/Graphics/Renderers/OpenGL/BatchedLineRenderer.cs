@@ -60,10 +60,6 @@ namespace Furball.Vixie.Graphics.Renderers {
             this._localVertexBuffer = new BatchedLineVertex[this.MaxVerticies];
         }
 
-        ~BatchedLineRenderer() {
-            this.Dispose();
-        }
-
         private        int                _vertexBufferIndex  = 0;
         private        int                _processedVerticies = 0;
         private unsafe BatchedLineVertex* _vertexPointer;

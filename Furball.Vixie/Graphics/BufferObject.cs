@@ -59,10 +59,6 @@ namespace Furball.Vixie.Graphics {
             this._bufferId = this.gl.GenBuffer();
         }
 
-        ~BufferObject() {
-            this.Dispose();
-        }
-
         /// <summary>
         /// Puts data into the Buffer
         /// </summary>

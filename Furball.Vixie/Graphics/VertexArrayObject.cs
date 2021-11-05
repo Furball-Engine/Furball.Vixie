@@ -21,10 +21,6 @@ namespace Furball.Vixie.Graphics {
             this._arrayId = this.gl.GenVertexArray();
         }
 
-        ~VertexArrayObject() {
-            this.Dispose();
-        }
-
         /// <summary>
         /// Adds a VertexBuffer with a certain Layout to this Vertex Array
         /// </summary>

@@ -78,10 +78,6 @@ namespace Furball.Vixie.Graphics.Renderers {
             this.ChangeShader(this._shader);
         }
 
-        ~ImmediateRenderer() {
-            this.Dispose();
-        }
-
         /// <summary>
         /// Simple Drawing Method for drawing with a vertex, index buffer and shader
         /// </summary>
