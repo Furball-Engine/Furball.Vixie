@@ -2,15 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using Furball.Vixie.Gl;
 using Furball.Vixie.Helpers;
-using Silk.NET.Maths;
 using Silk.NET.OpenGL;
-using Shader=Furball.Vixie.Gl.Shader;
-using Texture=Furball.Vixie.Gl.Texture;
-using UniformType=Furball.Vixie.Gl.UniformType;
 
-namespace Furball.Vixie.Graphics {
+namespace Furball.Vixie.Graphics.Renderers {
     //Makes sure everything is layed out one after the other in memory,
     //Important because of how we're uploading data to the vertex buffer,
     //If this wasnt there there is a chance they wouldnt lie next to each other in memory
@@ -92,7 +87,7 @@ namespace Furball.Vixie.Graphics {
         public int DrawCalls  = 0;
 
         public unsafe BatchedRenderer(int capacity = 4096) {
-            gl = Global.Gl;
+            this.gl = Global.Gl;
             //Initializes MaxQuad/Vertex/Index counts and figures out how many texture slots to use max
             this.InitializeConstants(capacity);
 
@@ -301,8 +296,8 @@ namespace Furball.Vixie.Graphics {
         public unsafe void End(bool unlock = true) {
             //Bind all textures
             for (uint i = 0; i != this._textureSlotIndex; i++) {
-                gl.ActiveTexture((GLEnum)((uint)GLEnum.Texture0 + i));
-                gl.BindTexture(GLEnum.Texture2D, this._texIdToGlTexIdLookup[i]);
+                this.gl.ActiveTexture((GLEnum)((uint)GLEnum.Texture0 + i));
+                this.gl.BindTexture(GLEnum.Texture2D, this._texIdToGlTexIdLookup[i]);
             }
 
             fixed (void* data = this._localVertexBuffer) {
@@ -315,7 +310,7 @@ namespace Furball.Vixie.Graphics {
                 .SetUniform("vx_WindowProjectionMatrix", UniformType.GlMat4f, Global.GameInstance.WindowManager.ProjectionMatrix);
 
             //Draw
-            gl.DrawElements(PrimitiveType.Triangles, (uint) this._indexCount, DrawElementsType.UnsignedInt, null);
+            this.gl.DrawElements(PrimitiveType.Triangles, (uint) this._indexCount, DrawElementsType.UnsignedInt, null);
 
             //Reset counts
             this._indexCount        = 0;

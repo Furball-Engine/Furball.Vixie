@@ -1,8 +1,8 @@
 using System.Drawing;
 using System.Numerics;
 using FontStashSharp.Interfaces;
-using Furball.Vixie.Gl;
 using Furball.Vixie.Graphics;
+using Furball.Vixie.Graphics.Renderers;
 
 namespace Furball.Vixie.FontStashSharp {
     public class VixieFontStashRenderer : IFontStashRenderer {

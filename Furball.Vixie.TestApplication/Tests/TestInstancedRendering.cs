@@ -1,14 +1,14 @@
 using System;
 using System.Globalization;
 using System.Numerics;
-using Furball.Vixie.Gl;
 using Furball.Vixie.Graphics;
+using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using Furball.Vixie.ImGuiHelpers;
 using Furball.Vixie.Shaders;
 using ImGuiNET;
 using Silk.NET.OpenGL.Extensions.ImGui;
-using Texture=Furball.Vixie.Gl.Texture;
+using Texture=Furball.Vixie.Graphics.Texture;
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestInstancedRendering : GameComponent {

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Silk.NET.OpenGL;
 
-namespace Furball.Vixie.Gl {
+namespace Furball.Vixie.Graphics {
     public struct LayoutElement {
         /// <summary>
         /// Element Count, for example in a 2 component Vector this would be 2

@@ -3,11 +3,12 @@ using System.Drawing;
 using System.Globalization;
 using System.Numerics;
 using Furball.Vixie.Graphics;
+using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using Furball.Vixie.ImGuiHelpers;
 using ImGuiNET;
 using Silk.NET.OpenGL.Extensions.ImGui;
-using Texture=Furball.Vixie.Gl.Texture;
+using Texture=Furball.Vixie.Graphics.Texture;
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestBatchedRendering : GameComponent {

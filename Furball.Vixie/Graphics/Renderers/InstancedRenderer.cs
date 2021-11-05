@@ -1,13 +1,9 @@
 using System.Drawing;
 using System.Numerics;
-using Furball.Vixie.Gl;
 using Furball.Vixie.Helpers;
 using Silk.NET.OpenGL;
-using Shader=Furball.Vixie.Gl.Shader;
-using Texture=Furball.Vixie.Gl.Texture;
-using UniformType=Furball.Vixie.Gl.UniformType;
 
-namespace Furball.Vixie.Graphics {
+namespace Furball.Vixie.Graphics.Renderers {
     /// <summary>
     /// Renderer which draws in an Instanced fashion.
     /// </summary>
@@ -151,20 +147,21 @@ namespace Furball.Vixie.Graphics {
 
             size *= scale;
 
-            _verticies = new float[] {
-                /* Vertex Coordinates */  position.X,                   position.Y + size.Y,  /* Texture Coordinates */  0.0f, 0.0f,  //Bottom Left corner
-                /* Vertex Coordinates */  position.X + size.X,          position.Y + size.Y,  /* Texture Coordinates */  1.0f, 0.0f,  //Bottom Right corner
-                /* Vertex Coordinates */  position.X + size.X,          position.Y,           /* Texture Coordinates */  1.0f, 1.0f,  //Top Right Corner
-                /* Vertex Coordinates */  position.X,                   position.Y,           /* Texture Coordinates */  0.0f, 1.0f,  //Top Left Corner
+            var matrix = Matrix4x4.CreateFromYawPitchRoll(0, 0, rotation);
+            var outpos = Vector4.Transform(position, matrix);
+
+            this._verticies = new float[] {
+                /* Vertex Coordinates */  outpos.X,                   outpos.Y + size.Y,  /* Texture Coordinates */  0.0f, 0.0f,  //Bottom Left corner
+                /* Vertex Coordinates */  outpos.X + size.X,          outpos.Y + size.Y,  /* Texture Coordinates */  1.0f, 0.0f,  //Bottom Right corner
+                /* Vertex Coordinates */  outpos.X + size.X,          outpos.Y,           /* Texture Coordinates */  1.0f, 1.0f,  //Top Right Corner
+                /* Vertex Coordinates */  outpos.X,                   outpos.Y,           /* Texture Coordinates */  0.0f, 1.0f,  //Top Left Corner
             };
 
-            //var matrix = Matrix4x4.CreateFromYawPitchRoll(rotation, rotation, rotation);
-            this._vertexBuffer.SetData<float>(_verticies);
-            //this._currentShader.SetUniform("u_RotationMatrix", UniformType.GlMat4f, matrix);
+            this._vertexBuffer.SetData<float>(this._verticies);
 
             texture.Bind();
 
-            gl.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, null);
+            this.gl.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, null);
         }
     }
 }

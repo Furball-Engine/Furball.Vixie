@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using Silk.NET.OpenGL;
 
-namespace Furball.Vixie.Gl {
+namespace Furball.Vixie.Graphics {
 
     public enum UniformType {
         GlFloat,
@@ -42,7 +42,7 @@ namespace Furball.Vixie.Gl {
             this._shaders              = new List<uint>();
             this._uniformLocationCache = new Dictionary<string, int>();
 
-            this._programId = gl.CreateProgram();
+            this._programId = this.gl.CreateProgram();
         }
         /// <summary>
         /// Attaches and Compiles a Shader Source
@@ -52,17 +52,17 @@ namespace Furball.Vixie.Gl {
         /// <returns>Self, used for Chaining methods</returns>
         /// <exception cref="Exception">Shader Compilation Failure</exception>
         public Shader AttachShader(ShaderType type, string source) {
-            uint shaderId = gl.CreateShader(type);
+            uint shaderId = this.gl.CreateShader(type);
 
-            gl.ShaderSource(shaderId, source);
-            gl.CompileShader(shaderId);
+            this.gl.ShaderSource(shaderId, source);
+            this.gl.CompileShader(shaderId);
 
-            string infoLog = gl.GetShaderInfoLog(shaderId);
+            string infoLog = this.gl.GetShaderInfoLog(shaderId);
 
             if (!string.IsNullOrEmpty(infoLog))
                 throw new Exception($"Failed to Compile shader of type {type}, Error Message: {infoLog}");
 
-            gl.AttachShader(this._programId, shaderId);
+            this.gl.AttachShader(this._programId, shaderId);
 
             this._shaders.Add(shaderId);
 
@@ -75,15 +75,15 @@ namespace Furball.Vixie.Gl {
         /// <exception cref="Exception"></exception>
         public Shader Link() {
             //Link Program and get Error incase something failed
-            gl.LinkProgram(this._programId);
-            gl.GetProgram(this._programId, ProgramPropertyARB.LinkStatus, out int linkStatus);
+            this.gl.LinkProgram(this._programId);
+            this.gl.GetProgram(this._programId, ProgramPropertyARB.LinkStatus, out int linkStatus);
 
             if (linkStatus == 0)
-                throw new Exception($"Failed to Link Program, Error Message: { gl.GetProgramInfoLog(this._programId) }");
+                throw new Exception($"Failed to Link Program, Error Message: { this.gl.GetProgramInfoLog(this._programId) }");
 
             //Delete Intermediate Shaders
             for(int i = 0; i != this._shaders.Count; i++)
-                gl.DeleteShader(this._shaders[i]);
+                this.gl.DeleteShader(this._shaders[i]);
 
             return this;
         }
@@ -94,7 +94,7 @@ namespace Furball.Vixie.Gl {
             if (this._locked)
                 return null;
 
-            gl.UseProgram(this._programId);
+            this.gl.UseProgram(this._programId);
 
             return this;
         }
@@ -148,7 +148,7 @@ namespace Furball.Vixie.Gl {
 
             //If cache missed, get from OpenGL and store in cache
             if (location == -2) {
-                int foundLocation = gl.GetUniformLocation(this._programId, uniformName);
+                int foundLocation = this.gl.GetUniformLocation(this._programId, uniformName);
 
                 location = foundLocation;
                 this._uniformLocationCache.Add(uniformName, foundLocation);
@@ -163,7 +163,7 @@ namespace Furball.Vixie.Gl {
                         case 1: {
                             float arg1 = (float) args[0];
 
-                            gl.Uniform1(location, arg1);
+                            this.gl.Uniform1(location, arg1);
 
                             break;
                         }
@@ -171,7 +171,7 @@ namespace Furball.Vixie.Gl {
                             float arg1 = (float) args[0];
                             float arg2 = (float) args[1];
 
-                            gl.Uniform2(location, arg1, arg2);
+                            this.gl.Uniform2(location, arg1, arg2);
 
                             break;
                         }
@@ -180,7 +180,7 @@ namespace Furball.Vixie.Gl {
                             float arg2 = (float) args[1];
                             float arg3 = (float) args[2];
 
-                            gl.Uniform3(location, arg1, arg2, arg3);
+                            this.gl.Uniform3(location, arg1, arg2, arg3);
 
                             break;
                         }
@@ -190,7 +190,7 @@ namespace Furball.Vixie.Gl {
                             float arg3 = (float) args[2];
                             float arg4 = (float) args[3];
 
-                            gl.Uniform4(location, arg1, arg2, arg3, arg4);
+                            this.gl.Uniform4(location, arg1, arg2, arg3, arg4);
 
                             break;
                         }
@@ -204,7 +204,7 @@ namespace Furball.Vixie.Gl {
                         case 1: {
                             int arg1 = (int) args[0];
 
-                            gl.Uniform1(location, arg1);
+                            this.gl.Uniform1(location, arg1);
 
                             break;
                         }
@@ -212,7 +212,7 @@ namespace Furball.Vixie.Gl {
                             int arg1 = (int) args[0];
                             int arg2 = (int) args[1];
 
-                            gl.Uniform2(location, arg1, arg2);
+                            this.gl.Uniform2(location, arg1, arg2);
 
                             break;
                         }
@@ -221,7 +221,7 @@ namespace Furball.Vixie.Gl {
                             int arg2 = (int) args[1];
                             int arg3 = (int) args[2];
 
-                            gl.Uniform3(location, arg1, arg2, arg3);
+                            this.gl.Uniform3(location, arg1, arg2, arg3);
 
                             break;
                         }
@@ -231,7 +231,7 @@ namespace Furball.Vixie.Gl {
                             int arg3 = (int) args[2];
                             int arg4 = (int) args[3];
 
-                            gl.Uniform4(location, arg1, arg2, arg3, arg4);
+                            this.gl.Uniform4(location, arg1, arg2, arg3, arg4);
 
                             break;
                         }
@@ -245,7 +245,7 @@ namespace Furball.Vixie.Gl {
                         case 1: {
                             uint arg1 = (uint) args[0];
 
-                            gl.Uniform1(location, arg1);
+                            this.gl.Uniform1(location, arg1);
 
                             break;
                         }
@@ -253,7 +253,7 @@ namespace Furball.Vixie.Gl {
                             uint arg1 = (uint) args[0];
                             uint arg2 = (uint) args[1];
 
-                            gl.Uniform2(location, arg1, arg2);
+                            this.gl.Uniform2(location, arg1, arg2);
 
                             break;
                         }
@@ -262,7 +262,7 @@ namespace Furball.Vixie.Gl {
                             uint arg2 = (uint) args[1];
                             uint arg3 = (uint) args[2];
 
-                            gl.Uniform3(location, arg1, arg2, arg3);
+                            this.gl.Uniform3(location, arg1, arg2, arg3);
 
                             break;
                         }
@@ -272,7 +272,7 @@ namespace Furball.Vixie.Gl {
                             uint arg3 = (uint) args[2];
                             uint arg4 = (uint) args[3];
 
-                            gl.Uniform4(location, arg1, arg2, arg3, arg4);
+                            this.gl.Uniform4(location, arg1, arg2, arg3, arg4);
 
                             break;
                         }
@@ -284,7 +284,7 @@ namespace Furball.Vixie.Gl {
                 case UniformType.GlMat4f: {
                     Matrix4x4 matrix = (Matrix4x4) args[0];
 
-                    gl.UniformMatrix4(location, 1, false, (float*) &matrix);
+                    this.gl.UniformMatrix4(location, 1, false, (float*) &matrix);
 
                     break;
                 }
@@ -302,7 +302,7 @@ namespace Furball.Vixie.Gl {
             if (this._locked)
                 return null;
 
-            gl.UseProgram(0);
+            this.gl.UseProgram(0);
 
             return this;
         }
@@ -311,7 +311,7 @@ namespace Furball.Vixie.Gl {
         /// Cleans up the Shader
         /// </summary>
         public void Dispose() {
-            gl.DeleteProgram(this._programId);
+            this.gl.DeleteProgram(this._programId);
         }
     }
 }

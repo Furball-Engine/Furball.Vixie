@@ -1,12 +1,9 @@
 using System.Drawing;
 using System.Numerics;
-using Furball.Vixie.Gl;
 using Furball.Vixie.Helpers;
 using Silk.NET.OpenGL;
-using Shader=Furball.Vixie.Gl.Shader;
-using UniformType=Furball.Vixie.Gl.UniformType;
 
-namespace Furball.Vixie.Graphics {
+namespace Furball.Vixie.Graphics.Renderers {
     /// <summary>
     /// Line Renderer which draws in an Instanced fashion.
     /// </summary>
@@ -95,7 +92,7 @@ namespace Furball.Vixie.Graphics {
             //Upload to GPU
             this._vertexBuffer.SetData<float>(this._verticies);
             //Draw
-            gl.DrawArrays(PrimitiveType.Lines, 0, 2);
+            this.gl.DrawArrays(PrimitiveType.Lines, 0, 2);
         }
         /// <summary>
         /// Ends the Instanced Renderer, unlocking all buffers

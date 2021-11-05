@@ -7,7 +7,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
-namespace Furball.Vixie.Gl {
+namespace Furball.Vixie.Graphics {
     public class Texture : IDisposable {
         /// <summary>
         /// OpenGL API, used to not write Global.Gl everytime
@@ -76,20 +76,20 @@ namespace Furball.Vixie.Gl {
         public unsafe Texture() {
             this.gl = Global.Gl;
 
-            this._textureId = gl.GenTexture();
+            this._textureId = this.gl.GenTexture();
             //Bind as we will be working on the Texture
-            gl.BindTexture(TextureTarget.Texture2D, this._textureId);
+            this.gl.BindTexture(TextureTarget.Texture2D, this._textureId);
             //Apply Linear filtering, and make Image wrap around and repeat
-            gl.TexParameter(GLEnum.Texture2D, TextureParameterName.TextureMinFilter, (int) GLEnum.Linear);
-            gl.TexParameter(GLEnum.Texture2D, TextureParameterName.TextureMagFilter, (int) GLEnum.Linear);
-            gl.TexParameter(TextureTarget.Texture2D, GLEnum.TextureWrapS, (int) GLEnum.Repeat);
-            gl.TexParameter(TextureTarget.Texture2D, GLEnum.TextureWrapT, (int) GLEnum.Repeat);
+            this.gl.TexParameter(GLEnum.Texture2D,        TextureParameterName.TextureMinFilter, (int) GLEnum.Linear);
+            this.gl.TexParameter(GLEnum.Texture2D,        TextureParameterName.TextureMagFilter, (int) GLEnum.Linear);
+            this.gl.TexParameter(TextureTarget.Texture2D, GLEnum.TextureWrapS,                   (int) GLEnum.Repeat);
+            this.gl.TexParameter(TextureTarget.Texture2D, GLEnum.TextureWrapT,                   (int) GLEnum.Repeat);
             //White color
             uint color = 0xffffffff;
             //Upload Image Data
-            gl.TexImage2D(GLEnum.Texture2D, 0, InternalFormat.Rgba8, 1, 1, 0, PixelFormat.Rgba, PixelType.UnsignedByte, &color);
+            this.gl.TexImage2D(GLEnum.Texture2D, 0, InternalFormat.Rgba8, 1, 1, 0, PixelFormat.Rgba, PixelType.UnsignedByte, &color);
             //Unbind as we have finished
-            gl.BindTexture(TextureTarget.Texture2D, 0);
+            this.gl.BindTexture(TextureTarget.Texture2D, 0);
 
             this.Size = new Vector2(1, 1);
         }
@@ -97,18 +97,18 @@ namespace Furball.Vixie.Gl {
         public unsafe Texture(uint width, uint height) {
             this.gl = Global.Gl;
 
-            this._textureId = gl.GenTexture();
+            this._textureId = this.gl.GenTexture();
             //Bind as we will be working on the Texture
-            gl.BindTexture(TextureTarget.Texture2D, this._textureId);
+            this.gl.BindTexture(TextureTarget.Texture2D, this._textureId);
             //Apply Linear filtering, and make Image wrap around and repeat
-            gl.TexParameter(GLEnum.Texture2D, TextureParameterName.TextureMinFilter, (int) GLEnum.Linear);
-            gl.TexParameter(GLEnum.Texture2D, TextureParameterName.TextureMagFilter, (int) GLEnum.Linear);
-            gl.TexParameter(TextureTarget.Texture2D, GLEnum.TextureWrapS, (int) GLEnum.Repeat);
-            gl.TexParameter(TextureTarget.Texture2D, GLEnum.TextureWrapT, (int) GLEnum.Repeat);
+            this.gl.TexParameter(GLEnum.Texture2D,        TextureParameterName.TextureMinFilter, (int) GLEnum.Linear);
+            this.gl.TexParameter(GLEnum.Texture2D,        TextureParameterName.TextureMagFilter, (int) GLEnum.Linear);
+            this.gl.TexParameter(TextureTarget.Texture2D, GLEnum.TextureWrapS,                   (int) GLEnum.Repeat);
+            this.gl.TexParameter(TextureTarget.Texture2D, GLEnum.TextureWrapT,                   (int) GLEnum.Repeat);
             //Upload Image Data
-            gl.TexImage2D(GLEnum.Texture2D, 0, InternalFormat.Rgba8, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, null);
+            this.gl.TexImage2D(GLEnum.Texture2D, 0, InternalFormat.Rgba8, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, null);
             //Unbind as we have finished
-            gl.BindTexture(TextureTarget.Texture2D, 0);
+            this.gl.BindTexture(TextureTarget.Texture2D, 0);
 
             this.Size = new Vector2(width, height);
         }
@@ -150,27 +150,27 @@ namespace Furball.Vixie.Gl {
         /// <param name="width">Width of Image</param>
         /// <param name="height">Height of Imgae</param>
         private unsafe void Load(void* data, int width, int height) {
-            this._textureId = gl.GenTexture();
+            this._textureId = this.gl.GenTexture();
             //Bind as we will be working on the Texture
-            gl.BindTexture(TextureTarget.Texture2D, this._textureId);
+            this.gl.BindTexture(TextureTarget.Texture2D, this._textureId);
             //Apply Linear filtering, and make Image wrap around and repeat
-            gl.TexParameter(GLEnum.Texture2D, TextureParameterName.TextureMinFilter, (int) GLEnum.Linear);
-            gl.TexParameter(GLEnum.Texture2D, TextureParameterName.TextureMagFilter, (int) GLEnum.Linear);
-            gl.TexParameter(TextureTarget.Texture2D, GLEnum.TextureWrapS, (int) GLEnum.Repeat);
-            gl.TexParameter(TextureTarget.Texture2D, GLEnum.TextureWrapT, (int) GLEnum.Repeat);
+            this.gl.TexParameter(GLEnum.Texture2D,        TextureParameterName.TextureMinFilter, (int) GLEnum.Linear);
+            this.gl.TexParameter(GLEnum.Texture2D,        TextureParameterName.TextureMagFilter, (int) GLEnum.Linear);
+            this.gl.TexParameter(TextureTarget.Texture2D, GLEnum.TextureWrapS,                   (int) GLEnum.Repeat);
+            this.gl.TexParameter(TextureTarget.Texture2D, GLEnum.TextureWrapT,                   (int) GLEnum.Repeat);
             //Upload Image Data
-            gl.TexImage2D(GLEnum.Texture2D, 0, InternalFormat.Rgba8, (uint)width, (uint)height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, data);
+            this.gl.TexImage2D(GLEnum.Texture2D, 0, InternalFormat.Rgba8, (uint)width, (uint)height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, data);
             //Unbind as we have finished
-            gl.BindTexture(TextureTarget.Texture2D, 0);
+            this.gl.BindTexture(TextureTarget.Texture2D, 0);
         }
 
         public unsafe Texture SetData<pDataType>(int level, pDataType[] data) where pDataType : unmanaged {
             this.LockingBind();
 
             fixed(void* d = data)
-                gl.TexImage2D(TextureTarget.Texture2D, level, InternalFormat.Rgba, (uint) this.Size.X, (uint) this.Size.Y, 0, PixelFormat.Rgba, PixelType.UnsignedByte, d);
+                this.gl.TexImage2D(TextureTarget.Texture2D, level, InternalFormat.Rgba, (uint) this.Size.X, (uint) this.Size.Y, 0, PixelFormat.Rgba, PixelType.UnsignedByte, d);
 
-            gl.Finish();
+            this.gl.Finish();
 
             this.UnlockingUnbind();
 
@@ -181,7 +181,7 @@ namespace Furball.Vixie.Gl {
             this.LockingBind();
 
             fixed(void* d = data)
-                gl.TexSubImage2D(TextureTarget.Texture2D, level, rect.X, rect.Y, (uint) rect.Width, (uint) rect.Height, PixelFormat.Rgba, PixelType.UnsignedByte, d);
+                this.gl.TexSubImage2D(TextureTarget.Texture2D, level, rect.X, rect.Y, (uint) rect.Width, (uint) rect.Height, PixelFormat.Rgba, PixelType.UnsignedByte, d);
 
             this.UnlockingUnbind();
 
@@ -197,8 +197,8 @@ namespace Furball.Vixie.Gl {
             if (this._locked)
                 return null;
 
-            gl.ActiveTexture(textureSlot);
-            gl.BindTexture(TextureTarget.Texture2D, this._textureId);
+            this.gl.ActiveTexture(textureSlot);
+            this.gl.BindTexture(TextureTarget.Texture2D, this._textureId);
 
             return this;
         }
@@ -252,7 +252,7 @@ namespace Furball.Vixie.Gl {
             if (this._locked)
                 return null;
 
-            gl.BindTexture(TextureTarget.Texture2D, 0);
+            this.gl.BindTexture(TextureTarget.Texture2D, 0);
 
             return this;
         }
@@ -266,7 +266,7 @@ namespace Furball.Vixie.Gl {
         /// Disposes the Texture and the Local Image Buffer
         /// </summary>
         public void Dispose() {
-            gl.DeleteTexture(this._textureId);
+            this.gl.DeleteTexture(this._textureId);
             this._localBuffer.Dispose();
         }
     }

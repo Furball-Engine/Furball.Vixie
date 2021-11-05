@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Globalization;
 using System.Numerics;
 using Furball.Vixie.Graphics;
+using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.ImGuiHelpers;
 using ImGuiNET;
 using Silk.NET.OpenGL.Extensions.ImGui;

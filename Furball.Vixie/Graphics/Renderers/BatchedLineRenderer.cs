@@ -1,13 +1,10 @@
 using System.Drawing;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using Furball.Vixie.Gl;
 using Furball.Vixie.Helpers;
 using Silk.NET.OpenGL;
-using Shader=Furball.Vixie.Gl.Shader;
-using UniformType=Furball.Vixie.Gl.UniformType;
 
-namespace Furball.Vixie.Graphics {
+namespace Furball.Vixie.Graphics.Renderers {
     [StructLayout(LayoutKind.Sequential)]
     public unsafe struct BatchedLineVertex {
         public fixed float Positions[4];
@@ -91,7 +88,7 @@ namespace Furball.Vixie.Graphics {
         }
 
         public unsafe void Draw(Vector2 start, Vector2 end, float thickness, Color color) {
-            if (this._processedVerticies >= MaxVerticies) {
+            if (this._processedVerticies >= this.MaxVerticies) {
                 this.End(false);
                 this.Begin(false);
             }
@@ -129,7 +126,7 @@ namespace Furball.Vixie.Graphics {
                     .SetSubData(data, size);
             }
 
-            gl.DrawArrays(PrimitiveType.Lines, 0, (uint) (this._processedVerticies));
+            this.gl.DrawArrays(PrimitiveType.Lines, 0, (uint) (this._processedVerticies));
 
             this._processedVerticies = 0;
             this._vertexBufferIndex = 0;

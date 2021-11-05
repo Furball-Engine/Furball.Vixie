@@ -1,4 +1,5 @@
 using Furball.Vixie.Graphics;
+using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.ImGuiHelpers;
 using Furball.Vixie.TestApplication.Tests;
 using ImGuiNET;

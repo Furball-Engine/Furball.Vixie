@@ -2,8 +2,8 @@ using System;
 using System.Drawing;
 using System.Globalization;
 using System.Numerics;
-using Furball.Vixie.Gl;
 using Furball.Vixie.Graphics;
+using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using Furball.Vixie.ImGuiHelpers;
 using ImGuiNET;
@@ -27,11 +27,13 @@ namespace Furball.Vixie.TestApplication.Tests {
             base.Initialize();
         }
 
+        private float _rotation = 0f;
+
         public override void Draw(double deltaTime) {
             this.GraphicsDevice.GlClear();
 
             this._instancedRenderer.Begin();
-            this._instancedRenderer.Draw(this._whiteTexture, new Vector2(25, 25), new Vector2(371, 356), Vector2.Zero, 2f);
+            this._instancedRenderer.Draw(this._whiteTexture, new Vector2(100, 100), new Vector2(371, 356), Vector2.Zero, _rotation);
             this._instancedRenderer.End();
 
 
@@ -43,6 +45,8 @@ namespace Furball.Vixie.TestApplication.Tests {
             ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
                        $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
             );
+
+            ImGui.DragFloat("Rotation", ref this._rotation, 0.01f, 0f, 8f);
 
             if (ImGui.Button("Go back to test selector")) {
                 this.BaseGame.Components.Add(new BaseTestSelector());

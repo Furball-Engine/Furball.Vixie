@@ -1,6 +1,6 @@
 using System;
 using Silk.NET.OpenGL;
-using Texture=Furball.Vixie.Gl.Texture;
+using Texture=Furball.Vixie.Graphics.Texture;
 
 namespace Furball.Vixie.Graphics {
     public class TextureRenderTarget {

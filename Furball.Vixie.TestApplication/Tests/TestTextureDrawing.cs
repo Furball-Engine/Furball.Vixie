@@ -1,16 +1,16 @@
 using System;
 using System.Globalization;
 using System.Numerics;
-using Furball.Vixie.Gl;
 using Furball.Vixie.Graphics;
+using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using Furball.Vixie.ImGuiHelpers;
 using Furball.Vixie.Shaders;
 using ImGuiNET;
 using Silk.NET.OpenGL;
 using Silk.NET.OpenGL.Extensions.ImGui;
-using Texture=Furball.Vixie.Gl.Texture;
-using UniformType=Furball.Vixie.Gl.UniformType;
+using Texture=Furball.Vixie.Graphics.Texture;
+using UniformType=Furball.Vixie.Graphics.UniformType;
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestTextureDrawing : GameComponent {

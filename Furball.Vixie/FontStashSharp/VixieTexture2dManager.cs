@@ -1,7 +1,7 @@
 using System.Drawing;
 using System.Numerics;
 using FontStashSharp.Interfaces;
-using Furball.Vixie.Gl;
+using Furball.Vixie.Graphics;
 
 namespace Furball.Vixie.FontStashSharp {
     public class VixieTexture2dManager : ITexture2DManager {

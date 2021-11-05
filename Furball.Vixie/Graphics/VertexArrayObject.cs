@@ -1,8 +1,7 @@
 using System;
-using Furball.Vixie.Graphics;
 using Silk.NET.OpenGL;
 
-namespace Furball.Vixie.Gl {
+namespace Furball.Vixie.Graphics {
     public class VertexArrayObject : IDisposable
     {
         /// <summary>
@@ -17,7 +16,7 @@ namespace Furball.Vixie.Gl {
         public VertexArrayObject() {
             this.gl = Global.Gl;
             //Generate Vertex Array
-            this._arrayId = gl.GenVertexArray();
+            this._arrayId = this.gl.GenVertexArray();
         }
         /// <summary>
         /// Adds a VertexBuffer with a certain Layout to this Vertex Array
@@ -36,8 +35,8 @@ namespace Furball.Vixie.Gl {
             for (uint i = 0; i != elements.Count; i++) {
                 LayoutElement currentElement = elements[(int) i];
                 //Define the Layout of this Element
-                gl.EnableVertexAttribArray(i);
-                gl.VertexAttribPointer(i, currentElement.Count, currentElement.Type, currentElement.Normalized, layout.GetStride(), (void*) offset);
+                this.gl.EnableVertexAttribArray(i);
+                this.gl.VertexAttribPointer(i, currentElement.Count, currentElement.Type, currentElement.Normalized, layout.GetStride(), (void*) offset);
 
                 offset += (uint) currentElement.Count * LayoutElement.GetSizeOfType(currentElement.Type);
             }
@@ -51,7 +50,7 @@ namespace Furball.Vixie.Gl {
             if (this._locked)
                 return null;
 
-            gl.BindVertexArray(this._arrayId);
+            this.gl.BindVertexArray(this._arrayId);
 
             return this;
         }
@@ -104,7 +103,7 @@ namespace Furball.Vixie.Gl {
             if (this._locked)
                 return null;
 
-            gl.BindVertexArray(0);
+            this.gl.BindVertexArray(0);
 
             return this;
         }
@@ -112,7 +111,7 @@ namespace Furball.Vixie.Gl {
         /// Disposes this Vertex Array
         /// </summary>
         public void Dispose() {
-            gl.DeleteVertexArray(this._arrayId);
+            this.gl.DeleteVertexArray(this._arrayId);
         }
     }
 }
