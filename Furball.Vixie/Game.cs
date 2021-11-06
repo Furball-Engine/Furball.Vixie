@@ -77,14 +77,20 @@ namespace Furball.Vixie {
         /// <summary>
         /// Used to Initialize the Renderer and stuff,
         /// </summary>
+#if DEBUGWITHGL
+        private unsafe void RendererInitialize() {
+#else
         private void RendererInitialize() {
+#endif
             Global.Gl = this.WindowManager.GetGlApi();
             this.gl   = Global.Gl;
 
             //Enables Debugging
-            //gl.Enable(GLEnum.DebugOutput);
-            //gl.Enable(GLEnum.DebugOutputSynchronous);
-            //gl.DebugMessageCallback(this.Callback, null);
+#if DEBUGWITHGL
+            gl.Enable(GLEnum.DebugOutput);
+            gl.Enable(GLEnum.DebugOutputSynchronous);
+            gl.DebugMessageCallback(this.Callback, null);
+#endif
 
             //Enables Blending (Required for Transparent Objects)
             gl.Enable(EnableCap.Blend);
@@ -98,6 +104,7 @@ namespace Furball.Vixie {
 
             this.Initialize();
         }
+#if DEBUGWITHGL
         /// <summary>
         /// Debug Callback
         /// </summary>
@@ -117,6 +124,7 @@ namespace Furball.Vixie {
 
             Console.WriteLine(stringMessage);
         }
+#endif
         /// <summary>
         /// Gets Fired when the Window Gets Closed
         /// </summary>
