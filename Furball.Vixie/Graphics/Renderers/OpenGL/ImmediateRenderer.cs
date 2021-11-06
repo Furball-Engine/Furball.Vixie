@@ -1,6 +1,8 @@
 using System;
 using System.Drawing;
 using System.Numerics;
+using FontStashSharp;
+using Furball.Vixie.FontStashSharp;
 using Furball.Vixie.Helpers;
 using Silk.NET.OpenGL;
 
@@ -30,8 +32,14 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// Shader used to draw the instanced elements
         /// </summary>
         private Shader _shader;
+
         /// <summary>
-        /// Renderer which draws in an Instanced fashion.
+        /// FontStashSharp Renderer
+        /// </summary>
+        private VixieFontStashRenderer _textRenderer;
+
+        /// <summary>
+        /// Renderer which draws in an Immediate fashion.
         /// </summary>
         public ImmediateRenderer() {
             this.gl = Global.Gl;
@@ -76,6 +84,8 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
 
             //Use the Default Instanced Renderer Shader
             this.ChangeShader(this._shader);
+
+            this._textRenderer = new VixieFontStashRenderer(this);
         }
 
         /// <summary>
@@ -103,7 +113,9 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             this._indexBuffer.Bind();
             this._currentShader.Bind();
         }
-
+        /// <summary>
+        /// Unlocks all the Shaders and Buffers
+        /// </summary>
         public void End() {
             this._vertexBuffer.Unlock();
             this._indexBuffer.Unlock();
@@ -137,10 +149,12 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// </summary>
         /// <param name="texture">Texture to Draw</param>
         /// <param name="position">Where to Draw</param>
-        /// <param name="size">How big to draw</param>
-        /// <param name="scale">How much to scale it up</param>
-        /// <param name="rotation">Rotation in Radians</param>
-        /// <param name="colorOverride">Color Tint</param>
+        /// <param name="size">How big to draw, leave null to get Texture Size</param>
+        /// <param name="scale">How much to scale it up, Leave null to draw at standard scale</param>
+        /// <param name="rotation">Rotation in Radians, leave 0 to not rotate</param>
+        /// <param name="colorOverride">Color Tint, leave null to not tint</param>
+        /// <param name="sourceRect">What part of the texture to draw? Leave null to draw whole texture</param>
+        /// <param name="texFlip">Horizontally/Vertically flip the Drawn Texture</param>
         public unsafe void Draw(Texture texture, Vector2 position, Vector2? size = null, Vector2? scale = null, float rotation = 0f, Color? colorOverride = null, Rectangle? sourceRect = null, TextureFlip texFlip = TextureFlip.None) {
             if(scale == null || size == Vector2.Zero)
                 scale = Vector2.One;
@@ -191,6 +205,38 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
 
             this.gl.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, null);
         }
+
+        /// <summary>
+        /// Batches Text to the Screen
+        /// </summary>
+        /// <param name="font">Font to Use</param>
+        /// <param name="text">Text to Write</param>
+        /// <param name="position">Where to Draw</param>
+        /// <param name="color">What color to draw</param>
+        /// <param name="rotation">Rotation of the text</param>
+        /// <param name="scale">Scale of the text, leave null to draw at standard scale</param>
+        public void DrawString(DynamicSpriteFont font, string text, Vector2 position, Color color, float rotation = 0f, Vector2? scale = null) {
+            if(scale == null || scale == Vector2.Zero)
+                scale = Vector2.One;
+
+            font.DrawText(this._textRenderer, text, position, color, scale.Value, rotation);
+        }
+        /// <summary>
+        /// Batches Colorful text to the Screen
+        /// </summary>
+        /// <param name="font">Font to Use</param>
+        /// <param name="text">Text to Write</param>
+        /// <param name="position">Where to Draw</param>
+        /// <param name="colors">What colors to use</param>
+        /// <param name="rotation">Rotation of the text</param>
+        /// <param name="scale">Scale of the text, leave null to draw at standard scale</param>
+        public void DrawString(DynamicSpriteFont font, string text, Vector2 position, Color[] colors, float rotation = 0f, Vector2? scale = null) {
+            if(scale == null || scale == Vector2.Zero)
+                scale = Vector2.One;
+
+            font.DrawText(this._textRenderer, text, position, colors, scale.Value, rotation);
+        }
+
         public void Dispose() {
             try {
                 //Unlock Shaders and other things

@@ -7,9 +7,9 @@ using Furball.Vixie.Graphics.Renderers.OpenGL;
 
 namespace Furball.Vixie.FontStashSharp {
     public class VixieFontStashRenderer : IFontStashRenderer {
-        private BatchedRenderer _renderer;
+        private ITextureRenderer _renderer;
 
-        public VixieFontStashRenderer(BatchedRenderer renderer) {
+        public VixieFontStashRenderer(ITextureRenderer renderer) {
             this._renderer      = renderer;
             this.TextureManager = new VixieTexture2dManager();
         }

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using FontStashSharp;
+using Furball.Vixie.FontStashSharp;
 using Furball.Vixie.Helpers;
 using Silk.NET.OpenGL;
 
@@ -86,6 +88,11 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// </summary>
         public bool IsBegun { get; private set; }
 
+        /// <summary>
+        /// FontStashSharp renderer
+        /// </summary>
+        private VixieFontStashRenderer _textRenderer;
+
         public unsafe BatchedRenderer(int capacity = 4096) {
             this.gl = Global.Gl;
             //Initializes MaxQuad/Vertex/Index counts and figures out how many texture slots to use max
@@ -151,6 +158,8 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             this._texIdToGlTexIdLookup = new Dictionary<float, uint>(this.MaxTexSlots);
 
             this.ChangeShader(this._batchShader);
+
+            this._textRenderer = new VixieFontStashRenderer(this);
         }
         /// <summary>
         /// Initializes Constants
@@ -167,12 +176,12 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// </summary>
         /// <param name="shader">New Shader to use</param>
         public void ChangeShader(Shader shader) {
+            //Unlock old Shader
             this._currentShader?.UnlockingUnbind();
-
+            //Set new Shader and Bind it
             this._currentShader = shader;
-
             this._currentShader.LockingBind();
-
+            //If the batch has been going on while this happened we need to restart it
             if (IsBegun) {
                 this.End();
                 this.Begin();
@@ -199,7 +208,9 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// Currently in use Shader
         /// </summary>
         private Shader _currentShader;
-
+        /// <summary>
+        /// Initializes Caches and the Vertex Pointer, aswell as binds all the necessary shaders
+        /// </summary>
         public unsafe void Begin() {
             this._glTexIdToTexIdLookup.Clear();
             this._texIdToGlTexIdLookup.Clear();
@@ -260,14 +271,16 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         private Vector2 _pos4;
 
         /// <summary>
-        /// Batches a Texture to Draw
+        /// Draws a Texture
         /// </summary>
         /// <param name="texture">Texture to Draw</param>
         /// <param name="position">Where to Draw</param>
-        /// <param name="size">How big to draw</param>
-        /// <param name="scale">How much to scale it up</param>
-        /// <param name="rotation">Rotation in Radians</param>
-        /// <param name="colorOverride">Color Tint</param>
+        /// <param name="size">How big to draw, leave null to get Texture Size</param>
+        /// <param name="scale">How much to scale it up, Leave null to draw at standard scale</param>
+        /// <param name="rotation">Rotation in Radians, leave 0 to not rotate</param>
+        /// <param name="colorOverride">Color Tint, leave null to not tint</param>
+        /// <param name="sourceRect">What part of the texture to draw? Leave null to draw whole texture</param>
+        /// <param name="texFlip">Horizontally/Vertically flip the Drawn Texture</param>
         public unsafe void Draw(Texture texture, Vector2 position, Vector2? size = null, Vector2? scale = null, float rotation = 0f, Color? colorOverride = null, Rectangle? sourceRect = null, TextureFlip texFlip = TextureFlip.None) {
             if (!IsBegun)
                 throw new Exception("Cannot call Draw before Calling Begin in BatchRenderer!");
@@ -386,21 +399,53 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             this._vertexBufferIndex += 160;
         }
         /// <summary>
+        /// Batches Text to the Screen
+        /// </summary>
+        /// <param name="font">Font to Use</param>
+        /// <param name="text">Text to Write</param>
+        /// <param name="position">Where to Draw</param>
+        /// <param name="color">What color to draw</param>
+        /// <param name="rotation">Rotation of the text</param>
+        /// <param name="scale">Scale of the text, leave null to draw at standard scale</param>
+        public void DrawString(DynamicSpriteFont font, string text, Vector2 position, Color color, float rotation = 0f, Vector2? scale = null) {
+            if(scale == null || scale == Vector2.Zero)
+                scale = Vector2.One;
+
+            font.DrawText(this._textRenderer, text, position, color, scale.Value, rotation);
+        }
+        /// <summary>
+        /// Batches Colorful text to the Screen
+        /// </summary>
+        /// <param name="font">Font to Use</param>
+        /// <param name="text">Text to Write</param>
+        /// <param name="position">Where to Draw</param>
+        /// <param name="colors">What colors to use</param>
+        /// <param name="rotation">Rotation of the text</param>
+        /// <param name="scale">Scale of the text, leave null to draw at standard scale</param>
+        public void DrawString(DynamicSpriteFont font, string text, Vector2 position, Color[] colors, float rotation = 0f, Vector2? scale = null) {
+            if(scale == null || scale == Vector2.Zero)
+                scale = Vector2.One;
+
+            font.DrawText(this._textRenderer, text, position, colors, scale.Value, rotation);
+        }
+
+        /// <summary>
         /// Ends the Batch and draws contents to the Screen
         /// </summary>
         public unsafe void End() {
             //Bind all textures
             for (uint i = 0; i != this._textureSlotIndex; i++) {
                 TextureUnit textureSlot = (TextureUnit)((uint)TextureUnit.Texture0 + i);
-
+                //Find Texture
                 uint lookup = this._texIdToGlTexIdLookup[i];
-
+                //Set as Active and Bind
                 this.gl.ActiveTexture(textureSlot);
                 this.gl.BindTexture(GLEnum.Texture2D, lookup);
-
+                //Make sure to set BoundTextures to this, so its always clear what texture is bound where
                 Texture.BoundTextures[textureSlot] = lookup;
             }
 
+            //Upload new vertex data to the GPU
             fixed (void* data = this._localVertexBuffer) {
                 this._vertexBuffer
                     .SetSubData(data, (nuint) (this._vertexBufferIndex));
