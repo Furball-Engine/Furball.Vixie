@@ -14,7 +14,9 @@ namespace Furball.Vixie {
         /// OpenGL API, used to not do Global.Gl everytime
         /// </summary>
         internal GL      gl;
-
+        /// <summary>
+        /// Window Input Context
+        /// </summary>
         internal IInputContext _inputContext;
 
         /// <summary>

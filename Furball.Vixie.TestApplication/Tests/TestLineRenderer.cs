@@ -32,7 +32,7 @@ namespace Furball.Vixie.TestApplication.Tests {
                 this._immediateLineRenderer.Draw(new Vector2(i, 0), new Vector2(1280 - i, 720), 4, Color.White);
             }
 
-
+            this._immediateLineRenderer.End();
 
 
             #region ImGui menu

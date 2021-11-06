@@ -8,7 +8,7 @@ using Silk.NET.OpenGL;
 
 namespace Furball.Vixie.Graphics.Renderers.OpenGL {
     /// <summary>
-    /// Renderer which draws in an Instanced fashion.
+    /// Renderer which draws in an immediatefashion.
     /// </summary>
     public class ImmediateRenderer : IDisposable, ITextureRenderer {
         /// <summary>
@@ -29,13 +29,13 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// </summary>
         private BufferObject      _indexBuffer;
         /// <summary>
-        /// Shader used to draw the instanced elements
+        /// Shader used to draw the immediateelements
         /// </summary>
         private Shader _shader;
         /// <summary>
         /// Indicates whether or not the Renderer is running
         /// </summary>
-        private bool IsBegun;
+        public bool IsBegun { get; private set; }
 
         /// <summary>
         /// FontStashSharp Renderer
@@ -86,7 +86,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
                 .Bind()
                 .AddBuffer(this._vertexBuffer, layout);
 
-            //Use the Default Instanced Renderer Shader
+            //Use the Default immediateRenderer Shader
             this.ChangeShader(this._shader);
 
             this._textRenderer = new VixieFontStashRenderer(this);

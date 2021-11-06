@@ -6,7 +6,7 @@ using Silk.NET.OpenGL;
 
 namespace Furball.Vixie.Graphics.Renderers.OpenGL {
     /// <summary>
-    /// Line Renderer which draws in an Instanced fashion.
+    /// Line Renderer which draws in an immediatefashion.
     /// </summary>
     public class ImmediateLineRenderer : IDisposable {
         /// <summary>
@@ -25,8 +25,14 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// Vertex Buffer which holds the verticies
         /// </summary>
         private BufferObject      _vertexBuffer;
+        
         /// <summary>
-        /// Line Renderer which draws in an Instanced fashion.
+        /// Indicates whether the Begin method has been called
+        /// </summary>
+        public bool IsBegun { get; private set; }
+        
+        /// <summary>
+        /// Line Renderer which draws in an Immediate fashion.
         /// </summary>
         public ImmediateLineRenderer() {
             this.gl = Global.Gl;
@@ -73,6 +79,8 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             //Bind the Buffer and Array
             this._vertexBuffer.LockingBind();
             this._vertexArray.LockingBind();
+
+            this.IsBegun = true;
         }
         /// <summary>
         /// Temporary Vertex Buffer, placed here to not redefine it every time
@@ -86,6 +94,9 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// <param name="thickness">Thickness of the Line</param>
         /// <param name="color">Color of the Line</param>
         public void Draw(Vector2 begin, Vector2 end, float thickness, Color color) {
+            if (!IsBegun)
+                throw new Exception("Cannot call Draw before Calling Begin in ImmediateLineRenderer!");
+
             //Define the Verticies
             this._verticies = new float[] {
                 begin.X, begin.Y, 0.0f, thickness, color.R, color.G, color.B, color.A,
@@ -97,12 +108,14 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             this.gl.DrawArrays(PrimitiveType.Lines, 0, 2);
         }
         /// <summary>
-        /// Ends the Instanced Renderer, unlocking all buffers
+        /// Ends the immediateRenderer, unlocking all buffers
         /// </summary>
         public void End() {
             this._lineShader.Unlock();
             this._vertexBuffer.Unlock();
             this._vertexArray.Unlock();
+
+            this.IsBegun = false;
         }
 
         public void Dispose() {

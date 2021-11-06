@@ -13,7 +13,6 @@ namespace Furball.Vixie {
         /// <summary>
         /// Initializes the GameComponent with a Game Instance
         /// </summary>
-        /// <param name="game">Game</param>
         protected GameComponent() {
             this.BaseGame       = Global.GameInstance;
             this.GraphicsDevice = Global.Device;
