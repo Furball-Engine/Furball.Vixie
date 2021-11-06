@@ -8,11 +8,11 @@ namespace Furball.Vixie.Input {
             return Global.GameInstance._inputContext.Keyboards[keyboard].CaptureState();
         }
 
-        public static IReadOnlyList<IKeyboard> GetMice() {
+        public static IReadOnlyList<IKeyboard> GetKeyboards() {
             return Global.GameInstance._inputContext.Keyboards;
         }
 
-        public static IKeyboard GetMouse(int keyboard = 0) {
+        public static IKeyboard GetKeyboard(int keyboard = 0) {
             return Global.GameInstance._inputContext.Keyboards[keyboard];
         }
     }

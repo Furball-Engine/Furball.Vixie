@@ -415,8 +415,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
                 scale = Vector2.One;
 
             //Draw
-            font.DrawText(this._textRenderer, text, position, color, scale.Value, rotation);
-
+            font.DrawText(this._textRenderer, text, position, System.Drawing.Color.FromArgb(color.A, color.R, color.G, color.B), scale.Value, rotation);
         }
         /// <summary>
         /// Batches Colorful text to the Screen
@@ -433,7 +432,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
                 scale = Vector2.One;
 
             //Draw
-            font.DrawText(this._textRenderer, text, position, colors, scale.Value, rotation);
+            font.DrawText(this._textRenderer, text, position, System.Drawing.Color.FromArgb(color.A, color.R, color.G, color.B), scale.Value, rotation);
         }
 
         /// <summary>

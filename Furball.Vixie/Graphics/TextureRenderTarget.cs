@@ -31,11 +31,11 @@ namespace Furball.Vixie.Graphics {
         /// <summary>
         /// The RenderTarget Width
         /// </summary>
-        private uint  _targetWidth;
+        public uint  TargetWidth { get; private set; }
         /// <summary>
         /// The RenderTarget Height
         /// </summary>
-        private uint  _targetHeight;
+        public uint  TargetHeight { get; private set; }
         /// <summary>
         /// Creates a TextureRenderTarget
         /// </summary>
@@ -77,8 +77,8 @@ namespace Furball.Vixie.Graphics {
             }
 
             this._oldViewPort  = new int[4];
-            this._targetWidth  = width;
-            this._targetHeight = height;
+            this.TargetWidth  = width;
+            this.TargetHeight = height;
         }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace Furball.Vixie.Graphics {
             gl.BindFramebuffer(FramebufferTarget.Framebuffer, this._frameBufferId);
             //Store the old viewport for later
             gl.GetInteger(GetPName.Viewport, this._oldViewPort);
-            gl.Viewport(0, 0, this._targetWidth, this._targetHeight);
+            gl.Viewport(0, 0, this.TargetWidth, this.TargetHeight);
 
             CurrentlyBound = this;
         }
@@ -158,7 +158,7 @@ namespace Furball.Vixie.Graphics {
         /// Retrieves the Texture from this RenderTarget
         /// </summary>
         /// <returns>Texture of this RenderTarget</returns>
-        public Texture GetTexture() => new Texture(this._textureId, this._targetWidth, this._targetHeight);
+        public Texture GetTexture() => new Texture(this._textureId, this.TargetWidth, this.TargetHeight);
 
         public void Dispose() {
             if (this.Bound)

@@ -25,6 +25,8 @@ namespace Furball.Vixie {
         /// The Window's current Projection Matrix
         /// </summary>
         public Matrix4x4 ProjectionMatrix { get; private set; }
+
+        public Vector2 WindowSize { get; private set; }
         /// <summary>
         /// Creates a Window Manager
         /// </summary>
@@ -32,16 +34,21 @@ namespace Furball.Vixie {
         public WindowManager(WindowOptions windowOptions) {
             this._windowOptions = windowOptions;
         }
+
+        public nint GetWindowHandle() => this.GameWindow.Handle;
+
         /// <summary>
         /// Creates the Window and grabs the OpenGL API of Window
         /// </summary>
         public void Create() {
             this.GameWindow = Window.Create(this._windowOptions);
+            this.WindowSize = new Vector2(this._windowOptions.Size.X, this._windowOptions.Size.Y);
 
             this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, this._windowOptions.Size.X, this._windowOptions.Size.Y, 0, 1f, 0f);
 
             this.GameWindow.FramebufferResize += newSize => {
                 this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, newSize.X, newSize.Y, 0, 1f, 0f);
+                this.WindowSize       = new Vector2(newSize.X, newSize.Y);
             };
         }
         /// <summary>
