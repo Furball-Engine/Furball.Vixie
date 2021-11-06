@@ -81,6 +81,10 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// Cache for OpenGL Texture ID Lookups
         /// </summary>
         private readonly Dictionary<float, uint> _texIdToGlTexIdLookup;
+        /// <summary>
+        /// Stores whether or not the Batch has begun or not
+        /// </summary>
+        public bool IsBegun { get; private set; }
 
         public unsafe BatchedRenderer(int capacity = 4096) {
             this.gl = Global.Gl;
@@ -145,13 +149,34 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
 
             this._glTexIdToTexIdLookup = new Dictionary<uint, float>(this.MaxTexSlots);
             this._texIdToGlTexIdLookup = new Dictionary<float, uint>(this.MaxTexSlots);
-        }
 
+            this.ChangeShader(this._batchShader);
+        }
+        /// <summary>
+        /// Initializes Constants
+        /// </summary>
+        /// <param name="quads">How many Quads do we allow to be drawn in 1 Batch</param>
         private void InitializeConstants(int quads) {
             this.MaxQuads     = quads;
             this.MaxVerticies = this.MaxQuads * 20 * 4;
             this.MaxIndicies  = (uint) this.MaxQuads * 6;
             this.MaxTexSlots  = Math.Min(31, Global.Device.MaxTextureImageUnits); //Adjusts based on how many Texture the GPU has
+        }
+        /// <summary>
+        /// Changes the Currently used Shader
+        /// </summary>
+        /// <param name="shader">New Shader to use</param>
+        public void ChangeShader(Shader shader) {
+            this._currentShader?.UnlockingUnbind();
+
+            this._currentShader = shader;
+
+            this._currentShader.LockingBind();
+
+            if (IsBegun) {
+                this.End();
+                this.Begin();
+            }
         }
 
         /// <summary>
@@ -170,6 +195,10 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// Current Pointer into the Local Vertex Buffer
         /// </summary>
         private unsafe BatchedVertex* _vertexPointer;
+        /// <summary>
+        /// Currently in use Shader
+        /// </summary>
+        private Shader _currentShader;
 
         public unsafe void Begin() {
             this._glTexIdToTexIdLookup.Clear();
@@ -182,10 +211,12 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             this._vertexArray.LockingBind();
             this._indexBuffer.LockingBind();
             this._vertexBuffer.LockingBind();
-            this._batchShader.LockingBind();
+            this._currentShader.LockingBind();
+
+            this.IsBegun = true;
         }
 
-        //These members exist to not redefine variables in Draw every time
+        //These members exist to not redefine variables in Draw every time, possibly speeding stuff up
 
         /// <summary>
         /// Pulled Texture Index
@@ -207,11 +238,25 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// Height
         /// </summary>
         private float _sizeY;
-
+        /// <summary>
+        /// Rotation Matrix
+        /// </summary>
         private Matrix4x4 _rotationMatrix;
+        /// <summary>
+        /// Vertex 1 Position
+        /// </summary>
         private Vector2 _pos1;
+        /// <summary>
+        /// Vertex 2 Position
+        /// </summary>
         private Vector2 _pos2;
+        /// <summary>
+        /// Vertex 3 Position
+        /// </summary>
         private Vector2 _pos3;
+        /// <summary>
+        /// Vertex 4 Position
+        /// </summary>
         private Vector2 _pos4;
 
         /// <summary>
@@ -230,11 +275,15 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
                 this.Begin();
             }
 
-            if(scale == null || size == Vector2.Zero)
+            if(scale == null || scale == Vector2.Zero)
                 scale = Vector2.One;
 
             if (size == null || size == Vector2.Zero)
                 size = texture.Size;
+
+            if (sourceRect.HasValue) {
+                size = new Vector2(sourceRect.Value.Width, sourceRect.Value.Height);
+            }
 
             if(colorOverride == null)
                 colorOverride = Color.White;
@@ -350,6 +399,8 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             this._indexBuffer.Unlock();
             this._vertexBuffer.Unlock();
             this._batchShader.Unlock();
+
+            this.IsBegun = false;
         }
         public void Dispose() {
             try {

@@ -15,7 +15,7 @@ namespace Furball.Vixie.FontStashSharp {
         }
 
         public void Draw(object texture, Vector2 pos, Rectangle? src, Color color, float rotation, Vector2 origin, Vector2 scale, float depth) {
-            this._renderer.Draw(texture as Texture, pos, Vector2.Zero, scale, rotation, color, src);
+            this._renderer.Draw(texture as Texture, pos - origin, Vector2.Zero, scale, rotation, color, src);
         }
 
         public ITexture2DManager TextureManager { get; }

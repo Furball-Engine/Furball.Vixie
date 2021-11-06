@@ -13,7 +13,7 @@ using Silk.NET.OpenGL.Extensions.ImGui;
 using Texture=Furball.Vixie.Graphics.Texture;
 
 namespace Furball.Vixie.TestApplication.Tests {
-    public class TestInstancedRendering : GameComponent {
+    public class TestImmediateRendering : GameComponent {
         private ImmediateRenderer _immediateRenderer;
         private Texture           _texture;
 
@@ -38,7 +38,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._immediateRenderer.Begin();
 
             for (int i = 0; i != this.CirnoDons; i++) {
-                this._immediateRenderer.Draw(this._texture, new Vector2(i, 0), new Vector2(371, 326), Vector2.Zero, 0, Color.White);
+                this._immediateRenderer.Draw(this._texture, new Vector2(i, 0), new Vector2(371, 326), null, 0, Color.White);
             }
 
             this._immediateRenderer.End();

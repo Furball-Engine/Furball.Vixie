@@ -37,8 +37,8 @@ namespace Furball.Vixie.TestApplication {
                 this.BaseGame.Components.Remove(this);
             }
 
-            if (ImGui.Button("Instanced Rendering Test")) {
-                this.BaseGame.Components.Add(new TestInstancedRendering());
+            if (ImGui.Button("Immediate Rendering Test")) {
+                this.BaseGame.Components.Add(new TestImmediateRendering());
                 this.BaseGame.Components.Remove(this);
             }
 
@@ -64,6 +64,11 @@ namespace Furball.Vixie.TestApplication {
 
             if (ImGui.Button("Source Rectangle Rendering Test")) {
                 this.BaseGame.Components.Add(new TestSourceRect());
+                this.BaseGame.Components.Remove(this);
+            }
+
+            if (ImGui.Button("Test FontStashSharp")) {
+                this.BaseGame.Components.Add(new TestFSS());
                 this.BaseGame.Components.Remove(this);
             }
 
