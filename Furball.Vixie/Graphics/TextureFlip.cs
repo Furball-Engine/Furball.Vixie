@@ -1,5 +1,5 @@
 namespace Furball.Vixie.Graphics {
-    public enum SpriteEffects {
+    public enum TextureFlip {
         None,
         FlipHorizontal,
         FlipVertical

@@ -141,7 +141,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// <param name="scale">How much to scale it up</param>
         /// <param name="rotation">Rotation in Radians</param>
         /// <param name="colorOverride">Color Tint</param>
-        public unsafe void Draw(Texture texture, Vector2 position, Vector2? size = null, Vector2? scale = null, float rotation = 0f, Color? colorOverride = null, Rectangle? sourceRect = null, SpriteEffects effects = SpriteEffects.None) {
+        public unsafe void Draw(Texture texture, Vector2 position, Vector2? size = null, Vector2? scale = null, float rotation = 0f, Color? colorOverride = null, Rectangle? sourceRect = null, TextureFlip effects = TextureFlip.None) {
             if(scale == null || size == Vector2.Zero)
                 scale = Vector2.One;
 
@@ -161,15 +161,15 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
 
             switch (effects) {
                 default:
-                case SpriteEffects.None:
+                case TextureFlip.None:
                     topLeft  = new Vector2(sourceRect.Value.X * (1.0f / texture.Size.X), (sourceRect.Value.Y + sourceRect.Value.Height) * (1.0f / texture.Size.Y));
                     botRight = new Vector2((sourceRect.Value.X + sourceRect.Value.Width)  * (1.0f / texture.Size.X), sourceRect.Value.Y * (1.0f / texture.Size.Y));
                     break;
-                case SpriteEffects.FlipVertical:
+                case TextureFlip.FlipVertical:
                     topLeft  = new Vector2(sourceRect.Value.X                            * (1.0f / texture.Size.X), sourceRect.Value.Y                             * (1.0f / texture.Size.Y));
                     botRight = new Vector2((sourceRect.Value.X + sourceRect.Value.Width) * (1.0f / texture.Size.X), (sourceRect.Value.Y + sourceRect.Value.Height) * (1.0f / texture.Size.Y));
                     break;
-                case SpriteEffects.FlipHorizontal:
+                case TextureFlip.FlipHorizontal:
                     botRight = new Vector2(sourceRect.Value.X                            * (1.0f / texture.Size.X), sourceRect.Value.Y                             * (1.0f / texture.Size.Y));
                     topLeft  = new Vector2((sourceRect.Value.X + sourceRect.Value.Width) * (1.0f / texture.Size.X), (sourceRect.Value.Y + sourceRect.Value.Height) * (1.0f / texture.Size.Y));
                     break;
