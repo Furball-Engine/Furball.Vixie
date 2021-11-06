@@ -3,7 +3,6 @@ using System.Numerics;
 using FontStashSharp.Interfaces;
 using Furball.Vixie.Graphics;
 using Furball.Vixie.Graphics.Renderers;
-using Furball.Vixie.Graphics.Renderers.OpenGL;
 
 namespace Furball.Vixie.FontStashSharp {
     public class VixieFontStashRenderer : IFontStashRenderer {

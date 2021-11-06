@@ -1,6 +1,5 @@
 using Furball.Vixie.Helpers;
 using Silk.NET.OpenGL;
-using Shader=Furball.Vixie.Graphics.Shader;
 
 namespace Furball.Vixie.Shaders {
     /// <summary>

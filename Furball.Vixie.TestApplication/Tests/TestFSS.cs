@@ -1,7 +1,6 @@
 using System;
 using System.Drawing;
 using System.Globalization;
-using System.IO;
 using System.Numerics;
 using FontStashSharp;
 using Furball.Vixie.FontStashSharp;
@@ -59,6 +58,14 @@ namespace Furball.Vixie.TestApplication.Tests {
 
 
             base.Draw(deltaTime);
+        }
+
+        public override void Dispose() {
+            this._system.Dispose();
+            this._batchedRenderer.Dispose();
+            this._imGuiController.Dispose();
+
+            base.Dispose();
         }
     }
 }

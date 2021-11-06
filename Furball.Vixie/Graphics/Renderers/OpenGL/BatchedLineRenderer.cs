@@ -122,6 +122,8 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             //Bind the Buffer and Array
             this._vertexBuffer.LockingBind();
             this._vertexArray.LockingBind();
+
+            this.IsBegun = true;
         }
 
         /// <summary>
@@ -190,6 +192,8 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             this._lineShader.Unlock();
             this._vertexBuffer.Unlock();
             this._vertexArray.Unlock();
+
+            this.IsBegun = false;
         }
         /// <summary>
         /// Cleans up after itself

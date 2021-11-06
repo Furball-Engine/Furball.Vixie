@@ -2,9 +2,7 @@ using System;
 using System.Drawing;
 using System.Globalization;
 using System.Numerics;
-using Furball.Vixie.FontStashSharp;
 using Furball.Vixie.Graphics;
-using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Graphics.Renderers.OpenGL;
 using Furball.Vixie.ImGuiHelpers;
 using ImGuiNET;
@@ -69,6 +67,17 @@ namespace Furball.Vixie.TestApplication.Tests {
             #endregion
 
             base.Draw(deltaTime);
+        }
+
+        public override void Dispose() {
+            this._batchedRenderer.Dispose();
+            this._immediateRenderer.Dispose();
+            this._renderTarget.Dispose();
+            this._resultTexture.Dispose();
+            this._batchedLineRenderer.Dispose();
+            this._imGuiController.Dispose();
+
+            base.Dispose();
         }
     }
 }

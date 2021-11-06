@@ -1,5 +1,3 @@
-using Furball.Vixie.Graphics;
-using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Graphics.Renderers.OpenGL;
 using Furball.Vixie.ImGuiHelpers;
 using Furball.Vixie.TestApplication.Tests;
@@ -9,13 +7,11 @@ using Silk.NET.OpenGL.Extensions.ImGui;
 namespace Furball.Vixie.TestApplication {
     public class BaseTestSelector : GameComponent {
         private ImGuiController _imGuiController;
-        private ImmediateRenderer        _immediateRenderer;
 
         public BaseTestSelector()  {}
 
         public override void Initialize() {
             this._imGuiController   = ImGuiCreator.CreateController();
-            this._immediateRenderer = new ImmediateRenderer();
 
             base.Initialize();
         }

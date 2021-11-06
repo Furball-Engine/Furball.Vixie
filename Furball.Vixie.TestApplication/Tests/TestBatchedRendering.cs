@@ -2,8 +2,6 @@ using System;
 using System.Drawing;
 using System.Globalization;
 using System.Numerics;
-using Furball.Vixie.Graphics;
-using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Graphics.Renderers.OpenGL;
 using Furball.Vixie.Helpers;
 using Furball.Vixie.ImGuiHelpers;
@@ -79,6 +77,14 @@ namespace Furball.Vixie.TestApplication.Tests {
 
 
             base.Draw(deltaTime);
+        }
+
+        public override void Dispose() {
+            this._texture.Dispose();
+            this._batchedRenderer.Dispose();
+            this._imGuiController.Dispose();
+
+            base.Dispose();
         }
     }
 }

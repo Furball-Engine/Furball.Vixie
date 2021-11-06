@@ -1,9 +1,6 @@
 ﻿using Kettu;
 using System;
-using Furball.Vixie.Helpers;
-using Silk.NET.Core.Native;
 using Silk.NET.Input;
-using Silk.NET.Input.Extensions;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;

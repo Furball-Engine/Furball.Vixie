@@ -48,7 +48,17 @@ namespace Furball.Vixie.Graphics {
             { TextureUnit.Texture31, 0 },
         };
 
-        public bool Bound => BoundTextures[this.BoundAt] == this.TextureId;
+        public bool Bound {
+            get {
+                uint texFound;
+
+                if (BoundTextures.TryGetValue(this.BoundAt, out texFound)) {
+                    return texFound == this.TextureId;
+                }
+
+                return false;
+            }
+        }
 
         internal TextureUnit BoundAt;
 
