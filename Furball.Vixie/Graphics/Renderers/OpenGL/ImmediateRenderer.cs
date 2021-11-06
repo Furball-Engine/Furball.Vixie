@@ -141,7 +141,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// <param name="scale">How much to scale it up</param>
         /// <param name="rotation">Rotation in Radians</param>
         /// <param name="colorOverride">Color Tint</param>
-        public unsafe void Draw(Texture texture, Vector2 position, Vector2? size = null, Vector2? scale = null, float rotation = 0f, Color? colorOverride = null, Rectangle? sourceRect = null, TextureFlip effects = TextureFlip.None) {
+        public unsafe void Draw(Texture texture, Vector2 position, Vector2? size = null, Vector2? scale = null, float rotation = 0f, Color? colorOverride = null, Rectangle? sourceRect = null, TextureFlip texFlip = TextureFlip.None) {
             if(scale == null || size == Vector2.Zero)
                 scale = Vector2.One;
 
@@ -159,7 +159,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             Vector2 topLeft = Vector2.Zero;
             Vector2 botRight = Vector2.Zero;
 
-            switch (effects) {
+            switch (texFlip) {
                 default:
                 case TextureFlip.None:
                     topLeft  = new Vector2(sourceRect.Value.X * (1.0f / texture.Size.X), (sourceRect.Value.Y + sourceRect.Value.Height) * (1.0f / texture.Size.Y));
