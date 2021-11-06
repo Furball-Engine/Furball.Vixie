@@ -291,22 +291,22 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
                 this.Begin();
             }
 
+            //Default Scale
             if(scale == null || scale == Vector2.Zero)
                 scale = Vector2.One;
-
+            //Default Texture Size
             if (size == null || size == Vector2.Zero)
                 size = texture.Size;
-
-            if (sourceRect.HasValue) {
+            //Set Size to the Source Rectangle
+            if (sourceRect.HasValue)
                 size = new Vector2(sourceRect.Value.Width, sourceRect.Value.Height);
-            }
-
+            //Default Tint Color
             if(colorOverride == null)
                 colorOverride = Color.White;
-
+            //Default Rectangle
             if (sourceRect == null)
                 sourceRect = new Rectangle(0, 0, (int) size.Value.X, (int) size.Value.Y);
-
+            //Apply Scale
             size *= scale.Value;
 
             this._posX  = position.X;
@@ -314,6 +314,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             this._sizeX = size.Value.X;
             this._sizeY = size.Value.Y;
 
+            //Texture Lookup
             if (!this._glTexIdToTexIdLookup.TryGetValue(texture.TextureId, out this._textureIndex)) {
                 this._glTexIdToTexIdLookup.Add(texture.TextureId, this._textureSlotIndex);
                 this._texIdToGlTexIdLookup.Add(this._textureSlotIndex, texture.TextureId);
@@ -321,16 +322,17 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
                 this._textureSlotIndex++;
             }
 
+            //Apply Rotation
             this._rotationMatrix = Matrix4x4.CreateRotationZ(rotation, new Vector3(position.X, position.Y, 0));
             this._pos1           = Vector2.Transform(new Vector2(this._posX, this._posY + this._sizeY), this._rotationMatrix);
             this._pos2           = Vector2.Transform(new Vector2(this._posX + this._sizeX, this._posY + this._sizeY), this._rotationMatrix);
             this._pos3           = Vector2.Transform(new Vector2(this._posX + this._sizeX, this._posY), this._rotationMatrix);
             this._pos4           = Vector2.Transform(new Vector2(this._posX, this._posY), this._rotationMatrix);
 
-
             Vector2 topLeft = Vector2.Zero;
             Vector2 botRight = Vector2.Zero;
 
+            //Apply FLipping
             switch (texFlip) {
                 default:
                 case TextureFlip.None:
@@ -408,9 +410,11 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// <param name="rotation">Rotation of the text</param>
         /// <param name="scale">Scale of the text, leave null to draw at standard scale</param>
         public void DrawString(DynamicSpriteFont font, string text, Vector2 position, Color color, float rotation = 0f, Vector2? scale = null) {
+            //Default Scale
             if(scale == null || scale == Vector2.Zero)
                 scale = Vector2.One;
 
+            //Draw
             font.DrawText(this._textRenderer, text, position, color, scale.Value, rotation);
         }
         /// <summary>
@@ -423,9 +427,11 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// <param name="rotation">Rotation of the text</param>
         /// <param name="scale">Scale of the text, leave null to draw at standard scale</param>
         public void DrawString(DynamicSpriteFont font, string text, Vector2 position, Color[] colors, float rotation = 0f, Vector2? scale = null) {
+            //Default Scale
             if(scale == null || scale == Vector2.Zero)
                 scale = Vector2.One;
 
+            //Draw
             font.DrawText(this._textRenderer, text, position, colors, scale.Value, rotation);
         }
 
@@ -463,11 +469,13 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             this._textureSlotIndex  = 0;
             this._vertexBufferIndex = 0;
 
+            //Unlock all
             this._vertexArray.Unlock();
             this._indexBuffer.Unlock();
             this._vertexBuffer.Unlock();
             this._batchShader.Unlock();
 
+            //Reset Begun Flag
             this.IsBegun = false;
         }
         public void Dispose() {
@@ -482,6 +490,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
                 if (this._indexBuffer.Locked)
                     this._indexBuffer.Unlock();
 
+                //Dispose
                 this._vertexArray.Dispose();
                 this._batchShader.Dispose();
                 this._vertexBuffer.Dispose();

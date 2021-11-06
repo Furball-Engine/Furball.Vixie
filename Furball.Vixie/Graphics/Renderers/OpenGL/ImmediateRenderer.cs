@@ -32,6 +32,10 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// Shader used to draw the instanced elements
         /// </summary>
         private Shader _shader;
+        /// <summary>
+        /// Indicates whether or not the Renderer is running
+        /// </summary>
+        private bool IsBegun;
 
         /// <summary>
         /// FontStashSharp Renderer
@@ -112,6 +116,8 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             this._vertexArray.Bind();
             this._indexBuffer.Bind();
             this._currentShader.Bind();
+
+            this.IsBegun = true;
         }
         /// <summary>
         /// Unlocks all the Shaders and Buffers
@@ -122,6 +128,8 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             this._vertexArray.Unlock();
             this._indexBuffer.Unlock();
             this._currentShader.Unlock();
+
+            this.IsBegun = false;
         }
         /// <summary>
         /// Stores the currently in use Shader
@@ -145,6 +153,10 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// </summary>
         private float[] _verticies;
         /// <summary>
+        /// Here to not redefine the Variable, possibly speeding stuff up
+        /// </summary>
+        private Matrix4x4 _rotationMatrix;
+        /// <summary>
         /// Draws a Texture
         /// </summary>
         /// <param name="texture">Texture to Draw</param>
@@ -156,23 +168,31 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// <param name="sourceRect">What part of the texture to draw? Leave null to draw whole texture</param>
         /// <param name="texFlip">Horizontally/Vertically flip the Drawn Texture</param>
         public unsafe void Draw(Texture texture, Vector2 position, Vector2? size = null, Vector2? scale = null, float rotation = 0f, Color? colorOverride = null, Rectangle? sourceRect = null, TextureFlip texFlip = TextureFlip.None) {
+            //Disallow calling Draw without calling Begin first
+            if (!IsBegun)
+                throw new Exception("Cannot call Draw before Calling Begin in BatchRenderer!");
+            //Default Scale is 1x
             if(scale == null || size == Vector2.Zero)
                 scale = Vector2.One;
-
+            //Default Size is Texture Size
             if (size == null || size == Vector2.Zero)
                 size = texture.Size;
-
+            //Set size to the Rectangle Size
+            if (sourceRect.HasValue)
+                size = new Vector2(sourceRect.Value.Width, sourceRect.Value.Height);
+            //Default color is white
             if(colorOverride == null)
                 colorOverride = Color.White;
-
+            //Default source rect is just the size
             if (sourceRect == null)
                 sourceRect = new Rectangle(0, 0, (int) size.Value.X, (int) size.Value.Y);
-
+            //Apply Scale
             size *= scale;
 
             Vector2 topLeft = Vector2.Zero;
             Vector2 botRight = Vector2.Zero;
 
+            //Apply Texture Flipping
             switch (texFlip) {
                 default:
                 case TextureFlip.None:
@@ -189,7 +209,8 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
                     break;
             }
 
-            var matrix = Matrix4x4.CreateRotationZ(rotation, new Vector3(position.X, position.Y, 0));
+            //Initialize Rotation Matrix
+            _rotationMatrix = Matrix4x4.CreateRotationZ(rotation, new Vector3(position.X, position.Y, 0));
 
             this._verticies = new float[] {
                 /* Vertex Coordinates */  position.X,                position.Y + size.Value.Y,  /* Texture Coordinates */  topLeft.X,  botRight.Y,  /* Color */  colorOverride.Value.R, colorOverride.Value.G, colorOverride.Value.B, colorOverride.Value.A, //Bottom Left corner
@@ -198,11 +219,14 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
                 /* Vertex Coordinates */  position.X,                position.Y,                 /* Texture Coordinates */  topLeft.X,  topLeft.Y,   /* Color */  colorOverride.Value.R, colorOverride.Value.G, colorOverride.Value.B, colorOverride.Value.A, //Top Left Corner
             };
 
+            //Upload Data
             this._vertexBuffer.SetData<float>(this._verticies);
-            this._currentShader.SetUniform("u_RotationMatrix", UniformType.GlMat4f, matrix);
+            this._currentShader.SetUniform("u_RotationMatrix", UniformType.GlMat4f, _rotationMatrix);
 
+            //Bind Texture
             texture.Bind();
 
+            //Send Draw Call
             this.gl.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, null);
         }
 
@@ -216,9 +240,11 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// <param name="rotation">Rotation of the text</param>
         /// <param name="scale">Scale of the text, leave null to draw at standard scale</param>
         public void DrawString(DynamicSpriteFont font, string text, Vector2 position, Color color, float rotation = 0f, Vector2? scale = null) {
+            //Default Scale
             if(scale == null || scale == Vector2.Zero)
                 scale = Vector2.One;
 
+            //Draw
             font.DrawText(this._textRenderer, text, position, color, scale.Value, rotation);
         }
         /// <summary>
@@ -231,9 +257,11 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// <param name="rotation">Rotation of the text</param>
         /// <param name="scale">Scale of the text, leave null to draw at standard scale</param>
         public void DrawString(DynamicSpriteFont font, string text, Vector2 position, Color[] colors, float rotation = 0f, Vector2? scale = null) {
+            //Default Scale
             if(scale == null || scale == Vector2.Zero)
                 scale = Vector2.One;
 
+            //Draw
             font.DrawText(this._textRenderer, text, position, colors, scale.Value, rotation);
         }
 
