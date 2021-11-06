@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using Furball.Vixie.Helpers;
 using Silk.NET.OpenGL;
 
-namespace Furball.Vixie.Graphics.Renderers {
+namespace Furball.Vixie.Graphics.Renderers.OpenGL {
     [StructLayout(LayoutKind.Sequential)]
     public unsafe struct BatchedLineVertex {
         public fixed float Positions[4];

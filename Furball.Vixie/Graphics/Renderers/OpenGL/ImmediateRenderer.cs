@@ -4,7 +4,7 @@ using System.Numerics;
 using Furball.Vixie.Helpers;
 using Silk.NET.OpenGL;
 
-namespace Furball.Vixie.Graphics.Renderers {
+namespace Furball.Vixie.Graphics.Renderers.OpenGL {
     /// <summary>
     /// Renderer which draws in an Instanced fashion.
     /// </summary>
