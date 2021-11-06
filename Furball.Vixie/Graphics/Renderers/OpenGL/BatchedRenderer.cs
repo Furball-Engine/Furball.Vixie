@@ -268,7 +268,10 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// <param name="scale">How much to scale it up</param>
         /// <param name="rotation">Rotation in Radians</param>
         /// <param name="colorOverride">Color Tint</param>
-        public unsafe void Draw(Texture texture, Vector2 position, Vector2? size = null, Vector2? scale = null, float rotation = 0f, Color? colorOverride = null, Rectangle? sourceRect = null) {
+        public unsafe void Draw(Texture texture, Vector2 position, Vector2? size = null, Vector2? scale = null, float rotation = 0f, Color? colorOverride = null, Rectangle? sourceRect = null, SpriteEffects effects = SpriteEffects.None) {
+            if (!IsBegun)
+                throw new Exception("Cannot call Draw before Calling Begin in BatchRenderer!");
+
             //If we ran out of Texture Slots or are out of space in out Vertex/Index buffer, flush whats already there and start a new Batch
             if (this._indexCount >= this.MaxIndicies || this._textureSlotIndex >= this.MaxTexSlots - 1) {
                 this.End();
@@ -306,15 +309,32 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             }
 
             this._rotationMatrix = Matrix4x4.CreateRotationZ(rotation, new Vector3(position.X, position.Y, 0));
-            this._pos1           = Vector2.Transform(new Vector2(this._posX, this._posY + this._sizeY),                           this._rotationMatrix);
+            this._pos1           = Vector2.Transform(new Vector2(this._posX, this._posY + this._sizeY), this._rotationMatrix);
             this._pos2           = Vector2.Transform(new Vector2(this._posX + this._sizeX, this._posY + this._sizeY), this._rotationMatrix);
-            this._pos3           = Vector2.Transform(new Vector2(this._posX + this._sizeX, this._posY),               this._rotationMatrix);
-            this._pos4           = Vector2.Transform(new Vector2(this._posX, this._posY),               this._rotationMatrix);
+            this._pos3           = Vector2.Transform(new Vector2(this._posX + this._sizeX, this._posY), this._rotationMatrix);
+            this._pos4           = Vector2.Transform(new Vector2(this._posX, this._posY), this._rotationMatrix);
 
-            Vector2 topLeft = new Vector2(sourceRect.Value.X                             * (1.0f / texture.Size.X), sourceRect.Value.Y                             * (1.0f / texture.Size.Y));
-            Vector2 botRight = new Vector2((sourceRect.Value.X + sourceRect.Value.Width) * (1.0f / texture.Size.X), (sourceRect.Value.Y + sourceRect.Value.Height) * (1.0f / texture.Size.Y));
 
-            //Vertex 1,
+            Vector2 topLeft = Vector2.Zero;
+            Vector2 botRight = Vector2.Zero;
+
+            switch (effects) {
+                default:
+                case SpriteEffects.None:
+                    topLeft  = new Vector2(sourceRect.Value.X * (1.0f / texture.Size.X), (sourceRect.Value.Y + sourceRect.Value.Height) * (1.0f / texture.Size.Y));
+                    botRight = new Vector2((sourceRect.Value.X                                               + sourceRect.Value.Width)  * (1.0f / texture.Size.X), sourceRect.Value.Y * (1.0f / texture.Size.Y));
+                    break;
+                case SpriteEffects.FlipVertical:
+                    topLeft  = new Vector2(sourceRect.Value.X                            * (1.0f / texture.Size.X), sourceRect.Value.Y                             * (1.0f / texture.Size.Y));
+                    botRight = new Vector2((sourceRect.Value.X + sourceRect.Value.Width) * (1.0f / texture.Size.X), (sourceRect.Value.Y + sourceRect.Value.Height) * (1.0f / texture.Size.Y));
+                    break;
+                case SpriteEffects.FlipHorizontal:
+                    botRight = new Vector2(sourceRect.Value.X                            * (1.0f / texture.Size.X), sourceRect.Value.Y                             * (1.0f / texture.Size.Y));
+                    topLeft  = new Vector2((sourceRect.Value.X + sourceRect.Value.Width) * (1.0f / texture.Size.X), (sourceRect.Value.Y + sourceRect.Value.Height) * (1.0f / texture.Size.Y));
+                    break;
+            }
+
+            //Vertex 1, Bottom Left
             this._vertexPointer->Positions[0] = this._pos1.X;
             this._vertexPointer->Positions[1] = this._pos1.Y;
             this._vertexPointer->TexCoords[0] = topLeft.X;
@@ -326,7 +346,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             this._vertexPointer->Color[3]     = colorOverride.Value.A;
             this._vertexPointer++;
 
-            //Vertex 2
+            //Vertex 2, Bottom Right
             this._vertexPointer->Positions[0] = this._pos2.X;
             this._vertexPointer->Positions[1] = this._pos2.Y;
             this._vertexPointer->TexCoords[0] = botRight.X;
@@ -338,7 +358,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             this._vertexPointer->Color[3]     = colorOverride.Value.A;
             this._vertexPointer++;
 
-            //Vertex 3
+            //Vertex 3, Top Right
             this._vertexPointer->Positions[0] = this._pos3.X;
             this._vertexPointer->Positions[1] = this._pos3.Y;
             this._vertexPointer->TexCoords[0] = botRight.X;
@@ -350,7 +370,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             this._vertexPointer->Color[3]     = colorOverride.Value.A;
             this._vertexPointer++;
 
-            //Vertex 4
+            //Vertex 4, Top Left
             this._vertexPointer->Positions[0] = this._pos4.X;
             this._vertexPointer->Positions[1] = this._pos4.Y;
             this._vertexPointer->TexCoords[0] = topLeft.X;

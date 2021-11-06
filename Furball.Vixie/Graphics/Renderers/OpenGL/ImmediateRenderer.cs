@@ -142,7 +142,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// <param name="rotation">Rotation in Radians</param>
         /// TODO(Eevee): make this work somehow
         /// <param name="colorOverride">Color Tint</param>
-        public unsafe void Draw(Texture texture, Vector2 position, Vector2? size = null, Vector2? scale = null, float rotation = 0f, Color? colorOverride = null, Rectangle? sourceRect = null) {
+        public unsafe void Draw(Texture texture, Vector2 position, Vector2? size = null, Vector2? scale = null, float rotation = 0f, Color? colorOverride = null, Rectangle? sourceRect = null, SpriteEffects effects = SpriteEffects.None) {
             if(scale == null || size == Vector2.Zero)
                 scale = Vector2.One;
 

@@ -16,7 +16,7 @@ namespace Furball.Vixie.Graphics.Renderers {
         /// <param name="scale">How much to scale it up</param>
         /// <param name="rotation">Rotation in Radians</param>
         /// <param name="colorOverride">Color Tint</param>
-        void Draw(Texture texture, Vector2 position, Vector2? size = null, Vector2? scale = null, float rotation = 0f, Color? colorOverride = null, Rectangle? sourceRect = null);
+        void Draw(Texture texture, Vector2 position, Vector2? size = null, Vector2? scale = null, float rotation = 0f, Color? colorOverride = null, Rectangle? sourceRect = null, SpriteEffects effects = SpriteEffects.None);
         /// <summary>
         /// Ends the Rendering, use this to finish drawing or do something at the very end
         /// </summary>
