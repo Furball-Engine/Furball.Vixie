@@ -291,12 +291,12 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             if (sourceRect == null)
                 sourceRect = new Rectangle(0, 0, (int) size.Value.X, (int) size.Value.Y);
 
+            size *= scale.Value;
+
             this._posX  = position.X;
             this._posY  = position.Y;
             this._sizeX = size.Value.X;
             this._sizeY = size.Value.Y;
-
-            size *= scale.Value;
 
             if (!this._glTexIdToTexIdLookup.TryGetValue(texture.TextureId, out this._textureIndex)) {
                 this._glTexIdToTexIdLookup.Add(texture.TextureId, this._textureSlotIndex);
@@ -307,15 +307,18 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
 
             this._rotationMatrix = Matrix4x4.CreateRotationZ(rotation, new Vector3(position.X, position.Y, 0));
             this._pos1           = Vector2.Transform(new Vector2(this._posX, this._posY + this._sizeY),                           this._rotationMatrix);
-            this._pos2           = Vector2.Transform(new Vector2(this._posX             + this._sizeX, this._posY + this._sizeY), this._rotationMatrix);
-            this._pos3           = Vector2.Transform(new Vector2(this._posX             + this._sizeX, this._posY),               this._rotationMatrix);
-            this._pos4           = Vector2.Transform(new Vector2(this._posX,                           this._posY),               this._rotationMatrix);
+            this._pos2           = Vector2.Transform(new Vector2(this._posX + this._sizeX, this._posY + this._sizeY), this._rotationMatrix);
+            this._pos3           = Vector2.Transform(new Vector2(this._posX + this._sizeX, this._posY),               this._rotationMatrix);
+            this._pos4           = Vector2.Transform(new Vector2(this._posX, this._posY),               this._rotationMatrix);
 
-            //Vertex 1
+            Vector2 topLeft = new Vector2(sourceRect.Value.X                             * (1.0f / texture.Size.X), sourceRect.Value.Y                             * (1.0f / texture.Size.Y));
+            Vector2 botRight = new Vector2((sourceRect.Value.X + sourceRect.Value.Width) * (1.0f / texture.Size.X), (sourceRect.Value.Y + sourceRect.Value.Height) * (1.0f / texture.Size.Y));
+
+            //Vertex 1,
             this._vertexPointer->Positions[0] = this._pos1.X;
             this._vertexPointer->Positions[1] = this._pos1.Y;
-            this._vertexPointer->TexCoords[0] = (float) (sourceRect.Value.X + 1) / (float) (texture.Size.X + 1);
-            this._vertexPointer->TexCoords[1] = (float) (sourceRect.Value.Y + 1) / (float) (texture.Size.Y + 1);
+            this._vertexPointer->TexCoords[0] = topLeft.X;
+            this._vertexPointer->TexCoords[1] = botRight.Y;
             this._vertexPointer->TexId        = this._textureIndex;
             this._vertexPointer->Color[0]     = colorOverride.Value.R;
             this._vertexPointer->Color[1]     = colorOverride.Value.G;
@@ -326,8 +329,8 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             //Vertex 2
             this._vertexPointer->Positions[0] = this._pos2.X;
             this._vertexPointer->Positions[1] = this._pos2.Y;
-            this._vertexPointer->TexCoords[0] = (float) (sourceRect.Value.Width + 1) / (float) (texture.Size.X + 1);
-            this._vertexPointer->TexCoords[1] = (float) (sourceRect.Value.Y     + 1) / (float) (texture.Size.Y + 1);
+            this._vertexPointer->TexCoords[0] = botRight.X;
+            this._vertexPointer->TexCoords[1] = botRight.Y;
             this._vertexPointer->TexId        = this._textureIndex;
             this._vertexPointer->Color[0]     = colorOverride.Value.R;
             this._vertexPointer->Color[1]     = colorOverride.Value.G;
@@ -338,8 +341,8 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             //Vertex 3
             this._vertexPointer->Positions[0] = this._pos3.X;
             this._vertexPointer->Positions[1] = this._pos3.Y;
-            this._vertexPointer->TexCoords[0] = (float) (sourceRect.Value.Width  + 1) / (float) (texture.Size.X + 1);
-            this._vertexPointer->TexCoords[1] = (float) (sourceRect.Value.Height + 1) / (float) (texture.Size.Y + 1);
+            this._vertexPointer->TexCoords[0] = botRight.X;
+            this._vertexPointer->TexCoords[1] = topLeft.Y;
             this._vertexPointer->TexId        = this._textureIndex;
             this._vertexPointer->Color[0]     = colorOverride.Value.R;
             this._vertexPointer->Color[1]     = colorOverride.Value.G;
@@ -350,8 +353,8 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             //Vertex 4
             this._vertexPointer->Positions[0] = this._pos4.X;
             this._vertexPointer->Positions[1] = this._pos4.Y;
-            this._vertexPointer->TexCoords[0] = (float) (sourceRect.Value.X      + 1) / (float) (texture.Size.X + 1);
-            this._vertexPointer->TexCoords[1] = (float) (sourceRect.Value.Height + 1) / (float) (texture.Size.Y + 1);
+            this._vertexPointer->TexCoords[0] = topLeft.X;
+            this._vertexPointer->TexCoords[1] = topLeft.Y;
             this._vertexPointer->TexId        = this._textureIndex;
             this._vertexPointer->Color[0]     = colorOverride.Value.R;
             this._vertexPointer->Color[1]     = colorOverride.Value.G;
