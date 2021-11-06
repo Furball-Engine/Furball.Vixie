@@ -416,6 +416,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
 
             //Draw
             font.DrawText(this._textRenderer, text, position, color, scale.Value, rotation);
+
         }
         /// <summary>
         /// Batches Colorful text to the Screen
