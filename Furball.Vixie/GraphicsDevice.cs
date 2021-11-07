@@ -1,5 +1,5 @@
-using System.Drawing;
 using System.Numerics;
+using Furball.Vixie.Graphics;
 using Silk.NET.OpenGL;
 
 namespace Furball.Vixie {
@@ -75,7 +75,7 @@ namespace Furball.Vixie {
         /// </summary>
         /// <param name="color">New Clear Color</param>
         public void GlClearColor(Color color) {
-            gl.ClearColor(color);
+            gl.ClearColor(color.R, color.G, color.B, color.A);
         }
     }
 }
