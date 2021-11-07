@@ -1,5 +1,9 @@
 ﻿using Kettu;
 using System;
+#if DEBUGWITHGL
+using Furball.Vixie.Helpers;
+using Silk.NET.Core.Native;
+#endif
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;

@@ -8,6 +8,7 @@ using Furball.Vixie.Helpers;
 using Furball.Vixie.ImGuiHelpers;
 using ImGuiNET;
 using Silk.NET.OpenGL.Extensions.ImGui;
+using Color=Furball.Vixie.Graphics.Color;
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestSourceRect : GameComponent {

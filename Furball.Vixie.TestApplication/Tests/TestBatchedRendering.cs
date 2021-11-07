@@ -1,7 +1,8 @@
 using System;
-using System.Drawing;
+
 using System.Globalization;
 using System.Numerics;
+using Furball.Vixie.Graphics;
 using Furball.Vixie.Graphics.Renderers.OpenGL;
 using Furball.Vixie.Helpers;
 using Furball.Vixie.ImGuiHelpers;
@@ -36,8 +37,6 @@ namespace Furball.Vixie.TestApplication.Tests {
 
         public override void Draw(double deltaTime) {
             this.GraphicsDevice.GlClear();
-
-            this._texture.Bind();
 
             this._batchedRenderer.Begin();
 
