@@ -221,7 +221,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
 
             //Upload Data
             this._vertexBuffer.SetData<float>(this._verticies);
-            this._currentShader.SetUniform("u_RotationMatrix", UniformType.GlMat4f, _rotationMatrix);
+            this._currentShader.SetUniform("u_RotationMatrix", UniformType.GlMat4f, _rotationMatrix).SetUniform("vx_WindowProjectionMatrix", UniformType.GlMat4f, Global.GameInstance.WindowManager.ProjectionMatrix);
 
             //Bind Texture
             texture.Bind();
