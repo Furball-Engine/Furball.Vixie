@@ -35,7 +35,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// <summary>
         /// Indicates whether or not the Renderer is running
         /// </summary>
-        public bool IsBegun { get; private set; }
+        public bool IsBegun { get; set; }
 
         /// <summary>
         /// FontStashSharp Renderer

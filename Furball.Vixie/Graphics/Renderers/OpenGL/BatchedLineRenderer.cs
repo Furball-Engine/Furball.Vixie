@@ -39,12 +39,13 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// </summary>
         private readonly Shader            _lineShader;
 
+
         /// <summary>
         /// Local Copy of the Vertex Buffer which gets uploaded to the GPU
         /// </summary>
         private readonly BatchedLineVertex[] _localVertexBuffer;
 
-        public bool IsBegun { get; private set; }
+        public bool IsBegun { get; set; }
 
         /// <summary>
         /// Creates a Batched Line Renderer

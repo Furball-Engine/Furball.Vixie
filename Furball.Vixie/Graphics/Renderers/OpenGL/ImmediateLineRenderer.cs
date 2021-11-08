@@ -8,7 +8,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
     /// <summary>
     /// Line Renderer which draws in an immediatefashion.
     /// </summary>
-    public class ImmediateLineRenderer : IDisposable {
+    public class ImmediateLineRenderer : IDisposable, ILineRenderer {
         /// <summary>
         /// OpenGL API, used to shorten code
         /// </summary>
@@ -29,7 +29,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// <summary>
         /// Indicates whether the Begin method has been called
         /// </summary>
-        public bool IsBegun { get; private set; }
+        public bool IsBegun { get; set; }
         
         /// <summary>
         /// Line Renderer which draws in an Immediate fashion.

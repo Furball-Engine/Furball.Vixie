@@ -86,7 +86,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// <summary>
         /// Stores whether or not the Batch has begun or not
         /// </summary>
-        public bool IsBegun { get; private set; }
+        public bool IsBegun { get; set; }
 
         /// <summary>
         /// FontStashSharp renderer

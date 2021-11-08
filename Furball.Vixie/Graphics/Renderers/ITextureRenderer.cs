@@ -3,6 +3,7 @@ using System.Numerics;
 
 namespace Furball.Vixie.Graphics.Renderers {
     public interface ITextureRenderer {
+        public bool IsBegun { get; set; }
         /// <summary>
         /// Begins the Renderer, used for initializing things
         /// </summary>
