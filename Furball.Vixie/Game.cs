@@ -27,26 +27,30 @@ namespace Furball.Vixie {
         /// <summary>
         /// Window Manager, handles everything Window Related, from Creation to the Window Projection Matrix
         /// </summary>
-        public readonly WindowManager WindowManager;
+        public WindowManager WindowManager { get; internal set;}
         /// <summary>
         /// What is the Graphics Device captable of doing.
         /// </summary>
-        public GraphicsDevice GraphicsDevice;
+        public GraphicsDevice GraphicsDevice { get; internal set;}
         /// <summary>
         /// All of the Game Components
         /// </summary>
-        public GameComponentCollection Components;
+        public GameComponentCollection Components { get; internal set;}
 
         /// <summary>
         /// Creates a Game Window using `options`
         /// </summary>
         /// <param name="options">Window Creation Options</param>
-        protected Game(WindowOptions options) {
+        protected Game() {
             if (Global.AlreadyInitialized)
                 throw new Exception("no we dont support multiple game instances yet");
 
             Global.AlreadyInitialized = true;
-
+        }
+        /// <summary>
+        /// Runs the Game
+        /// </summary>
+        public void Run(WindowOptions options) {
             this.WindowManager = new WindowManager(options);
             this.WindowManager.Create();
 
@@ -64,11 +68,7 @@ namespace Furball.Vixie {
             Global.GameInstance = this;
 
             this.Components = new GameComponentCollection();
-        }
-        /// <summary>
-        /// Runs the Game
-        /// </summary>
-        public void Run() {
+
             Logger.AddLogger(new ConsoleLogger());
             
             Logger.StartLogging();

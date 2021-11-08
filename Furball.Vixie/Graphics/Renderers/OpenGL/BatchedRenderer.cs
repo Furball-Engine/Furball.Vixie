@@ -33,7 +33,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         public fixed float Color[4];
     }
 
-    public class BatchedRenderer : IDisposable, ITextureRenderer {
+    public class BatchedRenderer : IDisposable, ITextureRenderer, ITextRenderer {
         /// <summary>
         /// How many Quads are allowed to be drawn in 1 draw
         /// </summary>

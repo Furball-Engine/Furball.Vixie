@@ -10,7 +10,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
     /// <summary>
     /// Renderer which draws in an immediatefashion.
     /// </summary>
-    public class ImmediateRenderer : IDisposable, ITextureRenderer {
+    public class ImmediateRenderer : IDisposable, ITextureRenderer, ITextRenderer {
         /// <summary>
         /// OpenGL API, used to shorten code
         /// </summary>
