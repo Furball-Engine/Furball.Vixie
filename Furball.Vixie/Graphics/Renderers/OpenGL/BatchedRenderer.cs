@@ -156,15 +156,19 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             this._vertexArray = new VertexArrayObject();
             this._vertexArray.AddBuffer(this._vertexBuffer, layout);
 
+            //Create Lookups
             this._glTexIdToTexIdLookup = new Dictionary<uint, float>(this.MaxTexSlots);
             this._texIdToGlTexIdLookup = new Dictionary<float, uint>(this.MaxTexSlots);
 
+            //Initialize a Array of Texture Slots, used to fill the u_Textures uniform
             this._textureSlotIndicies = new int[] {
                 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32
             };
 
+            //Change the Shader to the Default Shader
             this.ChangeShader(this._batchShader);
 
+            //Create a Text Renderer, used for DrawString
             this._textRenderer = new VixieFontStashRenderer(this);
         }
         /// <summary>
@@ -195,6 +199,12 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
                 this.End();
                 this.Begin();
             }
+        }
+        /// <summary>
+        /// Changes the Shader to the Default one
+        /// </summary>
+        public void ChangeToDefaultShader() {
+            this.ChangeShader(this._batchShader);
         }
 
         /// <summary>

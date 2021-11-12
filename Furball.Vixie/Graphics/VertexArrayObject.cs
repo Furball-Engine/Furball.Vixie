@@ -13,12 +13,12 @@ namespace Furball.Vixie.Graphics {
         /// <summary>
         /// Unique Identifier for this Array Object
         /// </summary>
-        private uint _arrayId;
+        internal uint ArrayId;
 
         public VertexArrayObject() {
             this.gl = Global.Gl;
             //Generate Vertex Array
-            this._arrayId = this.gl.GenVertexArray();
+            this.ArrayId = this.gl.GenVertexArray();
         }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace Furball.Vixie.Graphics {
             if (this.Locked)
                 return null;
 
-            this.gl.BindVertexArray(this._arrayId);
+            this.gl.BindVertexArray(this.ArrayId);
 
             CurrentlyBound = this;
 
@@ -127,7 +127,7 @@ namespace Furball.Vixie.Graphics {
                 this.UnlockingUnbind();
 
             try {
-                this.gl.DeleteVertexArray(this._arrayId);
+                this.gl.DeleteVertexArray(this.ArrayId);
             }
             catch {
 
