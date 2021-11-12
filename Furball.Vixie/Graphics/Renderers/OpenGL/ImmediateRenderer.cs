@@ -171,23 +171,23 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             //Disallow calling Draw without calling Begin first
             if (!IsBegun)
                 throw new Exception("Cannot call Draw before Calling Begin in BatchRenderer!");
-            //Default Scale is 1x
-            if(scale == null || size == Vector2.Zero)
+            //Default Scale
+            if(scale == null || scale == Vector2.Zero)
                 scale = Vector2.One;
-            //Default Size is Texture Size
+            //Default Texture Size
             if (size == null || size == Vector2.Zero)
                 size = texture.Size;
-            //Set size to the Rectangle Size
+            //Set Size to the Source Rectangle
             if (sourceRect.HasValue)
                 size = new Vector2(sourceRect.Value.Width, sourceRect.Value.Height);
-            //Default color is white
+            //Default Tint Color
             if(colorOverride == null)
                 colorOverride = Color.White;
-            //Default source rect is just the size
+            //Default Rectangle
             if (sourceRect == null)
                 sourceRect = new Rectangle(0, 0, (int) size.Value.X, (int) size.Value.Y);
             //Apply Scale
-            size *= scale;
+            size *= scale.Value;
 
             Vector2 topLeft = Vector2.Zero;
             Vector2 botRight = Vector2.Zero;

@@ -14,7 +14,7 @@ using Silk.NET.OpenGL.Extensions.ImGui;
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestFSS : GameComponent {
         private VixieFontStashRenderer _renderer;
-        private BatchedRenderer        _batchedRenderer;
+        private ImmediateRenderer        _immediateRenderer;
         private DynamicSpriteFont      _font;
         private ImGuiController        _imGuiController;
 
@@ -29,9 +29,9 @@ namespace Furball.Vixie.TestApplication.Tests {
             this.DEFAULT_FONT.AddFont(ResourceHelpers.GetByteResource("Resources/font.ttf"));
             this._font = this.DEFAULT_FONT.GetFont(48);
 
-            this._batchedRenderer = new BatchedRenderer();
-            this._renderer        = new VixieFontStashRenderer(this._batchedRenderer);
-            this._imGuiController      = ImGuiCreator.CreateController();
+            this._immediateRenderer = new ImmediateRenderer();
+            this._renderer        = new VixieFontStashRenderer(this._immediateRenderer);
+            this._imGuiController = ImGuiCreator.CreateController();
 
             base.Initialize();
         }
@@ -41,9 +41,9 @@ namespace Furball.Vixie.TestApplication.Tests {
         public override void Draw(double deltaTime) {
             this.GraphicsDevice.GlClear();
 
-            this._batchedRenderer.Begin();
-            this._batchedRenderer.DrawString(this._font, "VixieFontStashSharpRenderer Testing", new Vector2(10, 10), Color.White, 0f, new Vector2(_scale));
-            this._batchedRenderer.End();
+            this._immediateRenderer.Begin();
+            this._immediateRenderer.DrawString(this._font, "VixieFontStashSharpRenderer Testing", new Vector2(10, 10), Color.White, 0f, new Vector2(_scale));
+            this._immediateRenderer.End();
 
 
 
@@ -72,7 +72,7 @@ namespace Furball.Vixie.TestApplication.Tests {
 
         public override void Dispose() {
             this.DEFAULT_FONT.Dispose();
-            this._batchedRenderer.Dispose();
+            this._immediateRenderer.Dispose();
             this._imGuiController.Dispose();
 
             base.Dispose();
