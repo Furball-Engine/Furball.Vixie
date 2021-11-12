@@ -68,6 +68,11 @@ namespace Furball.Vixie.TestApplication {
                 this.BaseGame.Components.Remove(this);
             }
 
+            if (ImGui.Button("Test Drawing Multiple Textures")) {
+                this.BaseGame.Components.Add(new MultipleTextureTest());
+                this.BaseGame.Components.Remove(this);
+            }
+
 
             ImGui.End();
 
