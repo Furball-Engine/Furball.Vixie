@@ -83,7 +83,9 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// Cache for OpenGL Texture ID Lookups
         /// </summary>
         private readonly Dictionary<float, uint> _texIdToGlTexIdLookup;
-
+        /// <summary>
+        /// Stores the Data used for the u_Textures uniform
+        /// </summary>
         private readonly int[] _textureSlotIndicies;
         /// <summary>
         /// Stores whether or not the Batch has begun or not
@@ -499,7 +501,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
 
             //Bind the Shader and provide the Window projection matrix, to give us normal pixel space from 0,0 to whatever the window size is in the bottom right
             this._batchShader
-                .SetUniform("vx_WindowProjectionMatrix", UniformType.GlMat4f, Global.GameInstance.WindowManager.ProjectionMatrix);
+                .SetUniform("vx_WindowProjectionMatrix", UniformType.GlMat4F, Global.GameInstance.WindowManager.ProjectionMatrix);
 
             //Draw
             this.gl.DrawElements(PrimitiveType.Triangles, (uint) this._indexCount, DrawElementsType.UnsignedInt, null);

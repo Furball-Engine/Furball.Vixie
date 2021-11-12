@@ -116,7 +116,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             //Bind the Shader and set the necessary uniforms
             this._lineShader
                 .LockingBind()
-                .SetUniform("u_mvp",           UniformType.GlMat4f, Global.GameInstance.WindowManager.ProjectionMatrix)
+                .SetUniform("u_mvp",           UniformType.GlMat4F, Global.GameInstance.WindowManager.ProjectionMatrix)
                 .SetUniform("u_viewport_size", UniformType.GlFloat, (float) Global.GameInstance.WindowManager.GameWindow.Size.X, (float) Global.GameInstance.WindowManager.GameWindow.Size.Y)
                 .SetUniform("u_aa_radius",     UniformType.GlFloat, 6f,                                                          6f);
 

@@ -12,7 +12,7 @@ namespace Furball.Vixie.Graphics {
         /// <summary>
         /// Unique Identifier for this Buffer object used by OpenGL to distingluish different buffers
         /// </summary>
-        private uint            _bufferId;
+        internal uint            BufferId;
         /// <summary>
         /// Type of Buffer, is it a Vertex Buffer? a Index Buffer? a different buffer entirely?
         /// </summary>
@@ -40,9 +40,9 @@ namespace Furball.Vixie.Graphics {
             this._bufferType  = bufferType;
             this._bufferUsage = usage;
             //Generate Buffer
-            this._bufferId = this.gl.GenBuffer();
+            this.BufferId = this.gl.GenBuffer();
             //Select buffer, as we're going to allocate memory in it
-            this.gl.BindBuffer(this._bufferType, this._bufferId);
+            this.gl.BindBuffer(this._bufferType, this.BufferId);
             //Allocate Memory
             this.gl.BufferData(this._bufferType, (nuint) size, null, this._bufferUsage);
         }
@@ -56,7 +56,7 @@ namespace Furball.Vixie.Graphics {
             this._bufferType  = bufferType;
             this._bufferUsage = usage;
             //Generate Buffer
-            this._bufferId = this.gl.GenBuffer();
+            this.BufferId = this.gl.GenBuffer();
         }
 
         /// <summary>
@@ -128,7 +128,7 @@ namespace Furball.Vixie.Graphics {
             if (this.Locked)
                 return null;
 
-            this.gl.BindBuffer(this._bufferType, this._bufferId);
+            this.gl.BindBuffer(this._bufferType, this.BufferId);
 
             CurrentlyBound = this;
 
@@ -204,7 +204,7 @@ namespace Furball.Vixie.Graphics {
                 this.UnlockingUnbind();
 
             try {
-                this.gl.DeleteBuffer(this._bufferId);
+                this.gl.DeleteBuffer(this.BufferId);
             }
             catch {
 

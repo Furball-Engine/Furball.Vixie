@@ -9,7 +9,7 @@ namespace Furball.Vixie.Graphics {
         GlFloat,
         GlInt,
         GlUint,
-        GlMat4f,
+        GlMat4F,
     }
 
     /// <summary>
@@ -305,7 +305,7 @@ namespace Furball.Vixie.Graphics {
                     }
                     break;
                 }
-                case UniformType.GlMat4f: {
+                case UniformType.GlMat4F: {
                     Matrix4x4 matrix = (Matrix4x4) args[0];
 
                     this.gl.UniformMatrix4(location, 1, false, (float*) &matrix);
