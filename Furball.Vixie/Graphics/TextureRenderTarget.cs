@@ -3,9 +3,14 @@ using Silk.NET.OpenGL;
 
 namespace Furball.Vixie.Graphics {
     public class TextureRenderTarget : IDisposable {
+        /// <summary>
+        /// Currently Bound TextureRenderTarget
+        /// </summary>
         internal static TextureRenderTarget CurrentlyBound;
+        /// <summary>
+        /// Getter for Checking whether this Target is bound
+        /// </summary>
         public bool Bound => CurrentlyBound == this;
-
         /// <summary>
         /// OpenGL API, used to shorten code.
         /// </summary>

@@ -125,7 +125,9 @@ namespace Furball.Vixie.Graphics {
 
             this.Size = new Vector2(width, height);
         }
-
+        /// <summary>
+        /// Creates a Texture with a single White Pixel
+        /// </summary>
         public unsafe Texture() {
             this.gl = Global.Gl;
 
@@ -146,7 +148,11 @@ namespace Furball.Vixie.Graphics {
 
             this.Size = new Vector2(1, 1);
         }
-
+        /// <summary>
+        /// Creates a Empty texture given a width and height
+        /// </summary>
+        /// <param name="width">Desired Width</param>
+        /// <param name="height">Desired Height</param>
         public unsafe Texture(uint width, uint height) {
             this.gl = Global.Gl;
 
@@ -165,7 +171,6 @@ namespace Furball.Vixie.Graphics {
 
             this.Size = new Vector2(width, height);
         }
-
         /// <summary>
         /// Creates a Texture from a Stream which Contains Image Data
         /// </summary>
@@ -189,7 +194,12 @@ namespace Furball.Vixie.Graphics {
 
             this.Size = new Vector2(width, height);
         }
-
+        /// <summary>
+        /// Creates a Texture class using a already Generated OpenGL Texture
+        /// </summary>
+        /// <param name="textureId">OpenGL Texture ID</param>
+        /// <param name="width">Width of the Texture</param>
+        /// <param name="height">Height of the Texture</param>
         internal Texture(uint textureId, uint width, uint height) {
             this.gl = Global.Gl;
 
@@ -217,7 +227,13 @@ namespace Furball.Vixie.Graphics {
             //Unbind as we have finished
             this.gl.BindTexture(TextureTarget.Texture2D, 0);
         }
-
+        /// <summary>
+        /// Sets the Data of the Texture Directly
+        /// </summary>
+        /// <param name="level">Level of the texture</param>
+        /// <param name="data">Data to put there</param>
+        /// <typeparam name="pDataType">Type of the Data</typeparam>
+        /// <returns>Self, used for chaining methods</returns>
         public unsafe Texture SetData<pDataType>(int level, pDataType[] data) where pDataType : unmanaged {
             this.LockingBind();
 
@@ -230,7 +246,14 @@ namespace Furball.Vixie.Graphics {
 
             return this;
         }
-
+        /// <summary>
+        /// Sets the Data of the Texture Directly
+        /// </summary>
+        /// <param name="level">Level of the Texture</param>
+        /// <param name="rect">Rectangle of Data to Edit</param>
+        /// <param name="data">Data to put there</param>
+        /// <typeparam name="pDataType">Type of Data to put</typeparam>
+        /// <returns>Self, used for chaining methods</returns>
         public unsafe Texture SetData<pDataType>(int level, System.Drawing.Rectangle rect, pDataType[] data) where pDataType : unmanaged {
             this.LockingBind();
 
@@ -317,7 +340,7 @@ namespace Furball.Vixie.Graphics {
             this.gl.ActiveTexture(this.BoundAt);
             this.gl.BindTexture(TextureTarget.Texture2D, 0);
 
-            BoundTextures[this.BoundAt] = this.TextureId;
+            BoundTextures[this.BoundAt] = 0;
 
             return this;
         }

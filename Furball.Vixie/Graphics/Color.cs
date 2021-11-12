@@ -9,50 +9,7 @@ using System.Runtime.Serialization;
 using System.Text;
 
 namespace Furball.Vixie.Graphics {
-    public class MathHelper {
-        /// <summary>
-        /// Linearly interpolates between two values.
-        /// </summary>
-        /// <param name="value1">Source value.</param>
-        /// <param name="value2">Destination value.</param>
-        /// <param name="amount">Value between 0 and 1 indicating the weight of value2.</param>
-        /// <returns>Interpolated value.</returns>
-        /// <remarks>This method performs the linear interpolation based on the following formula:
-        /// <code>value1 + (value2 - value1) * amount</code>.
-        /// Passing amount a value of 0 will cause value1 to be returned, a value of 1 will cause value2 to be returned.
-        /// See <see cref="MathHelper.LerpPrecise"/> for a less efficient version with more precision around edge cases.
-        /// </remarks>
-        public static float Lerp(float value1, float value2, float amount)
-        {
-            return value1 + (value2 - value1) * amount;
-        }
 
-
-        /// <summary>
-        /// Linearly interpolates between two values.
-        /// This method is a less efficient, more precise version of <see cref="MathHelper.Lerp"/>.
-        /// See remarks for more info.
-        /// </summary>
-        /// <param name="value1">Source value.</param>
-        /// <param name="value2">Destination value.</param>
-        /// <param name="amount">Value between 0 and 1 indicating the weight of value2.</param>
-        /// <returns>Interpolated value.</returns>
-        /// <remarks>This method performs the linear interpolation based on the following formula:
-        /// <code>((1 - amount) * value1) + (value2 * amount)</code>.
-        /// Passing amount a value of 0 will cause value1 to be returned, a value of 1 will cause value2 to be returned.
-        /// This method does not have the floating point precision issue that <see cref="MathHelper.Lerp"/> has.
-        /// i.e. If there is a big gap between value1 and value2 in magnitude (e.g. value1=10000000000000000, value2=1),
-        /// right at the edge of the interpolation range (amount=1), <see cref="MathHelper.Lerp"/> will return 0 (whereas it should return 1).
-        /// This also holds for value1=10^17, value2=10; value1=10^18,value2=10^2... so on.
-        /// For an in depth explanation of the issue, see below references:
-        /// Relevant Wikipedia Article: https://en.wikipedia.org/wiki/Linear_interpolation#Programming_language_support
-        /// Relevant StackOverflow Answer: http://stackoverflow.com/questions/4353525/floating-point-linear-interpolation#answer-23716956
-        /// </remarks>
-        public static float LerpPrecise(float value1, float value2, float amount)
-        {
-            return ((1 - amount) * value1) + (value2 * amount);
-        }
-    }
 
     /// <summary>
     /// Describes a 32-bit packed color.
@@ -60,6 +17,49 @@ namespace Furball.Vixie.Graphics {
     [DataContract]
     [DebuggerDisplay("{DebugDisplayString,nq}")]
     public struct Color : IEquatable<Color> {
+        private class MathHelper {
+            /// <summary>
+            /// Linearly interpolates between two values.
+            /// </summary>
+            /// <param name="value1">Source value.</param>
+            /// <param name="value2">Destination value.</param>
+            /// <param name="amount">Value between 0 and 1 indicating the weight of value2.</param>
+            /// <returns>Interpolated value.</returns>
+            /// <remarks>This method performs the linear interpolation based on the following formula:
+            /// <code>value1 + (value2 - value1) * amount</code>.
+            /// Passing amount a value of 0 will cause value1 to be returned, a value of 1 will cause value2 to be returned.
+            /// See <see cref="MathHelper.LerpPrecise"/> for a less efficient version with more precision around edge cases.
+            /// </remarks>
+            public static float Lerp(float value1, float value2, float amount) {
+                return value1 + (value2 - value1) * amount;
+            }
+
+
+            /// <summary>
+            /// Linearly interpolates between two values.
+            /// This method is a less efficient, more precise version of <see cref="MathHelper.Lerp"/>.
+            /// See remarks for more info.
+            /// </summary>
+            /// <param name="value1">Source value.</param>
+            /// <param name="value2">Destination value.</param>
+            /// <param name="amount">Value between 0 and 1 indicating the weight of value2.</param>
+            /// <returns>Interpolated value.</returns>
+            /// <remarks>This method performs the linear interpolation based on the following formula:
+            /// <code>((1 - amount) * value1) + (value2 * amount)</code>.
+            /// Passing amount a value of 0 will cause value1 to be returned, a value of 1 will cause value2 to be returned.
+            /// This method does not have the floating point precision issue that <see cref="MathHelper.Lerp"/> has.
+            /// i.e. If there is a big gap between value1 and value2 in magnitude (e.g. value1=10000000000000000, value2=1),
+            /// right at the edge of the interpolation range (amount=1), <see cref="MathHelper.Lerp"/> will return 0 (whereas it should return 1).
+            /// This also holds for value1=10^17, value2=10; value1=10^18,value2=10^2... so on.
+            /// For an in depth explanation of the issue, see below references:
+            /// Relevant Wikipedia Article: https://en.wikipedia.org/wiki/Linear_interpolation#Programming_language_support
+            /// Relevant StackOverflow Answer: http://stackoverflow.com/questions/4353525/floating-point-linear-interpolation#answer-23716956
+            /// </remarks>
+            public static float LerpPrecise(float value1, float value2, float amount) {
+                return ((1 - amount) * value1) + (value2 * amount);
+            }
+        }
+
         static Color() {
             Transparent          = new Color(0);
             AliceBlue            = new Color(0xfffff8f0);
@@ -1569,12 +1569,7 @@ namespace Furball.Vixie.Graphics {
         /// <returns>Interpolated <see cref="Color"/>.</returns>
         public static Color Lerp(Color value1, Color value2, Single amount) {
             amount = Math.Clamp(amount, 0, 1);
-            return new Color(
-            (int)MathHelper.Lerp(value1.R, value2.R, amount),
-            (int)MathHelper.Lerp(value1.G, value2.G, amount),
-            (int)MathHelper.Lerp(value1.B, value2.B, amount),
-            (int)MathHelper.Lerp(value1.A, value2.A, amount)
-            );
+            return new Color((int)MathHelper.Lerp(value1.R, value2.R, amount), (int)MathHelper.Lerp(value1.G, value2.G, amount), (int)MathHelper.Lerp(value1.B, value2.B, amount), (int)MathHelper.Lerp(value1.A, value2.A, amount));
         }
 
         /// <summary>
@@ -1584,12 +1579,7 @@ namespace Furball.Vixie.Graphics {
         [Obsolete("Color.Lerp should be used instead of this function.")]
         public static Color LerpPrecise(Color value1, Color value2, Single amount) {
             amount = Math.Clamp(amount, 0, 1);
-            return new Color(
-            (int)MathHelper.LerpPrecise(value1.R, value2.R, amount),
-            (int)MathHelper.LerpPrecise(value1.G, value2.G, amount),
-            (int)MathHelper.LerpPrecise(value1.B, value2.B, amount),
-            (int)MathHelper.LerpPrecise(value1.A, value2.A, amount)
-            );
+            return new Color((int)MathHelper.LerpPrecise(value1.R, value2.R, amount), (int)MathHelper.LerpPrecise(value1.G, value2.G, amount), (int)MathHelper.LerpPrecise(value1.B, value2.B, amount), (int)MathHelper.LerpPrecise(value1.A, value2.A, amount));
         }
 
         /// <summary>

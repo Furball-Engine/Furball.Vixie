@@ -16,9 +16,14 @@ namespace Furball.Vixie.Graphics {
     /// A Shader, a Program run on the GPU
     /// </summary>
     public class Shader : IDisposable {
+        /// <summary>
+        /// Currently Bound Shader
+        /// </summary>
         internal static Shader CurrentlyBound;
+        /// <summary>
+        /// Getter to check whether this Shader is bound
+        /// </summary>
         public bool Bound => CurrentlyBound == this;
-
         /// <summary>
         /// OpenGL api, used to not have to do Global.Gl.function everytime, saves time and makes code shorter
         /// </summary>

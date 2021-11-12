@@ -3,9 +3,14 @@ using Silk.NET.OpenGL;
 
 namespace Furball.Vixie.Graphics {
     public class VertexArrayObject : IDisposable {
+        /// <summary>
+        /// Current Bound VAO
+        /// </summary>
         internal static VertexArrayObject CurrentlyBound;
+        /// <summary>
+        /// Getter to check whether this VAO is bound
+        /// </summary>
         public bool Bound => CurrentlyBound == this;
-
         /// <summary>
         /// OpenGL Api, used to not have to write Global.GL.function everytime
         /// </summary>
