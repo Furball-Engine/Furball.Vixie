@@ -21,6 +21,8 @@ namespace Furball.Vixie.TestApplication.Tests {
         }
 
         public override void Draw(double deltaTime) {
+            this.GraphicsDevice.GlClear();
+
             this._batchedRenderer.Begin();
 
             int x = 0;

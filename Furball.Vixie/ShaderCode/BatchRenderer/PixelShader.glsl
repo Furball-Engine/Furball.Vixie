@@ -10,6 +10,7 @@ uniform sampler2D u_Textures[32];
 
 void main() {
     int index = int(v_TexIndex);
+
     //Thanks AMD
     switch(index) {
         case 0:

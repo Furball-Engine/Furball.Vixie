@@ -83,6 +83,8 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// Cache for OpenGL Texture ID Lookups
         /// </summary>
         private readonly Dictionary<float, uint> _texIdToGlTexIdLookup;
+
+        private readonly int[] _textureSlotIndicies;
         /// <summary>
         /// Stores whether or not the Batch has begun or not
         /// </summary>
@@ -157,6 +159,10 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             this._glTexIdToTexIdLookup = new Dictionary<uint, float>(this.MaxTexSlots);
             this._texIdToGlTexIdLookup = new Dictionary<float, uint>(this.MaxTexSlots);
 
+            this._textureSlotIndicies = new int[] {
+                0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32
+            };
+
             this.ChangeShader(this._batchShader);
 
             this._textRenderer = new VixieFontStashRenderer(this);
@@ -181,6 +187,9 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             //Set new Shader and Bind it
             this._currentShader = shader;
             this._currentShader.LockingBind();
+
+            gl.Uniform1(this._currentShader.GetUniformLocation("u_Textures"), 32, this._textureSlotIndicies);
+
             //If the batch has been going on while this happened we need to restart it
             if (IsBegun) {
                 this.End();
@@ -223,6 +232,8 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             this._indexBuffer.LockingBind();
             this._vertexBuffer.LockingBind();
             this._currentShader.LockingBind();
+
+            gl.Uniform1(this._currentShader.GetUniformLocation("u_Textures"), 32, this._textureSlotIndicies);
 
             this.IsBegun = true;
         }
@@ -318,6 +329,8 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             if (!this._glTexIdToTexIdLookup.TryGetValue(texture.TextureId, out this._textureIndex)) {
                 this._glTexIdToTexIdLookup.Add(texture.TextureId, this._textureSlotIndex);
                 this._texIdToGlTexIdLookup.Add(this._textureSlotIndex, texture.TextureId);
+
+                this._textureIndex = this._textureSlotIndex;
 
                 this._textureSlotIndex++;
             }
