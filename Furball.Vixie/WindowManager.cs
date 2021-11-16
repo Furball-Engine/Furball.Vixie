@@ -2,6 +2,8 @@ using System;
 using System.Numerics;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
+using Silk.NET.Windowing.Sdl;
+using Window=Silk.NET.Windowing.Window;
 
 namespace Furball.Vixie {
     public class WindowManager : IDisposable {
@@ -41,6 +43,9 @@ namespace Furball.Vixie {
         /// Creates the Window and grabs the OpenGL API of Window
         /// </summary>
         public void Create() {
+            SdlWindowing.RegisterPlatform();
+            Window.PrioritizeSdl();
+            
             this.GameWindow = Window.Create(this._windowOptions);
             this.WindowSize = new Vector2(this._windowOptions.Size.X, this._windowOptions.Size.Y);
 
