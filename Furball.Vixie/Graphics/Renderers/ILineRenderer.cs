@@ -1,5 +1,4 @@
 using System;
-using System.Drawing;
 using System.Numerics;
 
 namespace Furball.Vixie.Graphics.Renderers {

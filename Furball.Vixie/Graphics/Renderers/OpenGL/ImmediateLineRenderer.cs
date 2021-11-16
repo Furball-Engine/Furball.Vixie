@@ -1,5 +1,4 @@
 using System;
-using System.Drawing;
 using System.Numerics;
 using Furball.Vixie.Helpers;
 using Silk.NET.OpenGL;
