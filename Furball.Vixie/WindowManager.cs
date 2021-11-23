@@ -39,6 +39,13 @@ namespace Furball.Vixie {
 
         public nint GetWindowHandle() => this.GameWindow.Handle;
 
+        public void SetWindowSize(int width, int height) {
+            this.GameWindow.Size = new(width, height);
+            
+            this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, height, 0, 1f, 0f);
+            this.WindowSize       = new Vector2(width, height);
+        }
+
         /// <summary>
         /// Creates the Window and grabs the OpenGL API of Window
         /// </summary>
@@ -46,9 +53,10 @@ namespace Furball.Vixie {
             SdlWindowing.RegisterPlatform();
             Window.PrioritizeSdl();
             
+            
             this.GameWindow = Window.Create(this._windowOptions);
             this.WindowSize = new Vector2(this._windowOptions.Size.X, this._windowOptions.Size.Y);
-
+            
             this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, this._windowOptions.Size.X, this._windowOptions.Size.Y, 0, 1f, 0f);
 
             this.GameWindow.FramebufferResize += newSize => {
