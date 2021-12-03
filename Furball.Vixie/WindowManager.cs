@@ -1,5 +1,6 @@
 using System;
 using System.Numerics;
+using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using Silk.NET.Windowing.Sdl;
@@ -45,9 +46,21 @@ namespace Furball.Vixie {
             this.UpdateProjectionAndSize(width, height);
         }
 
+        public void SetTargetFramerate(int framerate) {
+            this.GameWindow.FramesPerSecond = framerate;
+        }
+
         private void UpdateProjectionAndSize(int width, int height) {
             this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, height, 0, 1f, 0f);
             this.WindowSize       = new Vector2(width, height);
+
+            try {
+                //this is terrible and will be redone soon
+                this.GetGlApi().Viewport(new Vector2D<int>(width, height));
+            }
+            catch {
+
+            }
         }
 
         /// <summary>
