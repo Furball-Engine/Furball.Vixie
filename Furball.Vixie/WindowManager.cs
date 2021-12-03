@@ -42,6 +42,10 @@ namespace Furball.Vixie {
         public void SetWindowSize(int width, int height) {
             this.GameWindow.Size = new(width, height);
             
+            this.UpdateProjectionAndSize(width, height);
+        }
+
+        private void UpdateProjectionAndSize(int width, int height) {
             this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, height, 0, 1f, 0f);
             this.WindowSize       = new Vector2(width, height);
         }
@@ -52,16 +56,13 @@ namespace Furball.Vixie {
         public void Create() {
             SdlWindowing.RegisterPlatform();
             Window.PrioritizeSdl();
-            
-            
+
             this.GameWindow = Window.Create(this._windowOptions);
-            this.WindowSize = new Vector2(this._windowOptions.Size.X, this._windowOptions.Size.Y);
-            
-            this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, this._windowOptions.Size.X, this._windowOptions.Size.Y, 0, 1f, 0f);
+
+            this.UpdateProjectionAndSize(this._windowOptions.Size.X, this._windowOptions.Size.Y);
 
             this.GameWindow.FramebufferResize += newSize => {
-                this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, newSize.X, newSize.Y, 0, 1f, 0f);
-                this.WindowSize       = new Vector2(newSize.X, newSize.Y);
+                this.UpdateProjectionAndSize(newSize.X, newSize.Y);
             };
         }
         /// <summary>

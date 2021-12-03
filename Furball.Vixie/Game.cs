@@ -156,14 +156,14 @@ namespace Furball.Vixie {
         /// Gets Fired when The Window gets Resized
         /// </summary>
         /// <param name="newSize"></param>
-        protected void EngineWindowResize(Vector2D<int> newSize) {
+        private void EngineWindowResize(Vector2D<int> newSize) {
             this.OnWindowResize(newSize);
         }
         /// <summary>
         /// Gets Fired when the Frame Buffer needs/gets resized
         /// </summary>
         /// <param name="newSize">New Size</param>
-        protected void EngineFrameBufferResize(Vector2D<int> newSize) {
+        private void EngineFrameBufferResize(Vector2D<int> newSize) {
             gl.Viewport(Vector2D<int>.Zero, newSize);
 
             this.OnFrameBufferResize(newSize);
