@@ -105,6 +105,7 @@ namespace Furball.Vixie {
             Global.Device        = this.GraphicsDevice;
             Global.WindowManager = this.WindowManager;
 
+            this.LoadContent();
             this.Initialize();
         }
 #if DEBUGWITHGL
@@ -176,6 +177,10 @@ namespace Furball.Vixie {
         /// Used to Initialize any Game Stuff before the Game Begins
         /// </summary>
         protected virtual void Initialize() {}
+        /// <summary>
+        /// Used to Preload content
+        /// </summary>
+        protected virtual void LoadContent() {}
         /// <summary>
         /// Update Method, Do your Updating work in here
         /// </summary>
