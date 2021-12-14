@@ -67,8 +67,8 @@ namespace Furball.Vixie {
         /// Creates the Window and grabs the OpenGL API of Window
         /// </summary>
         public void Create() {
-            SdlWindowing.RegisterPlatform();
-            Window.PrioritizeSdl();
+            //SdlWindowing.RegisterPlatform();
+            Silk.NET.Windowing.Sdl.SdlWindowing.Use();
 
             this.GameWindow = Window.Create(this._windowOptions);
 
