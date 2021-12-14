@@ -7,6 +7,7 @@ using Silk.NET.Core.Native;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
+using Silk.NET.OpenGL.Extensions.ImGui;
 using Silk.NET.Windowing;
 
 namespace Furball.Vixie {
@@ -19,6 +20,10 @@ namespace Furball.Vixie {
         /// Window Input Context
         /// </summary>
         internal IInputContext _inputContext;
+        /// <summary>
+        /// ImGui Controller
+        /// </summary>
+        internal ImGuiController _imGuiController;
 
         /// <summary>
         /// Is the Window Active/Focused?
@@ -85,8 +90,12 @@ namespace Furball.Vixie {
 #else
         private void RendererInitialize() {
 #endif
-            Global.Gl = this.WindowManager.GetGlApi();
-            this.gl   = Global.Gl;
+            Global.Gl             = this.WindowManager.GetGlApi();
+            this.gl               = Global.Gl;
+            this._imGuiController = new ImGuiController(Global.Gl,
+                                                        Global.GameInstance.WindowManager.GameWindow,
+                                                        Global.GameInstance.WindowManager.GameWindow.CreateInput()
+            );
 
             //Enables Debugging
 #if DEBUGWITHGL
@@ -186,6 +195,8 @@ namespace Furball.Vixie {
         /// </summary>
         /// <param name="deltaTime">Delta Time</param>
         protected virtual void Update(double deltaTime) {
+
+            _imGuiController.Update((float) deltaTime);
             this.Components.Update(deltaTime);
         }
         /// <summary>
@@ -194,6 +205,7 @@ namespace Furball.Vixie {
         /// <param name="deltaTime"></param>
         protected virtual void Draw(double deltaTime) {
             this.Components.Draw(deltaTime);
+            this._imGuiController.Render();
         }
         /// <summary>
         /// Dispose any IDisposables and other things left to clean up here

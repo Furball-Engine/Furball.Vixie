@@ -1,25 +1,14 @@
 using Furball.Vixie.Graphics.Renderers.OpenGL;
-using Furball.Vixie.ImGuiHelpers;
+
 using Furball.Vixie.TestApplication.Tests;
 using ImGuiNET;
 using Silk.NET.OpenGL.Extensions.ImGui;
 
 namespace Furball.Vixie.TestApplication {
     public class BaseTestSelector : GameComponent {
-        private ImGuiController _imGuiController;
-
-        public BaseTestSelector()  {}
-
-        public override void Initialize() {
-            this._imGuiController   = ImGuiCreator.CreateController();
-
-            base.Initialize();
-        }
 
         public override void Draw(double deltaTime) {
             this.GraphicsDevice.GlClear();
-
-            this._imGuiController.Update((float) deltaTime);
 
             ImGui.Begin("Test Selector");
 
@@ -73,10 +62,7 @@ namespace Furball.Vixie.TestApplication {
                 this.BaseGame.Components.Remove(this);
             }
 
-
             ImGui.End();
-
-            this._imGuiController.Render();
 
             base.Draw(deltaTime);
         }

@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Numerics;
 using Furball.Vixie.Graphics;
 using Furball.Vixie.Graphics.Renderers.OpenGL;
-using Furball.Vixie.ImGuiHelpers;
+
 using ImGuiNET;
 using Silk.NET.OpenGL.Extensions.ImGui;
 
@@ -12,12 +12,12 @@ namespace Furball.Vixie.TestApplication.Tests {
     public class TestLineRenderer : GameComponent {
         private ImmediateLineRenderer _immediateLineRenderer;
 
-        private ImGuiController _imGuiController;
+        
 
         public override void Initialize() {
             this._immediateLineRenderer = new ImmediateLineRenderer();
 
-            this._imGuiController = ImGuiCreator.CreateController();
+            
 
             base.Initialize();
         }
@@ -36,7 +36,7 @@ namespace Furball.Vixie.TestApplication.Tests {
 
             #region ImGui menu
 
-            this._imGuiController.Update((float) deltaTime);
+            
 
             ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
                        $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
@@ -47,7 +47,7 @@ namespace Furball.Vixie.TestApplication.Tests {
                 this.BaseGame.Components.Remove(this);
             }
 
-            this._imGuiController.Render();
+            
 
             #endregion
 
@@ -55,7 +55,7 @@ namespace Furball.Vixie.TestApplication.Tests {
         }
 
         public override void Dispose() {
-            this._imGuiController.Dispose();
+            
             this._immediateLineRenderer.Dispose();
 
             base.Dispose();

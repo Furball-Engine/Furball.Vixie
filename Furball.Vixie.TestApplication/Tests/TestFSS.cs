@@ -7,7 +7,7 @@ using Furball.Vixie.FontStashSharp;
 using Furball.Vixie.Graphics;
 using Furball.Vixie.Graphics.Renderers.OpenGL;
 using Furball.Vixie.Helpers;
-using Furball.Vixie.ImGuiHelpers;
+
 using ImGuiNET;
 using Silk.NET.OpenGL.Extensions.ImGui;
 
@@ -16,7 +16,6 @@ namespace Furball.Vixie.TestApplication.Tests {
         private VixieFontStashRenderer _renderer;
         private ImmediateRenderer        _immediateRenderer;
         private DynamicSpriteFont      _font;
-        private ImGuiController        _imGuiController;
 
         public readonly FontSystem DEFAULT_FONT = new(new FontSystemSettings {
             FontResolutionFactor = 2f,
@@ -31,7 +30,7 @@ namespace Furball.Vixie.TestApplication.Tests {
 
             this._immediateRenderer = new ImmediateRenderer();
             this._renderer        = new VixieFontStashRenderer(this._immediateRenderer);
-            this._imGuiController = ImGuiCreator.CreateController();
+            
 
             base.Initialize();
         }
@@ -49,7 +48,7 @@ namespace Furball.Vixie.TestApplication.Tests {
 
             #region ImGui menu
 
-            this._imGuiController.Update((float) deltaTime);
+            
 
             ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
                        $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
@@ -62,7 +61,7 @@ namespace Furball.Vixie.TestApplication.Tests {
                 this.BaseGame.Components.Remove(this);
             }
 
-            this._imGuiController.Render();
+            
 
             #endregion
 
@@ -73,7 +72,7 @@ namespace Furball.Vixie.TestApplication.Tests {
         public override void Dispose() {
             this.DEFAULT_FONT.Dispose();
             this._immediateRenderer.Dispose();
-            this._imGuiController.Dispose();
+            
 
             base.Dispose();
         }
