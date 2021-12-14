@@ -7,7 +7,6 @@ using Furball.Vixie.Graphics.Renderers.OpenGL;
 using Furball.Vixie.Helpers;
 
 using ImGuiNET;
-using Silk.NET.OpenGL.Extensions.ImGui;
 using Color=Furball.Vixie.Graphics.Color;
 
 namespace Furball.Vixie.TestApplication.Tests {
@@ -16,14 +15,10 @@ namespace Furball.Vixie.TestApplication.Tests {
         private BatchedRenderer   _batchedRenderer;
         private Texture           _whiteTexture;
 
-        
-
         public override void Initialize() {
             this._immediateRenderer = new ImmediateRenderer();
             this._batchedRenderer   = new BatchedRenderer();
             this._whiteTexture      = new Texture(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
-
-            
 
             base.Initialize();
         }
@@ -37,11 +32,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._immediateRenderer.Draw(this._whiteTexture, new Vector2(1280 /2, 720 /2), new Vector2(371/2, 326), null, 0, Color.White, new Rectangle(371/2, 0, 371, 326));
             this._immediateRenderer.End();
 
-
-
             #region ImGui menu
-
-            
 
             ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
                        $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
@@ -65,7 +56,6 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._batchedRenderer.Dispose();
             this._immediateRenderer.Dispose();
             this._whiteTexture.Dispose();
-            
 
             base.Dispose();
         }

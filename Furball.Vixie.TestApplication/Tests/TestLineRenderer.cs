@@ -12,12 +12,8 @@ namespace Furball.Vixie.TestApplication.Tests {
     public class TestLineRenderer : GameComponent {
         private ImmediateLineRenderer _immediateLineRenderer;
 
-        
-
         public override void Initialize() {
             this._immediateLineRenderer = new ImmediateLineRenderer();
-
-            
 
             base.Initialize();
         }
@@ -32,7 +28,6 @@ namespace Furball.Vixie.TestApplication.Tests {
             }
 
             this._immediateLineRenderer.End();
-
 
             #region ImGui menu
 
@@ -55,7 +50,6 @@ namespace Furball.Vixie.TestApplication.Tests {
         }
 
         public override void Dispose() {
-            
             this._immediateLineRenderer.Dispose();
 
             base.Dispose();

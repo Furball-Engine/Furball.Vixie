@@ -15,14 +15,11 @@ namespace Furball.Vixie.TestApplication.Tests {
     public class TestTextureDrawing : GameComponent {
         private ImmediateRenderer _immediateRenderer;
 
-        private BufferObject _vertexBuffer;
-        private BufferObject  _indexBuffer;
+        private BufferObject        _vertexBuffer;
+        private BufferObject        _indexBuffer;
         private BasicTexturedShader _shader;
         private Texture             _texture;
-
-        private VertexArrayObject _vertexArrayObject;
-
-        
+        private VertexArrayObject   _vertexArrayObject;
 
         public override void Initialize() {
             this._immediateRenderer = new ImmediateRenderer();
@@ -62,8 +59,6 @@ namespace Furball.Vixie.TestApplication.Tests {
 
             //Load the Texture
             this._texture = new Texture(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
-
-            
 
             base.Initialize();
         }

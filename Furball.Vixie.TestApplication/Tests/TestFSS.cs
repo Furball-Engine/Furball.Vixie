@@ -9,7 +9,6 @@ using Furball.Vixie.Graphics.Renderers.OpenGL;
 using Furball.Vixie.Helpers;
 
 using ImGuiNET;
-using Silk.NET.OpenGL.Extensions.ImGui;
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestFSS : GameComponent {
@@ -30,7 +29,6 @@ namespace Furball.Vixie.TestApplication.Tests {
 
             this._immediateRenderer = new ImmediateRenderer();
             this._renderer        = new VixieFontStashRenderer(this._immediateRenderer);
-            
 
             base.Initialize();
         }
@@ -43,8 +41,6 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._immediateRenderer.Begin();
             this._immediateRenderer.DrawString(this._font, "VixieFontStashSharpRenderer Testing", new Vector2(10, 10), Color.White, 0f, new Vector2(_scale));
             this._immediateRenderer.End();
-
-
 
             #region ImGui menu
 
@@ -65,14 +61,12 @@ namespace Furball.Vixie.TestApplication.Tests {
 
             #endregion
 
-
             base.Draw(deltaTime);
         }
 
         public override void Dispose() {
             this.DEFAULT_FONT.Dispose();
             this._immediateRenderer.Dispose();
-            
 
             base.Dispose();
         }

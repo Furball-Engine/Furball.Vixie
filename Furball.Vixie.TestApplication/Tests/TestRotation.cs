@@ -14,14 +14,10 @@ namespace Furball.Vixie.TestApplication.Tests {
         private BatchedRenderer   _batchedRenderer;
         private Texture           _whiteTexture;
 
-        
-
         public override void Initialize() {
             this._immediateRenderer = new ImmediateRenderer();
             this._batchedRenderer   = new BatchedRenderer();
             this._whiteTexture      = new Texture(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
-
-            
 
             base.Initialize();
         }
@@ -34,8 +30,6 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._batchedRenderer.Begin();
             this._batchedRenderer.Draw(this._whiteTexture, new Vector2(1280/2, 720/2), new Vector2(371, 356), Vector2.Zero, _rotation);
             this._batchedRenderer.End();
-
-
 
             #region ImGui menu
 
@@ -63,7 +57,6 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._batchedRenderer.Dispose();
             this._immediateRenderer.Dispose();
             this._whiteTexture.Dispose();
-            
 
             base.Dispose();
         }

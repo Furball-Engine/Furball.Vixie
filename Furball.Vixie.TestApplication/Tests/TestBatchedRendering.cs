@@ -7,7 +7,6 @@ using Furball.Vixie.Graphics.Renderers.OpenGL;
 using Furball.Vixie.Helpers;
 
 using ImGuiNET;
-using Silk.NET.OpenGL.Extensions.ImGui;
 using Texture=Furball.Vixie.Graphics.Texture;
 
 namespace Furball.Vixie.TestApplication.Tests {
@@ -15,15 +14,11 @@ namespace Furball.Vixie.TestApplication.Tests {
         private BatchedRenderer _batchedRenderer;
         private Texture         _texture;
 
-        
-
         public override void Initialize() {
             this._batchedRenderer = new BatchedRenderer();
 
             //Load the Texture
             this._texture = new Texture(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
-
-            
 
             this.GraphicsDevice.GlClearColor(Color.BlueViolet);
 
@@ -46,12 +41,6 @@ namespace Furball.Vixie.TestApplication.Tests {
 
             this._batchedRenderer.End();
 
-
-
-
-
-
-
             #region ImGui menu
 
             
@@ -71,17 +60,12 @@ namespace Furball.Vixie.TestApplication.Tests {
 
             #endregion
 
-
-
-
-
             base.Draw(deltaTime);
         }
 
         public override void Dispose() {
             this._texture.Dispose();
             this._batchedRenderer.Dispose();
-            
 
             base.Dispose();
         }

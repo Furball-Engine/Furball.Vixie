@@ -6,20 +6,13 @@ using Furball.Vixie.Graphics;
 using Furball.Vixie.Graphics.Renderers.OpenGL;
 
 using ImGuiNET;
-using Silk.NET.OpenGL.Extensions.ImGui;
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestBatchedLineRendering : GameComponent {
         private BatchedLineRenderer _batchedLineRenderer;
 
-        
-
-        public TestBatchedLineRendering() {}
-
         public override void Initialize() {
             this._batchedLineRenderer = new BatchedLineRenderer();
-
-            
 
             base.Initialize();
         }
@@ -35,11 +28,7 @@ namespace Furball.Vixie.TestApplication.Tests {
 
             this._batchedLineRenderer.End();
 
-
-
             #region ImGui menu
-
-            
 
             ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
                        $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
@@ -50,8 +39,6 @@ namespace Furball.Vixie.TestApplication.Tests {
                 this.BaseGame.Components.Remove(this);
             }
 
-            
-
             #endregion
 
             base.Draw(deltaTime);
@@ -59,7 +46,6 @@ namespace Furball.Vixie.TestApplication.Tests {
 
         public override void Dispose() {
             this._batchedLineRenderer.Dispose();
-            
 
             base.Dispose();
         }

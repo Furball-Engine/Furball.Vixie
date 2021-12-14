@@ -1,8 +1,5 @@
-using Furball.Vixie.Graphics.Renderers.OpenGL;
-
 using Furball.Vixie.TestApplication.Tests;
 using ImGuiNET;
-using Silk.NET.OpenGL.Extensions.ImGui;
 
 namespace Furball.Vixie.TestApplication {
     public class BaseTestSelector : GameComponent {

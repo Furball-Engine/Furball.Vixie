@@ -7,7 +7,6 @@ using Furball.Vixie.Graphics.Renderers.OpenGL;
 using Furball.Vixie.Helpers;
 
 using ImGuiNET;
-using Silk.NET.OpenGL.Extensions.ImGui;
 using Texture=Furball.Vixie.Graphics.Texture;
 
 namespace Furball.Vixie.TestApplication.Tests {
@@ -15,15 +14,11 @@ namespace Furball.Vixie.TestApplication.Tests {
         private ImmediateRenderer _immediateRenderer;
         private Texture           _texture;
 
-        
-
         public override void Initialize() {
             this._immediateRenderer = new ImmediateRenderer();
 
             //Load the Texture
             this._texture = new Texture(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
-
-            
 
             base.Initialize();
         }
@@ -67,7 +62,6 @@ namespace Furball.Vixie.TestApplication.Tests {
         public override void Dispose() {
             this._texture.Dispose();
             this._immediateRenderer.Dispose();
-            
 
             base.Dispose();
         }

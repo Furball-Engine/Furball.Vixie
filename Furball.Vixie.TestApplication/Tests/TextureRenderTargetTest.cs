@@ -16,15 +16,11 @@ namespace Furball.Vixie.TestApplication.Tests {
         private ImmediateRenderer   _immediateRenderer;
         private BatchedRenderer   _batchedRenderer;
 
-        
-
         public override void Initialize() {
             this._batchedLineRenderer = new BatchedLineRenderer();
             this._renderTarget        = new TextureRenderTarget(1280, 720);
             this._immediateRenderer   = new ImmediateRenderer();
             this._batchedRenderer   = new BatchedRenderer();
-
-            
 
             base.Initialize();
         }
@@ -45,9 +41,6 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._batchedRenderer.Begin();
             this._batchedRenderer.Draw(this._resultTexture, Vector2.Zero, new Vector2(1280, 720), Vector2.Zero);
             this._batchedRenderer.End();
-
-
-
 
             #region ImGui menu
 
@@ -75,7 +68,6 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._renderTarget.Dispose();
             this._resultTexture.Dispose();
             this._batchedLineRenderer.Dispose();
-            
 
             base.Dispose();
         }
