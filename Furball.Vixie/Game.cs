@@ -92,10 +92,6 @@ namespace Furball.Vixie {
 #endif
             Global.Gl             = this.WindowManager.GetGlApi();
             this.gl               = Global.Gl;
-            this._imGuiController = new ImGuiController(Global.Gl,
-                                                        Global.GameInstance.WindowManager.GameWindow,
-                                                        Global.GameInstance.WindowManager.GameWindow.CreateInput()
-            );
 
             //Enables Debugging
 #if DEBUGWITHGL
@@ -109,6 +105,11 @@ namespace Furball.Vixie {
             gl.BlendFunc(GLEnum.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
             this._inputContext = this.WindowManager.GameWindow.CreateInput();
+
+            this._imGuiController = new ImGuiController(Global.Gl,
+                                                        Global.GameInstance.WindowManager.GameWindow,
+                                                        this._inputContext
+            );
 
             this.GraphicsDevice  = new GraphicsDevice(gl);
             Global.Device        = this.GraphicsDevice;
@@ -195,7 +196,6 @@ namespace Furball.Vixie {
         /// </summary>
         /// <param name="deltaTime">Delta Time</param>
         protected virtual void Update(double deltaTime) {
-
             _imGuiController.Update((float) deltaTime);
             this.Components.Update(deltaTime);
         }
