@@ -154,6 +154,7 @@ namespace Furball.Vixie.Graphics {
         public static readonly Color OrangeRed            = new(255, 69, 0);
         public static readonly Color Red                  = new(255, 0, 0);
         public static readonly Color Pink                 = new(255, 192, 203);
+        public static readonly Color Yellow               = new(255, 255, 0);
         // ReSharper restore InconsistentNaming
 
         // ReSharper disable CompareOfFloatsByEqualityOperator
