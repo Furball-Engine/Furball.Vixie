@@ -33,6 +33,13 @@ namespace Furball.Vixie.Graphics {
             this.Bf = b / 255f;
             this.Af = a / 255f;
         }
+        
+        public Color(float r, float g, float b, float a = 1f) {
+            this.Rf = r;
+            this.Gf = g;
+            this.Bf = b;
+            this.Af = a;
+        }
 
         public Color(int r, int g, int b, int a = 255) {
             this.Rf = r / 255f;
