@@ -73,7 +73,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
                 .LockingBind()
                 .SetUniform("u_mvp",           UniformType.GlMat4F, Global.GameInstance.WindowManager.ProjectionMatrix)
                 .SetUniform("u_viewport_size", UniformType.GlFloat, (float) Global.GameInstance.WindowManager.GameWindow.Size.X, (float) Global.GameInstance.WindowManager.GameWindow.Size.Y)
-                .SetUniform("u_aa_radius",     UniformType.GlFloat, 6f,                                                          6f);
+                .SetUniform("u_aa_radius",     UniformType.GlFloat, 0f,                                                          0f);
 
             //Bind the Buffer and Array
             this._vertexBuffer.LockingBind();
