@@ -49,6 +49,10 @@ namespace Furball.Vixie {
             this.GameWindow.FramesPerSecond = framerate;
         }
 
+        public void SetWindowTitle(string title) {
+            this.GameWindow.Title = title;
+        }
+
         private void UpdateProjectionAndSize(int width, int height) {
             this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, height, 0, 1f, 0f);
             this.WindowSize       = new Vector2(width, height);
