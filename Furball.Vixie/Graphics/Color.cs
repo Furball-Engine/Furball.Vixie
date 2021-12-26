@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.Contracts;
 using System.Numerics;
 
 namespace Furball.Vixie.Graphics {
@@ -49,7 +50,9 @@ namespace Furball.Vixie.Graphics {
             this.Af = a / 255f;
         }
 
+        [Pure]
         public Vector4 ToVector4B() => new(this.R, this.G, this.B, this.A);
+        [Pure]
         public Vector4 ToVector4F() => new(this.Rf, this.Gf, this.Bf, this.Af);
 
         //Color values taken from https://github.com/MonoGame/MonoGame/blob/develop/MonoGame.Framework/Color.cs
