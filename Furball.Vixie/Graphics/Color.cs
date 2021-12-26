@@ -1,4 +1,5 @@
 using System;
+using System.Numerics;
 
 namespace Furball.Vixie.Graphics {
     public struct Color {
@@ -47,6 +48,9 @@ namespace Furball.Vixie.Graphics {
             this.Bf = b / 255f;
             this.Af = a / 255f;
         }
+
+        public Vector4 ToVector4B() => new(this.R, this.G, this.B, this.A);
+        public Vector4 ToVector4F() => new(this.Rf, this.Gf, this.Bf, this.Af);
 
         //Color values taken from https://github.com/MonoGame/MonoGame/blob/develop/MonoGame.Framework/Color.cs
         // ReSharper disable InconsistentNaming
