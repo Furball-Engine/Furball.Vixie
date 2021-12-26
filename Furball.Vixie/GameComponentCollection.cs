@@ -42,10 +42,15 @@ namespace Furball.Vixie {
         /// </summary>
         /// <param name="deltaTime">Time since last Draw</param>
         public override void Draw(double deltaTime) {
-            for (int i = 0; i != this._components.Count; i++) {
-                GameComponent current = this._components[i];
+            try {
+                for (int i = 0; i != this._components.Count; i++) {
+                    GameComponent current = this._components[i];
 
-                current.Draw(deltaTime);
+                    current.Draw(deltaTime);
+                }
+            }
+            catch {
+
             }
         }
         /// <summary>
@@ -53,20 +58,30 @@ namespace Furball.Vixie {
         /// </summary>
         /// <param name="deltaTime">Time since last Update</param>
         public override void Update(double deltaTime) {
-            for (int i = 0; i != this._components.Count; i++) {
-                GameComponent current = this._components[i];
+            try {
+                for (int i = 0; i != this._components.Count; i++) {
+                    GameComponent current = this._components[i];
 
-                current.Update(deltaTime);
+                    current.Update(deltaTime);
+                }
+            }
+            catch {
+
             }
         }
         /// <summary>
         /// Disposes all GameComponents
         /// </summary>
         public override void Dispose() {
-            for (int i = 0; i != this._components.Count; i++) {
-                GameComponent current = this._components[i];
+            try {
+                for (int i = 0; i != this._components.Count; i++) {
+                    GameComponent current = this._components[i];
 
-                current.Dispose();
+                    current.Dispose();
+                }
+            }
+            catch {
+                
             }
         }
     }
