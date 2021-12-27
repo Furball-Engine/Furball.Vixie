@@ -49,6 +49,10 @@ namespace Furball.Vixie {
             this.GameWindow.FramesPerSecond = framerate;
         }
 
+        public int GetTargetFramerate() {
+            return (int)this.GameWindow.FramesPerSecond;
+        }
+        
         public void SetWindowTitle(string title) {
             this.GameWindow.Title = title;
         }
