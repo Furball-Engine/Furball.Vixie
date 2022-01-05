@@ -1,11 +1,11 @@
-#version 330 core
-#extension GL_ARB_explicit_uniform_location : enable
+#version 300 es
+precision highp float;
 
 layout(lines) in;
 layout(triangle_strip, max_vertices = 4) out;
 
-layout(location = 1) uniform vec2 u_viewport_size;
-layout(location = 2) uniform vec2 u_aa_radius;
+uniform vec2 u_viewport_size;
+uniform vec2 u_aa_radius;
 
 in vec4 v_col[];
 in float v_line_width[];

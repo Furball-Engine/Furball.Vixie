@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using FontStashSharp;
 using Furball.Vixie.FontStashSharp;
 using Furball.Vixie.Helpers;
-using Silk.NET.OpenGL;
+using Silk.NET.OpenGLES;
 
 namespace Furball.Vixie.Graphics.Renderers.OpenGL {
     //Makes sure everything is layed out one after the other in memory,

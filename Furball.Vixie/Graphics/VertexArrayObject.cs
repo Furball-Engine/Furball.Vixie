@@ -1,5 +1,5 @@
 using System;
-using Silk.NET.OpenGL;
+using Silk.NET.OpenGLES;
 
 namespace Furball.Vixie.Graphics {
     public class VertexArrayObject : IDisposable {

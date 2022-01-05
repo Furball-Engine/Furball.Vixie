@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using Silk.NET.OpenGL;
+using Silk.NET.OpenGLES;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;

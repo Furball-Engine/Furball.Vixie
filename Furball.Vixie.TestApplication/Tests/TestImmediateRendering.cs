@@ -6,7 +6,7 @@ using Furball.Vixie.Graphics;
 using Furball.Vixie.Graphics.Renderers.OpenGL;
 using Furball.Vixie.Helpers;
 
-using ImGuiNET;
+
 using Texture=Furball.Vixie.Graphics.Texture;
 
 namespace Furball.Vixie.TestApplication.Tests {
@@ -26,6 +26,7 @@ namespace Furball.Vixie.TestApplication.Tests {
         private int CirnoDons = 1024;
 
         public override void Draw(double deltaTime) {
+            this.GraphicsDevice.GlClearColor(Color.White);
             this.GraphicsDevice.GlClear();
 
             this._immediateRenderer.Begin();
@@ -35,7 +36,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             }
 
             this._immediateRenderer.End();
-
+/*
             #region ImGui menu
 
             
@@ -55,7 +56,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             
 
             #endregion
-
+*/
             base.Draw(deltaTime);
         }
 

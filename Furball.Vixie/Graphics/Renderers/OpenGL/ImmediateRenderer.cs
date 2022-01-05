@@ -4,7 +4,7 @@ using System.Numerics;
 using FontStashSharp;
 using Furball.Vixie.FontStashSharp;
 using Furball.Vixie.Helpers;
-using Silk.NET.OpenGL;
+using Silk.NET.OpenGLES;
 
 namespace Furball.Vixie.Graphics.Renderers.OpenGL {
     /// <summary>

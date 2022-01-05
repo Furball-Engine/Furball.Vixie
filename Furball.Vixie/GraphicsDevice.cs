@@ -1,6 +1,6 @@
 using System.Numerics;
 using Furball.Vixie.Graphics;
-using Silk.NET.OpenGL;
+using Silk.NET.OpenGLES;
 
 namespace Furball.Vixie {
     public class GraphicsDevice {

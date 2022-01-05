@@ -8,8 +8,6 @@ using Furball.Vixie.Graphics;
 using Furball.Vixie.Graphics.Renderers.OpenGL;
 using Furball.Vixie.Helpers;
 
-using ImGuiNET;
-
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestFSS : GameComponent {
         private VixieFontStashRenderer _renderer;
@@ -42,24 +40,22 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._immediateRenderer.DrawString(this._font, "VixieFontStashSharpRenderer Testing", new Vector2(10, 10), Color.White, 0f, new Vector2(_scale));
             this._immediateRenderer.End();
 
-            #region ImGui menu
-
+            //#region ImGui menu
+//
+            //
+//
+            //ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
+            //           $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
+            //);
+//
+            //ImGui.SliderFloat("Scale", ref this._scale, 0.1f, 5f);
+//
+            //if (ImGui.Button("Go back to test selector")) {
+            //    this.BaseGame.Components.Add(new BaseTestSelector());
+            //    this.BaseGame.Components.Remove(this);
+            //}
             
-
-            ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
-                       $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
-            );
-
-            ImGui.SliderFloat("Scale", ref this._scale, 0.1f, 5f);
-
-            if (ImGui.Button("Go back to test selector")) {
-                this.BaseGame.Components.Add(new BaseTestSelector());
-                this.BaseGame.Components.Remove(this);
-            }
-
-            
-
-            #endregion
+            //#endregion
 
             base.Draw(deltaTime);
         }

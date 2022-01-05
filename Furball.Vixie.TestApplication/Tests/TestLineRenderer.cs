@@ -5,8 +5,8 @@ using System.Numerics;
 using Furball.Vixie.Graphics;
 using Furball.Vixie.Graphics.Renderers.OpenGL;
 
-using ImGuiNET;
-using Silk.NET.OpenGL.Extensions.ImGui;
+
+
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestLineRenderer : GameComponent {
@@ -28,7 +28,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             }
 
             this._immediateLineRenderer.End();
-
+/*
             #region ImGui menu
 
             
@@ -45,7 +45,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             
 
             #endregion
-
+*/
             base.Draw(deltaTime);
         }
 

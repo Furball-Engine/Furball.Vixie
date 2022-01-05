@@ -2,7 +2,7 @@ using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Furball.Vixie.Helpers;
-using Silk.NET.OpenGL;
+using Silk.NET.OpenGLES;
 
 namespace Furball.Vixie.Graphics.Renderers.OpenGL {
     [StructLayout(LayoutKind.Sequential)]

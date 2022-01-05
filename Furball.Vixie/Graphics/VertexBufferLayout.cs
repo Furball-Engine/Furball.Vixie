@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Silk.NET.OpenGL;
+using Silk.NET.OpenGLES;
 
 namespace Furball.Vixie.Graphics {
     public struct LayoutElement {

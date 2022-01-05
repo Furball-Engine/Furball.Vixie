@@ -5,8 +5,8 @@ using Furball.Vixie.Graphics;
 using Furball.Vixie.Graphics.Renderers.OpenGL;
 using Furball.Vixie.Helpers;
 
-using ImGuiNET;
-using Silk.NET.OpenGL.Extensions.ImGui;
+
+
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestRotation : GameComponent {
@@ -30,7 +30,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._batchedRenderer.Begin();
             this._batchedRenderer.Draw(this._whiteTexture, new Vector2(1280/2, 720/2), new Vector2(371, 356), Vector2.Zero, _rotation);
             this._batchedRenderer.End();
-
+/*
             #region ImGui menu
 
             
@@ -49,7 +49,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             
 
             #endregion
-
+*/
             base.Draw(deltaTime);
         }
 

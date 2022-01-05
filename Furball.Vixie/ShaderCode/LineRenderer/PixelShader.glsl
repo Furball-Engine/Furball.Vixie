@@ -1,7 +1,7 @@
-#version 330 core
-#extension GL_ARB_explicit_uniform_location : enable
+#version 300 es
+precision highp float;
 
-layout(location = 2) uniform vec2 u_aa_radius;
+uniform vec2 u_aa_radius;
 
 in vec4 g_col;
 in float g_u;

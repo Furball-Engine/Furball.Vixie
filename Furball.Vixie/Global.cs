@@ -1,4 +1,4 @@
-using Silk.NET.OpenGL;
+using Silk.NET.OpenGLES;
 
 namespace Furball.Vixie {
     internal static class Global {

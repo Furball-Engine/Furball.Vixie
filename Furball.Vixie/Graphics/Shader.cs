@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using Silk.NET.OpenGL;
+using Silk.NET.OpenGLES;
 
 namespace Furball.Vixie.Graphics {
 

@@ -5,8 +5,8 @@ using System.Numerics;
 using Furball.Vixie.Graphics;
 using Furball.Vixie.Graphics.Renderers.OpenGL;
 
-using ImGuiNET;
-using Silk.NET.OpenGL.Extensions.ImGui;
+
+
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TextureRenderTargetTest : GameComponent {
@@ -41,10 +41,10 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._batchedRenderer.Begin();
             this._batchedRenderer.Draw(this._resultTexture, Vector2.Zero, new Vector2(1280, 720), Vector2.Zero);
             this._batchedRenderer.End();
-
+            /*
             #region ImGui menu
 
-            
+
 
             ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
                        $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
@@ -55,9 +55,9 @@ namespace Furball.Vixie.TestApplication.Tests {
                 this.BaseGame.Components.Remove(this);
             }
 
-            
 
-            #endregion
+
+            #endregion*/
 
             base.Draw(deltaTime);
         }

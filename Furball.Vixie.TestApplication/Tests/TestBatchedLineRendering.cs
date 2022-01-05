@@ -5,7 +5,7 @@ using System.Numerics;
 using Furball.Vixie.Graphics;
 using Furball.Vixie.Graphics.Renderers.OpenGL;
 
-using ImGuiNET;
+
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestBatchedLineRendering : GameComponent {
@@ -27,7 +27,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             }
 
             this._batchedLineRenderer.End();
-
+/*
             #region ImGui menu
 
             ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
@@ -40,7 +40,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             }
 
             #endregion
-
+*/
             base.Draw(deltaTime);
         }
 

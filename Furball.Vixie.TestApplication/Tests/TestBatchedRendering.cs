@@ -6,7 +6,7 @@ using Furball.Vixie.Graphics;
 using Furball.Vixie.Graphics.Renderers.OpenGL;
 using Furball.Vixie.Helpers;
 
-using ImGuiNET;
+
 using Texture=Furball.Vixie.Graphics.Texture;
 
 namespace Furball.Vixie.TestApplication.Tests {
@@ -40,7 +40,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             }
 
             this._batchedRenderer.End();
-
+/*
             #region ImGui menu
 
             
@@ -59,7 +59,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             
 
             #endregion
-
+*/
             base.Draw(deltaTime);
         }
 

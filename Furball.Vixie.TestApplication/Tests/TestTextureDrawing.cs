@@ -6,9 +6,9 @@ using Furball.Vixie.Graphics.Renderers.OpenGL;
 using Furball.Vixie.Helpers;
 
 using Furball.Vixie.Shaders;
-using ImGuiNET;
-using Silk.NET.OpenGL;
-using Silk.NET.OpenGL.Extensions.ImGui;
+
+using Silk.NET.OpenGLES;
+
 using Texture=Furball.Vixie.Graphics.Texture;
 
 namespace Furball.Vixie.TestApplication.Tests {
@@ -69,7 +69,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._immediateRenderer.Begin();
             this._immediateRenderer.Draw(this._texture, new Vector2(0, 0), Vector2.Zero, Vector2.Zero);
             this._immediateRenderer.End();
-
+/*
             #region ImGui menu
 
             
@@ -86,6 +86,8 @@ namespace Furball.Vixie.TestApplication.Tests {
             
 
             #endregion
+
+            */
 
             base.Draw(deltaTime);
         }
