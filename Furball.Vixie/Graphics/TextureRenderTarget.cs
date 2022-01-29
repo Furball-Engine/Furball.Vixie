@@ -66,7 +66,7 @@ namespace Furball.Vixie.Graphics {
             //Generate the Depth buffer
             this._depthRenderBufferId = gl.GenRenderbuffer();
             gl.BindRenderbuffer(RenderbufferTarget.Renderbuffer, this._depthRenderBufferId);
-            gl.RenderbufferStorage(RenderbufferTarget.Renderbuffer, InternalFormat.DepthComponent, width, height);
+            gl.RenderbufferStorage(RenderbufferTarget.Renderbuffer, InternalFormat.DepthComponent24, width, height);
             gl.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, RenderbufferTarget.Renderbuffer, this._depthRenderBufferId);
             //Connect the bound texture to the FrameBuffer object
             gl.FramebufferTexture(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, this._textureId, 0);
