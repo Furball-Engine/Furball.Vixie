@@ -1,4 +1,6 @@
 #version 300 es
+#extension GL_EXT_geometry_shader : enable
+#extension GL_OES_geometry_shader : enable
 precision highp float;
 
 layout(lines) in;
@@ -7,8 +9,8 @@ layout(triangle_strip, max_vertices = 4) out;
 uniform vec2 u_viewport_size;
 uniform vec2 u_aa_radius;
 
-in vec4 v_col[];
-in float v_line_width[];
+in vec4 v_col[2];
+in float v_line_width[2];
 
 out vec4 g_col;
 out float g_line_width;
