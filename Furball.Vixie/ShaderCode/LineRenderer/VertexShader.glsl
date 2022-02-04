@@ -3,9 +3,9 @@
 layout(location = 0) in vec4 pos_width;
 layout(location = 1) in vec4 col;
 
-layout(location = 0) uniform mat4 u_mvp;
-layout(location = 5) uniform float u_ModifierX;
-layout(location = 6) uniform float u_ModifierY;
+uniform mat4 u_mvp;
+uniform float u_ModifierX;
+uniform float u_ModifierY;
 
 out vec4 v_col;
 out float v_line_width;
