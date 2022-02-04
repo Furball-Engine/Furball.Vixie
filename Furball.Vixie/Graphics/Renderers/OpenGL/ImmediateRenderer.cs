@@ -102,8 +102,10 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             vertexBuffer.Bind();
             indexBuffer.Bind();
             shader.Bind()
-                //vx_WindowProjectionMatrix is a uniform provided by Vixie which can optionally be used to scale things into the window
-                .SetUniform("vx_WindowProjectionMatrix", UniformType.GlMat4F, Global.GameInstance.WindowManager.ProjectionMatrix);
+                  .SetUniform("u_ModifierX", UniformType.GlFloat, Global.GameInstance.WindowManager.PositionMultiplier.X)
+                  .SetUniform("u_ModifierY", UniformType.GlFloat, Global.GameInstance.WindowManager.PositionMultiplier.Y)
+                  //vx_WindowProjectionMatrix is a uniform provided by Vixie which can optionally be used to scale things into the window
+                  .SetUniform("vx_WindowProjectionMatrix", UniformType.GlMat4F, Global.GameInstance.WindowManager.ProjectionMatrix);
 
             this.gl.DrawElements(PrimitiveType.Triangles, indexBuffer.DataCount, DrawElementsType.UnsignedInt, null);
         }

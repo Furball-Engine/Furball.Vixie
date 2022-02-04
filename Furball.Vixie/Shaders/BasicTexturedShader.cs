@@ -15,7 +15,8 @@ namespace Furball.Vixie.Shaders {
                 .AttachShader(ShaderType.FragmentShader, fragmentSource)
                 .Link()
                 .Bind()
-                .SetUniform("u_Texture", UniformType.GlInt, 0);
+                .SetUniform("u_Modifier", UniformType.GlFloatVec2, Global.GameInstance.WindowManager.PositionMultiplier)
+                .SetUniform("u_Texture",  UniformType.GlInt,       0);
         }
     }
 }
