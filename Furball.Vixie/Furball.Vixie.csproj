@@ -20,7 +20,7 @@
     <ItemGroup>
       <PackageReference Include="FontStashSharp" Version="1.0.4" />
       <PackageReference Include="ImGui.NET" Version="1.86.0" />
-      <PackageReference Include="Kettu" Version="1.2.0" />
+      <PackageReference Include="Kettu" Version="1.2.2" />
       <PackageReference Include="Silk.NET.Input" Version="2.11.0" />
       <PackageReference Include="Silk.NET.Input.Extensions" Version="2.11.0" />
       <PackageReference Include="Silk.NET.OpenGLES" Version="2.11.0" />
