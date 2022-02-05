@@ -79,6 +79,9 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         public Vector2 Size { get; private set; }
 
+        public int Width  => (int)this.Size.X;
+        public int Height => (int)this.Size.Y;
+
         /// <summary>
         /// Creates a Texture from a File
         /// </summary>
