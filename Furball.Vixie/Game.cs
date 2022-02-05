@@ -7,6 +7,7 @@ using Silk.NET.Core.Native;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.OpenGLES;
+using Silk.NET.OpenGLES.Extensions.ImGui;
 using Silk.NET.Windowing;
 
 namespace Furball.Vixie {
@@ -22,7 +23,7 @@ namespace Furball.Vixie {
         /// <summary>
         /// ImGui Controller
         /// </summary>
-        //internal ImGuiController _imGuiController;
+        internal ImGuiController _imGuiController;
 
         /// <summary>
         /// Is the Window Active/Focused?
@@ -104,11 +105,11 @@ namespace Furball.Vixie {
             gl.BlendFunc(GLEnum.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
             this._inputContext = this.WindowManager.GameWindow.CreateInput();
-            //TODO: Imgui
-            //this._imGuiController = new ImGuiController(Global.Gl,
-            //                                            Global.GameInstance.WindowManager.GameWindow,
-            //                                            this._inputContext
-            //);
+
+            this._imGuiController = new ImGuiController(Global.Gl,
+                                                        Global.GameInstance.WindowManager.GameWindow,
+                                                        this._inputContext
+            );
 
             this.GraphicsDevice  = new GraphicsDevice(gl);
             Global.Device        = this.GraphicsDevice;
@@ -195,7 +196,7 @@ namespace Furball.Vixie {
         /// </summary>
         /// <param name="deltaTime">Delta Time</param>
         protected virtual void Update(double deltaTime) {
-            //_imGuiController.Update((float) deltaTime);
+            _imGuiController.Update((float) deltaTime);
             this.Components.Update(deltaTime);
         }
         /// <summary>
@@ -204,7 +205,7 @@ namespace Furball.Vixie {
         /// <param name="deltaTime"></param>
         protected virtual void Draw(double deltaTime) {
             this.Components.Draw(deltaTime);
-            //this._imGuiController.Render();
+            this._imGuiController.Render();
         }
         /// <summary>
         /// Dispose any IDisposables and other things left to clean up here

@@ -28,5 +28,12 @@
       <None Remove="Resources\font.ttf" />
       <EmbeddedResource Include="Resources\font.ttf" />
     </ItemGroup>
+    
+    <ItemGroup>
+      <PackageReference Include="Silk.NET.Input" Version="2.12.0" />
+      <PackageReference Include="Silk.NET.Input.Extensions" Version="2.12.0" />
+      <PackageReference Include="Silk.NET.OpenGLES" Version="2.12.0" />
+      <PackageReference Include="Silk.NET.Windowing" Version="2.12.0" />
+    </ItemGroup>
 
 </Project>

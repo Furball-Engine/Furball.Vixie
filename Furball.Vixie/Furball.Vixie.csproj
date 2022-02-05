@@ -19,6 +19,7 @@
 
     <ItemGroup>
       <PackageReference Include="FontStashSharp" Version="1.0.4" />
+      <PackageReference Include="ImGui.NET" Version="1.86.0" />
       <PackageReference Include="Kettu" Version="1.2.0" />
       <PackageReference Include="Silk.NET.Input" Version="2.11.0" />
       <PackageReference Include="Silk.NET.Input.Extensions" Version="2.11.0" />
@@ -44,6 +45,15 @@
       <EmbeddedResource Include="ShaderCode\LineRenderer\PixelShader.glsl" />
       <None Remove="ShaderCode\LineRenderer\VertexShader.glsl" />
       <EmbeddedResource Include="ShaderCode\LineRenderer\VertexShader.glsl" />
+      <None Update="SharedLibs\Silk.NET.OpenGLES.Extensions.ImGui.dll">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Silk.NET.OpenGLES.Extensions.ImGui, Version=2.12.0.0, Culture=neutral, PublicKeyToken=null">
+        <HintPath>..\Furball.Vixie.SharedLibraries\Silk.NET.OpenGLES.Extensions.ImGui.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>
