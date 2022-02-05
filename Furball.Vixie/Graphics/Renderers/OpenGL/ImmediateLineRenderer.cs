@@ -72,8 +72,8 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             this._lineShader
                 .LockingBind()
                 .SetUniform("u_mvp",           UniformType.GlMat4F, Global.GameInstance.WindowManager.ProjectionMatrix)
-                .SetUniform("u_ModifierX",     UniformType.GlFloat, Global.GameInstance.WindowManager.PositionMultiplier.X)
-                .SetUniform("u_ModifierY",     UniformType.GlFloat, Global.GameInstance.WindowManager.PositionMultiplier.Y)
+                .SetUniform("vx_ModifierX",     UniformType.GlFloat, Global.GameInstance.WindowManager.PositionMultiplier.X)
+                .SetUniform("vx_ModifierY",     UniformType.GlFloat, Global.GameInstance.WindowManager.PositionMultiplier.Y)
                 .SetUniform("u_viewport_size", UniformType.GlFloat, (float) Global.GameInstance.WindowManager.GameWindow.Size.X, (float) Global.GameInstance.WindowManager.GameWindow.Size.Y)
                 .SetUniform("u_aa_radius",     UniformType.GlFloat, 0f,                                                          0f);
 

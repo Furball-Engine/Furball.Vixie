@@ -6,8 +6,8 @@ layout (location = 2) in float TexIndex;
 layout (location = 3) in vec4 Color;
 
 uniform mat4 vx_WindowProjectionMatrix;
-uniform float u_ModifierX;
-uniform float u_ModifierY;
+uniform float vx_ModifierX;
+uniform float vx_ModifierY;
 
 out vec2 v_TexCoord;
 out float v_TexIndex;
@@ -21,6 +21,6 @@ void main() {
     gl_Position = vx_WindowProjectionMatrix * Position;
 
     // This flips the position into the coordinate space we want
-    gl_Position.x *= u_ModifierX;
-    gl_Position.y *= u_ModifierY;
+    gl_Position.x *= vx_ModifierX;
+    gl_Position.y *= vx_ModifierY;
 }

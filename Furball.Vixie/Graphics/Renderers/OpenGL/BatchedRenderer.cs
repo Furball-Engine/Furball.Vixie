@@ -501,8 +501,8 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
 
             //Bind the Shader and provide the Window projection matrix, to give us normal pixel space from 0,0 to whatever the window size is in the bottom right
             this._batchShader
-                .SetUniform("u_ModifierX",               UniformType.GlFloat, Global.GameInstance.WindowManager.PositionMultiplier.X)
-                .SetUniform("u_ModifierY",               UniformType.GlFloat, Global.GameInstance.WindowManager.PositionMultiplier.Y)
+                .SetUniform("vx_ModifierX",               UniformType.GlFloat, Global.GameInstance.WindowManager.PositionMultiplier.X)
+                .SetUniform("vx_ModifierY",               UniformType.GlFloat, Global.GameInstance.WindowManager.PositionMultiplier.Y)
                 .SetUniform("vx_WindowProjectionMatrix", UniformType.GlMat4F, Global.GameInstance.WindowManager.ProjectionMatrix);
 
             //Draw
