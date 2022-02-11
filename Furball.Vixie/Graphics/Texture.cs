@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -109,10 +111,26 @@ namespace Furball.Vixie.Graphics {
         /// Creates a Texture from a byte array which contains Image Data
         /// </summary>
         /// <param name="imageData">Image Data</param>
-        public unsafe Texture(byte[] imageData) {
+        public unsafe Texture(byte[] imageData, bool qoi = false) {
             this.gl = Global.Gl;
 
-            Image<Rgba32> image = Image.Load(imageData);
+            Image<Rgba32> image;
+            if(qoi) {
+                double start = Stopwatch.GetTimestamp();
+                
+                (Rgba32[] pixels, QoiLoader.QoiHeader header) data  = QoiLoader.Load(imageData);
+
+                Console.WriteLine($"LOADING QOI image took {(Stopwatch.GetTimestamp() - start) / (double)Stopwatch.Frequency * 1000}ms");
+                
+                image = Image.LoadPixelData(data.pixels, (int)data.header.Width, (int)data.header.Height);
+            } else {
+                double start = Stopwatch.GetTimestamp();
+
+                image = Image.Load(imageData);
+                
+                Console.WriteLine($"LOADING PNG image took {(Stopwatch.GetTimestamp() - start) / (double)Stopwatch.Frequency * 1000}ms");
+            }
+
             //We need to flip our image as ImageSharps coordinates has origin 0, 0 in the top-left corner,
             //But OpenGL has it in the bottom left
             image.Mutate(x => x.Flip(FlipMode.Vertical));
@@ -197,6 +215,7 @@ namespace Furball.Vixie.Graphics {
 
             this.Size = new Vector2(width, height);
         }
+        
         /// <summary>
         /// Creates a Texture class using a already Generated OpenGL Texture
         /// </summary>
