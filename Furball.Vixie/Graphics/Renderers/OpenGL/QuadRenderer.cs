@@ -33,7 +33,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         public fixed float Color[4];
     }
 
-    public class BatchedRenderer : IDisposable, ITextureRenderer, ITextRenderer {
+    public class QuadRenderer : IDisposable, ITextureRenderer, ITextRenderer {
         /// <summary>
         /// How many Quads are allowed to be drawn in 1 draw
         /// </summary>
@@ -97,7 +97,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// </summary>
         private VixieFontStashRenderer _textRenderer;
 
-        public unsafe BatchedRenderer(int capacity = 4096) {
+        public unsafe QuadRenderer(int capacity = 4096) {
             this.gl = Global.Gl;
             //Initializes MaxQuad/Vertex/Index counts and figures out how many texture slots to use max
             this.InitializeConstants(capacity);

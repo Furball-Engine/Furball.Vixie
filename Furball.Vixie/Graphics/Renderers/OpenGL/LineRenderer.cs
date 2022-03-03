@@ -11,7 +11,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         public fixed float Color[4];
     }
 
-    public class BatchedLineRenderer : IDisposable, ILineRenderer {
+    public class LineRenderer : IDisposable, ILineRenderer {
         /// <summary>
         /// Max Lines allowed in 1 Batch
         /// </summary>
@@ -50,7 +50,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// Creates a Batched Line Renderer
         /// </summary>
         /// <param name="capacity">How many Lines to allow in 1 Batch</param>
-        public unsafe BatchedLineRenderer(int capacity = 8192) {
+        public unsafe LineRenderer(int capacity = 8192) {
             this.gl = Global.Gl;
 
             //Calculate Constants
