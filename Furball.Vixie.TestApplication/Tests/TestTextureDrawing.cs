@@ -6,14 +6,14 @@ using Furball.Vixie.Graphics.Renderers.OpenGL;
 using Furball.Vixie.Helpers;
 
 using Furball.Vixie.Shaders;
-
+using ImGuiNET;
 using Silk.NET.OpenGLES;
 
 using Texture=Furball.Vixie.Graphics.Texture;
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestTextureDrawing : GameComponent {
-        private ImmediateRenderer _immediateRenderer;
+        private BatchedRenderer _quadRenderer;
 
         private BufferObject        _vertexBuffer;
         private BufferObject        _indexBuffer;
@@ -22,7 +22,7 @@ namespace Furball.Vixie.TestApplication.Tests {
         private VertexArrayObject   _vertexArrayObject;
 
         public override void Initialize() {
-            this._immediateRenderer = new ImmediateRenderer();
+            this._quadRenderer = new BatchedRenderer();
 
             //pippidonclear0.png is 371x326 pixels
             float[] verticies = new float[] {
@@ -66,13 +66,11 @@ namespace Furball.Vixie.TestApplication.Tests {
         public override void Draw(double deltaTime) {
             this.GraphicsDevice.GlClear();
 
-            this._immediateRenderer.Begin();
-            this._immediateRenderer.Draw(this._texture, new Vector2(0, 0), Vector2.Zero, Vector2.Zero);
-            this._immediateRenderer.End();
-/*
-            #region ImGui menu
+            this._quadRenderer.Begin();
+            this._quadRenderer.Draw(this._texture, new Vector2(0, 0), Vector2.Zero, Vector2.Zero);
+            this._quadRenderer.End();
 
-            
+            #region ImGui menu
 
             ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
                        $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
@@ -83,11 +81,7 @@ namespace Furball.Vixie.TestApplication.Tests {
                 this.BaseGame.Components.Remove(this);
             }
 
-            
-
             #endregion
-
-            */
 
             base.Draw(deltaTime);
         }

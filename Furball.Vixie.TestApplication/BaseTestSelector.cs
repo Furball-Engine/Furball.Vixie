@@ -19,11 +19,6 @@ namespace Furball.Vixie.TestApplication {
                 this.BaseGame.Components.Remove(this);
             }
 
-            if (ImGui.Button("Immediate Rendering Test")) {
-                this.BaseGame.Components.Add(new TestImmediateRendering());
-                this.BaseGame.Components.Remove(this);
-            }
-
             if (ImGui.Button("Line Rendering Test")) {
                 this.BaseGame.Components.Add(new TestLineRenderer());
                 this.BaseGame.Components.Remove(this);

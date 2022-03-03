@@ -5,8 +5,7 @@ using System.Numerics;
 using Furball.Vixie.Graphics;
 using Furball.Vixie.Graphics.Renderers.OpenGL;
 using Furball.Vixie.Helpers;
-
-
+using ImGuiNET;
 using Texture=Furball.Vixie.Graphics.Texture;
 
 namespace Furball.Vixie.TestApplication.Tests {
@@ -19,8 +18,6 @@ namespace Furball.Vixie.TestApplication.Tests {
 
             //Load the Texture
             this._texture = new Texture(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
-
-            this.GraphicsDevice.GlClearColor(Color.BlueViolet);
 
             base.Initialize();
         }
@@ -40,10 +37,8 @@ namespace Furball.Vixie.TestApplication.Tests {
             }
 
             this._batchedRenderer.End();
-/*
-            #region ImGui menu
 
-            
+            #region ImGui menu
 
             ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
                        $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
@@ -56,10 +51,8 @@ namespace Furball.Vixie.TestApplication.Tests {
 
             ImGui.SliderInt("Draws", ref this.CirnoDons, 0, 1024);
 
-            
-
             #endregion
-*/
+
             base.Draw(deltaTime);
         }
 

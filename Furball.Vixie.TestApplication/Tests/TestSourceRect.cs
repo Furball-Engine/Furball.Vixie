@@ -5,20 +5,19 @@ using System.Numerics;
 using Furball.Vixie.Graphics;
 using Furball.Vixie.Graphics.Renderers.OpenGL;
 using Furball.Vixie.Helpers;
-
-
+using ImGuiNET;
 using Color=Furball.Vixie.Graphics.Color;
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestSourceRect : GameComponent {
-        private ImmediateRenderer _immediateRenderer;
-        private BatchedRenderer   _batchedRenderer;
-        private Texture           _whiteTexture;
+        private BatchedRenderer _quadRenderer;
+        private BatchedRenderer _batchedRenderer;
+        private Texture         _whiteTexture;
 
         public override void Initialize() {
-            this._immediateRenderer = new ImmediateRenderer();
-            this._batchedRenderer   = new BatchedRenderer();
-            this._whiteTexture      = new Texture(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
+            this._quadRenderer    = new BatchedRenderer();
+            this._batchedRenderer = new BatchedRenderer();
+            this._whiteTexture    = new Texture(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
 
             base.Initialize();
         }
@@ -28,10 +27,10 @@ namespace Furball.Vixie.TestApplication.Tests {
         public override void Draw(double deltaTime) {
             this.GraphicsDevice.GlClear();
 
-            this._immediateRenderer.Begin();
-            this._immediateRenderer.Draw(this._whiteTexture, new Vector2(1280 /2, 720 /2), new Vector2(371/2, 326), null, 0, Color.White, new Rectangle(371/2, 0, 371, 326));
-            this._immediateRenderer.End();
-/*
+            this._quadRenderer.Begin();
+            this._quadRenderer.Draw(this._whiteTexture, new Vector2(1280 /2, 720 /2), new Vector2(371/2, 326), null, 0, Color.White, new Rectangle(371/2, 0, 371, 326));
+            this._quadRenderer.End();
+
             #region ImGui menu
 
             ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
@@ -45,16 +44,14 @@ namespace Furball.Vixie.TestApplication.Tests {
                 this.BaseGame.Components.Remove(this);
             }
 
-            
-
             #endregion
-*/
+
             base.Draw(deltaTime);
         }
 
         public override void Dispose() {
             this._batchedRenderer.Dispose();
-            this._immediateRenderer.Dispose();
+            this._quadRenderer.Dispose();
             this._whiteTexture.Dispose();
 
             base.Dispose();

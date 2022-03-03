@@ -4,8 +4,7 @@ using System.Globalization;
 using System.Numerics;
 using Furball.Vixie.Graphics;
 using Furball.Vixie.Graphics.Renderers.OpenGL;
-
-
+using ImGuiNET;
 
 
 namespace Furball.Vixie.TestApplication.Tests {
@@ -13,14 +12,12 @@ namespace Furball.Vixie.TestApplication.Tests {
         private BatchedLineRenderer _batchedLineRenderer;
         private TextureRenderTarget _renderTarget;
         private Texture             _resultTexture;
-        private ImmediateRenderer   _immediateRenderer;
-        private BatchedRenderer   _batchedRenderer;
+        private BatchedRenderer     _batchedRenderer;
 
         public override void Initialize() {
             this._batchedLineRenderer = new BatchedLineRenderer();
             this._renderTarget        = new TextureRenderTarget(1280, 720);
-            this._immediateRenderer   = new ImmediateRenderer();
-            this._batchedRenderer   = new BatchedRenderer();
+            this._batchedRenderer     = new BatchedRenderer();
 
             base.Initialize();
         }
@@ -41,10 +38,8 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._batchedRenderer.Begin();
             this._batchedRenderer.Draw(this._resultTexture, Vector2.Zero, new Vector2(1280, 720), Vector2.Zero);
             this._batchedRenderer.End();
-            /*
+
             #region ImGui menu
-
-
 
             ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
                        $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
@@ -55,16 +50,13 @@ namespace Furball.Vixie.TestApplication.Tests {
                 this.BaseGame.Components.Remove(this);
             }
 
-
-
-            #endregion*/
+            #endregion
 
             base.Draw(deltaTime);
         }
 
         public override void Dispose() {
             this._batchedRenderer.Dispose();
-            this._immediateRenderer.Dispose();
             this._renderTarget.Dispose();
             this._resultTexture.Dispose();
             this._batchedLineRenderer.Dispose();
