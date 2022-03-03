@@ -10,14 +10,12 @@ using Color=Furball.Vixie.Graphics.Color;
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestSourceRect : GameComponent {
-        private BatchedRenderer _quadRenderer;
-        private BatchedRenderer _batchedRenderer;
-        private Texture         _whiteTexture;
+        private QuadRenderer _quadRenderer;
+        private Texture      _whiteTexture;
 
         public override void Initialize() {
-            this._quadRenderer    = new BatchedRenderer();
-            this._batchedRenderer = new BatchedRenderer();
-            this._whiteTexture    = new Texture(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
+            this._quadRenderer = new QuadRenderer();
+            this._whiteTexture = new Texture(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
 
             base.Initialize();
         }
@@ -50,7 +48,6 @@ namespace Furball.Vixie.TestApplication.Tests {
         }
 
         public override void Dispose() {
-            this._batchedRenderer.Dispose();
             this._quadRenderer.Dispose();
             this._whiteTexture.Dispose();
 

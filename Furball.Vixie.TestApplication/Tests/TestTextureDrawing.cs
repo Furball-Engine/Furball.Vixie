@@ -13,7 +13,7 @@ using Texture=Furball.Vixie.Graphics.Texture;
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestTextureDrawing : GameComponent {
-        private BatchedRenderer _quadRenderer;
+        private QuadRenderer _quadRenderer;
 
         private BufferObject        _vertexBuffer;
         private BufferObject        _indexBuffer;
@@ -22,7 +22,7 @@ namespace Furball.Vixie.TestApplication.Tests {
         private VertexArrayObject   _vertexArrayObject;
 
         public override void Initialize() {
-            this._quadRenderer = new BatchedRenderer();
+            this._quadRenderer = new QuadRenderer();
 
             //pippidonclear0.png is 371x326 pixels
             float[] verticies = new float[] {

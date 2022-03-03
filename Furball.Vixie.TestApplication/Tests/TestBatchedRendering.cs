@@ -10,11 +10,11 @@ using Texture=Furball.Vixie.Graphics.Texture;
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestBatchedRendering : GameComponent {
-        private BatchedRenderer _batchedRenderer;
-        private Texture         _texture;
+        private QuadRenderer _quadRenderer;
+        private Texture      _texture;
 
         public override void Initialize() {
-            this._batchedRenderer = new BatchedRenderer();
+            this._quadRenderer = new QuadRenderer();
 
             //Load the Texture
             this._texture = new Texture(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
@@ -30,13 +30,13 @@ namespace Furball.Vixie.TestApplication.Tests {
         public override void Draw(double deltaTime) {
             this.GraphicsDevice.GlClear();
 
-            this._batchedRenderer.Begin();
+            this._quadRenderer.Begin();
 
             for (int i = 0; i != this.CirnoDons; i++) {
-                this._batchedRenderer.Draw(this._texture, new Vector2(i % 1024, 0), null, null, 0, Color.White);
+                this._quadRenderer.Draw(this._texture, new Vector2(i % 1024, 0), null, null, 0, Color.White);
             }
 
-            this._batchedRenderer.End();
+            this._quadRenderer.End();
 
             #region ImGui menu
 
@@ -58,7 +58,7 @@ namespace Furball.Vixie.TestApplication.Tests {
 
         public override void Dispose() {
             this._texture.Dispose();
-            this._batchedRenderer.Dispose();
+            this._quadRenderer.Dispose();
 
             base.Dispose();
         }

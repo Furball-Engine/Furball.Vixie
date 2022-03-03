@@ -12,7 +12,7 @@ using ImGuiNET;
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestFSS : GameComponent {
         private VixieFontStashRenderer _renderer;
-        private BatchedRenderer        _quadRenderer;
+        private QuadRenderer           _quadRenderer;
         private DynamicSpriteFont      _font;
 
         public readonly FontSystem DEFAULT_FONT = new(new FontSystemSettings {
@@ -26,7 +26,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             this.DEFAULT_FONT.AddFont(ResourceHelpers.GetByteResource("Resources/font.ttf"));
             this._font = this.DEFAULT_FONT.GetFont(48);
 
-            this._quadRenderer = new BatchedRenderer();
+            this._quadRenderer = new QuadRenderer();
             this._renderer     = new VixieFontStashRenderer(this._quadRenderer);
 
             base.Initialize();

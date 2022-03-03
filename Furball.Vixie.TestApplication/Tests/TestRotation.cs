@@ -9,14 +9,12 @@ using ImGuiNET;
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestRotation : GameComponent {
-        private BatchedRenderer _quadRenderer;
-        private BatchedRenderer _batchedRenderer;
-        private Texture         _whiteTexture;
+        private QuadRenderer _quadRenderer;
+        private Texture      _whiteTexture;
 
         public override void Initialize() {
-            this._quadRenderer    = new BatchedRenderer();
-            this._batchedRenderer = new BatchedRenderer();
-            this._whiteTexture    = new Texture(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
+            this._quadRenderer = new QuadRenderer();
+            this._whiteTexture = new Texture(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
 
             base.Initialize();
         }
@@ -26,9 +24,9 @@ namespace Furball.Vixie.TestApplication.Tests {
         public override void Draw(double deltaTime) {
             this.GraphicsDevice.GlClear();
 
-            this._batchedRenderer.Begin();
-            this._batchedRenderer.Draw(this._whiteTexture, new Vector2(1280/2, 720/2), new Vector2(371, 356), Vector2.Zero, _rotation);
-            this._batchedRenderer.End();
+            this._quadRenderer.Begin();
+            this._quadRenderer.Draw(this._whiteTexture, new Vector2(1280/2, 720/2), new Vector2(371, 356), Vector2.Zero, _rotation);
+            this._quadRenderer.End();
 
             #region ImGui menu
 
@@ -49,7 +47,7 @@ namespace Furball.Vixie.TestApplication.Tests {
         }
 
         public override void Dispose() {
-            this._batchedRenderer.Dispose();
+            this._quadRenderer.Dispose();
             this._quadRenderer.Dispose();
             this._whiteTexture.Dispose();
 

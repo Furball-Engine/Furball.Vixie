@@ -9,7 +9,7 @@ using ImGuiNET;
 namespace Furball.Vixie.TestApplication.Tests {
     public class MultipleTextureTest : GameComponent {
         private Texture[]       _textures = new Texture[32];
-        private BatchedRenderer _batchedRenderer;
+        private QuadRenderer _quadRenderer;
 
         public override void Initialize() {
             for (int i = 0; i != this._textures.Length; i++) {
@@ -18,7 +18,7 @@ namespace Furball.Vixie.TestApplication.Tests {
                 else this._textures[i] = new Texture();
             }
 
-            this._batchedRenderer = new BatchedRenderer();
+            this._quadRenderer = new QuadRenderer();
 
             base.Initialize();
         }
@@ -26,13 +26,13 @@ namespace Furball.Vixie.TestApplication.Tests {
         public override void Draw(double deltaTime) {
             this.GraphicsDevice.GlClear();
 
-            this._batchedRenderer.Begin();
+            this._quadRenderer.Begin();
 
             int x = 0;
             int y = 0;
 
             for (int i = 0; i != this._textures.Length; i++) {
-                this._batchedRenderer.Draw(this._textures[i], new Vector2(x, y), null, new Vector2(0.5f, 0.5f));
+                this._quadRenderer.Draw(this._textures[i], new Vector2(x, y), null, new Vector2(0.5f, 0.5f));
                 if (i % 3 == 0 && i != 0) {
                     y += 64;
                     x =  0;
@@ -41,7 +41,7 @@ namespace Furball.Vixie.TestApplication.Tests {
                 x += 256;
             }
 
-            this._batchedRenderer.End();
+            this._quadRenderer.End();
 
             #region ImGui menu
 

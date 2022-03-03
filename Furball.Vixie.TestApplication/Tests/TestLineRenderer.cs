@@ -9,10 +9,10 @@ using ImGuiNET;
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestLineRenderer : GameComponent {
-        private BatchedLineRenderer _lineRenderer;
+        private LineRenderer _lineRenderer;
 
         public override void Initialize() {
-            this._lineRenderer = new BatchedLineRenderer();
+            this._lineRenderer = new LineRenderer();
 
             base.Initialize();
         }

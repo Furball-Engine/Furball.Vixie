@@ -9,10 +9,10 @@ using ImGuiNET;
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestBatchedLineRendering : GameComponent {
-        private BatchedLineRenderer _batchedLineRenderer;
+        private LineRenderer _lineRenderer;
 
         public override void Initialize() {
-            this._batchedLineRenderer = new BatchedLineRenderer();
+            this._lineRenderer = new LineRenderer();
 
             base.Initialize();
         }
@@ -20,13 +20,13 @@ namespace Furball.Vixie.TestApplication.Tests {
         public override void Draw(double deltaTime) {
             this.GraphicsDevice.GlClear();
 
-            this._batchedLineRenderer.Begin();
+            this._lineRenderer.Begin();
 
             for (int i = 0; i != 1280; i++) {
-                this._batchedLineRenderer.Draw(new Vector2(i, 0), new Vector2(1280 - i, 720), 4, Color.White);
+                this._lineRenderer.Draw(new Vector2(i, 0), new Vector2(1280 - i, 720), 4, Color.White);
             }
 
-            this._batchedLineRenderer.End();
+            this._lineRenderer.End();
 
             #region ImGui menu
 
@@ -45,7 +45,7 @@ namespace Furball.Vixie.TestApplication.Tests {
         }
 
         public override void Dispose() {
-            this._batchedLineRenderer.Dispose();
+            this._lineRenderer.Dispose();
 
             base.Dispose();
         }

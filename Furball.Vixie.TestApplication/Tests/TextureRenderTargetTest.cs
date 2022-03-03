@@ -9,15 +9,15 @@ using ImGuiNET;
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TextureRenderTargetTest : GameComponent {
-        private BatchedLineRenderer _batchedLineRenderer;
+        private LineRenderer        _lineRenderer;
         private TextureRenderTarget _renderTarget;
         private Texture             _resultTexture;
-        private BatchedRenderer     _batchedRenderer;
+        private QuadRenderer        quadRenderer;
 
         public override void Initialize() {
-            this._batchedLineRenderer = new BatchedLineRenderer();
-            this._renderTarget        = new TextureRenderTarget(1280, 720);
-            this._batchedRenderer     = new BatchedRenderer();
+            this._lineRenderer    = new LineRenderer();
+            this._renderTarget    = new TextureRenderTarget(1280, 720);
+            this.quadRenderer = new QuadRenderer();
 
             base.Initialize();
         }
@@ -27,17 +27,17 @@ namespace Furball.Vixie.TestApplication.Tests {
 
             this._renderTarget.Bind();
 
-            this._batchedLineRenderer.Begin();
-            this._batchedLineRenderer.Draw(new Vector2(1280, 720), new Vector2(0, 0), 16f, Color.Red);
-            this._batchedLineRenderer.End();
+            this._lineRenderer.Begin();
+            this._lineRenderer.Draw(new Vector2(1280, 720), new Vector2(0, 0), 16f, Color.Red);
+            this._lineRenderer.End();
 
             this._renderTarget.Unbind();
 
             this._resultTexture = this._renderTarget.GetTexture();
 
-            this._batchedRenderer.Begin();
-            this._batchedRenderer.Draw(this._resultTexture, Vector2.Zero, new Vector2(1280, 720), Vector2.Zero);
-            this._batchedRenderer.End();
+            this.quadRenderer.Begin();
+            this.quadRenderer.Draw(this._resultTexture, Vector2.Zero, new Vector2(1280, 720), Vector2.Zero);
+            this.quadRenderer.End();
 
             #region ImGui menu
 
@@ -56,10 +56,9 @@ namespace Furball.Vixie.TestApplication.Tests {
         }
 
         public override void Dispose() {
-            this._batchedRenderer.Dispose();
+            this.quadRenderer.Dispose();
             this._renderTarget.Dispose();
             this._resultTexture.Dispose();
-            this._batchedLineRenderer.Dispose();
 
             base.Dispose();
         }
