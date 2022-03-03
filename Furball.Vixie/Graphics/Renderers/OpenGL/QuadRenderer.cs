@@ -361,16 +361,16 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             switch (texFlip) {
                 default:
                 case TextureFlip.None:
-                    topLeft  = new Vector2(sourceRect.Value.X * (1.0f / texture.Size.X), (sourceRect.Value.Y + sourceRect.Value.Height) * (1.0f / texture.Size.Y));
-                    botRight = new Vector2((sourceRect.Value.X+ sourceRect.Value.Width)  * (1.0f / texture.Size.X), sourceRect.Value.Y * (1.0f / texture.Size.Y));
+                    topLeft  = new Vector2(sourceRect.Value.X * (1.0f / texture.Size.X),                            1 - ((sourceRect.Value.Y + sourceRect.Value.Height) * (1.0f / texture.Size.Y)));
+                    botRight = new Vector2((sourceRect.Value.X+ sourceRect.Value.Width)  * (1.0f / texture.Size.X), 1 - (sourceRect.Value.Y * (1.0f / texture.Size.Y)));
                     break;
                 case TextureFlip.FlipVertical:
-                    topLeft  = new Vector2(sourceRect.Value.X                            * (1.0f / texture.Size.X), sourceRect.Value.Y                             * (1.0f / texture.Size.Y));
-                    botRight = new Vector2((sourceRect.Value.X + sourceRect.Value.Width) * (1.0f / texture.Size.X), (sourceRect.Value.Y + sourceRect.Value.Height) * (1.0f / texture.Size.Y));
+                    topLeft  = new Vector2(sourceRect.Value.X                            * (1.0f / texture.Size.X), 1 - (sourceRect.Value.Y                             * (1.0f / texture.Size.Y)));
+                    botRight = new Vector2((sourceRect.Value.X + sourceRect.Value.Width) * (1.0f / texture.Size.X), 1 - ((sourceRect.Value.Y + sourceRect.Value.Height) * (1.0f / texture.Size.Y)));
                     break;
                 case TextureFlip.FlipHorizontal:
-                    botRight = new Vector2(sourceRect.Value.X                            * (1.0f / texture.Size.X), sourceRect.Value.Y                             * (1.0f / texture.Size.Y));
-                    topLeft  = new Vector2((sourceRect.Value.X + sourceRect.Value.Width) * (1.0f / texture.Size.X), (sourceRect.Value.Y + sourceRect.Value.Height) * (1.0f / texture.Size.Y));
+                    botRight = new Vector2(sourceRect.Value.X                            * (1.0f / texture.Size.X), 1 - (sourceRect.Value.Y                             * (1.0f / texture.Size.Y)));
+                    topLeft  = new Vector2((sourceRect.Value.X + sourceRect.Value.Width) * (1.0f / texture.Size.X), 1 - ((sourceRect.Value.Y + sourceRect.Value.Height) * (1.0f / texture.Size.Y)));
                     break;
             }
 

@@ -94,9 +94,6 @@ namespace Furball.Vixie.Graphics {
             this.gl = Global.Gl;
 
             Image<Rgba32> image = (Image<Rgba32>)Image.Load(filepath);
-            //We need to flip our image as ImageSharps coordinates has origin 0, 0 in the top-left corner,
-            //But OpenGL has it in the bottom left
-            image.Mutate(x => x.Flip(FlipMode.Vertical));
 
             this._localBuffer = image;
 
@@ -132,10 +129,6 @@ namespace Furball.Vixie.Graphics {
                 
                 Logger.Log($"Loading PNG image took {(Stopwatch.GetTimestamp() - start) / (double)Stopwatch.Frequency * 1000}ms", LoggerLevelImageLoader.Instance);
             }
-
-            //We need to flip our image as ImageSharps coordinates has origin 0, 0 in the top-left corner,
-            //But OpenGL has it in the bottom left
-            image.Mutate(x => x.Flip(FlipMode.Vertical));
 
             this._localBuffer = image;
 
@@ -202,9 +195,6 @@ namespace Furball.Vixie.Graphics {
             this.gl = Global.Gl;
 
             Image<Rgba32> image = (Image<Rgba32>) Image.Load(stream);
-            //We need to flip our image as ImageSharps coordinates has origin 0, 0 in the top-left corner,
-            //But OpenGL has it in the bottom left
-            image.Mutate(x => x.Flip(FlipMode.Vertical));
 
             this._localBuffer = image;
 
