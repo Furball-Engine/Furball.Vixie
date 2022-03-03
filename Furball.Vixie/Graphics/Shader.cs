@@ -1,18 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Numerics;
+using Furball.Vixie.Helpers;
+using Kettu;
 using Silk.NET.OpenGLES;
 
 namespace Furball.Vixie.Graphics {
-
-    public enum UniformType {
-        GlFloat,
-        GlInt,
-        GlUint,
-        GlMat4F,
-        GlFloatVec2
-    }
-
     /// <summary>
     /// A Shader, a Program run on the GPU
     /// </summary>
@@ -159,171 +153,57 @@ namespace Furball.Vixie.Graphics {
             return this;
         }
 
+        /// <summary>
+        /// Gets the location of a specific uniform
+        /// </summary>
+        /// <param name="uniformName">The name of the uniform</param>
+        /// <returns>The location</returns>
         internal int GetUniformLocation(string uniformName) {
-            //Get location from cache
-            int location = this._uniformLocationCache.GetValueOrDefault(uniformName, -2);
-
             //If cache missed, get from OpenGL and store in cache
-            if (location == -2) {
-                int foundLocation = this.gl.GetUniformLocation(this.ProgramId, uniformName);
-
-                location = foundLocation;
-                this._uniformLocationCache.Add(uniformName, foundLocation);
+            if (!this._uniformLocationCache.TryGetValue(uniformName, out int location)) {
+                //Get the location from the program
+                location = this.gl.GetUniformLocation(this.ProgramId, uniformName);
+                
+                if(location != -1)
+                    this._uniformLocationCache.Add(uniformName, location);
             }
 
             if (location == -1) {
-                Console.WriteLine($"[OpenGL Warning] Uniform Location for {uniformName} seems to not exist. It may have been optimized out or you simply misspelled the Uniform name");
+                Logger.Log($"[OpenGL Warning] Uniform Location for {uniformName} seems to not exist. It may have been optimized out or you simply misspelled the Uniform name", LoggerLevelDebugMessageCallback.InstanceHigh);
+#if DEBUG
+                //Break here 
+                Debugger.Break();
+#endif
             }
 
             return location;
         }
 
-        public unsafe Shader SetUniform(string uniformName, UniformType type, params object[] args) {
-            //Get location
-            int location = GetUniformLocation(uniformName);
-
-            switch (type) {
-                case UniformType.GlFloat: {
-                    switch (args.Length) {
-                        case 1: {
-                            float arg1 = (float) args[0];
-
-                            this.gl.Uniform1(location, arg1);
-
-                            break;
-                        }
-                        case 2: {
-                            float arg1 = (float) args[0];
-                            float arg2 = (float) args[1];
-
-                            this.gl.Uniform2(location, arg1, arg2);
-
-                            break;
-                        }
-                        case 3: {
-                            float arg1 = (float) args[0];
-                            float arg2 = (float) args[1];
-                            float arg3 = (float) args[2];
-
-                            this.gl.Uniform3(location, arg1, arg2, arg3);
-
-                            break;
-                        }
-                        case 4: {
-                            float arg1 = (float) args[0];
-                            float arg2 = (float) args[1];
-                            float arg3 = (float) args[2];
-                            float arg4 = (float) args[3];
-
-                            this.gl.Uniform4(location, arg1, arg2, arg3, arg4);
-
-                            break;
-                        }
-                        default:
-                            throw new ArgumentOutOfRangeException("args", $"You cannot have a vec{args.Length} as a uniform parameter!");
-                    }
-                    break;
-                }
-                case UniformType.GlInt: {
-                    switch (args.Length) {
-                        case 1: {
-                            int arg1 = (int) args[0];
-
-                            this.gl.Uniform1(location, arg1);
-
-                            break;
-                        }
-                        case 2: {
-                            int arg1 = (int) args[0];
-                            int arg2 = (int) args[1];
-
-                            this.gl.Uniform2(location, arg1, arg2);
-
-                            break;
-                        }
-                        case 3: {
-                            int arg1 = (int) args[0];
-                            int arg2 = (int) args[1];
-                            int arg3 = (int) args[2];
-
-                            this.gl.Uniform3(location, arg1, arg2, arg3);
-
-                            break;
-                        }
-                        case 4: {
-                            int arg1 = (int) args[0];
-                            int arg2 = (int) args[1];
-                            int arg3 = (int) args[2];
-                            int arg4 = (int) args[3];
-
-                            this.gl.Uniform4(location, arg1, arg2, arg3, arg4);
-
-                            break;
-                        }
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(args), $"You cannot have a int{args.Length} as a uniform parameter!");
-                    }
-                    break;
-                }
-                case UniformType.GlUint: {
-                    switch (args.Length) {
-                        case 1: {
-                            uint arg1 = (uint) args[0];
-
-                            this.gl.Uniform1(location, arg1);
-
-                            break;
-                        }
-                        case 2: {
-                            uint arg1 = (uint) args[0];
-                            uint arg2 = (uint) args[1];
-
-                            this.gl.Uniform2(location, arg1, arg2);
-
-                            break;
-                        }
-                        case 3: {
-                            uint arg1 = (uint) args[0];
-                            uint arg2 = (uint) args[1];
-                            uint arg3 = (uint) args[2];
-
-                            this.gl.Uniform3(location, arg1, arg2, arg3);
-
-                            break;
-                        }
-                        case 4: {
-                            uint arg1 = (uint) args[0];
-                            uint arg2 = (uint) args[1];
-                            uint arg3 = (uint) args[2];
-                            uint arg4 = (uint) args[3];
-
-                            this.gl.Uniform4(location, arg1, arg2, arg3, arg4);
-
-                            break;
-                        }
-                        default:
-                            throw new ArgumentOutOfRangeException("args", $"You cannot have a uint{args.Length} as a uniform parameter!");
-                    }
-                    break;
-                }
-                case UniformType.GlMat4F: {
-                    Matrix4x4 matrix = (Matrix4x4) args[0];
-
-                    this.gl.UniformMatrix4(location, 1, false, (float*) &matrix);
-
-                    break;
-                }
-                case UniformType.GlFloatVec2: {
-                    Vector2 vec2 = (Vector2)args[0];
-                    
-                    this.gl.UniformMatrix4(location, 1, false, (float*) &vec2);
-
-                    break;
-                }
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
-            }
-
+        public unsafe Shader SetUniform(string uniformName, Matrix4x4 matrix) {
+            this.gl.UniformMatrix4(GetUniformLocation(uniformName), 1, false, (float*) &matrix);
+            
+            //Return this for chaining
+            return this;
+        }
+        
+        public Shader SetUniform(string uniformName, float f) {
+            this.gl.Uniform1(GetUniformLocation(uniformName), f);
+            
+            //Return this for chaining
+            return this;
+        }
+        
+        public Shader SetUniform(string uniformName, float f, float f2) {
+            this.gl.Uniform2(GetUniformLocation(uniformName), f, f2);
+            
+            //Return this for chaining
+            return this;
+        }
+        
+        public Shader SetUniform(string uniformName, int i) {
+            this.gl.Uniform1(GetUniformLocation(uniformName), i);
+            
+            //Return this for chaining
             return this;
         }
         /// <summary>

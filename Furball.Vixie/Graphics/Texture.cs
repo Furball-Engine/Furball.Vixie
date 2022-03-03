@@ -5,6 +5,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using Furball.Vixie.Helpers;
+using Kettu;
 using Silk.NET.OpenGLES;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -120,7 +122,7 @@ namespace Furball.Vixie.Graphics {
                 
                 (Rgba32[] pixels, QoiLoader.QoiHeader header) data  = QoiLoader.Load(imageData);
 
-                Console.WriteLine($"LOADING QOI image took {(Stopwatch.GetTimestamp() - start) / (double)Stopwatch.Frequency * 1000}ms");
+                Logger.Log($"Loading QOI image took {(Stopwatch.GetTimestamp() - start) / (double)Stopwatch.Frequency * 1000}ms", LoggerLevelImageLoader.Instance);
                 
                 image = Image.LoadPixelData(data.pixels, (int)data.header.Width, (int)data.header.Height);
             } else {
@@ -128,7 +130,7 @@ namespace Furball.Vixie.Graphics {
 
                 image = Image.Load(imageData);
                 
-                Console.WriteLine($"LOADING PNG image took {(Stopwatch.GetTimestamp() - start) / (double)Stopwatch.Frequency * 1000}ms");
+                Logger.Log($"Loading PNG image took {(Stopwatch.GetTimestamp() - start) / (double)Stopwatch.Frequency * 1000}ms", LoggerLevelImageLoader.Instance);
             }
 
             //We need to flip our image as ImageSharps coordinates has origin 0, 0 in the top-left corner,

@@ -20,4 +20,12 @@ namespace Furball.Vixie.Helpers {
             this.Channel = severity.ToString();
         }
     }
+
+    public class LoggerLevelImageLoader : LoggerLevel {
+        public override string Name => "ImageLoader";
+
+        public static LoggerLevelImageLoader Instance = new();
+
+        private LoggerLevelImageLoader() {}
+    }
 }

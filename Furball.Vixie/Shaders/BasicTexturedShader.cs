@@ -1,6 +1,5 @@
 using Furball.Vixie.Helpers;
 using Silk.NET.OpenGLES;
-using UniformType=Furball.Vixie.Graphics.UniformType;
 
 namespace Furball.Vixie.Shaders {
     /// <summary>
@@ -15,9 +14,9 @@ namespace Furball.Vixie.Shaders {
                 .AttachShader(ShaderType.FragmentShader, fragmentSource)
                 .Link()
                 .Bind()
-                .SetUniform("vx_ModifierX", UniformType.GlFloat, Global.GameInstance.WindowManager.PositionMultiplier.X)
-                .SetUniform("vx_ModifierY", UniformType.GlFloat, Global.GameInstance.WindowManager.PositionMultiplier.Y)
-                .SetUniform("u_Texture",    UniformType.GlInt,   0);
+                .SetUniform("vx_ModifierX", Global.GameInstance.WindowManager.PositionMultiplier.X)
+                .SetUniform("vx_ModifierY", Global.GameInstance.WindowManager.PositionMultiplier.Y)
+                .SetUniform("u_Texture",    0);
         }
     }
 }

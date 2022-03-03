@@ -102,10 +102,10 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             vertexBuffer.Bind();
             indexBuffer.Bind();
             shader.Bind()
-                  .SetUniform("vx_ModifierX", UniformType.GlFloat, Global.GameInstance.WindowManager.PositionMultiplier.X)
-                  .SetUniform("vx_ModifierY", UniformType.GlFloat, Global.GameInstance.WindowManager.PositionMultiplier.Y)
+                  .SetUniform("vx_ModifierX", Global.GameInstance.WindowManager.PositionMultiplier.X)
+                  .SetUniform("vx_ModifierY", Global.GameInstance.WindowManager.PositionMultiplier.Y)
                   //vx_WindowProjectionMatrix is a uniform provided by Vixie which can optionally be used to scale things into the window
-                  .SetUniform("vx_WindowProjectionMatrix", UniformType.GlMat4F, Global.GameInstance.WindowManager.ProjectionMatrix);
+                  .SetUniform("vx_WindowProjectionMatrix", Global.GameInstance.WindowManager.ProjectionMatrix);
 
             this.gl.DrawElements(PrimitiveType.Triangles, indexBuffer.DataCount, DrawElementsType.UnsignedInt, null);
         }
@@ -148,7 +148,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             //Bind and give it the Window Projection Matrix
             this._currentShader
                 .LockingBind()
-                .SetUniform("vx_WindowProjectionMatrix", UniformType.GlMat4F, Global.GameInstance.WindowManager.ProjectionMatrix);
+                .SetUniform("vx_WindowProjectionMatrix", Global.GameInstance.WindowManager.ProjectionMatrix);
         }
         /// <summary>
         /// Temporary Buffer for the Verticies
@@ -223,7 +223,8 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
 
             //Upload Data
             this._vertexBuffer.SetData<float>(this._verticies);
-            this._currentShader.SetUniform("u_RotationMatrix", UniformType.GlMat4F, _rotationMatrix).SetUniform("vx_WindowProjectionMatrix", UniformType.GlMat4F, Global.GameInstance.WindowManager.ProjectionMatrix);
+            this._currentShader.SetUniform("u_RotationMatrix", _rotationMatrix)
+                               .SetUniform("vx_WindowProjectionMatrix", Global.GameInstance.WindowManager.ProjectionMatrix);
 
             //Bind Texture
             texture.Bind();
