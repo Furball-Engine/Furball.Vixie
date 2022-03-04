@@ -9,8 +9,8 @@ using Furball.Vixie.Helpers;
 using Kettu;
 using Silk.NET.OpenGLES;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
 
 namespace Furball.Vixie.Graphics {
     public class Texture : IDisposable {
@@ -100,9 +100,7 @@ namespace Furball.Vixie.Graphics {
             int width = image.Width;
             int height = image.Height;
 
-            fixed (void* data = &MemoryMarshal.GetReference(image.GetPixelRowSpan(0))) {
-                this.Load(data, width, height);
-            }
+            this.Load(image.DangerousGetPixelRowMemory(0).Pin().Pointer, width, height);
 
             this.Size = new Vector2(width, height);
         }
@@ -125,7 +123,7 @@ namespace Furball.Vixie.Graphics {
             } else {
                 double start = Stopwatch.GetTimestamp();
 
-                image = Image.Load(imageData);
+                image = Image.Load<Rgba32>(imageData);
                 
                 Logger.Log($"Loading PNG image took {(Stopwatch.GetTimestamp() - start) / (double)Stopwatch.Frequency * 1000}ms", LoggerLevelImageLoader.Instance);
             }
@@ -135,9 +133,7 @@ namespace Furball.Vixie.Graphics {
             int width = image.Width;
             int height = image.Height;
 
-            fixed (void* data = &MemoryMarshal.GetReference(image.GetPixelRowSpan(0))) {
-                this.Load(data, width, height);
-            }
+            this.Load(image.DangerousGetPixelRowMemory(0).Pin().Pointer, width, height);
 
             this.Size = new Vector2(width, height);
         }
@@ -201,9 +197,7 @@ namespace Furball.Vixie.Graphics {
             int width = image.Width;
             int height = image.Height;
 
-            fixed (void* data = &MemoryMarshal.GetReference(image.GetPixelRowSpan(0))) {
-                this.Load(data, width, height);
-            }
+            this.Load(image.DangerousGetPixelRowMemory(0).Pin().Pointer, width, height);
 
             this.Size = new Vector2(width, height);
         }
