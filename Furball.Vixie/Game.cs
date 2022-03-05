@@ -1,9 +1,7 @@
 ﻿using Kettu;
 using System;
-#if DEBUGWITHGL
 using Furball.Vixie.Helpers;
 using Silk.NET.Core.Native;
-#endif
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.OpenGLES;
@@ -84,19 +82,17 @@ namespace Furball.Vixie {
         /// <summary>
         /// Used to Initialize the Renderer and stuff,
         /// </summary>
-#if DEBUGWITHGL
-        private unsafe void RendererInitialize() {
-#else
         private void RendererInitialize() {
-#endif
             Global.Gl             = this.WindowManager.GetGlApi();
             this.gl               = Global.Gl;
 
-            //Enables Debugging
 #if DEBUGWITHGL
-            gl.Enable(GLEnum.DebugOutput);
-            gl.Enable(GLEnum.DebugOutputSynchronous);
-            gl.DebugMessageCallback(this.Callback, null);
+            unsafe {
+                //Enables Debugging
+                gl.Enable(GLEnum.DebugOutput);
+                gl.Enable(GLEnum.DebugOutputSynchronous);
+                gl.DebugMessageCallback(this.Callback, null);
+            }
 #endif
 
             //Enables Blending (Required for Transparent Objects)
@@ -117,7 +113,6 @@ namespace Furball.Vixie {
             this.LoadContent();
             this.Initialize();
         }
-#if DEBUGWITHGL
         /// <summary>
         /// Debug Callback
         /// </summary>
@@ -137,7 +132,6 @@ namespace Furball.Vixie {
 
             Console.WriteLine(stringMessage);
         }
-#endif
         /// <summary>
         /// Gets Fired when the Window Gets Closed
         /// </summary>
