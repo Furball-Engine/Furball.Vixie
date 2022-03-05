@@ -1,4 +1,5 @@
 using System;
+using Furball.Vixie.Helpers;
 using Silk.NET.OpenGLES;
 
 namespace Furball.Vixie.Graphics {
@@ -45,6 +46,7 @@ namespace Furball.Vixie.Graphics {
             this.gl.BindBuffer(this._bufferType, this.BufferId);
             //Allocate Memory
             this.gl.BufferData(this._bufferType, (nuint) size, null, this._bufferUsage);
+            OpenGLHelper.CheckError();
         }
         /// <summary>
         /// Creates a Empty buffer
@@ -57,6 +59,7 @@ namespace Furball.Vixie.Graphics {
             this._bufferUsage = usage;
             //Generate Buffer
             this.BufferId = this.gl.GenBuffer();
+            OpenGLHelper.CheckError();
         }
 
         /// <summary>
@@ -67,12 +70,15 @@ namespace Furball.Vixie.Graphics {
         /// <returns></returns>
         public unsafe BufferObject SetData(void* data, nuint size) {
             this.gl.BufferData(this._bufferType, size, data, this._bufferUsage);
+            OpenGLHelper.CheckError();
 
             return this;
         }
 
         public unsafe BufferObject SetSubData(void* data, nuint size, nint offset = 0) {
             this.gl.BufferSubData(this._bufferType, offset, size, data);
+            OpenGLHelper.CheckError();
+
             return this;
         }
 
@@ -80,6 +86,7 @@ namespace Furball.Vixie.Graphics {
             fixed (void* d = data) {
                 this.SetSubData(d, (nuint)(data.Length * sizeof(pDataType)));
             }
+            OpenGLHelper.CheckError();
 
             return this;
         }
@@ -94,6 +101,7 @@ namespace Furball.Vixie.Graphics {
             fixed (void* d = data) {
                 this.SetData(d, (nuint)(data.Length * sizeof(pDataType)));
             }
+            OpenGLHelper.CheckError();
 
             return this;
         }
@@ -129,6 +137,7 @@ namespace Furball.Vixie.Graphics {
                 return null;
 
             this.gl.BindBuffer(this._bufferType, this.BufferId);
+            OpenGLHelper.CheckError();
 
             CurrentlyBound = this;
 
@@ -191,6 +200,7 @@ namespace Furball.Vixie.Graphics {
                 return null;
 
             this.gl.BindBuffer(this._bufferType, 0);
+            OpenGLHelper.CheckError();
 
             CurrentlyBound = null;
 
@@ -209,6 +219,7 @@ namespace Furball.Vixie.Graphics {
             catch {
 
             }
+            OpenGLHelper.CheckError();
         }
     }
 }

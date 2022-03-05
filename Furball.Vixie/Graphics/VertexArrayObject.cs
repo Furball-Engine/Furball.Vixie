@@ -1,4 +1,5 @@
 using System;
+using Furball.Vixie.Helpers;
 using Silk.NET.OpenGLES;
 
 namespace Furball.Vixie.Graphics {
@@ -24,6 +25,7 @@ namespace Furball.Vixie.Graphics {
             this.gl = Global.Gl;
             //Generate Vertex Array
             this.ArrayId = this.gl.GenVertexArray();
+            OpenGLHelper.CheckError();
         }
 
         /// <summary>
@@ -48,6 +50,7 @@ namespace Furball.Vixie.Graphics {
 
                 offset += (uint) currentElement.Count * LayoutElement.GetSizeOfType(currentElement.Type);
             }
+            OpenGLHelper.CheckError();
 
             return this;
         }
@@ -59,6 +62,7 @@ namespace Furball.Vixie.Graphics {
                 return null;
 
             this.gl.BindVertexArray(this.ArrayId);
+            OpenGLHelper.CheckError();
 
             CurrentlyBound = this;
 
@@ -119,6 +123,7 @@ namespace Furball.Vixie.Graphics {
                 return null;
 
             this.gl.BindVertexArray(0);
+            OpenGLHelper.CheckError();
 
             CurrentlyBound = null;
 
@@ -133,6 +138,7 @@ namespace Furball.Vixie.Graphics {
 
             try {
                 this.gl.DeleteVertexArray(this.ArrayId);
+                OpenGLHelper.CheckError();
             }
             catch {
 

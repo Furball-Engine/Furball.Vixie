@@ -1,4 +1,5 @@
 using System;
+using Furball.Vixie.Helpers;
 using Silk.NET.OpenGLES;
 
 namespace Furball.Vixie.Graphics {
@@ -15,16 +16,19 @@ namespace Furball.Vixie.Graphics {
             this._bufferId = gl.GenBuffer();
             gl.BindBuffer(BufferTargetARB.UniformBuffer, this._bufferId);
             gl.BufferData(BufferTargetARB.UniformBuffer, bufferSize, 0, BufferUsageARB.DynamicDraw);
+            OpenGLHelper.CheckError();
         }
 
         public UniformBuffer SetBlockBinding(uint blockIndex, uint binding) {
             gl.UniformBlockBinding(this._shader.ProgramId, blockIndex, binding);
+            OpenGLHelper.CheckError();
 
             return this;
         }
 
         public UniformBuffer Bind() {
             gl.BindBuffer(BufferTargetARB.UniformBuffer, this._bufferId);
+            OpenGLHelper.CheckError();
 
             return this;
         }
@@ -37,12 +41,15 @@ namespace Furball.Vixie.Graphics {
         /// <returns></returns>
         public unsafe UniformBuffer SetData(void* data, nuint size) {
             this.gl.BufferData(BufferTargetARB.UniformBuffer, size, data, BufferUsageARB.DynamicDraw);
+            OpenGLHelper.CheckError();
 
             return this;
         }
 
         public unsafe UniformBuffer SetSubData(void* data, nuint size, nint offset = 0) {
             this.gl.BufferSubData(BufferTargetARB.UniformBuffer, offset, size, data);
+            OpenGLHelper.CheckError();
+
             return this;
         }
 
@@ -50,6 +57,7 @@ namespace Furball.Vixie.Graphics {
             fixed (void* d = data) {
                 this.SetSubData(d, (nuint)(data.Length * sizeof(pDataType)));
             }
+            OpenGLHelper.CheckError();
 
             return this;
         }

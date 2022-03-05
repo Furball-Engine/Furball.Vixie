@@ -46,6 +46,7 @@ namespace Furball.Vixie.Graphics {
             this._uniformLocationCache = new Dictionary<string, int>();
 
             this.ProgramId = this.gl.CreateProgram();
+            OpenGLHelper.CheckError();
         }
 
         /// <summary>
@@ -60,6 +61,7 @@ namespace Furball.Vixie.Graphics {
 
             this.gl.ShaderSource(shaderId, source);
             this.gl.CompileShader(shaderId);
+            OpenGLHelper.CheckError();
 
             string infoLog = this.gl.GetShaderInfoLog(shaderId);
 
@@ -67,6 +69,7 @@ namespace Furball.Vixie.Graphics {
                 throw new Exception($"Failed to Compile shader of type {type}, Error Message: {infoLog}");
 
             this.gl.AttachShader(this.ProgramId, shaderId);
+            OpenGLHelper.CheckError();
 
             this._shaders.Add(shaderId);
 
@@ -81,6 +84,7 @@ namespace Furball.Vixie.Graphics {
             //Link Program and get Error incase something failed
             this.gl.LinkProgram(this.ProgramId);
             this.gl.GetProgram(this.ProgramId, ProgramPropertyARB.LinkStatus, out int linkStatus);
+            OpenGLHelper.CheckError();
 
             if (linkStatus == 0)
                 throw new Exception($"Failed to Link Program, Error Message: { this.gl.GetProgramInfoLog(this.ProgramId) }");
@@ -88,6 +92,7 @@ namespace Furball.Vixie.Graphics {
             //Delete Intermediate Shaders
             for(int i = 0; i != this._shaders.Count; i++)
                 this.gl.DeleteShader(this._shaders[i]);
+            OpenGLHelper.CheckError();
 
             return this;
         }
@@ -99,6 +104,7 @@ namespace Furball.Vixie.Graphics {
                 return null;
 
             this.gl.UseProgram(this.ProgramId);
+            OpenGLHelper.CheckError();
 
             CurrentlyBound = this;
 
@@ -163,6 +169,7 @@ namespace Furball.Vixie.Graphics {
             if (!this._uniformLocationCache.TryGetValue(uniformName, out int location)) {
                 //Get the location from the program
                 location = this.gl.GetUniformLocation(this.ProgramId, uniformName);
+                OpenGLHelper.CheckError();
                 
                 if(location != -1)
                     this._uniformLocationCache.Add(uniformName, location);
@@ -181,6 +188,7 @@ namespace Furball.Vixie.Graphics {
 
         public unsafe Shader SetUniform(string uniformName, Matrix4x4 matrix) {
             this.gl.UniformMatrix4(GetUniformLocation(uniformName), 1, false, (float*) &matrix);
+            OpenGLHelper.CheckError();
             
             //Return this for chaining
             return this;
@@ -188,6 +196,7 @@ namespace Furball.Vixie.Graphics {
         
         public Shader SetUniform(string uniformName, float f) {
             this.gl.Uniform1(GetUniformLocation(uniformName), f);
+            OpenGLHelper.CheckError();
             
             //Return this for chaining
             return this;
@@ -195,6 +204,7 @@ namespace Furball.Vixie.Graphics {
         
         public Shader SetUniform(string uniformName, float f, float f2) {
             this.gl.Uniform2(GetUniformLocation(uniformName), f, f2);
+            OpenGLHelper.CheckError();
             
             //Return this for chaining
             return this;
@@ -202,6 +212,7 @@ namespace Furball.Vixie.Graphics {
         
         public Shader SetUniform(string uniformName, int i) {
             this.gl.Uniform1(GetUniformLocation(uniformName), i);
+            OpenGLHelper.CheckError();
             
             //Return this for chaining
             return this;
@@ -215,6 +226,7 @@ namespace Furball.Vixie.Graphics {
                 return null;
 
             this.gl.UseProgram(0);
+            OpenGLHelper.CheckError();
 
             CurrentlyBound = null;
 
@@ -234,6 +246,7 @@ namespace Furball.Vixie.Graphics {
             catch {
 
             }
+            OpenGLHelper.CheckError();
         }
     }
 }

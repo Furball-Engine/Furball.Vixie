@@ -185,6 +185,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
 
             //Draw
             this.gl.DrawArrays(PrimitiveType.Lines, 0, (uint) (this._processedVerticies));
+            OpenGLHelper.CheckError();
 
             //Reset Counts
             this._processedVerticies = 0;

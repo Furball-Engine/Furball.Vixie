@@ -1,4 +1,5 @@
 using System;
+using Furball.Vixie.Helpers;
 using Silk.NET.OpenGLES;
 
 namespace Furball.Vixie.Graphics {
@@ -53,6 +54,7 @@ namespace Furball.Vixie.Graphics {
             //Generate and bind a FrameBuffer
             this._frameBufferId = gl.GenFramebuffer();
             gl.BindFramebuffer(FramebufferTarget.Framebuffer, this._frameBufferId);
+            OpenGLHelper.CheckError();
 
             //Generate a Texture
             this._textureId = gl.GenTexture();
@@ -62,6 +64,7 @@ namespace Furball.Vixie.Graphics {
             //Set The Filtering to nearest (apperantly necessary, idk)
             gl.TexParameterI(TextureTarget.Texture2D, GLEnum.TextureMagFilter, (int)GLEnum.Nearest);
             gl.TexParameterI(TextureTarget.Texture2D, GLEnum.TextureMinFilter, (int)GLEnum.Nearest);
+            OpenGLHelper.CheckError();
 
             //Generate the Depth buffer
             this._depthRenderBufferId = gl.GenRenderbuffer();
@@ -70,11 +73,13 @@ namespace Furball.Vixie.Graphics {
             gl.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, RenderbufferTarget.Renderbuffer, this._depthRenderBufferId);
             //Connect the bound texture to the FrameBuffer object
             gl.FramebufferTexture(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, this._textureId, 0);
+            OpenGLHelper.CheckError();
 
             GLEnum[] drawBuffers = new GLEnum[1] {
                 GLEnum.ColorAttachment0
             };
             gl.DrawBuffers(1, drawBuffers);
+            OpenGLHelper.CheckError();
 
             //Check if FrameBuffer created successfully
             if (gl.CheckFramebufferStatus(FramebufferTarget.Framebuffer) != GLEnum.FramebufferComplete) {
@@ -97,6 +102,7 @@ namespace Furball.Vixie.Graphics {
             //Store the old viewport for later
             gl.GetInteger(GetPName.Viewport, this._oldViewPort);
             gl.Viewport(0, 0, this.TargetWidth, this.TargetHeight);
+            OpenGLHelper.CheckError();
 
             CurrentlyBound = this;
         }
@@ -156,6 +162,7 @@ namespace Furball.Vixie.Graphics {
 
             gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
             gl.Viewport(this._oldViewPort[0], this._oldViewPort[1], (uint) this._oldViewPort[2], (uint) this._oldViewPort[3]);
+            OpenGLHelper.CheckError();
 
             CurrentlyBound = null;
         }
@@ -177,6 +184,7 @@ namespace Furball.Vixie.Graphics {
             catch {
 
             }
+            OpenGLHelper.CheckError();
         }
     }
 }

@@ -195,6 +195,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             this._currentShader.LockingBind();
 
             gl.Uniform1(this._currentShader.GetUniformLocation("u_Textures"), 32, this._textureSlotIndicies);
+            OpenGLHelper.CheckError();
 
             //If the batch has been going on while this happened we need to restart it
             if (IsBegun) {
@@ -246,6 +247,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             this._currentShader.LockingBind();
 
             gl.Uniform1(this._currentShader.GetUniformLocation("u_Textures"), 32, this._textureSlotIndicies);
+            OpenGLHelper.CheckError();
 
             this.IsBegun = true;
         }
@@ -489,6 +491,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
                 //Set as Active and Bind
                 this.gl.ActiveTexture(textureSlot);
                 this.gl.BindTexture(GLEnum.Texture2D, lookup);
+                OpenGLHelper.CheckError();
                 //Make sure to set BoundTextures to this, so its always clear what texture is bound where
                 Texture.BoundTextures[textureSlot] = lookup;
             }
@@ -507,6 +510,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
 
             //Draw
             this.gl.DrawElements(PrimitiveType.Triangles, (uint) this._indexCount, DrawElementsType.UnsignedInt, null);
+            OpenGLHelper.CheckError();
 
             //Reset counts
             this._indexCount        = 0;
