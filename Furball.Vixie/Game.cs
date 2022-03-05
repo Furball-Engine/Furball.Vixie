@@ -45,7 +45,6 @@ namespace Furball.Vixie {
         /// <summary>
         /// Creates a Game Window using `options`
         /// </summary>
-        /// <param name="options">Window Creation Options</param>
         protected Game() {
             if (Global.AlreadyInitialized)
                 throw new Exception("no we dont support multiple game instances yet");
