@@ -100,7 +100,7 @@ namespace Furball.Vixie.Graphics {
             int width = image.Width;
             int height = image.Height;
 
-            this.Load(image.DangerousGetPixelRowMemory(0).Pin().Pointer, width, height);
+            this.Load(image);
 
             this.Size = new Vector2(width, height);
         }
@@ -133,7 +133,7 @@ namespace Furball.Vixie.Graphics {
             int width = image.Width;
             int height = image.Height;
 
-            this.Load(image.DangerousGetPixelRowMemory(0).Pin().Pointer, width, height);
+            this.Load(image);
 
             this.Size = new Vector2(width, height);
         }
@@ -192,16 +192,29 @@ namespace Furball.Vixie.Graphics {
         public unsafe Texture(Stream stream) {
             this.gl = Global.Gl;
 
-            Image<Rgba32> image = (Image<Rgba32>) Image.Load(stream);
+            Image<Rgba32> image = Image.Load<Rgba32>(stream);
 
             this._localBuffer = image;
 
             int width = image.Width;
             int height = image.Height;
 
-            this.Load(image.DangerousGetPixelRowMemory(0).Pin().Pointer, width, height);
+            this.Load(image);
 
             this.Size = new Vector2(width, height);
+        }
+
+        private unsafe void Load(Image<Rgba32> image) {
+            this.Load(null, image.Width, image.Height);
+            this.Bind();
+            image.ProcessPixelRows(accessor =>
+            {
+                for (int i = 0; i < accessor.Height; i++) {
+                    fixed(void* ptr = &accessor.GetRowSpan(i).GetPinnableReference())
+                        this.gl.TexSubImage2D(TextureTarget.Texture2D, 0, 0, i, (uint)accessor.Width, 1, PixelFormat.Rgba, PixelType.UnsignedByte, ptr);
+                }
+            });
+            this.Unbind();
         }
         
         /// <summary>
