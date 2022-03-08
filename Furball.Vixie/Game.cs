@@ -1,6 +1,6 @@
-﻿using Kettu;
-using System;
+﻿using System;
 using Furball.Vixie.Helpers;
+using Kettu;
 using Silk.NET.Core.Native;
 using Silk.NET.Input;
 using Silk.NET.Maths;
@@ -110,7 +110,6 @@ namespace Furball.Vixie {
             Global.Device        = this.GraphicsDevice;
             Global.WindowManager = this.WindowManager;
 
-            this.LoadContent();
             this.Initialize();
         }
         /// <summary>
@@ -176,10 +175,13 @@ namespace Furball.Vixie {
         #endregion
 
         #region Overrides
+
         /// <summary>
         /// Used to Initialize any Game Stuff before the Game Begins
         /// </summary>
-        protected virtual void Initialize() {}
+        protected virtual void Initialize() {
+            this.LoadContent();
+        }
         /// <summary>
         /// Used to Preload content
         /// </summary>
