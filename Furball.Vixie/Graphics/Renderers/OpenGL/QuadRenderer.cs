@@ -310,6 +310,9 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             if (!IsBegun)
                 throw new Exception("Cannot call Draw before Calling Begin in BatchRenderer!");
 
+            //If the texture is invalid, just ignore
+            if (texture == null) return;
+
             //If we ran out of Texture Slots or are out of space in out Vertex/Index buffer, flush whats already there and start a new Batch
             if (this._indexCount >= this.MaxIndicies || this._textureSlotIndex >= this.MaxTexSlots - 1) {
                 this.End();
