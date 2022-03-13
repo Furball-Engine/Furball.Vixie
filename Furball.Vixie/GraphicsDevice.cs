@@ -1,5 +1,6 @@
 using System.Numerics;
 using Furball.Vixie.Graphics;
+using Furball.Vixie.Helpers;
 using Silk.NET.OpenGLES;
 
 namespace Furball.Vixie {
@@ -42,6 +43,8 @@ namespace Furball.Vixie {
         private GL gl;
 
         internal GraphicsDevice(GL gl) {
+            OpenGLHelper.CheckThread();
+            
             this.gl = gl;
 
             gl.GetInteger(GetPName.MaxTextureImageUnits, out int maxTexSlots);
@@ -56,6 +59,8 @@ namespace Furball.Vixie {
             gl.GetInteger(GetPName.MajorVersion, out int glMajorVersion);
             gl.GetInteger(GetPName.MinorVersion, out int glMinorVersion);
 
+            OpenGLHelper.CheckError();
+
             this.MaxTextureImageUnits = maxTexSlots;
             this.MaxTextureSize       = maxTexSize;
             this.MaxFrameBufferSize   = new Vector2(maxFrameBufWidth, maxFrameBufHeight);
@@ -68,14 +73,22 @@ namespace Furball.Vixie {
         /// Calls glClear which Clears the Screen
         /// </summary>
         public void GlClear() {
+            OpenGLHelper.CheckThread();
+            
             gl.Clear(ClearBufferMask.ColorBufferBit);
+
+            OpenGLHelper.CheckError();
         }
         /// <summary>
         /// Calls glClearColor which changes the Clear Color
         /// </summary>
         /// <param name="color">New Clear Color</param>
         public void GlClearColor(Color color) {
+            OpenGLHelper.CheckThread();
+            
             gl.ClearColor(color.R, color.G, color.B, color.A);
+
+            OpenGLHelper.CheckError();
         }
     }
 }

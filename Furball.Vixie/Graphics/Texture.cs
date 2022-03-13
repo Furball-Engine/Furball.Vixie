@@ -1,16 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Numerics;
-using System.Runtime.InteropServices;
 using Furball.Vixie.Helpers;
 using Kettu;
 using Silk.NET.OpenGLES;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
+using Rectangle=System.Drawing.Rectangle;
 
 namespace Furball.Vixie.Graphics {
     public class Texture : IDisposable {
@@ -141,6 +139,8 @@ namespace Furball.Vixie.Graphics {
         /// Creates a Texture with a single White Pixel
         /// </summary>
         public unsafe Texture() {
+            OpenGLHelper.CheckThread();
+            
             this.gl = Global.Gl;
 
             this.TextureId = this.gl.GenTexture();
@@ -167,6 +167,8 @@ namespace Furball.Vixie.Graphics {
         /// <param name="width">Desired Width</param>
         /// <param name="height">Desired Height</param>
         public unsafe Texture(uint width, uint height) {
+            OpenGLHelper.CheckThread();
+            
             this.gl = Global.Gl;
 
             this.TextureId = this.gl.GenTexture();
@@ -279,7 +281,7 @@ namespace Furball.Vixie.Graphics {
         /// <param name="data">Data to put there</param>
         /// <typeparam name="pDataType">Type of Data to put</typeparam>
         /// <returns>Self, used for chaining methods</returns>
-        public unsafe Texture SetData<pDataType>(int level, System.Drawing.Rectangle rect, pDataType[] data) where pDataType : unmanaged {
+        public unsafe Texture SetData<pDataType>(int level, Rectangle rect, pDataType[] data) where pDataType : unmanaged {
             this.LockingBind();
 
             fixed(void* d = data)

@@ -49,6 +49,8 @@ namespace Furball.Vixie.Graphics {
         /// <param name="height">Desired Width</param>
         /// <exception cref="Exception">Throws Exception if the Target didn't create properly</exception>
         public unsafe TextureRenderTarget(uint width, uint height) {
+            OpenGLHelper.CheckThread();
+            
             this.gl = Global.Gl;
 
             //Generate and bind a FrameBuffer
@@ -95,6 +97,8 @@ namespace Furball.Vixie.Graphics {
         /// Binds the Target, from now on drawing will draw to this RenderTarget,
         /// </summary>
         public void Bind() {
+            OpenGLHelper.CheckThread();
+            
             if (this.Locked)
                 return;
 
@@ -157,6 +161,8 @@ namespace Furball.Vixie.Graphics {
         /// Unbinds the Target and resets the Viewport, drawing is now back to normal
         /// </summary>
         public void Unbind() {
+            OpenGLHelper.CheckThread();
+            
             if (this.Locked)
                 return;
 
@@ -173,6 +179,8 @@ namespace Furball.Vixie.Graphics {
         public Texture GetTexture() => new Texture(this._textureId, this.TargetWidth, this.TargetHeight);
 
         public void Dispose() {
+            OpenGLHelper.CheckThread();
+            
             if (this.Bound)
                 this.UnlockingUnbind();
 

@@ -188,6 +188,8 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// </summary>
         /// <param name="shader">New Shader to use</param>
         public void ChangeShader(Shader shader) {
+            OpenGLHelper.CheckThread();
+            
             //Unlock old Shader
             this._currentShader?.UnlockingUnbind();
             //Set new Shader and Bind it

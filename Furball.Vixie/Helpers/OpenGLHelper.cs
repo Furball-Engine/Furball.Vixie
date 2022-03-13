@@ -1,5 +1,5 @@
-using System;
 using System.Diagnostics;
+using System.Threading;
 using Silk.NET.OpenGLES;
 
 namespace Furball.Vixie.Helpers {
@@ -15,6 +15,18 @@ namespace Furball.Vixie.Helpers {
                 Debugger.Break();
 #endif
             }
+        }
+
+        private static Thread _MainThread;
+
+        [Conditional("DEBUG")]
+        public static void GetMainThread() {
+            _MainThread = Thread.CurrentThread;
+        }
+
+        [Conditional("DEBUG")]
+        public static void CheckThread() {
+            if (Thread.CurrentThread != _MainThread) throw new ThreadStateException("You are calling GL on the wrong thread!");
         }
     }
 }

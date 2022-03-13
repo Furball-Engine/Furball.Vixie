@@ -3,7 +3,7 @@ using System.Numerics;
 using Silk.NET.Maths;
 using Silk.NET.OpenGLES;
 using Silk.NET.Windowing;
-using Window=Silk.NET.Windowing.Window;
+using Silk.NET.Windowing.Sdl;
 
 namespace Furball.Vixie {
     public class WindowManager : IDisposable {
@@ -80,8 +80,9 @@ namespace Furball.Vixie {
         /// Creates the Window and grabs the OpenGL API of Window
         /// </summary>
         public void Create() {
-            //SdlWindowing.RegisterPlatform();
-            Silk.NET.Windowing.Sdl.SdlWindowing.Use();
+            SdlWindowing.Use();//dont tell perskey and kai that i do this! shhhhhhhhhhhhhhh
+
+            this._windowOptions.API = new GraphicsAPI(ContextAPI.OpenGLES, ContextProfile.Core, ContextFlags.Default, new APIVersion(3, 0));
 
             this.GameWindow = Window.Create(this._windowOptions);
 

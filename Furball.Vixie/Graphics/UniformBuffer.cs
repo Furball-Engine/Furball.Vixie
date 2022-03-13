@@ -10,6 +10,8 @@ namespace Furball.Vixie.Graphics {
         private readonly GL gl;
 
         public UniformBuffer(nuint bufferSize, Shader shader) {
+            OpenGLHelper.CheckThread();
+            
             this.gl      = Global.Gl;
             this._shader = shader;
 
@@ -20,6 +22,8 @@ namespace Furball.Vixie.Graphics {
         }
 
         public UniformBuffer SetBlockBinding(uint blockIndex, uint binding) {
+            OpenGLHelper.CheckThread();
+            
             gl.UniformBlockBinding(this._shader.ProgramId, blockIndex, binding);
             OpenGLHelper.CheckError();
 
@@ -27,6 +31,8 @@ namespace Furball.Vixie.Graphics {
         }
 
         public UniformBuffer Bind() {
+            OpenGLHelper.CheckThread();
+            
             gl.BindBuffer(BufferTargetARB.UniformBuffer, this._bufferId);
             OpenGLHelper.CheckError();
 
@@ -40,6 +46,8 @@ namespace Furball.Vixie.Graphics {
         /// <param name="size">Size of the Data</param>
         /// <returns></returns>
         public unsafe UniformBuffer SetData(void* data, nuint size) {
+            OpenGLHelper.CheckThread();
+            
             this.gl.BufferData(BufferTargetARB.UniformBuffer, size, data, BufferUsageARB.DynamicDraw);
             OpenGLHelper.CheckError();
 
@@ -47,6 +55,8 @@ namespace Furball.Vixie.Graphics {
         }
 
         public unsafe UniformBuffer SetSubData(void* data, nuint size, nint offset = 0) {
+            OpenGLHelper.CheckThread();
+            
             this.gl.BufferSubData(BufferTargetARB.UniformBuffer, offset, size, data);
             OpenGLHelper.CheckError();
 

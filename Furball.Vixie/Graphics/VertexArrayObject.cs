@@ -22,6 +22,8 @@ namespace Furball.Vixie.Graphics {
         internal uint ArrayId;
 
         public VertexArrayObject() {
+            OpenGLHelper.CheckThread();
+            
             this.gl = Global.Gl;
             //Generate Vertex Array
             this.ArrayId = this.gl.GenVertexArray();
@@ -34,6 +36,8 @@ namespace Furball.Vixie.Graphics {
         /// <param name="vertexBuffer">Vertex Buffer to add</param>
         /// <param name="layout">Layout of said Vertex Buffer</param>
         public unsafe VertexArrayObject AddBuffer(BufferObject vertexBuffer, VertexBufferLayout layout) {
+            OpenGLHelper.CheckThread();
+            
             //Bind both this and the Vertex Buffer
             this.Bind();
             vertexBuffer.Bind();
@@ -58,6 +62,8 @@ namespace Furball.Vixie.Graphics {
         /// Binds or Selects this current Vertex Array
         /// </summary>
         public VertexArrayObject Bind() {
+            OpenGLHelper.CheckThread();
+            
             if (this.Locked)
                 return null;
 
@@ -119,6 +125,8 @@ namespace Furball.Vixie.Graphics {
         /// Unbinds all Vertex Arrays
         /// </summary>
         public VertexArrayObject Unbind() {
+            OpenGLHelper.CheckThread();
+            
             if (this.Locked)
                 return null;
 
@@ -133,6 +141,8 @@ namespace Furball.Vixie.Graphics {
         /// Disposes this Vertex Array
         /// </summary>
         public void Dispose() {
+            OpenGLHelper.CheckThread();
+            
             if (this.Bound)
                 this.UnlockingUnbind();
 

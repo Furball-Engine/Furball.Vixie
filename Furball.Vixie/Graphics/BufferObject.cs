@@ -37,6 +37,8 @@ namespace Furball.Vixie.Graphics {
         /// <param name="bufferType">What kind of buffer is it?</param>
         /// <param name="usage">How is this buffer going to be used?</param>
         public unsafe BufferObject(int size, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StreamDraw) {
+            OpenGLHelper.CheckThread();
+            
             this.gl                = Global.Gl;
             this._bufferType  = bufferType;
             this._bufferUsage = usage;
@@ -54,6 +56,8 @@ namespace Furball.Vixie.Graphics {
         /// <param name="bufferType">What kind of Buffer is it</param>
         /// <param name="usage">How is this buffer going to be used?</param>
         public BufferObject(BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StreamDraw) {
+            OpenGLHelper.CheckThread();
+            
             this.gl                = Global.Gl;
             this._bufferType  = bufferType;
             this._bufferUsage = usage;
@@ -69,6 +73,8 @@ namespace Furball.Vixie.Graphics {
         /// <param name="size">Size of the Data</param>
         /// <returns></returns>
         public unsafe BufferObject SetData(void* data, nuint size) {
+            OpenGLHelper.CheckThread();
+            
             this.gl.BufferData(this._bufferType, size, data, this._bufferUsage);
             OpenGLHelper.CheckError();
 
@@ -76,6 +82,8 @@ namespace Furball.Vixie.Graphics {
         }
 
         public unsafe BufferObject SetSubData(void* data, nuint size, nint offset = 0) {
+            OpenGLHelper.CheckThread();
+            
             this.gl.BufferSubData(this._bufferType, offset, size, data);
             OpenGLHelper.CheckError();
 
@@ -133,6 +141,8 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         public BufferObject Bind() {
+            OpenGLHelper.CheckThread();
+            
             if (this.Locked)
                 return null;
 
@@ -196,6 +206,7 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         public BufferObject Unbind() {
+            OpenGLHelper.CheckThread();
             if (this.Locked)
                 return null;
 

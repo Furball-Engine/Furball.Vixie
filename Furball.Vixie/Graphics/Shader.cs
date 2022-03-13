@@ -40,6 +40,8 @@ namespace Furball.Vixie.Graphics {
         /// Creates a unlinked Shader with no source code
         /// </summary>
         public Shader() {
+            OpenGLHelper.CheckThread();
+            
             this.gl = Global.Gl;
 
             this._shaders              = new List<uint>();
@@ -57,6 +59,8 @@ namespace Furball.Vixie.Graphics {
         /// <returns>Self, used for Chaining methods</returns>
         /// <exception cref="Exception">Shader Compilation Failure</exception>
         public Shader AttachShader(ShaderType type, string source) {
+            OpenGLHelper.CheckThread();
+            
             uint shaderId = this.gl.CreateShader(type);
 
             this.gl.ShaderSource(shaderId, source);
@@ -81,6 +85,8 @@ namespace Furball.Vixie.Graphics {
         /// <returns>Self, used for Chaining methods</returns>
         /// <exception cref="Exception"></exception>
         public Shader Link() {
+            OpenGLHelper.CheckThread();
+            
             //Link Program and get Error incase something failed
             this.gl.LinkProgram(this.ProgramId);
             this.gl.GetProgram(this.ProgramId, ProgramPropertyARB.LinkStatus, out int linkStatus);
@@ -100,6 +106,8 @@ namespace Furball.Vixie.Graphics {
         /// Selects this Shader
         /// </summary>
         public Shader Bind() {
+            OpenGLHelper.CheckThread();
+            
             if (this.Locked)
                 return null;
 
@@ -165,6 +173,8 @@ namespace Furball.Vixie.Graphics {
         /// <param name="uniformName">The name of the uniform</param>
         /// <returns>The location</returns>
         internal int GetUniformLocation(string uniformName) {
+            OpenGLHelper.CheckThread();
+            
             //If cache missed, get from OpenGL and store in cache
             if (!this._uniformLocationCache.TryGetValue(uniformName, out int location)) {
                 //Get the location from the program
@@ -187,6 +197,8 @@ namespace Furball.Vixie.Graphics {
         }
 
         public unsafe Shader SetUniform(string uniformName, Matrix4x4 matrix) {
+            OpenGLHelper.CheckThread();
+            
             this.gl.UniformMatrix4(GetUniformLocation(uniformName), 1, false, (float*) &matrix);
             OpenGLHelper.CheckError();
             
@@ -195,6 +207,8 @@ namespace Furball.Vixie.Graphics {
         }
         
         public Shader SetUniform(string uniformName, float f) {
+            OpenGLHelper.CheckThread();
+            
             this.gl.Uniform1(GetUniformLocation(uniformName), f);
             OpenGLHelper.CheckError();
             
@@ -203,6 +217,8 @@ namespace Furball.Vixie.Graphics {
         }
         
         public Shader SetUniform(string uniformName, float f, float f2) {
+            OpenGLHelper.CheckThread();
+            
             this.gl.Uniform2(GetUniformLocation(uniformName), f, f2);
             OpenGLHelper.CheckError();
             
@@ -211,6 +227,8 @@ namespace Furball.Vixie.Graphics {
         }
         
         public Shader SetUniform(string uniformName, int i) {
+            OpenGLHelper.CheckThread();
+            
             this.gl.Uniform1(GetUniformLocation(uniformName), i);
             OpenGLHelper.CheckError();
             
@@ -222,6 +240,8 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         public Shader Unbind() {
+            OpenGLHelper.CheckThread();
+            
             if (this.Locked)
                 return null;
 
@@ -237,6 +257,8 @@ namespace Furball.Vixie.Graphics {
         /// Cleans up the Shader
         /// </summary>
         public void Dispose() {
+            OpenGLHelper.CheckThread();
+            
             if (this.Bound)
                 this.UnlockingUnbind();
 

@@ -86,6 +86,8 @@ namespace Furball.Vixie {
             Global.Gl             = this.WindowManager.GetGlApi();
             this.gl               = Global.Gl;
 
+            OpenGLHelper.GetMainThread();
+
 #if DEBUGWITHGL
             unsafe {
                 //Enables Debugging
