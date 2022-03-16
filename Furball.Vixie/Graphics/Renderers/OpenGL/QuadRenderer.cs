@@ -242,15 +242,15 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         }
 
         public void Draw(Texture texture, Vector2 position, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {
-            Draw(texture, position, texture.Size, Vector2.One, rotation, Color.White, flip, rotOrigin);
+            Draw(texture, position, Vector2.One, rotation, Color.White, flip, rotOrigin);
         }
 
         public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {
-            Draw(texture, position, texture.Size, scale, rotation, Color.White, flip, rotOrigin);
+            Draw(texture, position, scale, rotation, Color.White, flip, rotOrigin);
         }
 
         public void Draw(Texture texture, Vector2 position, Vector2 scale, Color colorOverride, float rotation = 0, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
-            Draw(texture, position, texture.Size, scale, rotation, colorOverride, texFlip, rotOrigin);
+            Draw(texture, position, scale, rotation, colorOverride, texFlip, rotOrigin);
         }
 
         private readonly Texture[] _boundTextures = new Texture[Global.Device.MaxTextureImageUnits];
