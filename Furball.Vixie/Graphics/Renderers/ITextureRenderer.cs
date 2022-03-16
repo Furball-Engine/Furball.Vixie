@@ -20,7 +20,7 @@ namespace Furball.Vixie.Graphics.Renderers {
         /// <param name="colorOverride">Color Tint, leave null to not tint</param>
         /// <param name="texFlip">Horizontally/Vertically flip the Drawn Texture</param>
         /// <param name="rotOrigin">origin of rotation, by default the top left</param>
-        void Draw(Texture texture, Vector2 position, Vector2 size, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default);
+        void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default);
         /// <summary>
         /// Draws a Texture
         /// </summary>

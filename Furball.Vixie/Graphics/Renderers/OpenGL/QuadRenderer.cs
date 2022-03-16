@@ -183,7 +183,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             this.IsBegun = true;
         }
 
-        public void Draw(Texture texture, Vector2 position, Vector2 size, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
+        public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
             if (!IsBegun)
                 throw new Exception("Begin() has not been called!");
 
@@ -196,15 +196,15 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             }
 
             this._instanceData[this._instances].Position              = position;
-            this._instanceData[this._instances].Size                  = size * scale;
+            this._instanceData[this._instances].Size                  = texture.Size * scale;
             this._instanceData[this._instances].Color                 = colorOverride;
             this._instanceData[this._instances].Rotation              = rotation;
             this._instanceData[this._instances].RotationOrigin        = rotOrigin;
             this._instanceData[this._instances].TextureId             = GetTextureId(texture);
             this._instanceData[this._instances].TextureRectPosition.X = (float)0 / texture.Width;
             this._instanceData[this._instances].TextureRectPosition.Y = (float)0 / texture.Height;
-            this._instanceData[this._instances].TextureRectSize.X     = size.X / texture.Width;
-            this._instanceData[this._instances].TextureRectSize.Y     = size.Y / texture.Height;
+            this._instanceData[this._instances].TextureRectSize.X     = texture.Size.X / texture.Width;
+            this._instanceData[this._instances].TextureRectSize.Y     = texture.Size.Y / texture.Height;
 
             this._instances++;
         }
