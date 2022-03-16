@@ -50,7 +50,11 @@ namespace Furball.Vixie.Graphics {
                 LayoutElement currentElement = elements[(int) i];
                 //Define the Layout of this Element
                 this.gl.EnableVertexAttribArray(i);
-                this.gl.VertexAttribPointer(i, currentElement.Count, currentElement.Type, currentElement.Normalized, layout.GetStride(), (void*) offset);
+
+                if (currentElement.Type != VertexAttribPointerType.Int)
+                    this.gl.VertexAttribPointer(i, currentElement.Count, currentElement.Type, currentElement.Normalized, layout.GetStride(), (void*)offset);
+                else
+                    this.gl.VertexAttribIPointer(i, currentElement.Count, VertexAttribIType.Int, layout.GetStride(), (void*)offset);
 
                 offset += (uint) currentElement.Count * LayoutElement.GetSizeOfType(currentElement.Type);
             }
