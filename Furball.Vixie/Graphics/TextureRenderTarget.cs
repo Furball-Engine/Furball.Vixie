@@ -176,7 +176,7 @@ namespace Furball.Vixie.Graphics {
         /// Retrieves the Texture from this RenderTarget
         /// </summary>
         /// <returns>Texture of this RenderTarget</returns>
-        public Texture GetTexture() => new Texture(this._textureId, this.TargetWidth, this.TargetHeight);
+        public Texture GetTexture() => new(this._textureId, this.TargetWidth, this.TargetHeight);
 
         public void Dispose() {
             OpenGLHelper.CheckThread();

@@ -33,8 +33,6 @@
       <EmbeddedResource Include="ShaderCode\BasicShader\PixelShader.glsl" />
       <EmbeddedResource Include="ShaderCode\BasicShader\VertexShader.glsl" />
       <EmbeddedResource Include="ShaderCode\BasicTexturedShader\PixelShader.glsl" />
-      <EmbeddedResource Include="ShaderCode\BatchRenderer\PixelShader.glsl" />
-      <EmbeddedResource Include="ShaderCode\BatchRenderer\VertexShader.glsl" />
       <None Remove="ShaderCode\BatchRendererPixelShader.glsl" />
       <EmbeddedResource Include="ShaderCode\BasicTexturedShader\VertexShader.glsl" />
       <None Remove="ShaderCode\BatchRendererVertexShader.glsl" />

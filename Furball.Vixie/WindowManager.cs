@@ -42,7 +42,7 @@ namespace Furball.Vixie {
         public nint GetWindowHandle() => this.GameWindow.Handle;
 
         public void SetWindowSize(int width, int height) {
-            this.GameWindow.Size = new(width, height);
+            this.GameWindow.Size = new Vector2D<int>(width, height);
             
             this.UpdateProjectionAndSize(width, height);
         }

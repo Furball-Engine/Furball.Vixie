@@ -15,25 +15,25 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             public Vector2 TexturePosition;
         }
         
-        private static Vertex[] _Vertices = {
+        private static Vertex[] _vertices = {
             new() {
-                Position = new(0, 0),
-                TexturePosition = new(0, 1)
+                Position        = new Vector2(0, 0),
+                TexturePosition = new Vector2(0, 1)
             },
             new() {
-                Position = new(1, 0),
-                TexturePosition = new(1, 1)
+                Position        = new Vector2(1, 0),
+                TexturePosition = new Vector2(1, 1)
             },
             new() {
-                Position = new(1, 1),
-                TexturePosition = new(1, 0)
+                Position        = new Vector2(1, 1),
+                TexturePosition = new Vector2(1, 0)
             },
             new() {
-                Position = new(0, 1),
-                TexturePosition = new(0, 0)
+                Position        = new Vector2(0, 1),
+                TexturePosition = new Vector2(0, 0)
             }
         };
-        private static ushort[] _Indicies = {
+        private static ushort[] _indicies = {
             //Tri 1
             0, 1, 2, 
             //Tri 2
@@ -52,16 +52,21 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             public int     TextureId;
         }
         
-        private BufferObject      _VBO;
-        private BufferObject      _InstanceVBO;
-        private VertexArrayObject _VAO;
+        private BufferObject      _vbo;
+        private BufferObject      _instanceVbo;
+        private VertexArrayObject _vao;
 
         private VixieFontStashRenderer _textRenderer;
 
         private Shader _shader;
+
+        // ReSharper disable once InconsistentNaming
+        private GL gl;
         
         public unsafe QuadRenderer() {
             OpenGLHelper.CheckThread();
+
+            gl = Global.Gl;
 
             string vertSource = ResourceHelpers.GetStringResource("ShaderCode/InstancedRenderer/VertexShader.glsl");
             string fragSource = ResourceHelpers.GetStringResource("ShaderCode/InstancedRenderer/FragmentShader.glsl");
@@ -80,89 +85,84 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
                 _shader.BindUniformToTexUnit($"tex_{i}", i);
             }
 
-            _VAO = new VertexArrayObject();
-            _VAO.Bind();
+            this._vao = new VertexArrayObject();
+            this._vao.Bind();
 
-            _VBO = new(BufferTargetARB.ArrayBuffer, BufferUsageARB.StaticDraw);
-            this._VBO.Bind();
-            this._VBO.SetData<Vertex>(_Vertices);
+            this._vbo = new BufferObject(BufferTargetARB.ArrayBuffer, BufferUsageARB.StaticDraw);
+            this._vbo.Bind();
+            this._vbo.SetData<Vertex>(_vertices);
             
             //Vertex Position
-            Global.Gl.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, (uint)sizeof(Vertex), (void*)0);
+            gl.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, (uint)sizeof(Vertex), (void*)0);
             //Texture position
-            Global.Gl.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, (uint)sizeof(Vertex), (void*)sizeof(Vector2));
+            gl.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, (uint)sizeof(Vertex), (void*)sizeof(Vector2));
             OpenGLHelper.CheckError();
             
-            Global.Gl.EnableVertexAttribArray(0);
-            Global.Gl.EnableVertexAttribArray(1);
+            gl.EnableVertexAttribArray(0);
+            gl.EnableVertexAttribArray(1);
             OpenGLHelper.CheckError();
 
-            _InstanceVBO = new(BufferTargetARB.ArrayBuffer, BufferUsageARB.DynamicDraw);
-            _InstanceVBO.Bind();
+            this._instanceVbo = new BufferObject(BufferTargetARB.ArrayBuffer, BufferUsageARB.DynamicDraw);
+            this._instanceVbo.Bind();
 
-            this._InstanceVBO.SetData(null, (nuint)(sizeof(InstanceData) * NUM_INSTANCES));
+            this._instanceVbo.SetData(null, (nuint)(sizeof(InstanceData) * NUM_INSTANCES));
 
             int ptrPos = 0;
             //Position
-            Global.Gl.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
-            Global.Gl.VertexAttribDivisor(2, 1);
+            gl.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
+            gl.VertexAttribDivisor(2, 1);
             ptrPos += sizeof(Vector2);
             //Size
-            Global.Gl.VertexAttribPointer(3, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
-            Global.Gl.VertexAttribDivisor(3, 1);
+            gl.VertexAttribPointer(3, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
+            gl.VertexAttribDivisor(3, 1);
             ptrPos += sizeof(Vector2);
             //Color
-            Global.Gl.VertexAttribPointer(4, 4, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
-            Global.Gl.VertexAttribDivisor(4, 1);
+            gl.VertexAttribPointer(4, 4, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
+            gl.VertexAttribDivisor(4, 1);
             ptrPos += sizeof(Color);
             //Texture position
-            Global.Gl.VertexAttribPointer(5, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
-            Global.Gl.VertexAttribDivisor(5, 1);
+            gl.VertexAttribPointer(5, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
+            gl.VertexAttribDivisor(5, 1);
             ptrPos += sizeof(Vector2);
             //Texture size
-            Global.Gl.VertexAttribPointer(6, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
-            Global.Gl.VertexAttribDivisor(6, 1);
+            gl.VertexAttribPointer(6, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
+            gl.VertexAttribDivisor(6, 1);
             ptrPos += sizeof(Vector2);
             //Rotation origin
-            Global.Gl.VertexAttribPointer(7, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
-            Global.Gl.VertexAttribDivisor(7, 1);
+            gl.VertexAttribPointer(7, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
+            gl.VertexAttribDivisor(7, 1);
             ptrPos += sizeof(Vector2);
             //Rotation
-            Global.Gl.VertexAttribPointer(8, 1, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
-            Global.Gl.VertexAttribDivisor(8, 1);
+            gl.VertexAttribPointer(8, 1, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
+            gl.VertexAttribDivisor(8, 1);
             ptrPos += sizeof(float);
             //Texture id
-            Global.Gl.VertexAttribIPointer(9, 1, VertexAttribIType.Int, (uint)sizeof(InstanceData), (void*)ptrPos);
-            Global.Gl.VertexAttribDivisor(9, 1);
+            gl.VertexAttribIPointer(9, 1, VertexAttribIType.Int, (uint)sizeof(InstanceData), (void*)ptrPos);
+            gl.VertexAttribDivisor(9, 1);
             ptrPos += sizeof(int);
 
-            Global.Gl.EnableVertexAttribArray(2);
-            Global.Gl.EnableVertexAttribArray(3);
-            Global.Gl.EnableVertexAttribArray(4);
-            Global.Gl.EnableVertexAttribArray(5);
-            Global.Gl.EnableVertexAttribArray(6);
-            Global.Gl.EnableVertexAttribArray(7);
-            Global.Gl.EnableVertexAttribArray(8);
-            Global.Gl.EnableVertexAttribArray(9);
+            gl.EnableVertexAttribArray(2);
+            gl.EnableVertexAttribArray(3);
+            gl.EnableVertexAttribArray(4);
+            gl.EnableVertexAttribArray(5);
+            gl.EnableVertexAttribArray(6);
+            gl.EnableVertexAttribArray(7);
+            gl.EnableVertexAttribArray(8);
+            gl.EnableVertexAttribArray(9);
 
             OpenGLHelper.CheckError();
             
-            _InstanceVBO.Unbind();
-            
-            _VAO.Unbind();
+            this._instanceVbo.Unbind();
+            this._vao.Unbind();
 
             this._textRenderer = new VixieFontStashRenderer(this);
         }
 
-        public void ChangeShader(Shader shader) {
-            throw new NotImplementedException();
-        }
-        
         public void Dispose() {
             this._shader.Dispose();
-            this._VAO.Dispose();
-            this._VBO.Dispose();
-            this._InstanceVBO.Dispose();
+            this._vao.Dispose();
+            this._vbo.Dispose();
+            this._instanceVbo.Dispose();
         }
         
         public bool IsBegun {
@@ -286,15 +286,15 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
                 tex.Bind(TextureUnit.Texture0 + i);
             }
             
-            _VAO.Bind();
+            this._vao.Bind();
             OpenGLHelper.CheckError();
 
             // this._InstanceVBO.SetData<InstanceData>(this._instanceData);
-            this._InstanceVBO.Bind();
+            this._instanceVbo.Bind();
             fixed (void* ptr = this._instanceData)
-                this._InstanceVBO.SetSubData(ptr, (nuint)(this._instances * sizeof(InstanceData)));
+                this._instanceVbo.SetSubData(ptr, (nuint)(this._instances * sizeof(InstanceData)));
             
-            Global.Gl.DrawElementsInstanced<ushort>(PrimitiveType.TriangleStrip, 6, DrawElementsType.UnsignedShort, _Indicies, this._instances);
+            gl.DrawElementsInstanced<ushort>(PrimitiveType.TriangleStrip, 6, DrawElementsType.UnsignedShort, _indicies, this._instances);
 
             this._instances    = 0;
             this._usedTextures = 0;
