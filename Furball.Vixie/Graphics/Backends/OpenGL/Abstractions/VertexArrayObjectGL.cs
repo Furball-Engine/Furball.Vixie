@@ -2,12 +2,12 @@ using System;
 using Furball.Vixie.Helpers;
 using Silk.NET.OpenGLES;
 
-namespace Furball.Vixie.Graphics {
-    public class VertexArrayObject : IDisposable {
+namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
+    public class VertexArrayObjectGL : IDisposable {
         /// <summary>
         /// Current Bound VAO
         /// </summary>
-        internal static VertexArrayObject CurrentlyBound;
+        internal static VertexArrayObjectGL CurrentlyBound;
         /// <summary>
         /// Getter to check whether this VAO is bound
         /// </summary>
@@ -21,10 +21,10 @@ namespace Furball.Vixie.Graphics {
         /// </summary>
         internal uint ArrayId;
 
-        public VertexArrayObject() {
+        public VertexArrayObjectGL(OpenGLESBackend backend) {
             OpenGLHelper.CheckThread();
-            
-            this.gl = Global.Gl;
+
+            this.gl = backend.GetGlApi();
             //Generate Vertex Array
             this.ArrayId = this.gl.GenVertexArray();
             OpenGLHelper.CheckError();
@@ -34,15 +34,15 @@ namespace Furball.Vixie.Graphics {
         /// Adds a VertexBuffer with a certain Layout to this Vertex Array
         /// </summary>
         /// <param name="vertexBuffer">Vertex Buffer to add</param>
-        /// <param name="layout">Layout of said Vertex Buffer</param>
-        public unsafe VertexArrayObject AddBuffer(BufferObject vertexBuffer, VertexBufferLayout layout) {
+        /// <param name="layoutGl">Layout of said Vertex Buffer</param>
+        public unsafe VertexArrayObjectGL AddBuffer(BufferObjectGL vertexBuffer, VertexBufferLayoutGL layoutGl) {
             OpenGLHelper.CheckThread();
             
             //Bind both this and the Vertex Buffer
             this.Bind();
             vertexBuffer.Bind();
             //Get all the elements
-            var elements = layout.GetElements();
+            var elements = layoutGl.GetElements();
 
             uint offset = 0;
             //Loop over the elements
@@ -52,9 +52,9 @@ namespace Furball.Vixie.Graphics {
                 this.gl.EnableVertexAttribArray(i);
 
                 if (currentElement.Type != VertexAttribPointerType.Int)
-                    this.gl.VertexAttribPointer(i, currentElement.Count, currentElement.Type, currentElement.Normalized, layout.GetStride(), (void*)offset);
+                    this.gl.VertexAttribPointer(i, currentElement.Count, currentElement.Type, currentElement.Normalized, layoutGl.GetStride(), (void*)offset);
                 else
-                    this.gl.VertexAttribIPointer(i, currentElement.Count, VertexAttribIType.Int, layout.GetStride(), (void*)offset);
+                    this.gl.VertexAttribIPointer(i, currentElement.Count, VertexAttribIType.Int, layoutGl.GetStride(), (void*)offset);
 
                 offset += (uint) currentElement.Count * LayoutElement.GetSizeOfType(currentElement.Type);
             }
@@ -65,7 +65,7 @@ namespace Furball.Vixie.Graphics {
         /// <summary>
         /// Binds or Selects this current Vertex Array
         /// </summary>
-        public VertexArrayObject Bind() {
+        public VertexArrayObjectGL Bind() {
             OpenGLHelper.CheckThread();
             
             if (this.Locked)
@@ -90,7 +90,7 @@ namespace Furball.Vixie.Graphics {
         /// Binds and sets a Lock so that the Texture cannot be unbound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal VertexArrayObject LockingBind() {
+        internal VertexArrayObjectGL LockingBind() {
             this.Bind();
             this.Lock();
 
@@ -100,7 +100,7 @@ namespace Furball.Vixie.Graphics {
         /// Locks the Texture so that other Textures cannot be bound/unbound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal VertexArrayObject Lock() {
+        internal VertexArrayObjectGL Lock() {
             this.Locked = true;
 
             return this;
@@ -109,7 +109,7 @@ namespace Furball.Vixie.Graphics {
         /// Unlocks the Texture, so that other Textures can be bound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal VertexArrayObject Unlock() {
+        internal VertexArrayObjectGL Unlock() {
             this.Locked = false;
 
             return this;
@@ -118,7 +118,7 @@ namespace Furball.Vixie.Graphics {
         /// Uninds and unlocks the Texture so that other Textures can be bound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal VertexArrayObject UnlockingUnbind() {
+        internal VertexArrayObjectGL UnlockingUnbind() {
             this.Unlock();
             this.Unbind();
 
@@ -128,7 +128,7 @@ namespace Furball.Vixie.Graphics {
         /// <summary>
         /// Unbinds all Vertex Arrays
         /// </summary>
-        public VertexArrayObject Unbind() {
+        public VertexArrayObjectGL Unbind() {
             OpenGLHelper.CheckThread();
             
             if (this.Locked)

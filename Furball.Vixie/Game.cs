@@ -1,7 +1,6 @@
 ﻿using System;
-using Furball.Vixie.Helpers;
+using Furball.Vixie.Graphics.Backends;
 using Kettu;
-using Silk.NET.Core.Native;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.OpenGLES;
@@ -10,10 +9,6 @@ using Silk.NET.Windowing;
 
 namespace Furball.Vixie {
     public abstract class Game : IDisposable {
-        /// <summary>
-        /// OpenGL API, used to not do Global.Gl everytime
-        /// </summary>
-        internal GL      gl;
         /// <summary>
         /// Window Input Context
         /// </summary>
@@ -52,8 +47,8 @@ namespace Furball.Vixie {
         /// <summary>
         /// Runs the Game
         /// </summary>
-        public void Run(WindowOptions options) {
-            this.WindowManager = new WindowManager(options);
+        public void Run(WindowOptions options, Backend backend) {
+            this.WindowManager = new WindowManager(options, backend);
             this.WindowManager.Create();
 
             this.WindowManager.GameWindow.Update            += this.Update;
@@ -83,56 +78,19 @@ namespace Furball.Vixie {
         /// Used to Initialize the Renderer and stuff,
         /// </summary>
         private void RendererInitialize() {
-            Global.Gl             = this.WindowManager.GetGlApi();
-            this.gl               = Global.Gl;
-
-            OpenGLHelper.GetMainThread();
-
-#if DEBUGWITHGL
-            unsafe {
-                //Enables Debugging
-                gl.Enable(GLEnum.DebugOutput);
-                gl.Enable(GLEnum.DebugOutputSynchronous);
-                gl.DebugMessageCallback(this.Callback, null);
-            }
-#endif
-
-            //Enables Blending (Required for Transparent Objects)
-            gl.Enable(EnableCap.Blend);
-            gl.BlendFunc(GLEnum.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
-
             this._inputContext = this.WindowManager.GameWindow.CreateInput();
 
-            this._imGuiController = new ImGuiController(Global.Gl,
-                                                        Global.GameInstance.WindowManager.GameWindow,
-                                                        this._inputContext
-            );
+            //TODO: imgui
+            //this._imGuiController = new ImGuiController(Global.Gl,
+            //                                            Global.GameInstance.WindowManager.GameWindow,
+            //                                            this._inputContext
+            //);
 
-            this.GraphicsDevice  = new GraphicsDevice(gl);
-            Global.Device        = this.GraphicsDevice;
             Global.WindowManager = this.WindowManager;
 
             this.Initialize();
         }
-        /// <summary>
-        /// Debug Callback
-        /// </summary>
-        private void Callback(GLEnum source, GLEnum type, int id, GLEnum severity, int length, nint message, nint userparam) {
-            string stringMessage = SilkMarshal.PtrToString(message);
 
-            LoggerLevel level = severity switch {
-                GLEnum.DebugSeverityHigh         => LoggerLevelDebugMessageCallback.InstanceHigh,
-                GLEnum.DebugSeverityMedium       => LoggerLevelDebugMessageCallback.InstanceMedium,
-                GLEnum.DebugSeverityLow          => LoggerLevelDebugMessageCallback.InstanceLow,
-                GLEnum.DebugSeverityNotification => LoggerLevelDebugMessageCallback.InstanceNotification,
-                _                                => null
-            };
-            //before u say something beyley, i commented this out cuz it was crashing
-            //smth about array not being able to fit somewhere which i went like ???????????? what fuckin array
-            //Logger.Log($"{stringMessage}", level);
-
-            Console.WriteLine(stringMessage);
-        }
         /// <summary>
         /// Gets Fired when the Window Gets Closed
         /// </summary>
@@ -169,7 +127,7 @@ namespace Furball.Vixie {
         /// </summary>
         /// <param name="newSize">New Size</param>
         private void EngineFrameBufferResize(Vector2D<int> newSize) {
-            gl.Viewport(Vector2D<int>.Zero, newSize);
+            GraphicsBackend.Current.HandleFramebufferResize(newSize.X, newSize.Y);
 
             this.OnFrameBufferResize(newSize);
         }

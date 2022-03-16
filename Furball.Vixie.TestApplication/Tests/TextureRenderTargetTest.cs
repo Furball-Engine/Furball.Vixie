@@ -3,41 +3,42 @@ using System;
 using System.Globalization;
 using System.Numerics;
 using Furball.Vixie.Graphics;
-using Furball.Vixie.Graphics.Renderers.OpenGL;
+using Furball.Vixie.Graphics.Backends;
+using Furball.Vixie.Graphics.Renderers;
 using ImGuiNET;
 
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TextureRenderTargetTest : GameComponent {
-        private LineRenderer        _lineRenderer;
-        private TextureRenderTarget _renderTarget;
-        private Texture             _resultTexture;
-        private QuadRenderer        quadRenderer;
+        private ILineRenderer        _lineRendererGl;
+        private TextureRenderTarget _renderTargetGl;
+        private Texture             _resultTextureGl;
+        private IQuadRenderer        _quadRendererGl;
 
         public override void Initialize() {
-            this._lineRenderer    = new LineRenderer();
-            this._renderTarget    = new TextureRenderTarget(1280, 720);
-            this.quadRenderer = new QuadRenderer();
+            this._lineRendererGl = GraphicsBackend.Current.CreateLineRenderer();
+            this._renderTargetGl = TextureRenderTarget.Create(1280, 720);
+            this._quadRendererGl = GraphicsBackend.Current.CreateTextureRenderer();
 
             base.Initialize();
         }
 
         public override void Draw(double deltaTime) {
-            this.GraphicsDevice.GlClear();
+            GraphicsBackend.Current.Clear();
 
-            this._renderTarget.Bind();
+            this._renderTargetGl.Bind();
 
-            this._lineRenderer.Begin();
-            this._lineRenderer.Draw(new Vector2(1280, 720), new Vector2(0, 0), 16f, Color.Red);
-            this._lineRenderer.End();
+            this._lineRendererGl.Begin();
+            this._lineRendererGl.Draw(new Vector2(1280, 720), new Vector2(0, 0), 16f, Color.Red);
+            this._lineRendererGl.End();
 
-            this._renderTarget.Unbind();
+            this._renderTargetGl.Unbind();
 
-            this._resultTexture = this._renderTarget.GetTexture();
+            this._resultTextureGl = this._renderTargetGl.GetTexture();
 
-            this.quadRenderer.Begin();
-            this.quadRenderer.Draw(this._resultTexture, Vector2.Zero, new Vector2(1280, 720));
-            this.quadRenderer.End();
+            this._quadRendererGl.Begin();
+            this._quadRendererGl.Draw(this._resultTextureGl, Vector2.Zero, new Vector2(1280, 720));
+            this._quadRendererGl.End();
 
             #region ImGui menu
 
@@ -56,9 +57,7 @@ namespace Furball.Vixie.TestApplication.Tests {
         }
 
         public override void Dispose() {
-            this.quadRenderer.Dispose();
-            this._renderTarget.Dispose();
-            this._resultTexture.Dispose();
+            this._quadRendererGl.Dispose();
 
             base.Dispose();
         }

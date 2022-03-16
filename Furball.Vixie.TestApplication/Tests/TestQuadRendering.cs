@@ -2,21 +2,22 @@ using System;
 
 using System.Globalization;
 using System.Numerics;
-using Furball.Vixie.Graphics.Renderers.OpenGL;
+using Furball.Vixie.Graphics;
+using Furball.Vixie.Graphics.Backends;
+using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using ImGuiNET;
-using Texture=Furball.Vixie.Graphics.Texture;
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestQuadRendering : GameComponent {
-        private QuadRenderer _quadRenderer;
-        private Texture      _texture;
+        private IQuadRenderer _quadRendererGl;
+        private Texture          _textureGl;
 
         public override void Initialize() {
-            this._quadRenderer = new QuadRenderer();
+            this._quadRendererGl = GraphicsBackend.Current.CreateTextureRenderer();
 
             //Load the Texture
-            this._texture = new Texture(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
+            this._textureGl = Texture.Create(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
 
             base.Initialize();
         }
@@ -27,15 +28,15 @@ namespace Furball.Vixie.TestApplication.Tests {
         private int CirnoDons = 1024;
 
         public override void Draw(double deltaTime) {
-            this.GraphicsDevice.GlClear();
+            GraphicsBackend.Current.Clear();
 
-            this._quadRenderer.Begin();
+            this._quadRendererGl.Begin();
 
             for (int i = 0; i != this.CirnoDons; i++) {
-                this._quadRenderer.Draw(this._texture, new Vector2(i % 1024, 0));
+                this._quadRendererGl.Draw(this._textureGl, new Vector2(i % 1024, 0));
             }
 
-            this._quadRenderer.End();
+            this._quadRendererGl.End();
 
             #region ImGui menu
 
@@ -56,8 +57,7 @@ namespace Furball.Vixie.TestApplication.Tests {
         }
 
         public override void Dispose() {
-            this._texture.Dispose();
-            this._quadRenderer.Dispose();
+            this._quadRendererGl.Dispose();
 
             base.Dispose();
         }

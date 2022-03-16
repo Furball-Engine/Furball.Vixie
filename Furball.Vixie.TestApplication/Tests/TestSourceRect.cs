@@ -3,19 +3,20 @@ using System.Drawing;
 using System.Globalization;
 using System.Numerics;
 using Furball.Vixie.Graphics;
-using Furball.Vixie.Graphics.Renderers.OpenGL;
+using Furball.Vixie.Graphics.Backends;
+using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using ImGuiNET;
 using Color=Furball.Vixie.Graphics.Color;
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestSourceRect : GameComponent {
-        private QuadRenderer _quadRenderer;
+        private IQuadRenderer _quadRenderer;
         private Texture      _whiteTexture;
 
         public override void Initialize() {
-            this._quadRenderer = new QuadRenderer();
-            this._whiteTexture = new Texture(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
+            this._quadRenderer = GraphicsBackend.Current.CreateTextureRenderer();
+            this._whiteTexture = Texture.Create(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
 
             base.Initialize();
         }
@@ -23,7 +24,7 @@ namespace Furball.Vixie.TestApplication.Tests {
         private float _rotation = 1f;
 
         public override void Draw(double deltaTime) {
-            this.GraphicsDevice.GlClear();
+            GraphicsBackend.Current.Clear();
 
             this._quadRenderer.Begin();
             this._quadRenderer.Draw(this._whiteTexture, new Vector2(1280 / 2, 720 / 2), Vector2.One, 0, Color.White, new Rectangle(371 / 2, 0, 371 / 2, 326));
@@ -48,9 +49,6 @@ namespace Furball.Vixie.TestApplication.Tests {
         }
 
         public override void Dispose() {
-            this._quadRenderer.Dispose();
-            this._whiteTexture.Dispose();
-
             base.Dispose();
         }
     }

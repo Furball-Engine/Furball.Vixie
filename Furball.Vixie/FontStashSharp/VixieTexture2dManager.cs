@@ -2,11 +2,18 @@ using System.Drawing;
 using System.Numerics;
 using FontStashSharp.Interfaces;
 using Furball.Vixie.Graphics;
+using Furball.Vixie.Graphics.Backends;
 
 namespace Furball.Vixie.FontStashSharp {
     public class VixieTexture2dManager : ITexture2DManager {
+        private GraphicsBackend _backend;
+
+        public VixieTexture2dManager(GraphicsBackend backend) {
+            this._backend = backend;
+        }
+
         public object CreateTexture(int width, int height) {
-            return new Texture((uint) width, (uint) height);
+            return this._backend.CreateTexture((uint) width, (uint) height);
         }
 
         public Point GetTextureSize(object texture) {

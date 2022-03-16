@@ -4,17 +4,19 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using FontStashSharp;
 using Furball.Vixie.FontStashSharp;
+using Furball.Vixie.Graphics.Backends.OpenGL.Abstractions;
+using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using Silk.NET.OpenGLES;
 
-namespace Furball.Vixie.Graphics.Renderers.OpenGL {
-    public class QuadRenderer : ITextureRenderer, ITextRenderer {
+namespace Furball.Vixie.Graphics.Backends.OpenGL {
+    public class QuadRendererGL : IQuadRenderer {
         [StructLayout(LayoutKind.Sequential)]
         private struct Vertex {
             public Vector2 Position;
             public Vector2 TexturePosition;
         }
-        
+
         private static Vertex[] _vertices = {
             new() {
                 Position        = new Vector2(0, 0),
@@ -35,7 +37,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         };
         private static ushort[] _indicies = {
             //Tri 1
-            0, 1, 2, 
+            0, 1, 2,
             //Tri 2
             2, 3, 0
         };
@@ -51,174 +53,178 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             public float   Rotation;
             public int     TextureId;
         }
-        
-        private BufferObject      _vbo;
-        private BufferObject      _instanceVbo;
-        private VertexArrayObject _vao;
+
+        private BufferObjectGL      _vbo;
+        private BufferObjectGL      _instanceVbo;
+        private VertexArrayObjectGL _vao;
 
         private VixieFontStashRenderer _textRenderer;
 
-        private Shader _shader;
+        private ShaderGL _shaderGl;
 
+        private OpenGLESBackend _backend;
         // ReSharper disable once InconsistentNaming
         private GL gl;
-        
-        public unsafe QuadRenderer() {
+
+        public unsafe QuadRendererGL(OpenGLESBackend backend) {
             OpenGLHelper.CheckThread();
 
-            gl = Global.Gl;
+            this._backend = backend;
+            this.gl       = this._backend.GetGlApi();
+
+            this._boundTextures = new TextureGL[this._backend.QueryMaxTextureUnits()];
 
             string vertSource = ResourceHelpers.GetStringResource("ShaderCode/InstancedRenderer/VertexShader.glsl");
             string fragSource = ResourceHelpers.GetStringResource("ShaderCode/InstancedRenderer/FragmentShader.glsl");
 
-            _shader = new Shader();
+            this._shaderGl = new ShaderGL(backend);
 
-            _shader.AttachShader(ShaderType.VertexShader,   vertSource);
-            _shader.AttachShader(ShaderType.FragmentShader, fragSource);
-            _shader.Link();
+            this._shaderGl.AttachShader(ShaderType.VertexShader,   vertSource);
+            this._shaderGl.AttachShader(ShaderType.FragmentShader, fragSource);
+            this._shaderGl.Link();
 
-            _shader.Bind();
-            
+            this._shaderGl.Bind();
+
             OpenGLHelper.CheckError();
 
-            for (int i = 0; i < Global.Device.MaxTextureImageUnits; i++) {
-                _shader.BindUniformToTexUnit($"tex_{i}", i);
+            for (int i = 0; i < backend.QueryMaxTextureUnits(); i++) {
+                this._shaderGl.BindUniformToTexUnit($"tex_{i}", i);
             }
 
-            this._vao = new VertexArrayObject();
+            this._vao = new VertexArrayObjectGL(backend);
             this._vao.Bind();
 
-            this._vbo = new BufferObject(BufferTargetARB.ArrayBuffer, BufferUsageARB.StaticDraw);
+            this._vbo = new BufferObjectGL(backend, BufferTargetARB.ArrayBuffer, BufferUsageARB.StaticDraw);
             this._vbo.Bind();
             this._vbo.SetData<Vertex>(_vertices);
-            
+
             //Vertex Position
-            gl.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, (uint)sizeof(Vertex), (void*)0);
+            this.gl.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, (uint)sizeof(Vertex), (void*)0);
             //Texture position
-            gl.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, (uint)sizeof(Vertex), (void*)sizeof(Vector2));
-            OpenGLHelper.CheckError();
-            
-            gl.EnableVertexAttribArray(0);
-            gl.EnableVertexAttribArray(1);
+            this.gl.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, (uint)sizeof(Vertex), (void*)sizeof(Vector2));
             OpenGLHelper.CheckError();
 
-            this._instanceVbo = new BufferObject(BufferTargetARB.ArrayBuffer, BufferUsageARB.DynamicDraw);
+            this.gl.EnableVertexAttribArray(0);
+            this.gl.EnableVertexAttribArray(1);
+            OpenGLHelper.CheckError();
+
+            this._instanceVbo = new BufferObjectGL(backend, BufferTargetARB.ArrayBuffer, BufferUsageARB.DynamicDraw);
             this._instanceVbo.Bind();
 
             this._instanceVbo.SetData(null, (nuint)(sizeof(InstanceData) * NUM_INSTANCES));
 
             int ptrPos = 0;
             //Position
-            gl.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
-            gl.VertexAttribDivisor(2, 1);
+            this.gl.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
+            this.gl.VertexAttribDivisor(2, 1);
             ptrPos += sizeof(Vector2);
             //Size
-            gl.VertexAttribPointer(3, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
-            gl.VertexAttribDivisor(3, 1);
+            this.gl.VertexAttribPointer(3, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
+            this.gl.VertexAttribDivisor(3, 1);
             ptrPos += sizeof(Vector2);
             //Color
-            gl.VertexAttribPointer(4, 4, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
-            gl.VertexAttribDivisor(4, 1);
+            this.gl.VertexAttribPointer(4, 4, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
+            this.gl.VertexAttribDivisor(4, 1);
             ptrPos += sizeof(Color);
             //Texture position
-            gl.VertexAttribPointer(5, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
-            gl.VertexAttribDivisor(5, 1);
+            this.gl.VertexAttribPointer(5, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
+            this.gl.VertexAttribDivisor(5, 1);
             ptrPos += sizeof(Vector2);
             //Texture size
-            gl.VertexAttribPointer(6, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
-            gl.VertexAttribDivisor(6, 1);
+            this.gl.VertexAttribPointer(6, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
+            this.gl.VertexAttribDivisor(6, 1);
             ptrPos += sizeof(Vector2);
             //Rotation origin
-            gl.VertexAttribPointer(7, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
-            gl.VertexAttribDivisor(7, 1);
+            this.gl.VertexAttribPointer(7, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
+            this.gl.VertexAttribDivisor(7, 1);
             ptrPos += sizeof(Vector2);
             //Rotation
-            gl.VertexAttribPointer(8, 1, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
-            gl.VertexAttribDivisor(8, 1);
+            this.gl.VertexAttribPointer(8, 1, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
+            this.gl.VertexAttribDivisor(8, 1);
             ptrPos += sizeof(float);
             //Texture id
-            gl.VertexAttribIPointer(9, 1, VertexAttribIType.Int, (uint)sizeof(InstanceData), (void*)ptrPos);
-            gl.VertexAttribDivisor(9, 1);
+            this.gl.VertexAttribIPointer(9, 1, VertexAttribIType.Int, (uint)sizeof(InstanceData), (void*)ptrPos);
+            this.gl.VertexAttribDivisor(9, 1);
             ptrPos += sizeof(int);
 
-            gl.EnableVertexAttribArray(2);
-            gl.EnableVertexAttribArray(3);
-            gl.EnableVertexAttribArray(4);
-            gl.EnableVertexAttribArray(5);
-            gl.EnableVertexAttribArray(6);
-            gl.EnableVertexAttribArray(7);
-            gl.EnableVertexAttribArray(8);
-            gl.EnableVertexAttribArray(9);
+            this.gl.EnableVertexAttribArray(2);
+            this.gl.EnableVertexAttribArray(3);
+            this.gl.EnableVertexAttribArray(4);
+            this.gl.EnableVertexAttribArray(5);
+            this.gl.EnableVertexAttribArray(6);
+            this.gl.EnableVertexAttribArray(7);
+            this.gl.EnableVertexAttribArray(8);
+            this.gl.EnableVertexAttribArray(9);
 
             OpenGLHelper.CheckError();
-            
+
             this._instanceVbo.Unbind();
             this._vao.Unbind();
 
-            this._textRenderer = new VixieFontStashRenderer(this);
+            this._textRenderer = new VixieFontStashRenderer(this._backend, this);
         }
 
         public void Dispose() {
-            this._shader.Dispose();
+            this._shaderGl.Dispose();
             this._vao.Dispose();
             this._vbo.Dispose();
             this._instanceVbo.Dispose();
         }
-        
+
         public bool IsBegun {
             get;
             set;
         }
-        
-        public void Begin() {
-            this._shader.Bind();
 
-            _shader.SetUniform("vx_ModifierX",              Global.GameInstance.WindowManager.PositionMultiplier.X)
+        public void Begin() {
+            this._shaderGl.Bind();
+
+            this._shaderGl.SetUniform("vx_ModifierX",              Global.GameInstance.WindowManager.PositionMultiplier.X)
                    .SetUniform("vx_ModifierY",              Global.GameInstance.WindowManager.PositionMultiplier.Y)
                    .SetUniform("vx_WindowProjectionMatrix", Global.GameInstance.WindowManager.ProjectionMatrix);
-            
+
             this._instances = 0;
             this._usedTextures = 0;
 
             this.IsBegun = true;
         }
 
-        public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
-            if (!IsBegun)
+        public void Draw(Texture textureGl, Vector2 position, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
+            if (!this.IsBegun)
                 throw new Exception("Begin() has not been called!");
 
             //Ignore calls with invalid textures
-            if (texture == null)
+            if (textureGl == null)
                 return;
-            
-            if (_instances >= NUM_INSTANCES || _usedTextures == Global.Device.MaxTextureImageUnits) {
-                Flush();
+
+            if (this._instances >= NUM_INSTANCES || this._usedTextures == this._backend.QueryMaxTextureUnits()) {
+                this.Flush();
             }
 
             this._instanceData[this._instances].Position              = position;
-            this._instanceData[this._instances].Size                  = texture.Size * scale;
+            this._instanceData[this._instances].Size                  = textureGl.Size * scale;
             this._instanceData[this._instances].Color                 = colorOverride;
             this._instanceData[this._instances].Rotation              = rotation;
             this._instanceData[this._instances].RotationOrigin        = rotOrigin;
-            this._instanceData[this._instances].TextureId             = GetTextureId(texture);
-            this._instanceData[this._instances].TextureRectPosition.X = (float)0 / texture.Width;
-            this._instanceData[this._instances].TextureRectPosition.Y = (float)0 / texture.Height;
-            this._instanceData[this._instances].TextureRectSize.X     = texture.Size.X / texture.Width;
-            this._instanceData[this._instances].TextureRectSize.Y     = texture.Size.Y / texture.Height;
+            this._instanceData[this._instances].TextureId             = this.GetTextureId(textureGl);
+            this._instanceData[this._instances].TextureRectPosition.X = (float)0         / textureGl.Width;
+            this._instanceData[this._instances].TextureRectPosition.Y = (float)0         / textureGl.Height;
+            this._instanceData[this._instances].TextureRectSize.X     = textureGl.Size.X / textureGl.Width;
+            this._instanceData[this._instances].TextureRectSize.Y     = textureGl.Size.Y / textureGl.Height;
 
             this._instances++;
         }
 
-        public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, Rectangle sourceRect, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
-            if (!IsBegun)
+        public void Draw(Texture textureGl, Vector2 position, Vector2 scale, float rotation, Color colorOverride, Rectangle sourceRect, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
+            if (!this.IsBegun)
                 throw new Exception("Begin() has not been called!");
 
             //Ignore calls with invalid textures
-            if (texture == null)
+            if (textureGl == null || textureGl is not TextureGL)
                 return;
 
-            if (_instances >= NUM_INSTANCES || _usedTextures == Global.Device.MaxTextureImageUnits) {
-                Flush();
+            if (this._instances >= NUM_INSTANCES || this._usedTextures == this._backend.QueryMaxTextureUnits()) {
+                this.Flush();
             }
 
             //Set Size to the Source Rectangle
@@ -232,60 +238,60 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             this._instanceData[this._instances].Color                 = colorOverride;
             this._instanceData[this._instances].Rotation              = rotation;
             this._instanceData[this._instances].RotationOrigin        = rotOrigin;
-            this._instanceData[this._instances].TextureId             = GetTextureId(texture);
-            this._instanceData[this._instances].TextureRectPosition.X = (float)sourceRect.X      / texture.Width;
-            this._instanceData[this._instances].TextureRectPosition.Y = (float)sourceRect.Y      / texture.Height;
-            this._instanceData[this._instances].TextureRectSize.X     = (float)sourceRect.Width  / texture.Width;
-            this._instanceData[this._instances].TextureRectSize.Y     = (float)sourceRect.Height / texture.Height;
+            this._instanceData[this._instances].TextureId             = this.GetTextureId(textureGl);
+            this._instanceData[this._instances].TextureRectPosition.X = (float)sourceRect.X      / textureGl.Width;
+            this._instanceData[this._instances].TextureRectPosition.Y = (float)sourceRect.Y      / textureGl.Height;
+            this._instanceData[this._instances].TextureRectSize.X     = (float)sourceRect.Width  / textureGl.Width;
+            this._instanceData[this._instances].TextureRectSize.Y     = (float)sourceRect.Height / textureGl.Height;
 
             this._instances++;
         }
 
-        public void Draw(Texture texture, Vector2 position, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {
-            Draw(texture, position, Vector2.One, rotation, Color.White, flip, rotOrigin);
+        public void Draw(Texture textureGl, Vector2 position, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {
+            this.Draw(textureGl, position, Vector2.One, rotation, Color.White, flip, rotOrigin);
         }
 
-        public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {
-            Draw(texture, position, scale, rotation, Color.White, flip, rotOrigin);
+        public void Draw(Texture textureGl, Vector2 position, Vector2 scale, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {
+            this.Draw(textureGl, position, scale, rotation, Color.White, flip, rotOrigin);
         }
 
-        public void Draw(Texture texture, Vector2 position, Vector2 scale, Color colorOverride, float rotation = 0, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
-            Draw(texture, position, scale, rotation, colorOverride, texFlip, rotOrigin);
+        public void Draw(Texture textureGl, Vector2 position, Vector2 scale, Color colorOverride, float rotation = 0, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
+            this.Draw(textureGl, position, scale, rotation, colorOverride, texFlip, rotOrigin);
         }
 
-        private readonly Texture[] _boundTextures = new Texture[Global.Device.MaxTextureImageUnits];
+        private readonly Texture[] _boundTextures;
         private          int       _usedTextures  = 0;
-        
-        
+
+
         private int GetTextureId(Texture tex) {
-            if(_usedTextures != 0)
-                for (int i = 0; i < _usedTextures; i++) {
-                    Texture tex2 = _boundTextures[i];
+            if(this._usedTextures != 0)
+                for (int i = 0; i < this._usedTextures; i++) {
+                    Texture tex2 = this._boundTextures[i];
 
                     if (tex2 == null) break;
                     if (tex  == tex2) return i;
                 }
 
-            _boundTextures[_usedTextures] = tex;
-            _usedTextures++;
-		
-            return _usedTextures - 1;
+            this._boundTextures[this._usedTextures] = tex;
+            this._usedTextures++;
+
+            return this._usedTextures - 1;
         }
-        
+
         public const int NUM_INSTANCES = 1024;
 
         private          uint           _instances    = 0;
         private readonly InstanceData[] _instanceData = new InstanceData[NUM_INSTANCES];
-        
+
         private unsafe void Flush() {
-            if (_instances == 0) return;
-            
-            for (int i = 0; i < _usedTextures; i++) {
-                Texture tex = _boundTextures[i];
-			
+            if (this._instances == 0) return;
+
+            for (int i = 0; i < this._usedTextures; i++) {
+                TextureGL tex = this._boundTextures[i] as TextureGL;
+
                 tex.Bind(TextureUnit.Texture0 + i);
             }
-            
+
             this._vao.Bind();
             OpenGLHelper.CheckError();
 
@@ -293,13 +299,13 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             this._instanceVbo.Bind();
             fixed (void* ptr = this._instanceData)
                 this._instanceVbo.SetSubData(ptr, (nuint)(this._instances * sizeof(InstanceData)));
-            
-            gl.DrawElementsInstanced<ushort>(PrimitiveType.TriangleStrip, 6, DrawElementsType.UnsignedShort, _indicies, this._instances);
+
+            this.gl.DrawElementsInstanced<ushort>(PrimitiveType.TriangleStrip, 6, DrawElementsType.UnsignedShort, _indicies, this._instances);
 
             this._instances    = 0;
             this._usedTextures = 0;
         }
-        
+
         public void End() {
             this.Flush();
             this.IsBegun = false;
@@ -308,7 +314,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         #region text
 
         public void DrawString(DynamicSpriteFont font, string text, Vector2 position, Color color, float rotation = 0, Vector2? scale = null) {
-            DrawString(font, text, position, color, rotation, scale, default);
+            this.DrawString(font, text, position, color, rotation, scale, default);
         }
         
         /// <summary>

@@ -1,17 +1,19 @@
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using Furball.Vixie.Graphics.Backends.OpenGL.Abstractions;
+using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using Silk.NET.OpenGLES;
 
-namespace Furball.Vixie.Graphics.Renderers.OpenGL {
+namespace Furball.Vixie.Graphics.Backends.OpenGL {
     [StructLayout(LayoutKind.Sequential)]
     public unsafe struct BatchedLineVertex {
         public fixed float Positions[4];
         public fixed float Color[4];
     }
 
-    public class LineRenderer : IDisposable, ILineRenderer {
+    public class LineRendererGL : IDisposable, ILineRenderer {
         /// <summary>
         /// Max Lines allowed in 1 Batch
         /// </summary>
@@ -28,15 +30,15 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// <summary>
         /// Vertex Array which stores the Vertex Buffer layout information
         /// </summary>
-        private readonly VertexArrayObject _vertexArray;
+        private readonly VertexArrayObjectGL _vertexArray;
         /// <summary>
         /// Vertex buffer which contains all the Batched Verticies
         /// </summary>
-        private readonly BufferObject      _vertexBuffer;
+        private readonly BufferObjectGL      _vertexBuffer;
         /// <summary>
         /// Shader which draws those thicc lines
         /// </summary>
-        private readonly Shader            _lineShader;
+        private readonly ShaderGL            _lineShaderGl;
 
 
         /// <summary>
@@ -49,9 +51,10 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// <summary>
         /// Creates a Batched Line Renderer
         /// </summary>
+        /// <param name="backend">OpenGLES API</param>
         /// <param name="capacity">How many Lines to allow in 1 Batch</param>
-        public unsafe LineRenderer(int capacity = 8192) {
-            this.gl = Global.Gl;
+        public unsafe LineRendererGL(OpenGLESBackend backend, int capacity = 8192) {
+            this.gl = backend.GetGlApi();
 
             //Calculate Constants
             this.MaxLines     = capacity;
@@ -63,8 +66,8 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             string geometrySource = ResourceHelpers.GetStringResource("ShaderCode/LineRenderer/GeometryShader.glsl", true);
 
             //Create, Bind, Attach, Compile and Link the Vertex Fragment and Geometry Shaders
-            this._lineShader =
-                new Shader()
+            this._lineShaderGl =
+                new ShaderGL(backend)
                     .Bind()
                     .AttachShader(ShaderType.VertexShader,   vertexSource)
                     .AttachShader(ShaderType.FragmentShader, fragmentSource)
@@ -72,21 +75,21 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
                     .Link();
 
             //Define Layout of the Vertex Buffer
-            VertexBufferLayout layout =
-                new VertexBufferLayout()
+            VertexBufferLayoutGL layoutGl =
+                new VertexBufferLayoutGL()
                     .AddElement<float>(4)                  //Position
                     .AddElement<float>(4, true);  //Color
 
             //Create Vertex Buffer with the Required size
-            this._vertexBuffer = new BufferObject(sizeof(BatchedLineVertex) * this.MaxVerticies, BufferTargetARB.ArrayBuffer);
+            this._vertexBuffer = new BufferObjectGL(backend, sizeof(BatchedLineVertex) * this.MaxVerticies, BufferTargetARB.ArrayBuffer);
 
             //Create the VAO
-            this._vertexArray = new VertexArrayObject();
+            this._vertexArray = new VertexArrayObjectGL(backend);
 
             //Add the layout to the Vertex Array
             this._vertexArray
                 .Bind()
-                .AddBuffer(this._vertexBuffer, layout);
+                .AddBuffer(this._vertexBuffer, layoutGl);
 
             //Initialize the Local Vertex Buffer copy
             this._localVertexBuffer = new BatchedLineVertex[this.MaxVerticies];
@@ -113,7 +116,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
                 this._vertexPointer = data;
 
             //Bind the Shader and set the necessary uniforms
-            this._lineShader
+            this._lineShaderGl
                 .LockingBind()
                 .SetUniform("u_mvp",           Global.GameInstance.WindowManager.ProjectionMatrix)
                 .SetUniform("vx_ModifierX",     Global.GameInstance.WindowManager.PositionMultiplier.X)
@@ -136,7 +139,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         /// <param name="thickness">Thickness of the Line</param>
         /// <param name="color">Color of the Line</param>
         public unsafe void Draw(Vector2 begin, Vector2 end, float thickness, Color color) {
-            if (!IsBegun)
+            if (!this.IsBegun)
                 throw new Exception("Cannot call Draw before Calling Begin in BatchedLineRenderer!");
 
             //If we have gone over the allowed number of Verticies in 1 Batch, draw whats already there and restat
@@ -192,7 +195,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             this._vertexBufferIndex = 0;
 
             //Unlock all
-            this._lineShader.Unlock();
+            this._lineShaderGl.Unlock();
             this._vertexBuffer.Unlock();
             this._vertexArray.Unlock();
 
@@ -204,15 +207,15 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
         public void Dispose() {
             try {
                 //Unlock Shaders and other things
-                if (this._lineShader.Locked)
-                    this._lineShader.Unlock();
+                if (this._lineShaderGl.Locked)
+                    this._lineShaderGl.Unlock();
                 if (this._vertexBuffer.Locked)
                     this._vertexBuffer.Unlock();
                 if (this._vertexArray.Locked)
                     this._vertexArray.Unlock();
 
                 this._vertexArray.Dispose();
-                this._lineShader.Dispose();
+                this._lineShaderGl.Dispose();
                 this._vertexBuffer.Dispose();
             }
             catch {

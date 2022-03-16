@@ -2,19 +2,20 @@ using System;
 using System.Globalization;
 using System.Numerics;
 using Furball.Vixie.Graphics;
-using Furball.Vixie.Graphics.Renderers.OpenGL;
+using Furball.Vixie.Graphics.Backends;
+using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using ImGuiNET;
 
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestRotation : GameComponent {
-        private QuadRenderer _quadRenderer;
-        private Texture      _whiteTexture;
+        private IQuadRenderer _quadRendererGl;
+        private Texture      _whiteTextureGl;
 
         public override void Initialize() {
-            this._quadRenderer = new QuadRenderer();
-            this._whiteTexture = new Texture(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
+            this._quadRendererGl = GraphicsBackend.Current.CreateTextureRenderer();
+            this._whiteTextureGl = Texture.Create(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
 
             base.Initialize();
         }
@@ -22,11 +23,11 @@ namespace Furball.Vixie.TestApplication.Tests {
         private float _rotation = 1f;
 
         public override void Draw(double deltaTime) {
-            this.GraphicsDevice.GlClear();
+            GraphicsBackend.Current.Clear();
 
-            this._quadRenderer.Begin();
-            this._quadRenderer.Draw(this._whiteTexture, new Vector2(1280 / 2, 720 / 2), Vector2.One, _rotation);
-            this._quadRenderer.End();
+            this._quadRendererGl.Begin();
+            this._quadRendererGl.Draw(this._whiteTextureGl, new Vector2(1280 / 2, 720 / 2), Vector2.One, _rotation);
+            this._quadRendererGl.End();
 
             #region ImGui menu
 
@@ -47,9 +48,7 @@ namespace Furball.Vixie.TestApplication.Tests {
         }
 
         public override void Dispose() {
-            this._quadRenderer.Dispose();
-            this._quadRenderer.Dispose();
-            this._whiteTexture.Dispose();
+            this._quadRendererGl.Dispose();
 
             base.Dispose();
         }

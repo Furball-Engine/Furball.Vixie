@@ -1,3 +1,4 @@
+using Furball.Vixie.Graphics.Backends;
 using Furball.Vixie.TestApplication.Tests;
 using ImGuiNET;
 
@@ -5,14 +6,9 @@ namespace Furball.Vixie.TestApplication {
     public class BaseTestSelector : GameComponent {
 
         public override void Draw(double deltaTime) {
-            this.GraphicsDevice.GlClear();
+            GraphicsBackend.Current.Clear();
 
             ImGui.Begin("Test Selector");
-
-            if (ImGui.Button("Texture Drawing Test")) {
-                this.BaseGame.Components.Add(new TestTextureDrawing());
-                this.BaseGame.Components.Remove(this);
-            }
 
             if (ImGui.Button("Batched Rendering Test")) {
                 this.BaseGame.Components.Add(new TestQuadRendering());

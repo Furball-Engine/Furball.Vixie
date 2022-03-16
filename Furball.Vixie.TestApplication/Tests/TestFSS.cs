@@ -3,16 +3,18 @@ using System;
 using System.Globalization;
 using System.Numerics;
 using FontStashSharp;
+using FontStashSharp.Interfaces;
 using Furball.Vixie.FontStashSharp;
 using Furball.Vixie.Graphics;
-using Furball.Vixie.Graphics.Renderers.OpenGL;
+using Furball.Vixie.Graphics.Backends;
+using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using ImGuiNET;
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestFSS : GameComponent {
         private VixieFontStashRenderer _renderer;
-        private QuadRenderer           _quadRenderer;
+        private IQuadRenderer           _quadRendererGl;
         private DynamicSpriteFont      _font;
 
         public readonly FontSystem DEFAULT_FONT = new(new FontSystemSettings {
@@ -26,8 +28,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             this.DEFAULT_FONT.AddFont(ResourceHelpers.GetByteResource("Resources/font.ttf"));
             this._font = this.DEFAULT_FONT.GetFont(48);
 
-            this._quadRenderer = new QuadRenderer();
-            this._renderer     = new VixieFontStashRenderer(this._quadRenderer);
+            this._quadRendererGl = GraphicsBackend.Current.CreateTextureRenderer();
 
             base.Initialize();
         }
@@ -36,11 +37,11 @@ namespace Furball.Vixie.TestApplication.Tests {
         private float _rotation = 0f;
 
         public override void Draw(double deltaTime) {
-            this.GraphicsDevice.GlClear();
+            GraphicsBackend.Current.Clear();
 
-            this._quadRenderer.Begin();
-            this._quadRenderer.DrawString(this._font, "VixieFontStashSharpRenderer Testing", new Vector2(10, 10), Color.White, this._rotation, new Vector2(_scale));
-            this._quadRenderer.End();
+            this._quadRendererGl.Begin();
+            this._quadRendererGl.DrawString(this._font, "VixieFontStashSharpRenderer Testing", new Vector2(10, 10), Color.White, this._rotation, new Vector2(_scale));
+            this._quadRendererGl.End();
 
             #region ImGui menu
 
@@ -63,7 +64,7 @@ namespace Furball.Vixie.TestApplication.Tests {
 
         public override void Dispose() {
             this.DEFAULT_FONT.Dispose();
-            this._quadRenderer.Dispose();
+            this._quadRendererGl.Dispose();
 
             base.Dispose();
         }

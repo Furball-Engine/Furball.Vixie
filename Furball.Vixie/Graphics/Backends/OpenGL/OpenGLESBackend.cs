@@ -1,0 +1,119 @@
+using System;
+using System.IO;
+using System.Numerics;
+using Furball.Vixie.Graphics.Backends.OpenGL.Abstractions;
+using Furball.Vixie.Graphics.Renderers;
+using Furball.Vixie.Helpers;
+using Kettu;
+using Silk.NET.Core.Native;
+using Silk.NET.OpenGLES;
+using Silk.NET.Windowing;
+
+namespace Furball.Vixie.Graphics.Backends.OpenGL {
+    // ReSharper disable once InconsistentNaming
+    public class OpenGLESBackend : GraphicsBackend {
+        // ReSharper disable once InconsistentNaming
+        private GL gl;
+
+        private Matrix4x4 _projectionMatrix;
+
+        private int _maxTextureUnits = -1;
+
+        public override void Initialize(IWindow window) {
+            OpenGLHelper.GetMainThread();
+
+            gl = window.CreateOpenGLES();
+
+#if DEBUGWITHGL
+            unsafe {
+                //Enables Debugging
+                gl.Enable(EnableCap.DebugOutput);
+                gl.Enable(EnableCap.DebugOutputSynchronous);
+                gl.DebugMessageCallback(this.Callback, null);
+            }
+#endif
+
+            //Enables Blending (Required for Transparent Objects)
+            gl.Enable(EnableCap.Blend);
+            gl.BlendFunc(GLEnum.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+        }
+
+        public override void Cleanup() {
+            this.gl.Dispose();
+        }
+
+        public override void HandleWindowSizeChange(int width, int height) {
+            gl.Viewport(0, 0, (uint) width, (uint) height);
+
+            this._projectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, 0, height, 1f, 0f);
+        }
+
+        public override void HandleFramebufferResize(int width, int height) {
+            gl.Viewport(0, 0, (uint) width, (uint) height);
+        }
+
+        public override IQuadRenderer CreateTextureRenderer() {
+            return new QuadRendererGL(this);
+        }
+
+        public override ILineRenderer CreateLineRenderer() {
+            return new LineRendererGL(this);
+        }
+
+        public override int QueryMaxTextureUnits() {
+            if (this._maxTextureUnits == -1) {
+                gl.GetInteger(GetPName.MaxTextureImageUnits, out int maxTexSlots);
+                this._maxTextureUnits = maxTexSlots;
+            }
+
+            return this._maxTextureUnits;
+        }
+
+        public override void Clear() {
+            gl.Clear(ClearBufferMask.ColorBufferBit);
+        }
+
+        public override TextureRenderTarget CreateRenderTarget(uint width, uint height) {
+            return new TextureRenderTargetGL(this, width, height);
+        }
+
+        public override Texture CreateTexture(byte[] imageData, bool qoi = false) {
+            return new TextureGL(this, imageData, qoi);
+        }
+
+        public override Texture CreateTexture(Stream stream) {
+            return new TextureGL(this, stream);
+        }
+
+        public override Texture CreateTexture(uint width, uint height) {
+            return new TextureGL(this, width, height);
+        }
+
+        public override Texture CreateTexture(string filepath) {
+            return new TextureGL(this, filepath);
+        }
+
+        public override Texture CreateWhitePixelTexture() {
+            return new TextureGL(this);
+        }
+
+        public GL GetGlApi() => this.gl;
+
+        /// <summary>
+        /// Debug Callback
+        /// </summary>
+        private void Callback(GLEnum source, GLEnum type, int id, GLEnum severity, int length, nint message, nint userparam) {
+            string stringMessage = SilkMarshal.PtrToString(message);
+
+            LoggerLevel level = severity switch {
+                GLEnum.DebugSeverityHigh         => LoggerLevelDebugMessageCallback.InstanceHigh,
+                GLEnum.DebugSeverityMedium       => LoggerLevelDebugMessageCallback.InstanceMedium,
+                GLEnum.DebugSeverityLow          => LoggerLevelDebugMessageCallback.InstanceLow,
+                GLEnum.DebugSeverityNotification => LoggerLevelDebugMessageCallback.InstanceNotification,
+                _                                => null
+            };
+
+            Console.WriteLine(stringMessage);
+        }
+    }
+}
