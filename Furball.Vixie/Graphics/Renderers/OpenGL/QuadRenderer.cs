@@ -183,46 +183,74 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
             this.IsBegun = true;
         }
 
-        public void Draw(Texture texture, Vector2 position, Vector2? size = null, Vector2? scale = null, float rotation = 0, Color? colorOverride = null, Rectangle? sourceRect = null, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
-            if (!IsBegun) throw new Exception("Begin() has not been called!");
+        public void Draw(Texture texture, Vector2 position, Vector2 size, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
+            if (!IsBegun)
+                throw new Exception("Begin() has not been called!");
 
             //Ignore calls with invalid textures
-            if (texture == null) return;
+            if (texture == null)
+                return;
             
             if (_instances >= NUM_INSTANCES || _usedTextures == Global.Device.MaxTextureImageUnits) {
                 Flush();
             }
-            
-            //Default Scale
-            if(scale == null || scale == Vector2.Zero)
-                scale = Vector2.One;
-            //Default Texture Size
-            if (size == null || size == Vector2.Zero)
-                size = texture.Size;
-            //Set Size to the Source Rectangle
-            if (sourceRect.HasValue)
-                size = new Vector2(sourceRect.Value.Width, sourceRect.Value.Height);
-            //Default Tint Color
-            if(colorOverride == null)
-                colorOverride = Color.White;
-            //Default Rectangle
-            if (sourceRect == null)
-                sourceRect = new Rectangle(0, 0, (int) size.Value.X, (int) size.Value.Y);
-            //Apply Scale
-            size *= scale.Value;
 
             this._instanceData[this._instances].Position              = position;
-            this._instanceData[this._instances].Size                  = size.Value;
-            this._instanceData[this._instances].Color                 = colorOverride.Value;
+            this._instanceData[this._instances].Size                  = size * scale;
+            this._instanceData[this._instances].Color                 = colorOverride;
             this._instanceData[this._instances].Rotation              = rotation;
             this._instanceData[this._instances].RotationOrigin        = rotOrigin;
             this._instanceData[this._instances].TextureId             = GetTextureId(texture);
-            this._instanceData[this._instances].TextureRectPosition.X = (float)sourceRect.Value.X      / texture.Width;
-            this._instanceData[this._instances].TextureRectPosition.Y = (float)sourceRect.Value.Y      / texture.Height;
-            this._instanceData[this._instances].TextureRectSize.X     = (float)sourceRect.Value.Width  / texture.Width;
-            this._instanceData[this._instances].TextureRectSize.Y     = (float)sourceRect.Value.Height / texture.Height;
+            this._instanceData[this._instances].TextureRectPosition.X = (float)0 / texture.Width;
+            this._instanceData[this._instances].TextureRectPosition.Y = (float)0 / texture.Height;
+            this._instanceData[this._instances].TextureRectSize.X     = size.X / texture.Width;
+            this._instanceData[this._instances].TextureRectSize.Y     = size.Y / texture.Height;
 
             this._instances++;
+        }
+
+        public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, Rectangle sourceRect, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
+            if (!IsBegun)
+                throw new Exception("Begin() has not been called!");
+
+            //Ignore calls with invalid textures
+            if (texture == null)
+                return;
+
+            if (_instances >= NUM_INSTANCES || _usedTextures == Global.Device.MaxTextureImageUnits) {
+                Flush();
+            }
+
+            //Set Size to the Source Rectangle
+            Vector2 size = new Vector2(sourceRect.Width, sourceRect.Height);
+
+            //Apply Scale
+            size *= scale;
+
+            this._instanceData[this._instances].Position              = position;
+            this._instanceData[this._instances].Size                  = size;
+            this._instanceData[this._instances].Color                 = colorOverride;
+            this._instanceData[this._instances].Rotation              = rotation;
+            this._instanceData[this._instances].RotationOrigin        = rotOrigin;
+            this._instanceData[this._instances].TextureId             = GetTextureId(texture);
+            this._instanceData[this._instances].TextureRectPosition.X = (float)sourceRect.X      / texture.Width;
+            this._instanceData[this._instances].TextureRectPosition.Y = (float)sourceRect.Y      / texture.Height;
+            this._instanceData[this._instances].TextureRectSize.X     = (float)sourceRect.Width  / texture.Width;
+            this._instanceData[this._instances].TextureRectSize.Y     = (float)sourceRect.Height / texture.Height;
+
+            this._instances++;
+        }
+
+        public void Draw(Texture texture, Vector2 position, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {
+            Draw(texture, position, texture.Size, Vector2.One, rotation, Color.White, flip, rotOrigin);
+        }
+
+        public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {
+            Draw(texture, position, texture.Size, scale, rotation, Color.White, flip, rotOrigin);
+        }
+
+        public void Draw(Texture texture, Vector2 position, Vector2 scale, Color colorOverride, float rotation = 0, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
+            Draw(texture, position, texture.Size, scale, rotation, colorOverride, texFlip, rotOrigin);
         }
 
         private readonly Texture[] _boundTextures = new Texture[Global.Device.MaxTextureImageUnits];

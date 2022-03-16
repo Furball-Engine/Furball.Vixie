@@ -18,9 +18,25 @@ namespace Furball.Vixie.Graphics.Renderers {
         /// <param name="scale">How much to scale it up, Leave null to draw at standard scale</param>
         /// <param name="rotation">Rotation in Radians, leave 0 to not rotate</param>
         /// <param name="colorOverride">Color Tint, leave null to not tint</param>
+        /// <param name="texFlip">Horizontally/Vertically flip the Drawn Texture</param>
+        /// <param name="rotOrigin">origin of rotation, by default the top left</param>
+        void Draw(Texture texture, Vector2 position, Vector2 size, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default);
+        /// <summary>
+        /// Draws a Texture
+        /// </summary>
+        /// <param name="texture">Texture to Draw</param>
+        /// <param name="position">Where to Draw</param>
+        /// <param name="scale">How much to scale it up, Leave null to draw at standard scale</param>
+        /// <param name="rotation">Rotation in Radians, leave 0 to not rotate</param>
+        /// <param name="colorOverride">Color Tint, leave null to not tint</param>
         /// <param name="sourceRect">What part of the texture to draw? Leave null to draw whole texture</param>
         /// <param name="texFlip">Horizontally/Vertically flip the Drawn Texture</param>
-        void Draw(Texture texture, Vector2 position, Vector2? size = null, Vector2? scale = null, float rotation = 0f, Color? colorOverride = null, Rectangle? sourceRect = null, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default);
+        /// <param name="rotOrigin">origin of rotation, by default the top left</param>
+        void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, Rectangle sourceRect, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default);
+        void Draw(Texture texture, Vector2 position, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default);
+        void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default);
+        void Draw(Texture texture, Vector2 position, Vector2 scale, Color colorOverride, float rotation = 0, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default);
+
         /// <summary>
         /// Ends the Rendering, use this to finish drawing or do something at the very end
         /// </summary>

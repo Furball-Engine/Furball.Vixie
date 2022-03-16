@@ -36,7 +36,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._resultTexture = this._renderTarget.GetTexture();
 
             this.quadRenderer.Begin();
-            this.quadRenderer.Draw(this._resultTexture, Vector2.Zero, new Vector2(1280, 720), Vector2.Zero);
+            this.quadRenderer.Draw(this._resultTexture, Vector2.Zero, new Vector2(1280, 720));
             this.quadRenderer.End();
 
             #region ImGui menu

@@ -15,10 +15,12 @@ namespace Furball.Vixie.FontStashSharp {
         }
 
         public void Draw(object texture, Vector2 pos, Rectangle? src, Color color, float rotation, Vector2 origin, Vector2 scale, float depth) {
-            Rectangle rect = src.Value;
-            rect.Y = (texture as Texture).Height - rect.Y - rect.Height;
+            Texture actualTexture = texture as Texture;
 
-            this._renderer.Draw(texture as Texture, pos, null, scale, rotation, new Graphics.Color(color.R, color.G, color.B, color.A), rect, TextureFlip.None, origin * scale);
+            Rectangle rect = src.Value;
+            rect.Y = actualTexture.Height - rect.Y - rect.Height;
+
+            this._renderer.Draw(actualTexture, pos, scale, rotation, new Graphics.Color(color.R, color.G, color.B, color.A), rect, TextureFlip.None, origin * scale);
         }
 
         public ITexture2DManager TextureManager { get; }

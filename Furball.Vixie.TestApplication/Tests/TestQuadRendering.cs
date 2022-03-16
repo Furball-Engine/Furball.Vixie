@@ -2,14 +2,13 @@ using System;
 
 using System.Globalization;
 using System.Numerics;
-using Furball.Vixie.Graphics;
 using Furball.Vixie.Graphics.Renderers.OpenGL;
 using Furball.Vixie.Helpers;
 using ImGuiNET;
 using Texture=Furball.Vixie.Graphics.Texture;
 
 namespace Furball.Vixie.TestApplication.Tests {
-    public class TestBatchedRendering : GameComponent {
+    public class TestQuadRendering : GameComponent {
         private QuadRenderer _quadRenderer;
         private Texture      _texture;
 
@@ -33,7 +32,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._quadRenderer.Begin();
 
             for (int i = 0; i != this.CirnoDons; i++) {
-                this._quadRenderer.Draw(this._texture, new Vector2(i % 1024, 0), null, null, 0, Color.White);
+                this._quadRenderer.Draw(this._texture, new Vector2(i % 1024, 0));
             }
 
             this._quadRenderer.End();
