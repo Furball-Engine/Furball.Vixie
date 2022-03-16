@@ -270,5 +270,20 @@ namespace Furball.Vixie.Graphics {
             }
             OpenGLHelper.CheckError();
         }
+        
+        /// <summary>
+        /// Binds a uniform to a specific texture unit
+        /// </summary>
+        /// <param name="uniform"></param>
+        /// <param name="unit"></param>
+        public void BindUniformToTexUnit(string uniform, int unit) {
+            OpenGLHelper.CheckThread();
+
+            int location = this.GetUniformLocation(uniform);
+
+            gl.Uniform1(location, unit);
+            
+            OpenGLHelper.CheckError();
+        }
     }
 }

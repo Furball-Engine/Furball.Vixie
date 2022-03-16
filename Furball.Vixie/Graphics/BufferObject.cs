@@ -51,7 +51,7 @@ namespace Furball.Vixie.Graphics {
             OpenGLHelper.CheckError();
         }
         /// <summary>
-        /// Creates a Empty buffer
+        /// Creates an uninitialized buffer
         /// </summary>
         /// <param name="bufferType">What kind of Buffer is it</param>
         /// <param name="usage">How is this buffer going to be used?</param>

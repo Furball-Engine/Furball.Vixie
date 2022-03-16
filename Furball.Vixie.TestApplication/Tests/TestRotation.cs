@@ -25,7 +25,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             this.GraphicsDevice.GlClear();
 
             this._quadRenderer.Begin();
-            this._quadRenderer.Draw(this._whiteTexture, new Vector2(1280/2, 720/2), new Vector2(371, 356), Vector2.Zero, _rotation);
+            this._quadRenderer.Draw(this._whiteTexture, new Vector2(1280 /2, 720 /2), new Vector2(this._whiteTexture.Width, this._whiteTexture.Height), Vector2.Zero, _rotation);
             this._quadRenderer.End();
 
             #region ImGui menu

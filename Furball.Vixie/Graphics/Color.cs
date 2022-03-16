@@ -1,14 +1,16 @@
 using System;
 using System.Diagnostics.Contracts;
 using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace Furball.Vixie.Graphics {
+    [StructLayout(LayoutKind.Sequential)]
     public struct Color {
         public float Rf;
         public float Gf;
         public float Bf;
         public float Af;
-
+        
         public byte R {
             get => (byte)(this.Rf * 255);
             set => this.Rf = value / 255f;

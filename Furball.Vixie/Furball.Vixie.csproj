@@ -47,6 +47,10 @@
       <None Update="SharedLibs\Silk.NET.OpenGLES.Extensions.ImGui.dll">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+      <None Remove="ShaderCode\InstancedRenderer\VertexShader.glsl" />
+      <EmbeddedResource Include="ShaderCode\InstancedRenderer\VertexShader.glsl" />
+      <None Remove="ShaderCode\InstancedRenderer\FragmentShader.glsl" />
+      <EmbeddedResource Include="ShaderCode\InstancedRenderer\FragmentShader.glsl" />
     </ItemGroup>
 
 </Project>
