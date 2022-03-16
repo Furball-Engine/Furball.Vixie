@@ -8,7 +8,7 @@ using Furball.Vixie.Helpers;
 using Silk.NET.OpenGLES;
 
 namespace Furball.Vixie.Graphics.Renderers.OpenGL {
-    public class QuadRenderer : ITextureRenderer {
+    public class QuadRenderer : ITextureRenderer, ITextRenderer {
         [StructLayout(LayoutKind.Sequential)]
         private struct Vertex {
             public Vector2 Position;
@@ -182,7 +182,7 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
 
             this.IsBegun = true;
         }
-        
+
         public void Draw(Texture texture, Vector2 position, Vector2? size = null, Vector2? scale = null, float rotation = 0, Color? colorOverride = null, Rectangle? sourceRect = null, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
             if (!IsBegun) throw new Exception("Begin() has not been called!");
 
@@ -279,6 +279,10 @@ namespace Furball.Vixie.Graphics.Renderers.OpenGL {
 
         #region text
 
+        public void DrawString(DynamicSpriteFont font, string text, Vector2 position, Color color, float rotation = 0, Vector2? scale = null) {
+            DrawString(font, text, position, color, rotation, scale, default);
+        }
+        
         /// <summary>
         /// Batches Text to the Screen
         /// </summary>
