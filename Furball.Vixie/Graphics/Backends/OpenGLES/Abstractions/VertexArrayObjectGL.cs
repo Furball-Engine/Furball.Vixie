@@ -31,6 +31,10 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
             this._backend.CheckError();
         }
 
+        ~VertexArrayObjectGL() {
+            DisposeQueue.Enqueue(this);
+        }
+
         /// <summary>
         /// Adds a VertexBuffer with a certain Layout to this Vertex Array
         /// </summary>
@@ -142,6 +146,9 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
 
             return this;
         }
+
+        private bool _isDisposed = false;
+
         /// <summary>
         /// Disposes this Vertex Array
         /// </summary>
@@ -150,6 +157,11 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
             
             if (this.Bound)
                 this.UnlockingUnbind();
+
+            if(this._isDisposed)
+                return;
+
+            this._isDisposed = true;
 
             try {
                 this.gl.DeleteVertexArray(this.ArrayId);

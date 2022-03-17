@@ -140,6 +140,8 @@ namespace Furball.Vixie {
         protected virtual void Update(double deltaTime) {
             GraphicsBackend.Current.ImGuiUpdate(deltaTime);
             this.Components.Update(deltaTime);
+
+            DisposeQueue.DoDispose();
         }
         /// <summary>
         /// Draw Method, do your Drawing work in there

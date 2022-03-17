@@ -53,6 +53,10 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
             this._backend.CheckError();
         }
 
+        ~ShaderGL() {
+            DisposeQueue.Enqueue(this);
+        }
+
         /// <summary>
         /// Attaches and Compiles a Shader Source
         /// </summary>
@@ -255,6 +259,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
             return this;
         }
 
+        private bool _isDisposed = false;
+
         /// <summary>
         /// Cleans up the Shader
         /// </summary>
@@ -263,6 +269,11 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
             
             if (this.Bound)
                 this.UnlockingUnbind();
+
+            if (this._isDisposed)
+                return;
+
+            this._isDisposed = true;
 
             try {
                 this.gl.DeleteProgram(this.ProgramId);

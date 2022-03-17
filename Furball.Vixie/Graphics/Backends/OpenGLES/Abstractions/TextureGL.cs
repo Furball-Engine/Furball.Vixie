@@ -199,6 +199,10 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
             this.Size = new Vector2(width, height);
         }
 
+        ~TextureGL() {
+            DisposeQueue.Enqueue(this);
+        }
+
         private unsafe void Load(Image<Rgba32> image) {
             this.Load(null, image.Width, image.Height);
             this.Bind();
@@ -374,12 +378,19 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <returns>Texture ID</returns>
         internal uint GetTextureId() => this.TextureId;
 
+        private bool _isDisposed = false;
+
         /// <summary>
         /// Disposes the Texture and the Local Image Buffer
         /// </summary>
         public void Dispose() {
             if (this.Bound)
                 this.UnlockingUnbind();
+
+            if (this._isDisposed)
+                return;
+
+            this._isDisposed = true;
 
             try {
                 this.gl.DeleteTexture(this.TextureId);

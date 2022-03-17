@@ -101,9 +101,15 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
                 throw new Exception("Failed to create TextureRenderTarget!");
             }
 
+            this.gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+
             this._oldViewPort  = new int[4];
             this.TargetWidth  = width;
             this.TargetHeight = height;
+        }
+
+        ~TextureRenderTargetGL() {
+            DisposeQueue.Enqueue(this);
         }
 
         /// <summary>
@@ -191,11 +197,18 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <returns>Texture of this RenderTarget</returns>
         public override Texture GetTexture() => new TextureGL(this._backend, this._textureId, this.TargetWidth, this.TargetHeight);
 
+        private bool _isDisposed = false;
+
         public void Dispose() {
             this._backend.CheckThread();
             
             if (this.Bound)
                 this.UnlockingUnbind();
+
+            if (this._isDisposed)
+                return;
+
+            this._isDisposed = true;
 
             try {
                 this.gl.DeleteFramebuffer(this._frameBufferId);

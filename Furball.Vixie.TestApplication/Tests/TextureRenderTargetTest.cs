@@ -10,15 +10,15 @@ using ImGuiNET;
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TextureRenderTargetTest : GameComponent {
-        private ILineRenderer        _lineRendererGl;
-        private TextureRenderTarget _renderTargetGl;
-        private Texture             _resultTextureGl;
-        private IQuadRenderer        _quadRendererGl;
+        private ILineRenderer        _lineRenderer;
+        private TextureRenderTarget _renderTarget;
+        private Texture             _resultTexture;
+        private IQuadRenderer        _quadRenderer;
 
         public override void Initialize() {
-            this._lineRendererGl = GraphicsBackend.Current.CreateLineRenderer();
-            this._renderTargetGl = TextureRenderTarget.Create(1280, 720);
-            this._quadRendererGl = GraphicsBackend.Current.CreateTextureRenderer();
+            this._lineRenderer = GraphicsBackend.Current.CreateLineRenderer();
+            this._renderTarget = TextureRenderTarget.Create(1280, 720);
+            this._quadRenderer = GraphicsBackend.Current.CreateTextureRenderer();
 
             base.Initialize();
         }
@@ -26,26 +26,26 @@ namespace Furball.Vixie.TestApplication.Tests {
         public override void Draw(double deltaTime) {
             GraphicsBackend.Current.Clear();
 
-            this._renderTargetGl.Bind();
+            this._renderTarget.Bind();
 
-            this._lineRendererGl.Begin();
-            this._lineRendererGl.Draw(new Vector2(1280, 720), new Vector2(0, 0), 16f, Color.Red);
-            this._lineRendererGl.End();
+            this._lineRenderer.Begin();
+            this._lineRenderer.Draw(new Vector2(1280, 720), new Vector2(0, 0), 16f, Color.Red);
+            this._lineRenderer.End();
 
-            this._renderTargetGl.Unbind();
+            this._renderTarget.Unbind();
 
-            this._resultTextureGl = this._renderTargetGl.GetTexture();
+            this._resultTexture ??= this._renderTarget.GetTexture();
 
-            this._quadRendererGl.Begin();
-            this._quadRendererGl.Draw(this._resultTextureGl, Vector2.Zero, new Vector2(1280, 720));
-            this._quadRendererGl.End();
+            this._quadRenderer.Begin();
+            this._quadRenderer.Draw(this._resultTexture, Vector2.Zero);
+            this._quadRenderer.End();
 
             #region ImGui menu
 
             ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
                        $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
             );
-            
+
             if (ImGui.Button("Go back to test selector")) {
                 this.BaseGame.Components.Add(new BaseTestSelector());
                 this.BaseGame.Components.Remove(this);
@@ -57,7 +57,7 @@ namespace Furball.Vixie.TestApplication.Tests {
         }
 
         public override void Dispose() {
-            this._quadRendererGl.Dispose();
+            this._quadRenderer.Dispose();
 
             base.Dispose();
         }

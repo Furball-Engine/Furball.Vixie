@@ -13,6 +13,9 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Unique Identifier for this Buffer object used by OpenGL to distingluish different buffers
         /// </summary>
         internal uint            BufferId;
+        /// <summary>
+        /// Backend to which this belongs to
+        /// </summary>
         private readonly OpenGLESBackend _backend;
         /// <summary>
         /// Type of Buffer, is it a Vertex Buffer? a Index Buffer? a different buffer entirely?
@@ -33,6 +36,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <summary>
         /// Creates a Empty buffer of size `size`
         /// </summary>
+        /// <param name="backend">OpenGLES backend to which this belongs to</param>
         /// <param name="size">Size of the Buffer</param>
         /// <param name="bufferType">What kind of buffer is it?</param>
         /// <param name="usage">How is this buffer going to be used?</param>
@@ -54,6 +58,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <summary>
         /// Creates an uninitialized buffer
         /// </summary>
+        /// <param name="backend">OpenGLES backend to which this belongs to</param>
         /// <param name="bufferType">What kind of Buffer is it</param>
         /// <param name="usage">How is this buffer going to be used?</param>
         public BufferObjectGL(OpenGLESBackend backend, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StreamDraw) {
@@ -66,6 +71,12 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
             //Generate Buffer
             this.BufferId = this.gl.GenBuffer();
             this._backend.CheckError();
+        }
+
+        public delegate void VoidDelegate();
+
+        ~BufferObjectGL() {
+            DisposeQueue.Enqueue(this);
         }
 
         /// <summary>
@@ -219,12 +230,20 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
 
             return this;
         }
+
+        private bool _isDisposed = false;
+
         /// <summary>
         /// Disposes the Buffer
         /// </summary>
         public void Dispose() {
             if (this.Bound)
                 this.UnlockingUnbind();
+
+            if (this._isDisposed)
+                return;
+
+            this._isDisposed = true;
 
             try {
                 this.gl.DeleteBuffer(this.BufferId);
