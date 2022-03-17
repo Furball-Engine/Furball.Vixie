@@ -4,12 +4,12 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using FontStashSharp;
 using Furball.Vixie.FontStashSharp;
-using Furball.Vixie.Graphics.Backends.OpenGL.Abstractions;
+using Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions;
 using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using Silk.NET.OpenGLES;
 
-namespace Furball.Vixie.Graphics.Backends.OpenGL {
+namespace Furball.Vixie.Graphics.Backends.OpenGLES {
     public class QuadRendererGL : IQuadRenderer {
         [StructLayout(LayoutKind.Sequential)]
         private struct Vertex {
@@ -68,7 +68,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
 
         public unsafe QuadRendererGL(OpenGLESBackend backend) {
             this._backend = backend;
-            _backend.CheckThread();
+            this._backend.CheckThread();
 
             this.gl       = this._backend.GetGlApi();
 
@@ -85,7 +85,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
 
             this._shaderGl.Bind();
 
-            _backend.CheckError();
+            this._backend.CheckError();
 
             for (int i = 0; i < backend.QueryMaxTextureUnits(); i++) {
                 this._shaderGl.BindUniformToTexUnit($"tex_{i}", i);
@@ -102,11 +102,11 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
             this.gl.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, (uint)sizeof(Vertex), (void*)0);
             //Texture position
             this.gl.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, (uint)sizeof(Vertex), (void*)sizeof(Vector2));
-            _backend.CheckError();
+            this._backend.CheckError();
 
             this.gl.EnableVertexAttribArray(0);
             this.gl.EnableVertexAttribArray(1);
-            _backend.CheckError();
+            this._backend.CheckError();
 
             this._instanceVbo = new BufferObjectGL(backend, BufferTargetARB.ArrayBuffer, BufferUsageARB.DynamicDraw);
             this._instanceVbo.Bind();
@@ -156,7 +156,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
             this.gl.EnableVertexAttribArray(8);
             this.gl.EnableVertexAttribArray(9);
 
-            _backend.CheckError();
+            this._backend.CheckError();
 
             this._instanceVbo.Unbind();
             this._vao.Unbind();
@@ -293,7 +293,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
             }
 
             this._vao.Bind();
-            _backend.CheckError();
+            this._backend.CheckError();
 
             // this._InstanceVBO.SetData<InstanceData>(this._instanceData);
             this._instanceVbo.Bind();

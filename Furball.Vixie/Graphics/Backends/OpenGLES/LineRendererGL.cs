@@ -1,12 +1,12 @@
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using Furball.Vixie.Graphics.Backends.OpenGL.Abstractions;
+using Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions;
 using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using Silk.NET.OpenGLES;
 
-namespace Furball.Vixie.Graphics.Backends.OpenGL {
+namespace Furball.Vixie.Graphics.Backends.OpenGLES {
     [StructLayout(LayoutKind.Sequential)]
     public unsafe struct BatchedLineVertex {
         public fixed float Positions[4];
@@ -190,7 +190,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
 
             //Draw
             this.gl.DrawArrays(PrimitiveType.Lines, 0, (uint) (this._processedVerticies));
-            _backend.CheckError();
+            this._backend.CheckError();
 
             //Reset Counts
             this._processedVerticies = 0;

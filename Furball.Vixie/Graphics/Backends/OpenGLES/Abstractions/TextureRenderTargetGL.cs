@@ -1,9 +1,8 @@
 using System;
 using System.Numerics;
-using Furball.Vixie.Helpers;
 using Silk.NET.OpenGLES;
 
-namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
+namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
     public class TextureRenderTargetGL : TextureRenderTarget, IDisposable {
         /// <summary>
         /// Currently Bound TextureRenderTarget
@@ -62,7 +61,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// <param name="height">Desired Width</param>
         /// <exception cref="Exception">Throws Exception if the Target didn't create properly</exception>
         public unsafe TextureRenderTargetGL(OpenGLESBackend backend, uint width, uint height) {
-            _backend.CheckThread();
+            this._backend.CheckThread();
 
             this.gl       = backend.GetGlApi();
             this._backend = backend;
@@ -70,7 +69,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
             //Generate and bind a FrameBuffer
             this._frameBufferId = this.gl.GenFramebuffer();
             this.gl.BindFramebuffer(FramebufferTarget.Framebuffer, this._frameBufferId);
-            _backend.CheckError();
+            this._backend.CheckError();
 
             //Generate a Texture
             this._textureId = this.gl.GenTexture();
@@ -80,7 +79,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
             //Set The Filtering to nearest (apperantly necessary, idk)
             this.gl.TexParameterI(TextureTarget.Texture2D, GLEnum.TextureMagFilter, (int)GLEnum.Nearest);
             this.gl.TexParameterI(TextureTarget.Texture2D, GLEnum.TextureMinFilter, (int)GLEnum.Nearest);
-            _backend.CheckError();
+            this._backend.CheckError();
 
             //Generate the Depth buffer
             this._depthRenderBufferId = this.gl.GenRenderbuffer();
@@ -89,13 +88,13 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
             this.gl.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, RenderbufferTarget.Renderbuffer, this._depthRenderBufferId);
             //Connect the bound texture to the FrameBuffer object
             this.gl.FramebufferTexture(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, this._textureId, 0);
-            _backend.CheckError();
+            this._backend.CheckError();
 
             GLEnum[] drawBuffers = new GLEnum[1] {
                 GLEnum.ColorAttachment0
             };
             this.gl.DrawBuffers(1, drawBuffers);
-            _backend.CheckError();
+            this._backend.CheckError();
 
             //Check if FrameBuffer created successfully
             if (this.gl.CheckFramebufferStatus(FramebufferTarget.Framebuffer) != GLEnum.FramebufferComplete) {
@@ -111,7 +110,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Binds the Target, from now on drawing will draw to this RenderTarget,
         /// </summary>
         public override void Bind() {
-            _backend.CheckThread();
+            this._backend.CheckThread();
             
             if (this.Locked)
                 return;
@@ -120,7 +119,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
             //Store the old viewport for later
             this.gl.GetInteger(GetPName.Viewport, this._oldViewPort);
             this.gl.Viewport(0, 0, this.TargetWidth, this.TargetHeight);
-            _backend.CheckError();
+            this._backend.CheckError();
 
             CurrentlyBound = this;
         }
@@ -175,14 +174,14 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Unbinds the Target and resets the Viewport, drawing is now back to normal
         /// </summary>
         public override void Unbind() {
-            _backend.CheckThread();
+            this._backend.CheckThread();
             
             if (this.Locked)
                 return;
 
             this.gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
             this.gl.Viewport(this._oldViewPort[0], this._oldViewPort[1], (uint) this._oldViewPort[2], (uint) this._oldViewPort[3]);
-            _backend.CheckError();
+            this._backend.CheckError();
 
             CurrentlyBound = null;
         }
@@ -193,7 +192,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         public override Texture GetTexture() => new TextureGL(this._backend, this._textureId, this.TargetWidth, this.TargetHeight);
 
         public void Dispose() {
-            _backend.CheckThread();
+            this._backend.CheckThread();
             
             if (this.Bound)
                 this.UnlockingUnbind();
@@ -206,7 +205,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
             catch {
 
             }
-            _backend.CheckError();
+            this._backend.CheckError();
         }
     }
 }

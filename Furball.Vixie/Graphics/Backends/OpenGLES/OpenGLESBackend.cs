@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Numerics;
 using System.Threading;
-using Furball.Vixie.Graphics.Backends.OpenGL.Abstractions;
+using Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions;
 using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using Kettu;
@@ -11,7 +11,7 @@ using Silk.NET.Core.Native;
 using Silk.NET.OpenGLES;
 using Silk.NET.Windowing;
 
-namespace Furball.Vixie.Graphics.Backends.OpenGL {
+namespace Furball.Vixie.Graphics.Backends.OpenGLES {
     // ReSharper disable once InconsistentNaming
     public class OpenGLESBackend : GraphicsBackend {
         // ReSharper disable once InconsistentNaming
@@ -34,9 +34,9 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
         }
         
         public override void Initialize(IWindow window) {
-            GetMainThread();
+            this.GetMainThread();
 
-            gl = window.CreateOpenGLES();
+            this.gl = window.CreateOpenGLES();
 
 #if DEBUGWITHGL
             unsafe {
@@ -48,13 +48,13 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
 #endif
 
             //Enables Blending (Required for Transparent Objects)
-            gl.Enable(EnableCap.Blend);
-            gl.BlendFunc(GLEnum.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+            this.gl.Enable(EnableCap.Blend);
+            this.gl.BlendFunc(GLEnum.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
         }
         
         [Conditional("DEBUG")]
         public void CheckError() {
-            GLEnum error = gl.GetError();
+            GLEnum error = this.gl.GetError();
             
             if (error != GLEnum.NoError) {
 #if DEBUGWITHGL
@@ -70,13 +70,13 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
         }
 
         public override void HandleWindowSizeChange(int width, int height) {
-            gl.Viewport(0, 0, (uint) width, (uint) height);
+            this.gl.Viewport(0, 0, (uint) width, (uint) height);
 
             this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, 0, height, 1f, 0f);
         }
 
         public override void HandleFramebufferResize(int width, int height) {
-            gl.Viewport(0, 0, (uint) width, (uint) height);
+            this.gl.Viewport(0, 0, (uint) width, (uint) height);
         }
 
         public override IQuadRenderer CreateTextureRenderer() {
@@ -89,7 +89,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
 
         public override int QueryMaxTextureUnits() {
             if (this._maxTextureUnits == -1) {
-                gl.GetInteger(GetPName.MaxTextureImageUnits, out int maxTexSlots);
+                this.gl.GetInteger(GetPName.MaxTextureImageUnits, out int maxTexSlots);
                 this._maxTextureUnits = maxTexSlots;
             }
 
@@ -97,7 +97,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
         }
 
         public override void Clear() {
-            gl.Clear(ClearBufferMask.ColorBufferBit);
+            this.gl.Clear(ClearBufferMask.ColorBufferBit);
         }
 
         public override TextureRenderTarget CreateRenderTarget(uint width, uint height) {

@@ -1,8 +1,7 @@
 using System;
-using Furball.Vixie.Helpers;
 using Silk.NET.OpenGLES;
 
-namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
+namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
     public class VertexArrayObjectGL : IDisposable {
         private readonly OpenGLESBackend _backend;
         /// <summary>
@@ -24,12 +23,12 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
 
         public VertexArrayObjectGL(OpenGLESBackend backend) {
             this._backend = backend;
-            _backend.CheckThread();
+            this._backend.CheckThread();
 
             this.gl = backend.GetGlApi();
             //Generate Vertex Array
             this.ArrayId = this.gl.GenVertexArray();
-            _backend.CheckError();
+            this._backend.CheckError();
         }
 
         /// <summary>
@@ -38,7 +37,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// <param name="vertexBuffer">Vertex Buffer to add</param>
         /// <param name="layoutGl">Layout of said Vertex Buffer</param>
         public unsafe VertexArrayObjectGL AddBuffer(BufferObjectGL vertexBuffer, VertexBufferLayoutGL layoutGl) {
-            _backend.CheckThread();
+            this._backend.CheckThread();
             
             //Bind both this and the Vertex Buffer
             this.Bind();
@@ -60,7 +59,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
 
                 offset += (uint) currentElement.Count * LayoutElement.GetSizeOfType(currentElement.Type);
             }
-            _backend.CheckError();
+            this._backend.CheckError();
 
             return this;
         }
@@ -68,13 +67,13 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Binds or Selects this current Vertex Array
         /// </summary>
         public VertexArrayObjectGL Bind() {
-            _backend.CheckThread();
+            this._backend.CheckThread();
             
             if (this.Locked)
                 return null;
 
             this.gl.BindVertexArray(this.ArrayId);
-            _backend.CheckError();
+            this._backend.CheckError();
 
             CurrentlyBound = this;
 
@@ -131,13 +130,13 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Unbinds all Vertex Arrays
         /// </summary>
         public VertexArrayObjectGL Unbind() {
-            _backend.CheckThread();
+            this._backend.CheckThread();
             
             if (this.Locked)
                 return null;
 
             this.gl.BindVertexArray(0);
-            _backend.CheckError();
+            this._backend.CheckError();
 
             CurrentlyBound = null;
 
@@ -147,14 +146,14 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Disposes this Vertex Array
         /// </summary>
         public void Dispose() {
-            _backend.CheckThread();
+            this._backend.CheckThread();
             
             if (this.Bound)
                 this.UnlockingUnbind();
 
             try {
                 this.gl.DeleteVertexArray(this.ArrayId);
-                _backend.CheckError();
+                this._backend.CheckError();
             }
             catch {
 

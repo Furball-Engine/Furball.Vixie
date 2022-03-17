@@ -2,13 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
-using Furball.Vixie.Helpers;
 using Silk.NET.OpenGLES;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using Rectangle=System.Drawing.Rectangle;
 
-namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
+namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
     public class TextureGL : Texture, IDisposable {
         private readonly OpenGLESBackend _backend;
         /// <summary>
@@ -131,7 +130,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// </summary>
         public unsafe TextureGL(OpenGLESBackend backend) {
             this._backend = backend;
-            _backend.CheckThread();
+            this._backend.CheckThread();
             
             this.gl = backend.GetGlApi();
 
@@ -149,7 +148,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
             this.gl.TexImage2D(GLEnum.Texture2D, 0, InternalFormat.Rgba8, 1, 1, 0, PixelFormat.Rgba, PixelType.UnsignedByte, &color);
             //Unbind as we have finished
             this.gl.BindTexture(TextureTarget.Texture2D, 0);
-            _backend.CheckError();
+            this._backend.CheckError();
 
             this.Size = new Vector2(1, 1);
         }
@@ -160,7 +159,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// <param name="height">Desired Height</param>
         public unsafe TextureGL(OpenGLESBackend backend, uint width, uint height) {
             this._backend = backend;
-            _backend.CheckThread();
+            this._backend.CheckThread();
             
             this.gl = backend.GetGlApi();
 
@@ -176,7 +175,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
             this.gl.TexImage2D(GLEnum.Texture2D, 0, InternalFormat.Rgba8, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, null);
             //Unbind as we have finished
             this.gl.BindTexture(TextureTarget.Texture2D, 0);
-            _backend.CheckError();
+            this._backend.CheckError();
 
             this.Size = new Vector2(width, height);
         }
@@ -245,7 +244,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
             this.gl.TexImage2D(GLEnum.Texture2D, 0, InternalFormat.Rgba8, (uint)width, (uint)height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, data);
             //Unbind as we have finished
             this.gl.BindTexture(TextureTarget.Texture2D, 0);
-            _backend.CheckError();
+            this._backend.CheckError();
         }
         /// <summary>
         /// Sets the Data of the Texture Directly
@@ -261,7 +260,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
                 this.gl.TexImage2D(TextureTarget.Texture2D, level, InternalFormat.Rgba, (uint) this.Size.X, (uint) this.Size.Y, 0, PixelFormat.Rgba, PixelType.UnsignedByte, d);
 
             this.gl.Finish();
-            _backend.CheckError();
+            this._backend.CheckError();
 
             this.UnlockingUnbind();
 
@@ -280,7 +279,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
 
             fixed(void* d = data)
                 this.gl.TexSubImage2D(TextureTarget.Texture2D, level, rect.X, rect.Y, (uint) rect.Width, (uint) rect.Height, PixelFormat.Rgba, PixelType.UnsignedByte, d);
-            _backend.CheckError();
+            this._backend.CheckError();
 
             this.UnlockingUnbind();
 
@@ -298,7 +297,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
 
             this.gl.ActiveTexture(textureSlot);
             this.gl.BindTexture(TextureTarget.Texture2D, this.TextureId);
-            _backend.CheckError();
+            this._backend.CheckError();
 
             BoundTextures[textureSlot] = this.TextureId;
             this.BoundAt               = textureSlot;
@@ -362,7 +361,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
 
             this.gl.ActiveTexture(this.BoundAt);
             this.gl.BindTexture(TextureTarget.Texture2D, 0);
-            _backend.CheckError();
+            this._backend.CheckError();
 
             BoundTextures[this.BoundAt] = 0;
 
@@ -388,7 +387,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
             catch {
 
             }
-            _backend.CheckError();
+            this._backend.CheckError();
         }
     }
 }

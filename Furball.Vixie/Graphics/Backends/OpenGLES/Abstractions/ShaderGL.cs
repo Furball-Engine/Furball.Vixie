@@ -6,7 +6,7 @@ using Furball.Vixie.Helpers;
 using Kettu;
 using Silk.NET.OpenGLES;
 
-namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
+namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
     /// <summary>
     /// A Shader, a Program run on the GPU
     /// </summary>
@@ -42,7 +42,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// </summary>
         public ShaderGL(OpenGLESBackend backend) {
             this._backend = backend;
-            _backend.CheckThread();
+            this._backend.CheckThread();
             
             this.gl = backend.GetGlApi();
 
@@ -50,7 +50,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
             this._uniformLocationCache = new Dictionary<string, int>();
 
             this.ProgramId = this.gl.CreateProgram();
-            _backend.CheckError();
+            this._backend.CheckError();
         }
 
         /// <summary>
@@ -61,13 +61,13 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// <returns>Self, used for Chaining methods</returns>
         /// <exception cref="Exception">Shader Compilation Failure</exception>
         public ShaderGL AttachShader(ShaderType type, string source) {
-            _backend.CheckThread();
+            this._backend.CheckThread();
             
             uint shaderId = this.gl.CreateShader(type);
 
             this.gl.ShaderSource(shaderId, source);
             this.gl.CompileShader(shaderId);
-            _backend.CheckError();
+            this._backend.CheckError();
 
             string infoLog = this.gl.GetShaderInfoLog(shaderId);
 
@@ -75,7 +75,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
                 throw new Exception($"Failed to Compile shader of type {type}, Error Message: {infoLog}");
 
             this.gl.AttachShader(this.ProgramId, shaderId);
-            _backend.CheckError();
+            this._backend.CheckError();
 
             this._shaders.Add(shaderId);
 
@@ -87,12 +87,12 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// <returns>Self, used for Chaining methods</returns>
         /// <exception cref="Exception"></exception>
         public ShaderGL Link() {
-            _backend.CheckThread();
+            this._backend.CheckThread();
             
             //Link Program and get Error incase something failed
             this.gl.LinkProgram(this.ProgramId);
             this.gl.GetProgram(this.ProgramId, ProgramPropertyARB.LinkStatus, out int linkStatus);
-            _backend.CheckError();
+            this._backend.CheckError();
 
             if (linkStatus == 0)
                 throw new Exception($"Failed to Link Program, Error Message: { this.gl.GetProgramInfoLog(this.ProgramId) }");
@@ -100,7 +100,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
             //Delete Intermediate Shaders
             for(int i = 0; i != this._shaders.Count; i++)
                 this.gl.DeleteShader(this._shaders[i]);
-            _backend.CheckError();
+            this._backend.CheckError();
 
             return this;
         }
@@ -108,13 +108,13 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Selects this Shader
         /// </summary>
         public ShaderGL Bind() {
-            _backend.CheckThread();
+            this._backend.CheckThread();
             
             if (this.Locked)
                 return null;
 
             this.gl.UseProgram(this.ProgramId);
-            _backend.CheckError();
+            this._backend.CheckError();
 
             CurrentlyBound = this;
 
@@ -175,13 +175,13 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// <param name="uniformName">The name of the uniform</param>
         /// <returns>The location</returns>
         internal int GetUniformLocation(string uniformName) {
-            _backend.CheckThread();
+            this._backend.CheckThread();
             
             //If cache missed, get from OpenGL and store in cache
             if (!this._uniformLocationCache.TryGetValue(uniformName, out int location)) {
                 //Get the location from the program
                 location = this.gl.GetUniformLocation(this.ProgramId, uniformName);
-                _backend.CheckError();
+                this._backend.CheckError();
                 
                 if(location != -1)
                     this._uniformLocationCache.Add(uniformName, location);
@@ -199,40 +199,40 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         }
 
         public unsafe ShaderGL SetUniform(string uniformName, Matrix4x4 matrix) {
-            _backend.CheckThread();
+            this._backend.CheckThread();
             
             this.gl.UniformMatrix4(this.GetUniformLocation(uniformName), 1, false, (float*) &matrix);
-            _backend.CheckError();
+            this._backend.CheckError();
             
             //Return this for chaining
             return this;
         }
         
         public ShaderGL SetUniform(string uniformName, float f) {
-            _backend.CheckThread();
+            this._backend.CheckThread();
             
             this.gl.Uniform1(this.GetUniformLocation(uniformName), f);
-            _backend.CheckError();
+            this._backend.CheckError();
             
             //Return this for chaining
             return this;
         }
         
         public ShaderGL SetUniform(string uniformName, float f, float f2) {
-            _backend.CheckThread();
+            this._backend.CheckThread();
             
             this.gl.Uniform2(this.GetUniformLocation(uniformName), f, f2);
-            _backend.CheckError();
+            this._backend.CheckError();
             
             //Return this for chaining
             return this;
         }
         
         public ShaderGL SetUniform(string uniformName, int i) {
-            _backend.CheckThread();
+            this._backend.CheckThread();
             
             this.gl.Uniform1(this.GetUniformLocation(uniformName), i);
-            _backend.CheckError();
+            this._backend.CheckError();
             
             //Return this for chaining
             return this;
@@ -242,13 +242,13 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         public ShaderGL Unbind() {
-            _backend.CheckThread();
+            this._backend.CheckThread();
             
             if (this.Locked)
                 return null;
 
             this.gl.UseProgram(0);
-            _backend.CheckError();
+            this._backend.CheckError();
 
             CurrentlyBound = null;
 
@@ -259,7 +259,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Cleans up the Shader
         /// </summary>
         public void Dispose() {
-            _backend.CheckThread();
+            this._backend.CheckThread();
             
             if (this.Bound)
                 this.UnlockingUnbind();
@@ -270,7 +270,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
             catch {
 
             }
-            _backend.CheckError();
+            this._backend.CheckError();
         }
         
         /// <summary>
@@ -279,13 +279,13 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// <param name="uniform"></param>
         /// <param name="unit"></param>
         public void BindUniformToTexUnit(string uniform, int unit) {
-            _backend.CheckThread();
+            this._backend.CheckThread();
 
             int location = this.GetUniformLocation(uniform);
 
             this.gl.Uniform1(location, unit);
             
-            _backend.CheckError();
+            this._backend.CheckError();
         }
     }
 }
