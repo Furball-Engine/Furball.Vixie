@@ -11,7 +11,7 @@ using ImGuiNET;
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestQuadRendering : GameComponent {
         private IQuadRenderer _quadRendererGl;
-        private Texture          _textureGl;
+        private Texture       _textureGl;
 
         public override void Initialize() {
             this._quadRendererGl = GraphicsBackend.Current.CreateTextureRenderer();
@@ -25,14 +25,14 @@ namespace Furball.Vixie.TestApplication.Tests {
         /// <summary>
         /// Amount of Dons to draw on screen each frame
         /// </summary>
-        private int CirnoDons = 1024;
+        private int _cirnoDons = 1024;
 
         public override void Draw(double deltaTime) {
             GraphicsBackend.Current.Clear();
 
             this._quadRendererGl.Begin();
 
-            for (int i = 0; i != this.CirnoDons; i++) {
+            for (int i = 0; i != this._cirnoDons; i++) {
                 this._quadRendererGl.Draw(this._textureGl, new Vector2(i % 1024, 0));
             }
 
@@ -49,7 +49,7 @@ namespace Furball.Vixie.TestApplication.Tests {
                 this.BaseGame.Components.Remove(this);
             }
             
-            ImGui.SliderInt("Draws", ref this.CirnoDons, 0, 1024);
+            ImGui.SliderInt("Draws", ref this._cirnoDons, 0, 1024);
 
             #endregion
 

@@ -13,11 +13,10 @@ using ImGuiNET;
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestFSS : GameComponent {
-        private VixieFontStashRenderer _renderer;
-        private IQuadRenderer           _quadRendererGl;
-        private DynamicSpriteFont      _font;
+        private IQuadRenderer     _quadRendererGl;
+        private DynamicSpriteFont _font;
 
-        public readonly FontSystem DEFAULT_FONT = new(new FontSystemSettings {
+        private readonly FontSystem _defaultFont = new(new FontSystemSettings {
             FontResolutionFactor = 2f,
             KernelWidth          = 2,
             KernelHeight         = 2,
@@ -25,8 +24,8 @@ namespace Furball.Vixie.TestApplication.Tests {
         });
 
         public override void Initialize() {
-            this.DEFAULT_FONT.AddFont(ResourceHelpers.GetByteResource("Resources/font.ttf"));
-            this._font = this.DEFAULT_FONT.GetFont(48);
+            this._defaultFont.AddFont(ResourceHelpers.GetByteResource("Resources/font.ttf"));
+            this._font = this._defaultFont.GetFont(48);
 
             this._quadRendererGl = GraphicsBackend.Current.CreateTextureRenderer();
 
@@ -63,7 +62,7 @@ namespace Furball.Vixie.TestApplication.Tests {
         }
 
         public override void Dispose() {
-            this.DEFAULT_FONT.Dispose();
+            this._defaultFont.Dispose();
             this._quadRendererGl.Dispose();
 
             base.Dispose();

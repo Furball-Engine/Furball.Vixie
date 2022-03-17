@@ -4,7 +4,6 @@ using ImGuiNET;
 
 namespace Furball.Vixie.TestApplication {
     public class BaseTestSelector : GameComponent {
-
         public override void Draw(double deltaTime) {
             GraphicsBackend.Current.Clear();
 

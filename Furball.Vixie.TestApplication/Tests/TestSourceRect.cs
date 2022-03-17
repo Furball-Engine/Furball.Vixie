@@ -12,7 +12,7 @@ using Color=Furball.Vixie.Graphics.Color;
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestSourceRect : GameComponent {
         private IQuadRenderer _quadRenderer;
-        private Texture      _whiteTexture;
+        private Texture       _whiteTexture;
 
         public override void Initialize() {
             this._quadRenderer = GraphicsBackend.Current.CreateTextureRenderer();
@@ -46,10 +46,6 @@ namespace Furball.Vixie.TestApplication.Tests {
             #endregion
 
             base.Draw(deltaTime);
-        }
-
-        public override void Dispose() {
-            base.Dispose();
         }
     }
 }

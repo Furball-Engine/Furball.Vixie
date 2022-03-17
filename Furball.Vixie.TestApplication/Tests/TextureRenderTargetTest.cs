@@ -10,10 +10,10 @@ using ImGuiNET;
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TextureRenderTargetTest : GameComponent {
-        private ILineRenderer        _lineRenderer;
+        private ILineRenderer       _lineRenderer;
         private TextureRenderTarget _renderTarget;
         private Texture             _resultTexture;
-        private IQuadRenderer        _quadRenderer;
+        private IQuadRenderer       _quadRenderer;
 
         public override void Initialize() {
             this._lineRenderer = GraphicsBackend.Current.CreateLineRenderer();

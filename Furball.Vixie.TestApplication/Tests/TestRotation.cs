@@ -11,7 +11,7 @@ using ImGuiNET;
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestRotation : GameComponent {
         private IQuadRenderer _quadRendererGl;
-        private Texture      _whiteTextureGl;
+        private Texture       _whiteTextureGl;
 
         public override void Initialize() {
             this._quadRendererGl = GraphicsBackend.Current.CreateTextureRenderer();
