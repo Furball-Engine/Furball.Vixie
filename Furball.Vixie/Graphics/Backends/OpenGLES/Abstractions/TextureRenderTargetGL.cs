@@ -44,12 +44,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         public uint  TargetHeight { get; protected set; }
 
         public override Vector2 Size {
-            get {
-                return new Vector2(this.TargetWidth, this.TargetHeight);
-            }
-            protected set {
-                //TODO: tbh you cant even set it rn, sure you can but it wont do fuck all
-            }
+                      get => new Vector2(this.TargetWidth, this.TargetHeight);
+            protected set => throw new Exception("Setting the size of TextureRenderTargets is currently unsupported.");
         }
 
         private OpenGLESBackend _backend;
