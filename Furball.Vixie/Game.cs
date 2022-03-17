@@ -3,7 +3,6 @@ using Furball.Vixie.Graphics.Backends;
 using Kettu;
 using Silk.NET.Input;
 using Silk.NET.Maths;
-using Silk.NET.OpenGLES;
 using Silk.NET.OpenGLES.Extensions.ImGui;
 using Silk.NET.Windowing;
 
@@ -26,10 +25,6 @@ namespace Furball.Vixie {
         /// Window Manager, handles everything Window Related, from Creation to the Window Projection Matrix
         /// </summary>
         public WindowManager WindowManager { get; internal set;}
-        /// <summary>
-        /// What is the Graphics Device captable of doing.
-        /// </summary>
-        public GraphicsDevice GraphicsDevice { get; internal set;}
         /// <summary>
         /// All of the Game Components
         /// </summary>
@@ -61,7 +56,7 @@ namespace Furball.Vixie {
             this.WindowManager.GameWindow.StateChanged      += this.EngineOnWindowStateChange;
             this.WindowManager.GameWindow.FramebufferResize += this.EngineFrameBufferResize;
             this.WindowManager.GameWindow.Resize            += this.EngineWindowResize;
-
+            
             Global.GameInstance = this;
 
             this.Components = new GameComponentCollection();
@@ -79,6 +74,8 @@ namespace Furball.Vixie {
         /// </summary>
         private void RendererInitialize() {
             this._inputContext = this.WindowManager.GameWindow.CreateInput();
+
+            this.WindowManager.SetupGraphicsApi();
 
             //TODO: imgui
             //this._imGuiController = new ImGuiController(Global.Gl,
@@ -151,7 +148,7 @@ namespace Furball.Vixie {
         /// </summary>
         /// <param name="deltaTime">Delta Time</param>
         protected virtual void Update(double deltaTime) {
-            _imGuiController.Update((float) deltaTime);
+            // _imGuiController.Update((float) deltaTime);
             this.Components.Update(deltaTime);
         }
         /// <summary>
@@ -160,7 +157,7 @@ namespace Furball.Vixie {
         /// <param name="deltaTime"></param>
         protected virtual void Draw(double deltaTime) {
             this.Components.Draw(deltaTime);
-            this._imGuiController.Render();
+            // this._imGuiController.Render();
         }
         /// <summary>
         /// Dispose any IDisposables and other things left to clean up here

@@ -67,9 +67,9 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
         private GL gl;
 
         public unsafe QuadRendererGL(OpenGLESBackend backend) {
-            OpenGLHelper.CheckThread();
-
             this._backend = backend;
+            _backend.CheckThread();
+
             this.gl       = this._backend.GetGlApi();
 
             this._boundTextures = new TextureGL[this._backend.QueryMaxTextureUnits()];
@@ -85,7 +85,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
 
             this._shaderGl.Bind();
 
-            OpenGLHelper.CheckError();
+            _backend.CheckError();
 
             for (int i = 0; i < backend.QueryMaxTextureUnits(); i++) {
                 this._shaderGl.BindUniformToTexUnit($"tex_{i}", i);
@@ -102,11 +102,11 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
             this.gl.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, (uint)sizeof(Vertex), (void*)0);
             //Texture position
             this.gl.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, (uint)sizeof(Vertex), (void*)sizeof(Vector2));
-            OpenGLHelper.CheckError();
+            _backend.CheckError();
 
             this.gl.EnableVertexAttribArray(0);
             this.gl.EnableVertexAttribArray(1);
-            OpenGLHelper.CheckError();
+            _backend.CheckError();
 
             this._instanceVbo = new BufferObjectGL(backend, BufferTargetARB.ArrayBuffer, BufferUsageARB.DynamicDraw);
             this._instanceVbo.Bind();
@@ -156,7 +156,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
             this.gl.EnableVertexAttribArray(8);
             this.gl.EnableVertexAttribArray(9);
 
-            OpenGLHelper.CheckError();
+            _backend.CheckError();
 
             this._instanceVbo.Unbind();
             this._vao.Unbind();
@@ -179,9 +179,9 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
         public void Begin() {
             this._shaderGl.Bind();
 
-            this._shaderGl.SetUniform("vx_ModifierX",              Global.GameInstance.WindowManager.PositionMultiplier.X)
+            this._shaderGl.SetUniform("vx_ModifierX",       Global.GameInstance.WindowManager.PositionMultiplier.X)
                    .SetUniform("vx_ModifierY",              Global.GameInstance.WindowManager.PositionMultiplier.Y)
-                   .SetUniform("vx_WindowProjectionMatrix", Global.GameInstance.WindowManager.ProjectionMatrix);
+                   .SetUniform("vx_WindowProjectionMatrix", this._backend.ProjectionMatrix);
 
             this._instances = 0;
             this._usedTextures = 0;
@@ -293,7 +293,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
             }
 
             this._vao.Bind();
-            OpenGLHelper.CheckError();
+            _backend.CheckError();
 
             // this._InstanceVBO.SetData<InstanceData>(this._instanceData);
             this._instanceVbo.Bind();

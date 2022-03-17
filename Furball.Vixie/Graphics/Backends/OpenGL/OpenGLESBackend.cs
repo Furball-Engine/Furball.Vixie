@@ -1,6 +1,8 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Numerics;
+using System.Threading;
 using Furball.Vixie.Graphics.Backends.OpenGL.Abstractions;
 using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
@@ -15,12 +17,24 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
         // ReSharper disable once InconsistentNaming
         private GL gl;
 
-        private Matrix4x4 _projectionMatrix;
+        internal Matrix4x4 ProjectionMatrix;
 
         private int _maxTextureUnits = -1;
 
+        private static Thread _MainThread;
+
+        [Conditional("DEBUG")]
+        private void GetMainThread() {
+            _MainThread = Thread.CurrentThread;
+        }
+
+        [Conditional("DEBUG")]
+        internal void CheckThread() {
+            if (Thread.CurrentThread != _MainThread) throw new ThreadStateException("You are calling GL on the wrong thread!");
+        }
+        
         public override void Initialize(IWindow window) {
-            OpenGLHelper.GetMainThread();
+            GetMainThread();
 
             gl = window.CreateOpenGLES();
 
@@ -37,6 +51,19 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
             gl.Enable(EnableCap.Blend);
             gl.BlendFunc(GLEnum.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
         }
+        
+        [Conditional("DEBUG")]
+        public void CheckError() {
+            GLEnum error = gl.GetError();
+            
+            if (error != GLEnum.NoError) {
+#if DEBUGWITHGL
+                throw new Exception($"Got GL Error {error}!");
+#else
+                Debugger.Break();
+#endif
+            }
+        }
 
         public override void Cleanup() {
             this.gl.Dispose();
@@ -45,7 +72,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
         public override void HandleWindowSizeChange(int width, int height) {
             gl.Viewport(0, 0, (uint) width, (uint) height);
 
-            this._projectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, 0, height, 1f, 0f);
+            this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, 0, height, 1f, 0f);
         }
 
         public override void HandleFramebufferResize(int width, int height) {

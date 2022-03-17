@@ -10,6 +10,7 @@ using Rectangle=System.Drawing.Rectangle;
 
 namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
     public class TextureGL : Texture, IDisposable {
+        private readonly OpenGLESBackend _backend;
         /// <summary>
         /// All the Currently Bound Textures
         /// </summary>
@@ -84,7 +85,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// </summary>
         /// <param name="filepath">Path to an Image</param>
         public unsafe TextureGL(OpenGLESBackend backend, string filepath) {
-            this.gl = backend.GetGlApi();
+            this._backend = backend;
+            this.gl       = backend.GetGlApi();
 
             Image<Rgba32> image = (Image<Rgba32>)Image.Load(filepath);
 
@@ -102,7 +104,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// </summary>
         /// <param name="imageData">Image Data</param>
         public unsafe TextureGL(OpenGLESBackend backend, byte[] imageData, bool qoi = false) {
-            this.gl = backend.GetGlApi();
+            this._backend = backend;
+            this.gl       = backend.GetGlApi();
 
             Image<Rgba32> image;
 
@@ -127,7 +130,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Creates a Texture with a single White Pixel
         /// </summary>
         public unsafe TextureGL(OpenGLESBackend backend) {
-            OpenGLHelper.CheckThread();
+            this._backend = backend;
+            _backend.CheckThread();
             
             this.gl = backend.GetGlApi();
 
@@ -145,7 +149,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
             this.gl.TexImage2D(GLEnum.Texture2D, 0, InternalFormat.Rgba8, 1, 1, 0, PixelFormat.Rgba, PixelType.UnsignedByte, &color);
             //Unbind as we have finished
             this.gl.BindTexture(TextureTarget.Texture2D, 0);
-            OpenGLHelper.CheckError();
+            _backend.CheckError();
 
             this.Size = new Vector2(1, 1);
         }
@@ -155,7 +159,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// <param name="width">Desired Width</param>
         /// <param name="height">Desired Height</param>
         public unsafe TextureGL(OpenGLESBackend backend, uint width, uint height) {
-            OpenGLHelper.CheckThread();
+            this._backend = backend;
+            _backend.CheckThread();
             
             this.gl = backend.GetGlApi();
 
@@ -171,7 +176,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
             this.gl.TexImage2D(GLEnum.Texture2D, 0, InternalFormat.Rgba8, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, null);
             //Unbind as we have finished
             this.gl.BindTexture(TextureTarget.Texture2D, 0);
-            OpenGLHelper.CheckError();
+            _backend.CheckError();
 
             this.Size = new Vector2(width, height);
         }
@@ -180,7 +185,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// </summary>
         /// <param name="stream">Image Data Stream</param>
         public unsafe TextureGL(OpenGLESBackend backend, Stream stream) {
-            this.gl = backend.GetGlApi();
+            this._backend = backend;
+            this.gl       = backend.GetGlApi();
 
             Image<Rgba32> image = Image.Load<Rgba32>(stream);
 
@@ -239,7 +245,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
             this.gl.TexImage2D(GLEnum.Texture2D, 0, InternalFormat.Rgba8, (uint)width, (uint)height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, data);
             //Unbind as we have finished
             this.gl.BindTexture(TextureTarget.Texture2D, 0);
-            OpenGLHelper.CheckError();
+            _backend.CheckError();
         }
         /// <summary>
         /// Sets the Data of the Texture Directly
@@ -255,7 +261,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
                 this.gl.TexImage2D(TextureTarget.Texture2D, level, InternalFormat.Rgba, (uint) this.Size.X, (uint) this.Size.Y, 0, PixelFormat.Rgba, PixelType.UnsignedByte, d);
 
             this.gl.Finish();
-            OpenGLHelper.CheckError();
+            _backend.CheckError();
 
             this.UnlockingUnbind();
 
@@ -274,7 +280,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
 
             fixed(void* d = data)
                 this.gl.TexSubImage2D(TextureTarget.Texture2D, level, rect.X, rect.Y, (uint) rect.Width, (uint) rect.Height, PixelFormat.Rgba, PixelType.UnsignedByte, d);
-            OpenGLHelper.CheckError();
+            _backend.CheckError();
 
             this.UnlockingUnbind();
 
@@ -292,7 +298,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
 
             this.gl.ActiveTexture(textureSlot);
             this.gl.BindTexture(TextureTarget.Texture2D, this.TextureId);
-            OpenGLHelper.CheckError();
+            _backend.CheckError();
 
             BoundTextures[textureSlot] = this.TextureId;
             this.BoundAt               = textureSlot;
@@ -356,7 +362,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
 
             this.gl.ActiveTexture(this.BoundAt);
             this.gl.BindTexture(TextureTarget.Texture2D, 0);
-            OpenGLHelper.CheckError();
+            _backend.CheckError();
 
             BoundTextures[this.BoundAt] = 0;
 
@@ -382,7 +388,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
             catch {
 
             }
-            OpenGLHelper.CheckError();
+            _backend.CheckError();
         }
     }
 }

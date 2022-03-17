@@ -14,6 +14,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
     }
 
     public class LineRendererGL : IDisposable, ILineRenderer {
+        private readonly OpenGLESBackend _backend;
         /// <summary>
         /// Max Lines allowed in 1 Batch
         /// </summary>
@@ -54,7 +55,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
         /// <param name="backend">OpenGLES API</param>
         /// <param name="capacity">How many Lines to allow in 1 Batch</param>
         public unsafe LineRendererGL(OpenGLESBackend backend, int capacity = 8192) {
-            this.gl = backend.GetGlApi();
+            this._backend = backend;
+            this.gl       = backend.GetGlApi();
 
             //Calculate Constants
             this.MaxLines     = capacity;
@@ -118,9 +120,9 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
             //Bind the Shader and set the necessary uniforms
             this._lineShaderGl
                 .LockingBind()
-                .SetUniform("u_mvp",           Global.GameInstance.WindowManager.ProjectionMatrix)
-                .SetUniform("vx_ModifierX",     Global.GameInstance.WindowManager.PositionMultiplier.X)
-                .SetUniform("vx_ModifierY",     Global.GameInstance.WindowManager.PositionMultiplier.Y)
+                .SetUniform("u_mvp",           this._backend.ProjectionMatrix)
+                .SetUniform("vx_ModifierX",    Global.GameInstance.WindowManager.PositionMultiplier.X)
+                .SetUniform("vx_ModifierY",    Global.GameInstance.WindowManager.PositionMultiplier.Y)
                 .SetUniform("u_viewport_size", (float) Global.GameInstance.WindowManager.GameWindow.Size.X, (float) Global.GameInstance.WindowManager.GameWindow.Size.Y)
                 .SetUniform("u_aa_radius",     0f,                                                          0f);
 
@@ -188,7 +190,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
 
             //Draw
             this.gl.DrawArrays(PrimitiveType.Lines, 0, (uint) (this._processedVerticies));
-            OpenGLHelper.CheckError();
+            _backend.CheckError();
 
             //Reset Counts
             this._processedVerticies = 0;

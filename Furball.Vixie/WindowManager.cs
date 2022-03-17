@@ -23,7 +23,7 @@ namespace Furball.Vixie {
         /// <summary>
         /// The Window's current Projection Matrix
         /// </summary>
-        public Matrix4x4 ProjectionMatrix { get; private set; }
+        // public Matrix4x4 ProjectionMatrix { get; private set; }
 
         public Vector2 PositionMultiplier = new(1, -1f);
 
@@ -96,14 +96,16 @@ namespace Furball.Vixie {
             this._windowOptions.API = new GraphicsAPI(api, profile, flags, version);
 
             this.GameWindow = Window.Create(this._windowOptions);
-
-            this.UpdateProjectionAndSize(this._windowOptions.Size.X, this._windowOptions.Size.Y);
-
+            
             this.GameWindow.FramebufferResize += newSize => {
                 this.UpdateProjectionAndSize(newSize.X, newSize.Y);
             };
-
+        }
+        public void SetupGraphicsApi() {
+            GraphicsBackend.SetBackend(this._backend);
             GraphicsBackend.Current.Initialize(this.GameWindow);
+            
+            this.UpdateProjectionAndSize(this._windowOptions.Size.X, this._windowOptions.Size.Y);
         }
         /// <summary>
         /// Runs the Window
