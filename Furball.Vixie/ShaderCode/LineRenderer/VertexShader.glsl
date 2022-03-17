@@ -1,4 +1,4 @@
-#version 300 es
+#version 320 es
 
 layout(location = 0) in vec4 pos_width;
 layout(location = 1) in vec4 col;

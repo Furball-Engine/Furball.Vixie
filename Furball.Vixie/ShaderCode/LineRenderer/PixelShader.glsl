@@ -1,4 +1,4 @@
-#version 300 es
+#version 320 es
 precision highp float;
 
 uniform vec2 u_aa_radius;
