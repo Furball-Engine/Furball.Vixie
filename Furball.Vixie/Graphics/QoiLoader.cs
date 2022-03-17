@@ -36,13 +36,6 @@ namespace Furball.Vixie.Graphics {
             return (pixel.R * 3 + pixel.G * 5 + pixel.B * 7 + pixel.A * 11) % 64;
         }
 
-        public struct Pixel {
-            public byte R;
-            public byte G;
-            public byte B;
-            public byte A;
-        }
-
         private static readonly byte[] QOI_PADDING = new byte[] {
             0, 0, 0, 0, 0, 0, 0, 1
         };
@@ -75,10 +68,10 @@ namespace Furball.Vixie.Graphics {
             p++;
             //uint8_t colorspace; // 0 = sRGB with linear alpha
             //                       1 = all channels linear
-            header.ColorSpace = (QoiLoader.ColorSpace)reader.ReadByte();
+            header.ColorSpace = (ColorSpace)reader.ReadByte();
             p++;
 
-            Logger.Log($"Read header of Qoi file! width:{header.Width} height:{header.Height} channels:{header.Channels} colorspace:{header.ColorSpace}");
+            Logger.Log($"Read header of Qoi file! width:{header.Width} height:{header.Height} channels:{header.Channels} colorspace:{header.ColorSpace}", LoggerLevelImageLoader.Instance);
 
             #endregion
 
@@ -89,7 +82,7 @@ namespace Furball.Vixie.Graphics {
             
             // An image is complete when all pixels specified by width * height have been covered.
             uint totalPixels   = header.Width * header.Height;
-            uint pixelPosition = 0;
+            uint pixelPosition;
 
             int run = 0;
 
