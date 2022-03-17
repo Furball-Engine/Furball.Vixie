@@ -221,8 +221,9 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         internal TextureGL(OpenGLESBackend backend, uint textureId, uint width, uint height) {
             this.gl = backend.GetGlApi();
 
+            this._backend  = backend;
             this.TextureId = textureId;
-            this.Size       = new Vector2(width, height);
+            this.Size      = new Vector2(width, height);
         }
 
         /// <summary>

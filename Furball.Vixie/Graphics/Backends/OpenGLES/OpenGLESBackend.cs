@@ -9,6 +9,7 @@ using Furball.Vixie.Helpers;
 using Kettu;
 using Silk.NET.Core.Native;
 using Silk.NET.OpenGLES;
+using Silk.NET.OpenGLES.Extensions.ImGui;
 using Silk.NET.Windowing;
 
 namespace Furball.Vixie.Graphics.Backends.OpenGLES {
@@ -21,6 +22,11 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
 
         private int _maxTextureUnits = -1;
 
+        /// <summary>
+        /// ImGui Controller
+        /// </summary>
+        internal ImGuiController _imGuiController;
+        
         private static Thread _MainThread;
 
         [Conditional("DEBUG")]
@@ -50,6 +56,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
             //Enables Blending (Required for Transparent Objects)
             this.gl.Enable(EnableCap.Blend);
             this.gl.BlendFunc(GLEnum.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+
+            this._imGuiController = new ImGuiController(gl, Global.GameInstance.WindowManager.GameWindow, Global.GameInstance._inputContext);
         }
         
         [Conditional("DEBUG")]
@@ -122,6 +130,12 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
 
         public override Texture CreateWhitePixelTexture() {
             return new TextureGL(this);
+        }
+        public override void ImGuiUpdate(double deltaTime) {
+            this._imGuiController.Update((float)deltaTime);
+        }
+        public override void ImGuiDraw(double deltatime) {
+            this._imGuiController.Render();
         }
 
         public GL GetGlApi() => this.gl;

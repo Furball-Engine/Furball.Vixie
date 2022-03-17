@@ -61,10 +61,10 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <param name="height">Desired Width</param>
         /// <exception cref="Exception">Throws Exception if the Target didn't create properly</exception>
         public unsafe TextureRenderTargetGL(OpenGLESBackend backend, uint width, uint height) {
+            this._backend = backend;
             this._backend.CheckThread();
 
             this.gl       = backend.GetGlApi();
-            this._backend = backend;
 
             //Generate and bind a FrameBuffer
             this._frameBufferId = this.gl.GenFramebuffer();

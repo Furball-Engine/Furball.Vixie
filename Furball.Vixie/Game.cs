@@ -12,10 +12,6 @@ namespace Furball.Vixie {
         /// Window Input Context
         /// </summary>
         internal IInputContext _inputContext;
-        /// <summary>
-        /// ImGui Controller
-        /// </summary>
-        internal ImGuiController _imGuiController;
 
         /// <summary>
         /// Is the Window Active/Focused?
@@ -76,12 +72,6 @@ namespace Furball.Vixie {
             this._inputContext = this.WindowManager.GameWindow.CreateInput();
 
             this.WindowManager.SetupGraphicsApi();
-
-            //TODO: imgui
-            //this._imGuiController = new ImGuiController(Global.Gl,
-            //                                            Global.GameInstance.WindowManager.GameWindow,
-            //                                            this._inputContext
-            //);
 
             Global.WindowManager = this.WindowManager;
 
@@ -148,7 +138,7 @@ namespace Furball.Vixie {
         /// </summary>
         /// <param name="deltaTime">Delta Time</param>
         protected virtual void Update(double deltaTime) {
-            // _imGuiController.Update((float) deltaTime);
+            GraphicsBackend.Current.ImGuiUpdate(deltaTime);
             this.Components.Update(deltaTime);
         }
         /// <summary>
@@ -157,7 +147,7 @@ namespace Furball.Vixie {
         /// <param name="deltaTime"></param>
         protected virtual void Draw(double deltaTime) {
             this.Components.Draw(deltaTime);
-            // this._imGuiController.Render();
+            GraphicsBackend.Current.ImGuiDraw(deltaTime);
         }
         /// <summary>
         /// Dispose any IDisposables and other things left to clean up here

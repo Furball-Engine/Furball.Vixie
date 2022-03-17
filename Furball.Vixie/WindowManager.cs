@@ -71,7 +71,7 @@ namespace Furball.Vixie {
         /// Creates the Window and grabs the OpenGL API of Window
         /// </summary>
         public void Create() {
-            SdlWindowing.Use();//dont tell perskey and kai that i do this! shhhhhhhhhhhhhhh
+            SdlWindowing.Use(); //dont tell perskey and kai that i do this! shhhhhhhhhhhhhhh
 
             ContextAPI api = this._backend switch {
                 Backend.OpenGLES => ContextAPI.OpenGLES,
