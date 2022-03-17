@@ -36,7 +36,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
 
         [Conditional("DEBUG")]
         internal void CheckThread() {
-            //if (Thread.CurrentThread != _MainThread) throw new ThreadStateException("You are calling GL on the wrong thread!");
+            if (Thread.CurrentThread != _MainThread)
+                throw new ThreadStateException("You are calling GL on the wrong thread!");
         }
         
         public override void Initialize(IWindow window) {
