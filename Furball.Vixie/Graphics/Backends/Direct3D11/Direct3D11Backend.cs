@@ -16,6 +16,7 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
         private DeviceContext    _deviceContext;
         private SwapChain1       _swapChain;
         private RenderTargetView _renderTarget;
+        private DeviceDebug      _debug;
 
         private RawColor4 _clearColor;
 
@@ -24,6 +25,11 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
 
             FeatureLevel featureLevel = FeatureLevel.Level_11_0;
             DeviceCreationFlags deviceFlags = DeviceCreationFlags.BgraSupport;
+
+#if DEBUG
+            deviceFlags |= DeviceCreationFlags.Debug;
+            //deviceFlags |= DeviceCreationFlags.Debuggable;
+#endif
 
             Device device = new Device(DriverType.Hardware, deviceFlags, featureLevel);
             DeviceContext deviceContext = device.ImmediateContext;
@@ -54,7 +60,10 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
 
             this.CreateSwapchainResources();
 
-            this._clearColor = new RawColor4(0.0f, 0.0f, 0.0f, 1.0f);
+            this._clearColor = new RawColor4(1.0f, 0.0f, 0.0f, 1.0f);
+
+            DeviceDebug debug = new DeviceDebug(device);
+            this._debug = debug;
         }
 
         private void CreateSwapchainResources() {
@@ -73,19 +82,26 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
 
         }
 
+        private bool _first = true;
+
         public override void HandleWindowSizeChange(int width, int height) {
-            //this._deviceContext.Flush();
-//
-            //this.DestroySwapchainResources();
-//
-            //this._swapChain.ResizeBuffers(0, width, height, Format.B8G8R8A8_UNorm, SwapChainFlags.None);
-            //this._deviceContext.Rasterizer.SetViewport(0, 0, width, height);
-//
-            //this.CreateSwapchainResources();
+            if (this._first) {
+                this._first = false;
+                return;
+            }
+
+            this._deviceContext.Flush();
+
+            this.DestroySwapchainResources();
+
+            this._swapChain.ResizeBuffers(2, width, height, Format.B8G8R8A8_UNorm, SwapChainFlags.None);
+            this._deviceContext.Rasterizer.SetViewport(0, 0, width, height);
+
+            this.CreateSwapchainResources();
         }
 
         public override void HandleFramebufferResize(int width, int height) {
-            //HandleWindowSizeChange(width, height);
+            HandleWindowSizeChange(width, height);
         }
 
         public override IQuadRenderer CreateTextureRenderer() {
