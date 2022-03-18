@@ -93,6 +93,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
                 throw new Exception($"Got GL Error {error}!");
 #else
                 //Debugger.Break();
+                Logger.Log($"OpenGL Error! Code: {error.ToString()}", LoggerLevelOpenGL.InstanceError);
 #endif
             }
         }

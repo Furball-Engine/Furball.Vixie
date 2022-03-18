@@ -94,6 +94,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
                 throw new Exception($"Got GL Error {error}!");
 #else
                 //Debugger.Break();
+                Logger.Log($"OpenGLES Error! Code: {error.ToString()}", LoggerLevelOpenGLES.InstanceError);
 #endif
             }
         }
