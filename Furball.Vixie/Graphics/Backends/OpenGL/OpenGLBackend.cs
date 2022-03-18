@@ -3,26 +3,25 @@ using System.Diagnostics;
 using System.IO;
 using System.Numerics;
 using System.Threading;
-using Furball.Vixie.Graphics.Backends.OpenGL;
-using Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions;
+using Furball.Vixie.Graphics.Backends.OpenGL.Abstractions;
 using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using Kettu;
 using Silk.NET.Core.Native;
-using Silk.NET.OpenGLES;
-using Silk.NET.OpenGLES.Extensions.ImGui;
+using Silk.NET.OpenGL;
+using Silk.NET.OpenGL.Extensions.ImGui;
 using Silk.NET.Windowing;
 
-namespace Furball.Vixie.Graphics.Backends.OpenGLES {
+namespace Furball.Vixie.Graphics.Backends.OpenGL {
     // ReSharper disable once InconsistentNaming
-    public class OpenGLESBackend : GraphicsBackend {
+    public class OpenGLBackend : GraphicsBackend {
         /// <summary>
-        /// OpenGLES API
+        /// OpenGL API
         /// </summary>
         // ReSharper disable once InconsistentNaming
         private GL gl;
         /// <summary>
-        /// Projection Matrix used to go from Window Coordinates to OpenGLES Coordinates
+        /// Projection Matrix used to go from Window Coordinates to OpenGL Coordinates
         /// </summary>
         internal Matrix4x4 ProjectionMatrix;
         /// <summary>
@@ -34,7 +33,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
         /// </summary>
         internal ImGuiController ImGuiController;
         /// <summary>
-        /// Stores the Main Thread that OpenGLES commands run on, used to ensure that OpenGLES commands don't run on different threads
+        /// Stores the Main Thread that OpenGL commands run on, used to ensure that OpenGL commands don't run on different threads
         /// </summary>
         private static Thread _mainThread;
         /// <summary>
@@ -45,7 +44,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
             _mainThread = Thread.CurrentThread;
         }
         /// <summary>
-        /// Ensures that OpenGLES commands don't run on the wrong thread
+        /// Ensures that OpenGL commands don't run on the wrong thread
         /// </summary>
         /// <exception cref="ThreadStateException">Throws if a cross-thread operation has occured</exception>
         [Conditional("DEBUG")]
@@ -60,7 +59,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
         public override void Initialize(IWindow window) {
             this.GetMainThread();
 
-            this.gl = window.CreateOpenGLES();
+            this.gl = window.CreateOpenGL();
 
 #if DEBUGWITHGL
             unsafe {
@@ -75,12 +74,12 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
             this.gl.Enable(EnableCap.Blend);
             this.gl.BlendFunc(GLEnum.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
-            this.ImGuiController = new ImGuiController(gl, Global.GameInstance.WindowManager.GameWindow, Global.GameInstance._inputContext);
+            this.ImGuiController = new ImGuiController(this.gl, Global.GameInstance.WindowManager.GameWindow, Global.GameInstance._inputContext);
             
-            Logger.Log($"OpenGLES Version: {this.gl.GetStringS(StringName.Version)}",              LoggerLevelOpenGLES.InstanceInfo);
-            Logger.Log($"GLSL ES Version: {this.gl.GetStringS(StringName.ShadingLanguageVersion)}", LoggerLevelOpenGLES.InstanceInfo);
-            Logger.Log($"OpenGLES Vendor: {this.gl.GetStringS(StringName.Vendor)}",                LoggerLevelOpenGLES.InstanceInfo);
-            Logger.Log($"Renderer: {this.gl.GetStringS(StringName.Renderer)}",                   LoggerLevelOpenGLES.InstanceInfo);
+            Logger.Log($"OpenGL Version: {this.gl.GetStringS(StringName.Version)}",              LoggerLevelOpenGL.InstanceInfo);
+            Logger.Log($"GLSL Version: {this.gl.GetStringS(StringName.ShadingLanguageVersion)}", LoggerLevelOpenGL.InstanceInfo);
+            Logger.Log($"OpenGL Vendor: {this.gl.GetStringS(StringName.Vendor)}",                LoggerLevelOpenGL.InstanceInfo);
+            Logger.Log($"Renderer: {this.gl.GetStringS(StringName.Renderer)}",                   LoggerLevelOpenGL.InstanceInfo);
         }
         /// <summary>
         /// Checks for OpenGL errors
@@ -126,14 +125,14 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
         /// </summary>
         /// <returns>A Texture Renderer</returns>
         public override IQuadRenderer CreateTextureRenderer() {
-            return new QuadRendererGLES(this);
+            return new QuadRendererGL(this);
         }
         /// <summary>
         /// Used to Create a Line Renderer
         /// </summary>
         /// <returns></returns>
         public override ILineRenderer CreateLineRenderer() {
-            return new LineRendererGLES(this);
+            return new LineRendererGL(this);
         }
         /// <summary>
         /// Gets the Amount of Texture Units available for use
@@ -160,7 +159,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
         /// <param name="height">Height of the Target</param>
         /// <returns></returns>
         public override TextureRenderTarget CreateRenderTarget(uint width, uint height) {
-            return new TextureRenderTargetGLES(this, width, height);
+            return new TextureRenderTargetGL(this, width, height);
         }
         /// <summary>
         /// Creates a Texture given some Data
@@ -169,7 +168,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
         /// <param name="qoi">Is the Data in the QOI format?</param>
         /// <returns>Texture</returns>
         public override Texture CreateTexture(byte[] imageData, bool qoi = false) {
-            return new TextureGLES(this, imageData, qoi);
+            return new TextureGL(this, imageData, qoi);
         }
         /// <summary>
         /// Creates a Texture given a Stream
@@ -177,7 +176,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
         /// <param name="stream">Stream to read from</param>
         /// <returns>Texture</returns>
         public override Texture CreateTexture(Stream stream) {
-            return new TextureGLES(this, stream);
+            return new TextureGL(this, stream);
         }
         /// <summary>
         /// Creates a Empty Texture given a Size
@@ -186,7 +185,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
         /// <param name="height">Height of Texture</param>
         /// <returns>Texture</returns>
         public override Texture CreateTexture(uint width, uint height) {
-            return new TextureGLES(this, width, height);
+            return new TextureGL(this, width, height);
         }
         /// <summary>
         /// Creates a Texture from a File
@@ -194,14 +193,14 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
         /// <param name="filepath">Filepath to Image</param>
         /// <returns>Texture</returns>
         public override Texture CreateTexture(string filepath) {
-            return new TextureGLES(this, filepath);
+            return new TextureGL(this, filepath);
         }
         /// <summary>
         /// Used to Create a 1x1 Texture with only a white pixel
         /// </summary>
         /// <returns>White Pixel Texture</returns>
         public override Texture CreateWhitePixelTexture() {
-            return new TextureGLES(this);
+            return new TextureGL(this);
         }
         /// <summary>
         /// Used to Update the ImGuiController in charge of rendering ImGui on this backend
@@ -218,7 +217,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
             this.ImGuiController.Render();
         }
         /// <summary>
-        /// Returns the OpenGLES API
+        /// Returns the OpenGL API
         /// </summary>
         /// <returns></returns>
         public GL GetGlApi() => this.gl;

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Furball.Vixie.Graphics.Backends.OpenGL;
 using Furball.Vixie.Graphics.Backends.OpenGLES;
 using Furball.Vixie.Graphics.Renderers;
 using Silk.NET.Windowing;
@@ -21,7 +22,8 @@ namespace Furball.Vixie.Graphics.Backends {
         public static void SetBackend(Backend backend) {
             Current = backend switch {
                 Backend.OpenGLES => new OpenGLESBackend(),
-                _                => throw new ArgumentOutOfRangeException(nameof(backend), backend, "Invalid API")
+                Backend.OpenGL   => new OpenGLBackend(),
+                _                => throw new ArgumentOutOfRangeException(nameof (backend), backend, "Invalid API")
             };
         }
         /// <summary>

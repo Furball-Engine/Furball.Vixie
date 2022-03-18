@@ -75,25 +75,30 @@ namespace Furball.Vixie {
 
             ContextAPI api = this._backend switch {
                 Backend.OpenGLES => ContextAPI.OpenGLES,
+                Backend.OpenGL   => ContextAPI.OpenGL,
                 _                => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
             };
 
             ContextProfile profile = this._backend switch {
                 Backend.OpenGLES => ContextProfile.Core,
+                Backend.OpenGL   => ContextProfile.Core,
                 _                => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
             };
 
             ContextFlags flags = this._backend switch {
 #if DEBUG
                 Backend.OpenGLES => ContextFlags.Debug,
+                Backend.OpenGL => ContextFlags.Debug,
 #else
                 Backend.OpenGLES => ContextFlags.Default,
+                Backend.OpenGL => ContextFlags.Default,
 #endif
                 _                => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
             };
 
             APIVersion version = this._backend switch {
                 Backend.OpenGLES => new APIVersion(3, 0),
+                Backend.OpenGL   => new APIVersion(4, 1),
                 _                => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
             };
 
