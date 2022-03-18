@@ -2,6 +2,7 @@
 namespace Furball.Vixie.Graphics.Backends {
     public enum Backend {
         OpenGL,
-        OpenGLES
+        OpenGLES,
+        Direct3D11
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Furball.Vixie.Graphics.Backends.Direct3D11;
 using Furball.Vixie.Graphics.Backends.OpenGL;
 using Furball.Vixie.Graphics.Backends.OpenGLES;
 using Furball.Vixie.Graphics.Renderers;
@@ -21,9 +22,10 @@ namespace Furball.Vixie.Graphics.Backends {
         /// <exception cref="ArgumentOutOfRangeException">Throws if a Invalid API was chosen</exception>
         public static void SetBackend(Backend backend) {
             Current = backend switch {
-                Backend.OpenGLES => new OpenGLESBackend(),
-                Backend.OpenGL   => new OpenGLBackend(),
-                _                => throw new ArgumentOutOfRangeException(nameof (backend), backend, "Invalid API")
+                Backend.OpenGLES   => new OpenGLESBackend(),
+                Backend.OpenGL     => new OpenGLBackend(),
+                Backend.Direct3D11 => new Direct3D11Backend(),
+                _                  => throw new ArgumentOutOfRangeException(nameof (backend), backend, "Invalid API")
             };
         }
         /// <summary>

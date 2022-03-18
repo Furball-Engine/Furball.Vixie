@@ -74,32 +74,37 @@ namespace Furball.Vixie {
             SdlWindowing.Use(); //dont tell perskey and kai that i do this! shhhhhhhhhhhhhhh
 
             ContextAPI api = this._backend switch {
-                Backend.OpenGLES => ContextAPI.OpenGLES,
-                Backend.OpenGL   => ContextAPI.OpenGL,
-                _                => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
+                Backend.OpenGLES   => ContextAPI.OpenGLES,
+                Backend.OpenGL     => ContextAPI.OpenGL,
+                Backend.Direct3D11 => ContextAPI.None,
+                _                  => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
             };
 
             ContextProfile profile = this._backend switch {
-                Backend.OpenGLES => ContextProfile.Core,
-                Backend.OpenGL   => ContextProfile.Core,
-                _                => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
+                Backend.OpenGLES   => ContextProfile.Core,
+                Backend.OpenGL     => ContextProfile.Core,
+                Backend.Direct3D11 => ContextProfile.Core,
+                _                  => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
             };
 
             ContextFlags flags = this._backend switch {
 #if DEBUG
-                Backend.OpenGLES => ContextFlags.Debug,
-                Backend.OpenGL => ContextFlags.Debug,
+                Backend.OpenGLES   => ContextFlags.Debug,
+                Backend.OpenGL     => ContextFlags.Debug,
+                Backend.Direct3D11 => ContextFlags.Debug,
 #else
-                Backend.OpenGLES => ContextFlags.Default,
-                Backend.OpenGL => ContextFlags.Default,
+                Backend.OpenGLES   => ContextFlags.Default,
+                Backend.OpenGL     => ContextFlags.Default,
+                Backend.Direct3D11 => ContextFlags.Default,
 #endif
                 _                => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
             };
 
             APIVersion version = this._backend switch {
-                Backend.OpenGLES => new APIVersion(3, 0),
-                Backend.OpenGL   => new APIVersion(4, 1),
-                _                => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
+                Backend.OpenGLES   => new APIVersion(3, 0),
+                Backend.OpenGL     => new APIVersion(4, 1),
+                Backend.Direct3D11 => new APIVersion(11, 0),
+                _                  => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
             };
 
             this._windowOptions.API = new GraphicsAPI(api, profile, flags, version);
@@ -114,8 +119,6 @@ namespace Furball.Vixie {
             GraphicsBackend.SetBackend(this._backend);
             GraphicsBackend.Current.Initialize(this.GameWindow);
 
-            
-            
             this.UpdateProjectionAndSize(this._windowOptions.Size.X, this._windowOptions.Size.Y);
         }
         /// <summary>

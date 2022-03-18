@@ -19,7 +19,6 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
 
         private RawColor4 _clearColor;
 
-
         public override unsafe void Initialize(IWindow window) {
             Factory2 dxgiFactory2 = new Factory2();
 
@@ -75,18 +74,18 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
         }
 
         public override void HandleWindowSizeChange(int width, int height) {
-            this._deviceContext.Flush();
-
-            this.DestroySwapchainResources();
-
-            this._swapChain.ResizeBuffers(0, width, height, Format.B8G8R8A8_UNorm, SwapChainFlags.None);
-            this._deviceContext.Rasterizer.SetViewport(0, 0, width, height);
-
-            this.CreateSwapchainResources();
+            //this._deviceContext.Flush();
+//
+            //this.DestroySwapchainResources();
+//
+            //this._swapChain.ResizeBuffers(0, width, height, Format.B8G8R8A8_UNorm, SwapChainFlags.None);
+            //this._deviceContext.Rasterizer.SetViewport(0, 0, width, height);
+//
+            //this.CreateSwapchainResources();
         }
 
         public override void HandleFramebufferResize(int width, int height) {
-            HandleWindowSizeChange(width, height);
+            //HandleWindowSizeChange(width, height);
         }
 
         public override IQuadRenderer CreateTextureRenderer() {
