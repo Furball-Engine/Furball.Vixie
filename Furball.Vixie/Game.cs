@@ -156,6 +156,7 @@ namespace Furball.Vixie {
         /// </summary>
         public virtual void Dispose() {
             this.Components.Dispose();
+            DisposeQueue.DisposeAll();
         }
         /// <summary>
         /// Gets fired when The Window is being closed

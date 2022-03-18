@@ -20,5 +20,10 @@ namespace Furball.Vixie {
                     return;
             }
         }
+
+        internal static void DisposeAll() {
+            while(_disposeQueue.TryDequeue(out IDisposable disposable))
+                disposable.Dispose();
+        }
     }
 }
