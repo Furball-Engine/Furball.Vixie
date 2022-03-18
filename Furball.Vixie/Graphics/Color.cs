@@ -179,5 +179,7 @@ namespace Furball.Vixie.Graphics {
         public static bool operator ==(Color a, Color b) => a.Equals(b);
 
         public static bool operator !=(Color a, Color b) => !a.Equals(b);
+
+        public override string ToString() => $"R: {this.R}; G: {this.G}; B: {this.B}; A: {this.A}";
     }
 }
