@@ -1,8 +1,6 @@
 using System;
 using System.IO;
-using System.Linq;
 using System.Text;
-using Silk.NET.Input;
 
 namespace Furball.Vixie.Helpers {
     public class BigEndianBinaryReader : BinaryReader {

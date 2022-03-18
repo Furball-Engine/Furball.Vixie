@@ -1,27 +1,17 @@
 ﻿using System;
-using Furball.Vixie.Helpers;
+using Furball.Vixie.Graphics.Backends;
 using Kettu;
-using Silk.NET.Core.Native;
 using Silk.NET.Input;
 using Silk.NET.Maths;
-using Silk.NET.OpenGLES;
 using Silk.NET.OpenGLES.Extensions.ImGui;
 using Silk.NET.Windowing;
 
 namespace Furball.Vixie {
     public abstract class Game : IDisposable {
         /// <summary>
-        /// OpenGL API, used to not do Global.Gl everytime
-        /// </summary>
-        internal GL      gl;
-        /// <summary>
         /// Window Input Context
         /// </summary>
         internal IInputContext _inputContext;
-        /// <summary>
-        /// ImGui Controller
-        /// </summary>
-        internal ImGuiController _imGuiController;
 
         /// <summary>
         /// Is the Window Active/Focused?
@@ -31,10 +21,6 @@ namespace Furball.Vixie {
         /// Window Manager, handles everything Window Related, from Creation to the Window Projection Matrix
         /// </summary>
         public WindowManager WindowManager { get; internal set;}
-        /// <summary>
-        /// What is the Graphics Device captable of doing.
-        /// </summary>
-        public GraphicsDevice GraphicsDevice { get; internal set;}
         /// <summary>
         /// All of the Game Components
         /// </summary>
@@ -52,8 +38,8 @@ namespace Furball.Vixie {
         /// <summary>
         /// Runs the Game
         /// </summary>
-        public void Run(WindowOptions options) {
-            this.WindowManager = new WindowManager(options);
+        public void Run(WindowOptions options, Backend backend) {
+            this.WindowManager = new WindowManager(options, backend);
             this.WindowManager.Create();
 
             this.WindowManager.GameWindow.Update            += this.Update;
@@ -66,7 +52,7 @@ namespace Furball.Vixie {
             this.WindowManager.GameWindow.StateChanged      += this.EngineOnWindowStateChange;
             this.WindowManager.GameWindow.FramebufferResize += this.EngineFrameBufferResize;
             this.WindowManager.GameWindow.Resize            += this.EngineWindowResize;
-
+            
             Global.GameInstance = this;
 
             this.Components = new GameComponentCollection();
@@ -83,56 +69,15 @@ namespace Furball.Vixie {
         /// Used to Initialize the Renderer and stuff,
         /// </summary>
         private void RendererInitialize() {
-            Global.Gl             = this.WindowManager.GetGlApi();
-            this.gl               = Global.Gl;
-
-            OpenGLHelper.GetMainThread();
-
-#if DEBUGWITHGL
-            unsafe {
-                //Enables Debugging
-                gl.Enable(GLEnum.DebugOutput);
-                gl.Enable(GLEnum.DebugOutputSynchronous);
-                gl.DebugMessageCallback(this.Callback, null);
-            }
-#endif
-
-            //Enables Blending (Required for Transparent Objects)
-            gl.Enable(EnableCap.Blend);
-            gl.BlendFunc(GLEnum.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
-
             this._inputContext = this.WindowManager.GameWindow.CreateInput();
 
-            this._imGuiController = new ImGuiController(Global.Gl,
-                                                        Global.GameInstance.WindowManager.GameWindow,
-                                                        this._inputContext
-            );
+            this.WindowManager.SetupGraphicsApi();
 
-            this.GraphicsDevice  = new GraphicsDevice(gl);
-            Global.Device        = this.GraphicsDevice;
             Global.WindowManager = this.WindowManager;
 
             this.Initialize();
         }
-        /// <summary>
-        /// Debug Callback
-        /// </summary>
-        private void Callback(GLEnum source, GLEnum type, int id, GLEnum severity, int length, nint message, nint userparam) {
-            string stringMessage = SilkMarshal.PtrToString(message);
 
-            LoggerLevel level = severity switch {
-                GLEnum.DebugSeverityHigh         => LoggerLevelDebugMessageCallback.InstanceHigh,
-                GLEnum.DebugSeverityMedium       => LoggerLevelDebugMessageCallback.InstanceMedium,
-                GLEnum.DebugSeverityLow          => LoggerLevelDebugMessageCallback.InstanceLow,
-                GLEnum.DebugSeverityNotification => LoggerLevelDebugMessageCallback.InstanceNotification,
-                _                                => null
-            };
-            //before u say something beyley, i commented this out cuz it was crashing
-            //smth about array not being able to fit somewhere which i went like ???????????? what fuckin array
-            //Logger.Log($"{stringMessage}", level);
-
-            Console.WriteLine(stringMessage);
-        }
         /// <summary>
         /// Gets Fired when the Window Gets Closed
         /// </summary>
@@ -169,7 +114,7 @@ namespace Furball.Vixie {
         /// </summary>
         /// <param name="newSize">New Size</param>
         private void EngineFrameBufferResize(Vector2D<int> newSize) {
-            gl.Viewport(Vector2D<int>.Zero, newSize);
+            GraphicsBackend.Current.HandleFramebufferResize(newSize.X, newSize.Y);
 
             this.OnFrameBufferResize(newSize);
         }
@@ -193,8 +138,10 @@ namespace Furball.Vixie {
         /// </summary>
         /// <param name="deltaTime">Delta Time</param>
         protected virtual void Update(double deltaTime) {
-            _imGuiController.Update((float) deltaTime);
+            GraphicsBackend.Current.ImGuiUpdate(deltaTime);
             this.Components.Update(deltaTime);
+
+            DisposeQueue.DoDispose();
         }
         /// <summary>
         /// Draw Method, do your Drawing work in there
@@ -202,7 +149,7 @@ namespace Furball.Vixie {
         /// <param name="deltaTime"></param>
         protected virtual void Draw(double deltaTime) {
             this.Components.Draw(deltaTime);
-            this._imGuiController.Render();
+            GraphicsBackend.Current.ImGuiDraw(deltaTime);
         }
         /// <summary>
         /// Dispose any IDisposables and other things left to clean up here

@@ -3,27 +3,28 @@ using System;
 using System.Globalization;
 using System.Numerics;
 using Furball.Vixie.Graphics;
-using Furball.Vixie.Graphics.Renderers.OpenGL;
+using Furball.Vixie.Graphics.Backends;
+using Furball.Vixie.Graphics.Renderers;
 using ImGuiNET;
 
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TextureRenderTargetTest : GameComponent {
-        private LineRenderer        _lineRenderer;
+        private ILineRenderer       _lineRenderer;
         private TextureRenderTarget _renderTarget;
         private Texture             _resultTexture;
-        private QuadRenderer        quadRenderer;
+        private IQuadRenderer       _quadRenderer;
 
         public override void Initialize() {
-            this._lineRenderer    = new LineRenderer();
-            this._renderTarget    = new TextureRenderTarget(1280, 720);
-            this.quadRenderer = new QuadRenderer();
+            this._lineRenderer = GraphicsBackend.Current.CreateLineRenderer();
+            this._renderTarget = TextureRenderTarget.Create(1280, 720);
+            this._quadRenderer = GraphicsBackend.Current.CreateTextureRenderer();
 
             base.Initialize();
         }
 
         public override void Draw(double deltaTime) {
-            this.GraphicsDevice.GlClear();
+            GraphicsBackend.Current.Clear();
 
             this._renderTarget.Bind();
 
@@ -33,11 +34,11 @@ namespace Furball.Vixie.TestApplication.Tests {
 
             this._renderTarget.Unbind();
 
-            this._resultTexture = this._renderTarget.GetTexture();
+            this._resultTexture ??= this._renderTarget.GetTexture();
 
-            this.quadRenderer.Begin();
-            this.quadRenderer.Draw(this._resultTexture, Vector2.Zero, new Vector2(1280, 720));
-            this.quadRenderer.End();
+            this._quadRenderer.Begin();
+            this._quadRenderer.Draw(this._resultTexture, Vector2.Zero);
+            this._quadRenderer.End();
 
             #region ImGui menu
 
@@ -56,9 +57,7 @@ namespace Furball.Vixie.TestApplication.Tests {
         }
 
         public override void Dispose() {
-            this.quadRenderer.Dispose();
-            this._renderTarget.Dispose();
-            this._resultTexture.Dispose();
+            this._quadRenderer.Dispose();
 
             base.Dispose();
         }

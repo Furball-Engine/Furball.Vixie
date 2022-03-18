@@ -2,29 +2,30 @@ using System;
 using System.Globalization;
 using System.Numerics;
 using Furball.Vixie.Graphics;
-using Furball.Vixie.Graphics.Renderers.OpenGL;
+using Furball.Vixie.Graphics.Backends;
+using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using ImGuiNET;
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class MultipleTextureTest : GameComponent {
-        private Texture[]       _textures = new Texture[32];
-        private QuadRenderer _quadRenderer;
+        private Texture[]     _textures = new Texture[32];
+        private IQuadRenderer _quadRenderer;
 
         public override void Initialize() {
             for (int i = 0; i != this._textures.Length; i++) {
                 if (i % 2 == 0 && i != 0)
-                    this._textures[i]  = new Texture(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
-                else this._textures[i] = new Texture();
+                    this._textures[i]  = Texture.Create(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
+                else this._textures[i] = Texture.Create();
             }
 
-            this._quadRenderer = new QuadRenderer();
+            this._quadRenderer = GraphicsBackend.Current.CreateTextureRenderer();
 
             base.Initialize();
         }
 
         public override void Draw(double deltaTime) {
-            this.GraphicsDevice.GlClear();
+            GraphicsBackend.Current.Clear();
 
             this._quadRenderer.Begin();
 
@@ -48,7 +49,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
                        $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
             );
-
+            
             if (ImGui.Button("Go back to test selector")) {
                 this.BaseGame.Components.Add(new BaseTestSelector());
                 this.BaseGame.Components.Remove(this);
