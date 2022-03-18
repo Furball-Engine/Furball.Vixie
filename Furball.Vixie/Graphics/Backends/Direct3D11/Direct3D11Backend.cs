@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Furball.Vixie.Graphics.Backends.Direct3D11.Abstractions;
 using Furball.Vixie.Graphics.Renderers;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
@@ -7,6 +8,7 @@ using SharpDX.DXGI;
 using SharpDX.Mathematics.Interop;
 using Silk.NET.Windowing;
 using Device=SharpDX.Direct3D11.Device;
+using InfoQueue=SharpDX.Direct3D11.InfoQueue;
 using Resource=SharpDX.Direct3D11.Resource;
 
 namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
@@ -20,6 +22,9 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
 
         private RawColor4 _clearColor;
 
+        internal Device GetDevice() => this._device;
+        internal DeviceContext GetDeviceContext() => this._deviceContext;
+
         public override unsafe void Initialize(IWindow window) {
             Factory2 dxgiFactory2 = new Factory2();
 
@@ -28,7 +33,6 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
 
 #if DEBUG
             deviceFlags |= DeviceCreationFlags.Debug;
-            //deviceFlags |= DeviceCreationFlags.Debuggable;
 #endif
 
             Device device = new Device(DriverType.Hardware, deviceFlags, featureLevel);
@@ -60,10 +64,22 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
 
             this.CreateSwapchainResources();
 
-            this._clearColor = new RawColor4(1.0f, 0.0f, 0.0f, 1.0f);
+            this._clearColor = new RawColor4(0.0f, 0.0f, 0.0f, 1.0f);
 
+#if DEBUG
             DeviceDebug debug = new DeviceDebug(device);
             this._debug = debug;
+
+            InfoQueue queue = debug.QueryInterface<InfoQueue>();
+
+            if (queue != null) {
+                queue.GetBreakOnSeverity(MessageSeverity.Corruption);
+                queue.GetBreakOnSeverity(MessageSeverity.Error);
+                queue.GetBreakOnSeverity(MessageSeverity.Information);
+                queue.GetBreakOnSeverity(MessageSeverity.Message);
+                queue.GetBreakOnSeverity(MessageSeverity.Warning);
+            }
+#endif
         }
 
         private void CreateSwapchainResources() {
@@ -125,23 +141,23 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
         }
 
         public override Texture CreateTexture(byte[] imageData, bool qoi = false) {
-            return null;
+            return new TextureD3D11(this, imageData, qoi);
         }
 
         public override Texture CreateTexture(Stream stream) {
-            return null;
+            return new TextureD3D11(this, stream);
         }
 
         public override Texture CreateTexture(uint width, uint height) {
-            return null;
+            return new TextureD3D11(this, width, height);
         }
 
         public override Texture CreateTexture(string filepath) {
-            return null;
+            return new TextureD3D11(this, filepath);
         }
 
         public override Texture CreateWhitePixelTexture() {
-            return null;
+            return new TextureD3D11(this);
         }
 
         public override void ImGuiUpdate(double deltaTime) {

@@ -6,7 +6,7 @@ namespace Furball.Vixie.TestApplication {
         public TestGame(WindowOptions options) {}
 
         protected override unsafe void Initialize() {
-            this.Components.Add(new BaseTestSelector());
+            this.Components.Add(new MultipleTextureTest());
 
             base.Initialize();
         }
