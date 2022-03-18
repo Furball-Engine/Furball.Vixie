@@ -2,12 +2,12 @@ using System;
 using Silk.NET.OpenGLES;
 
 namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
-    public class VertexArrayObjectGL : IDisposable {
+    public class VertexArrayObjectGLES : IDisposable {
         private readonly OpenGLESBackend _backend;
         /// <summary>
         /// Current Bound VAO
         /// </summary>
-        internal static VertexArrayObjectGL CurrentlyBound;
+        internal static VertexArrayObjectGLES CurrentlyBound;
         /// <summary>
         /// Getter to check whether this VAO is bound
         /// </summary>
@@ -21,7 +21,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// </summary>
         internal uint ArrayId;
 
-        public VertexArrayObjectGL(OpenGLESBackend backend) {
+        public VertexArrayObjectGLES(OpenGLESBackend backend) {
             this._backend = backend;
             this._backend.CheckThread();
 
@@ -31,7 +31,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
             this._backend.CheckError();
         }
 
-        ~VertexArrayObjectGL() {
+        ~VertexArrayObjectGLES() {
             DisposeQueue.Enqueue(this);
         }
 
@@ -39,15 +39,15 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Adds a VertexBuffer with a certain Layout to this Vertex Array
         /// </summary>
         /// <param name="vertexBuffer">Vertex Buffer to add</param>
-        /// <param name="layoutGl">Layout of said Vertex Buffer</param>
-        public unsafe VertexArrayObjectGL AddBuffer(BufferObjectGL vertexBuffer, VertexBufferLayoutGL layoutGl) {
+        /// <param name="layoutGles">Layout of said Vertex Buffer</param>
+        public unsafe VertexArrayObjectGLES AddBuffer(BufferObjectGLES vertexBuffer, VertexBufferLayoutGLES layoutGles) {
             this._backend.CheckThread();
             
             //Bind both this and the Vertex Buffer
             this.Bind();
             vertexBuffer.Bind();
             //Get all the elements
-            var elements = layoutGl.GetElements();
+            var elements = layoutGles.GetElements();
 
             uint offset = 0;
             //Loop over the elements
@@ -57,9 +57,9 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
                 this.gl.EnableVertexAttribArray(i);
 
                 if (currentElement.Type != VertexAttribPointerType.Int)
-                    this.gl.VertexAttribPointer(i, currentElement.Count, currentElement.Type, currentElement.Normalized, layoutGl.GetStride(), (void*)offset);
+                    this.gl.VertexAttribPointer(i, currentElement.Count, currentElement.Type, currentElement.Normalized, layoutGles.GetStride(), (void*)offset);
                 else
-                    this.gl.VertexAttribIPointer(i, currentElement.Count, VertexAttribIType.Int, layoutGl.GetStride(), (void*)offset);
+                    this.gl.VertexAttribIPointer(i, currentElement.Count, VertexAttribIType.Int, layoutGles.GetStride(), (void*)offset);
 
                 offset += (uint) currentElement.Count * LayoutElement.GetSizeOfType(currentElement.Type);
             }
@@ -70,7 +70,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <summary>
         /// Binds or Selects this current Vertex Array
         /// </summary>
-        public VertexArrayObjectGL Bind() {
+        public VertexArrayObjectGLES Bind() {
             this._backend.CheckThread();
             
             if (this.Locked)
@@ -95,7 +95,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Binds and sets a Lock so that the Texture cannot be unbound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal VertexArrayObjectGL LockingBind() {
+        internal VertexArrayObjectGLES LockingBind() {
             this.Bind();
             this.Lock();
 
@@ -105,7 +105,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Locks the Texture so that other Textures cannot be bound/unbound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal VertexArrayObjectGL Lock() {
+        internal VertexArrayObjectGLES Lock() {
             this.Locked = true;
 
             return this;
@@ -114,7 +114,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Unlocks the Texture, so that other Textures can be bound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal VertexArrayObjectGL Unlock() {
+        internal VertexArrayObjectGLES Unlock() {
             this.Locked = false;
 
             return this;
@@ -123,7 +123,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Uninds and unlocks the Texture so that other Textures can be bound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal VertexArrayObjectGL UnlockingUnbind() {
+        internal VertexArrayObjectGLES UnlockingUnbind() {
             this.Unlock();
             this.Unbind();
 
@@ -133,7 +133,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <summary>
         /// Unbinds all Vertex Arrays
         /// </summary>
-        public VertexArrayObjectGL Unbind() {
+        public VertexArrayObjectGLES Unbind() {
             this._backend.CheckThread();
             
             if (this.Locked)

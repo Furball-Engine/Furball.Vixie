@@ -120,14 +120,14 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
         /// </summary>
         /// <returns>A Texture Renderer</returns>
         public override IQuadRenderer CreateTextureRenderer() {
-            return new QuadRendererGL(this);
+            return new QuadRendererGLES(this);
         }
         /// <summary>
         /// Used to Create a Line Renderer
         /// </summary>
         /// <returns></returns>
         public override ILineRenderer CreateLineRenderer() {
-            return new LineRendererGL(this);
+            return new LineRendererGLES(this);
         }
         /// <summary>
         /// Gets the Amount of Texture Units available for use
@@ -154,7 +154,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
         /// <param name="height">Height of the Target</param>
         /// <returns></returns>
         public override TextureRenderTarget CreateRenderTarget(uint width, uint height) {
-            return new TextureRenderTargetGL(this, width, height);
+            return new TextureRenderTargetGLES(this, width, height);
         }
         /// <summary>
         /// Creates a Texture given some Data
@@ -163,7 +163,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
         /// <param name="qoi">Is the Data in the QOI format?</param>
         /// <returns>Texture</returns>
         public override Texture CreateTexture(byte[] imageData, bool qoi = false) {
-            return new TextureGL(this, imageData, qoi);
+            return new TextureGLES(this, imageData, qoi);
         }
         /// <summary>
         /// Creates a Texture given a Stream
@@ -171,7 +171,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
         /// <param name="stream">Stream to read from</param>
         /// <returns>Texture</returns>
         public override Texture CreateTexture(Stream stream) {
-            return new TextureGL(this, stream);
+            return new TextureGLES(this, stream);
         }
         /// <summary>
         /// Creates a Empty Texture given a Size
@@ -180,7 +180,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
         /// <param name="height">Height of Texture</param>
         /// <returns>Texture</returns>
         public override Texture CreateTexture(uint width, uint height) {
-            return new TextureGL(this, width, height);
+            return new TextureGLES(this, width, height);
         }
         /// <summary>
         /// Creates a Texture from a File
@@ -188,14 +188,14 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
         /// <param name="filepath">Filepath to Image</param>
         /// <returns>Texture</returns>
         public override Texture CreateTexture(string filepath) {
-            return new TextureGL(this, filepath);
+            return new TextureGLES(this, filepath);
         }
         /// <summary>
         /// Used to Create a 1x1 Texture with only a white pixel
         /// </summary>
         /// <returns>White Pixel Texture</returns>
         public override Texture CreateWhitePixelTexture() {
-            return new TextureGL(this);
+            return new TextureGLES(this);
         }
         /// <summary>
         /// Used to Update the ImGuiController in charge of rendering ImGui on this backend

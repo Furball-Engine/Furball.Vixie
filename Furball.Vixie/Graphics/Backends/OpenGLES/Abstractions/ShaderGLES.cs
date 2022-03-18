@@ -10,12 +10,12 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
     /// <summary>
     /// A Shader, a Program run on the GPU
     /// </summary>
-    public class ShaderGL : IDisposable {
+    public class ShaderGLES : IDisposable {
         private readonly OpenGLESBackend _backend;
         /// <summary>
         /// Currently Bound Shader
         /// </summary>
-        internal static ShaderGL CurrentlyBound;
+        internal static ShaderGLES CurrentlyBound;
         /// <summary>
         /// Getter to check whether this Shader is bound
         /// </summary>
@@ -40,7 +40,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <summary>
         /// Creates a unlinked Shader with no source code
         /// </summary>
-        public ShaderGL(OpenGLESBackend backend) {
+        public ShaderGLES(OpenGLESBackend backend) {
             this._backend = backend;
             this._backend.CheckThread();
             
@@ -53,7 +53,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
             this._backend.CheckError();
         }
 
-        ~ShaderGL() {
+        ~ShaderGLES() {
             DisposeQueue.Enqueue(this);
         }
 
@@ -64,7 +64,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <param name="source">Shader source code</param>
         /// <returns>Self, used for Chaining methods</returns>
         /// <exception cref="Exception">Shader Compilation Failure</exception>
-        public ShaderGL AttachShader(ShaderType type, string source) {
+        public ShaderGLES AttachShader(ShaderType type, string source) {
             this._backend.CheckThread();
             
             uint shaderId = this.gl.CreateShader(type);
@@ -90,7 +90,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// </summary>
         /// <returns>Self, used for Chaining methods</returns>
         /// <exception cref="Exception"></exception>
-        public ShaderGL Link() {
+        public ShaderGLES Link() {
             this._backend.CheckThread();
             
             //Link Program and get Error incase something failed
@@ -111,7 +111,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <summary>
         /// Selects this Shader
         /// </summary>
-        public ShaderGL Bind() {
+        public ShaderGLES Bind() {
             this._backend.CheckThread();
             
             if (this.Locked)
@@ -136,7 +136,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Binds and sets a Lock so that the Shader cannot be unbound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal ShaderGL LockingBind() {
+        internal ShaderGLES LockingBind() {
             this.Bind();
             this.Lock();
 
@@ -147,7 +147,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Locks the Shader so that other Shaders cannot be bound/unbound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal ShaderGL Lock() {
+        internal ShaderGLES Lock() {
             this.Locked = true;
 
             return this;
@@ -157,7 +157,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Unlocks the Shader, so that other Shaders can be bound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal ShaderGL Unlock() {
+        internal ShaderGLES Unlock() {
             this.Locked = false;
 
             return this;
@@ -166,7 +166,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Uninds and unlocks the Shader so that other Shaders can be bound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal ShaderGL UnlockingUnbind() {
+        internal ShaderGLES UnlockingUnbind() {
             this.Unlock();
             this.Unbind();
 
@@ -202,7 +202,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
             return location;
         }
 
-        public unsafe ShaderGL SetUniform(string uniformName, Matrix4x4 matrix) {
+        public unsafe ShaderGLES SetUniform(string uniformName, Matrix4x4 matrix) {
             this._backend.CheckThread();
             
             this.gl.UniformMatrix4(this.GetUniformLocation(uniformName), 1, false, (float*) &matrix);
@@ -212,7 +212,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
             return this;
         }
         
-        public ShaderGL SetUniform(string uniformName, float f) {
+        public ShaderGLES SetUniform(string uniformName, float f) {
             this._backend.CheckThread();
             
             this.gl.Uniform1(this.GetUniformLocation(uniformName), f);
@@ -222,7 +222,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
             return this;
         }
         
-        public ShaderGL SetUniform(string uniformName, float f, float f2) {
+        public ShaderGLES SetUniform(string uniformName, float f, float f2) {
             this._backend.CheckThread();
             
             this.gl.Uniform2(this.GetUniformLocation(uniformName), f, f2);
@@ -232,7 +232,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
             return this;
         }
         
-        public ShaderGL SetUniform(string uniformName, int i) {
+        public ShaderGLES SetUniform(string uniformName, int i) {
             this._backend.CheckThread();
             
             this.gl.Uniform1(this.GetUniformLocation(uniformName), i);
@@ -245,7 +245,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Unbinds all Shaders
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        public ShaderGL Unbind() {
+        public ShaderGLES Unbind() {
             this._backend.CheckThread();
             
             if (this.Locked)

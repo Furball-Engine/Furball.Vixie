@@ -5,8 +5,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
     /// <summary>
     /// OpenGL Buffer Objecct
     /// </summary>
-    public class BufferObjectGL : IDisposable {
-        internal static BufferObjectGL CurrentlyBound;
+    public class BufferObjectGLES : IDisposable {
+        internal static BufferObjectGLES CurrentlyBound;
         public bool Bound => CurrentlyBound == this;
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <param name="size">Size of the Buffer</param>
         /// <param name="bufferType">What kind of buffer is it?</param>
         /// <param name="usage">How is this buffer going to be used?</param>
-        public unsafe BufferObjectGL(OpenGLESBackend backend, int size, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StreamDraw) {
+        public unsafe BufferObjectGLES(OpenGLESBackend backend, int size, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StreamDraw) {
             this._backend     = backend;
             this._backend.CheckThread();
             
@@ -61,7 +61,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <param name="backend">OpenGLES backend to which this belongs to</param>
         /// <param name="bufferType">What kind of Buffer is it</param>
         /// <param name="usage">How is this buffer going to be used?</param>
-        public BufferObjectGL(OpenGLESBackend backend, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StreamDraw) {
+        public BufferObjectGLES(OpenGLESBackend backend, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StreamDraw) {
             this._backend     = backend;
             this._backend.CheckThread();
             
@@ -75,7 +75,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
 
         public delegate void VoidDelegate();
 
-        ~BufferObjectGL() {
+        ~BufferObjectGLES() {
             DisposeQueue.Enqueue(this);
         }
 
@@ -85,7 +85,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <param name="data">Data to put there</param>
         /// <param name="size">Size of the Data</param>
         /// <returns></returns>
-        public unsafe BufferObjectGL SetData(void* data, nuint size) {
+        public unsafe BufferObjectGLES SetData(void* data, nuint size) {
             this._backend.CheckThread();
             
             this.gl.BufferData(this._bufferType, size, data, this._bufferUsage);
@@ -94,7 +94,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
             return this;
         }
 
-        public unsafe BufferObjectGL SetSubData(void* data, nuint size, nint offset = 0) {
+        public unsafe BufferObjectGLES SetSubData(void* data, nuint size, nint offset = 0) {
             this._backend.CheckThread();
             
             this.gl.BufferSubData(this._bufferType, offset, size, data);
@@ -103,7 +103,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
             return this;
         }
 
-        public unsafe BufferObjectGL SetSubData<pDataType>(Span<pDataType> data) where pDataType : unmanaged {
+        public unsafe BufferObjectGLES SetSubData<pDataType>(Span<pDataType> data) where pDataType : unmanaged {
             fixed (void* d = data) {
                 this.SetSubData(d, (nuint)(data.Length * sizeof(pDataType)));
             }
@@ -118,7 +118,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <param name="data">Data to put</param>
         /// <typeparam name="pDataType">Type of data to put</typeparam>
         /// <returns>Self, used for chaining Methods</returns>
-        public unsafe BufferObjectGL SetData<pDataType>(Span<pDataType> data) where pDataType : unmanaged {
+        public unsafe BufferObjectGLES SetData<pDataType>(Span<pDataType> data) where pDataType : unmanaged {
             fixed (void* d = data) {
                 this.SetData(d, (nuint)(data.Length * sizeof(pDataType)));
             }
@@ -134,26 +134,26 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <param name="usage">How is this buffer going to be used?</param>
         /// <typeparam name="pDataType">Type of Data to initially store</typeparam>
         /// <returns>Self, used for chaining Methods</returns>
-        public static unsafe BufferObjectGL CreateNew<pDataType>(OpenGLESBackend backend, Span<pDataType> data, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StreamDraw)
+        public static unsafe BufferObjectGLES CreateNew<pDataType>(OpenGLESBackend backend, Span<pDataType> data, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StreamDraw)
             where pDataType : unmanaged
         {
-            BufferObjectGL bufferObjectGl = new BufferObjectGL(backend, bufferType, usage);
-            bufferObjectGl.Bind();
+            BufferObjectGLES bufferObjectGles = new BufferObjectGLES(backend, bufferType, usage);
+            bufferObjectGles.Bind();
 
             fixed (void* d = data) {
-                bufferObjectGl.SetData(d, (nuint)(data.Length * sizeof(pDataType)));
+                bufferObjectGles.SetData(d, (nuint)(data.Length * sizeof(pDataType)));
             }
 
-            bufferObjectGl.DataCount = (uint) data.Length;
+            bufferObjectGles.DataCount = (uint) data.Length;
 
-            return bufferObjectGl;
+            return bufferObjectGles;
         }
 
         /// <summary>
         /// Selects this Buffer
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        public BufferObjectGL Bind() {
+        public BufferObjectGLES Bind() {
             this._backend.CheckThread();
             
             if (this.Locked)
@@ -178,7 +178,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Binds and sets a Lock so that the Buffer cannot be unbound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal BufferObjectGL LockingBind() {
+        internal BufferObjectGLES LockingBind() {
             this.Bind();
             this.Lock();
 
@@ -189,7 +189,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Locks the Buffer so that other Buffers cannot be bound/unbound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal BufferObjectGL Lock() {
+        internal BufferObjectGLES Lock() {
             this.Locked = true;
 
             return this;
@@ -199,7 +199,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Unlocks the Buffer, so that other buffers can be bound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal BufferObjectGL Unlock() {
+        internal BufferObjectGLES Unlock() {
             this.Locked = false;
 
             return this;
@@ -208,7 +208,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Uninds and unlocks the Buffer so that other buffers can be bound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal BufferObjectGL UnlockingUnbind() {
+        internal BufferObjectGLES UnlockingUnbind() {
             this.Unlock();
             this.Unbind();
 
@@ -218,7 +218,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Unbinds any bound Buffer
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        public BufferObjectGL Unbind() {
+        public BufferObjectGLES Unbind() {
             this._backend.CheckThread();
             if (this.Locked)
                 return null;

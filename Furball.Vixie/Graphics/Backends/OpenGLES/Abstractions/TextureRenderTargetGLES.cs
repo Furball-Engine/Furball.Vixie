@@ -3,11 +3,11 @@ using System.Numerics;
 using Silk.NET.OpenGLES;
 
 namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
-    public class TextureRenderTargetGL : TextureRenderTarget, IDisposable {
+    public class TextureRenderTargetGLES : TextureRenderTarget, IDisposable {
         /// <summary>
         /// Currently Bound TextureRenderTarget
         /// </summary>
-        internal static TextureRenderTargetGL CurrentlyBound;
+        internal static TextureRenderTargetGLES CurrentlyBound;
         /// <summary>
         /// Getter for Checking whether this Target is bound
         /// </summary>
@@ -56,7 +56,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <param name="width">Desired Width</param>
         /// <param name="height">Desired Width</param>
         /// <exception cref="Exception">Throws Exception if the Target didn't create properly</exception>
-        public unsafe TextureRenderTargetGL(OpenGLESBackend backend, uint width, uint height) {
+        public unsafe TextureRenderTargetGLES(OpenGLESBackend backend, uint width, uint height) {
             this._backend = backend;
             this._backend.CheckThread();
 
@@ -104,7 +104,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
             this.TargetHeight = height;
         }
 
-        ~TextureRenderTargetGL() {
+        ~TextureRenderTargetGLES() {
             DisposeQueue.Enqueue(this);
         }
 
@@ -137,7 +137,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Binds and sets a Lock so that the Target cannot be unbound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal TextureRenderTargetGL LockingBind() {
+        internal TextureRenderTargetGLES LockingBind() {
             this.Bind();
             this.Lock();
 
@@ -147,7 +147,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Locks the Target so that other Targets cannot be bound/unbound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal TextureRenderTargetGL Lock() {
+        internal TextureRenderTargetGLES Lock() {
             this.Locked = true;
 
             return this;
@@ -156,7 +156,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Unlocks the Target, so that other Targets can be bound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal TextureRenderTargetGL Unlock() {
+        internal TextureRenderTargetGLES Unlock() {
             this.Locked = false;
 
             return this;
@@ -165,7 +165,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Uninds and unlocks the Target so that other Targets can be bound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal TextureRenderTargetGL UnlockingUnbind() {
+        internal TextureRenderTargetGLES UnlockingUnbind() {
             this.Unlock();
             this.Unbind();
 
@@ -191,7 +191,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Retrieves the Texture from this RenderTarget
         /// </summary>
         /// <returns>Texture of this RenderTarget</returns>
-        public override Texture GetTexture() => new TextureGL(this._backend, this._textureId, this.TargetWidth, this.TargetHeight);
+        public override Texture GetTexture() => new TextureGLES(this._backend, this._textureId, this.TargetWidth, this.TargetHeight);
 
         private bool _isDisposed = false;
 

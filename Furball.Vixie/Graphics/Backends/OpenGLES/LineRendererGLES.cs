@@ -13,7 +13,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
         public fixed float Color[4];
     }
 
-    public class LineRendererGL : IDisposable, ILineRenderer {
+    public class LineRendererGLES : IDisposable, ILineRenderer {
         private readonly OpenGLESBackend _backend;
         /// <summary>
         /// Max Lines allowed in 1 Batch
@@ -31,15 +31,15 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
         /// <summary>
         /// Vertex Array which stores the Vertex Buffer layout information
         /// </summary>
-        private readonly VertexArrayObjectGL _vertexArray;
+        private readonly VertexArrayObjectGLES _vertexArray;
         /// <summary>
         /// Vertex buffer which contains all the Batched Verticies
         /// </summary>
-        private readonly BufferObjectGL      _vertexBuffer;
+        private readonly BufferObjectGLES      _vertexBuffer;
         /// <summary>
         /// Shader which draws those thicc lines
         /// </summary>
-        private readonly ShaderGL            _lineShaderGl;
+        private readonly ShaderGLES            _lineShaderGles;
 
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
         /// </summary>
         /// <param name="backend">OpenGLES API</param>
         /// <param name="capacity">How many Lines to allow in 1 Batch</param>
-        public unsafe LineRendererGL(OpenGLESBackend backend, int capacity = 8192) {
+        public unsafe LineRendererGLES(OpenGLESBackend backend, int capacity = 8192) {
             this._backend = backend;
             this.gl       = backend.GetGlApi();
 
@@ -68,8 +68,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
             string geometrySource = ResourceHelpers.GetStringResource("ShaderCode/LineRenderer/GeometryShader.glsl", true);
 
             //Create, Bind, Attach, Compile and Link the Vertex Fragment and Geometry Shaders
-            this._lineShaderGl =
-                new ShaderGL(backend)
+            this._lineShaderGles =
+                new ShaderGLES(backend)
                     .Bind()
                     .AttachShader(ShaderType.VertexShader,   vertexSource)
                     .AttachShader(ShaderType.FragmentShader, fragmentSource)
@@ -77,21 +77,21 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
                     .Link();
 
             //Define Layout of the Vertex Buffer
-            VertexBufferLayoutGL layoutGl =
-                new VertexBufferLayoutGL()
+            VertexBufferLayoutGLES layoutGles =
+                new VertexBufferLayoutGLES()
                     .AddElement<float>(4)                  //Position
                     .AddElement<float>(4, true);  //Color
 
             //Create Vertex Buffer with the Required size
-            this._vertexBuffer = new BufferObjectGL(backend, sizeof(BatchedLineVertex) * this.MaxVerticies, BufferTargetARB.ArrayBuffer);
+            this._vertexBuffer = new BufferObjectGLES(backend, sizeof(BatchedLineVertex) * this.MaxVerticies, BufferTargetARB.ArrayBuffer);
 
             //Create the VAO
-            this._vertexArray = new VertexArrayObjectGL(backend);
+            this._vertexArray = new VertexArrayObjectGLES(backend);
 
             //Add the layout to the Vertex Array
             this._vertexArray
                 .Bind()
-                .AddBuffer(this._vertexBuffer, layoutGl);
+                .AddBuffer(this._vertexBuffer, layoutGles);
 
             //Initialize the Local Vertex Buffer copy
             this._localVertexBuffer = new BatchedLineVertex[this.MaxVerticies];
@@ -118,7 +118,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
                 this._vertexPointer = data;
 
             //Bind the Shader and set the necessary uniforms
-            this._lineShaderGl
+            this._lineShaderGles
                 .LockingBind()
                 .SetUniform("u_mvp",           this._backend.ProjectionMatrix)
                 .SetUniform("vx_ModifierX",    Global.GameInstance.WindowManager.PositionMultiplier.X)
@@ -197,7 +197,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
             this._vertexBufferIndex = 0;
 
             //Unlock all
-            this._lineShaderGl.Unlock();
+            this._lineShaderGles.Unlock();
             this._vertexBuffer.Unlock();
             this._vertexArray.Unlock();
 
@@ -209,15 +209,15 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
         public void Dispose() {
             try {
                 //Unlock Shaders and other things
-                if (this._lineShaderGl.Locked)
-                    this._lineShaderGl.Unlock();
+                if (this._lineShaderGles.Locked)
+                    this._lineShaderGles.Unlock();
                 if (this._vertexBuffer.Locked)
                     this._vertexBuffer.Unlock();
                 if (this._vertexArray.Locked)
                     this._vertexArray.Unlock();
 
                 this._vertexArray.Dispose();
-                this._lineShaderGl.Dispose();
+                this._lineShaderGles.Dispose();
                 this._vertexBuffer.Dispose();
             }
             catch {

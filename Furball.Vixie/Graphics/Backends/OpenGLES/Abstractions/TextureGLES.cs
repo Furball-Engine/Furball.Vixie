@@ -8,7 +8,7 @@ using SixLabors.ImageSharp.PixelFormats;
 using Rectangle=System.Drawing.Rectangle;
 
 namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
-    public class TextureGL : Texture, IDisposable {
+    public class TextureGLES : Texture, IDisposable {
         private readonly OpenGLESBackend _backend;
         /// <summary>
         /// All the Currently Bound Textures
@@ -83,7 +83,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Creates a Texture from a File
         /// </summary>
         /// <param name="filepath">Path to an Image</param>
-        public unsafe TextureGL(OpenGLESBackend backend, string filepath) {
+        public unsafe TextureGLES(OpenGLESBackend backend, string filepath) {
             this._backend = backend;
             this.gl       = backend.GetGlApi();
 
@@ -102,7 +102,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Creates a Texture from a byte array which contains Image Data
         /// </summary>
         /// <param name="imageData">Image Data</param>
-        public unsafe TextureGL(OpenGLESBackend backend, byte[] imageData, bool qoi = false) {
+        public unsafe TextureGLES(OpenGLESBackend backend, byte[] imageData, bool qoi = false) {
             this._backend = backend;
             this.gl       = backend.GetGlApi();
 
@@ -128,7 +128,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <summary>
         /// Creates a Texture with a single White Pixel
         /// </summary>
-        public unsafe TextureGL(OpenGLESBackend backend) {
+        public unsafe TextureGLES(OpenGLESBackend backend) {
             this._backend = backend;
             this._backend.CheckThread();
             
@@ -157,7 +157,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// </summary>
         /// <param name="width">Desired Width</param>
         /// <param name="height">Desired Height</param>
-        public unsafe TextureGL(OpenGLESBackend backend, uint width, uint height) {
+        public unsafe TextureGLES(OpenGLESBackend backend, uint width, uint height) {
             this._backend = backend;
             this._backend.CheckThread();
             
@@ -183,7 +183,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Creates a Texture from a Stream which Contains Image Data
         /// </summary>
         /// <param name="stream">Image Data Stream</param>
-        public unsafe TextureGL(OpenGLESBackend backend, Stream stream) {
+        public unsafe TextureGLES(OpenGLESBackend backend, Stream stream) {
             this._backend = backend;
             this.gl       = backend.GetGlApi();
 
@@ -199,7 +199,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
             this.Size = new Vector2(width, height);
         }
 
-        ~TextureGL() {
+        ~TextureGLES() {
             DisposeQueue.Enqueue(this);
         }
 
@@ -222,7 +222,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <param name="textureId">OpenGL Texture ID</param>
         /// <param name="width">Width of the Texture</param>
         /// <param name="height">Height of the Texture</param>
-        internal TextureGL(OpenGLESBackend backend, uint textureId, uint width, uint height) {
+        internal TextureGLES(OpenGLESBackend backend, uint textureId, uint width, uint height) {
             this.gl = backend.GetGlApi();
 
             this._backend  = backend;
@@ -258,7 +258,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <param name="data">Data to put there</param>
         /// <typeparam name="pDataType">Type of the Data</typeparam>
         /// <returns>Self, used for chaining methods</returns>
-        public override unsafe TextureGL SetData<pDataType>(int level, pDataType[] data) {
+        public override unsafe TextureGLES SetData<pDataType>(int level, pDataType[] data) {
             this.LockingBind();
 
             fixed(void* d = data)
@@ -279,7 +279,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <param name="data">Data to put there</param>
         /// <typeparam name="pDataType">Type of Data to put</typeparam>
         /// <returns>Self, used for chaining methods</returns>
-        public override unsafe TextureGL SetData<pDataType>(int level, Rectangle rect, pDataType[] data) {
+        public override unsafe TextureGLES SetData<pDataType>(int level, Rectangle rect, pDataType[] data) {
             this.LockingBind();
 
             fixed(void* d = data)
@@ -296,7 +296,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// </summary>
         /// <param name="textureSlot">Desired Texture Slot</param>
         /// <returns>Self, used for chaining methods</returns>
-        public TextureGL Bind(TextureUnit textureSlot = TextureUnit.Texture0) {
+        public TextureGLES Bind(TextureUnit textureSlot = TextureUnit.Texture0) {
             if (this.Locked)
                 return null;
 
@@ -321,7 +321,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Binds and sets a Lock so that the Texture cannot be unbound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal TextureGL LockingBind() {
+        internal TextureGLES LockingBind() {
             this.Bind();
             this.Lock();
 
@@ -331,7 +331,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Locks the Texture so that other Textures cannot be bound/unbound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal TextureGL Lock() {
+        internal TextureGLES Lock() {
             this.Locked = true;
 
             return this;
@@ -340,7 +340,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Unlocks the Texture, so that other Textures can be bound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal TextureGL Unlock() {
+        internal TextureGLES Unlock() {
             this.Locked = false;
 
             return this;
@@ -349,7 +349,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Uninds and unlocks the Texture so that other Textures can be bound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal TextureGL UnlockingUnbind() {
+        internal TextureGLES UnlockingUnbind() {
             this.Unlock();
             this.Unbind();
 
@@ -360,7 +360,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Unbinds the Texture
         /// </summary>
         /// <returns>Self, used for chaining methods</returns>
-        public TextureGL Unbind() {
+        public TextureGLES Unbind() {
             if (this.Locked)
                 return null;
 

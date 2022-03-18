@@ -10,7 +10,7 @@ using Furball.Vixie.Helpers;
 using Silk.NET.OpenGLES;
 
 namespace Furball.Vixie.Graphics.Backends.OpenGLES {
-    public class QuadRendererGL : IQuadRenderer {
+    public class QuadRendererGLES : IQuadRenderer {
         [StructLayout(LayoutKind.Sequential)]
         private struct Vertex {
             public Vector2 Position;
@@ -54,47 +54,47 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
             public int     TextureId;
         }
 
-        private BufferObjectGL      _vbo;
-        private BufferObjectGL      _instanceVbo;
-        private VertexArrayObjectGL _vao;
+        private BufferObjectGLES      _vbo;
+        private BufferObjectGLES      _instanceVbo;
+        private VertexArrayObjectGLES _vao;
 
         private VixieFontStashRenderer _textRenderer;
 
-        private ShaderGL _shaderGl;
+        private ShaderGLES _shaderGles;
 
         private OpenGLESBackend _backend;
         // ReSharper disable once InconsistentNaming
         private GL gl;
 
-        public unsafe QuadRendererGL(OpenGLESBackend backend) {
+        public unsafe QuadRendererGLES(OpenGLESBackend backend) {
             this._backend = backend;
             this._backend.CheckThread();
 
             this.gl       = this._backend.GetGlApi();
 
-            this._boundTextures = new TextureGL[this._backend.QueryMaxTextureUnits()];
+            this._boundTextures = new TextureGLES[this._backend.QueryMaxTextureUnits()];
 
             string vertSource = ResourceHelpers.GetStringResource("ShaderCode/InstancedRenderer/VertexShader.glsl");
             string fragSource = ResourceHelpers.GetStringResource("ShaderCode/InstancedRenderer/FragmentShader.glsl");
 
-            this._shaderGl = new ShaderGL(backend);
+            this._shaderGles = new ShaderGLES(backend);
 
-            this._shaderGl.AttachShader(ShaderType.VertexShader,   vertSource);
-            this._shaderGl.AttachShader(ShaderType.FragmentShader, fragSource);
-            this._shaderGl.Link();
+            this._shaderGles.AttachShader(ShaderType.VertexShader,   vertSource);
+            this._shaderGles.AttachShader(ShaderType.FragmentShader, fragSource);
+            this._shaderGles.Link();
 
-            this._shaderGl.Bind();
+            this._shaderGles.Bind();
 
             this._backend.CheckError();
 
             for (int i = 0; i < backend.QueryMaxTextureUnits(); i++) {
-                this._shaderGl.BindUniformToTexUnit($"tex_{i}", i);
+                this._shaderGles.BindUniformToTexUnit($"tex_{i}", i);
             }
 
-            this._vao = new VertexArrayObjectGL(backend);
+            this._vao = new VertexArrayObjectGLES(backend);
             this._vao.Bind();
 
-            this._vbo = new BufferObjectGL(backend, BufferTargetARB.ArrayBuffer, BufferUsageARB.StaticDraw);
+            this._vbo = new BufferObjectGLES(backend, BufferTargetARB.ArrayBuffer, BufferUsageARB.StaticDraw);
             this._vbo.Bind();
             this._vbo.SetData<Vertex>(_vertices);
 
@@ -108,7 +108,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
             this.gl.EnableVertexAttribArray(1);
             this._backend.CheckError();
 
-            this._instanceVbo = new BufferObjectGL(backend, BufferTargetARB.ArrayBuffer, BufferUsageARB.DynamicDraw);
+            this._instanceVbo = new BufferObjectGLES(backend, BufferTargetARB.ArrayBuffer, BufferUsageARB.DynamicDraw);
             this._instanceVbo.Bind();
 
             this._instanceVbo.SetData(null, (nuint)(sizeof(InstanceData) * NUM_INSTANCES));
@@ -165,7 +165,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
         }
 
         public void Dispose() {
-            this._shaderGl.Dispose();
+            this._shaderGles.Dispose();
             this._vao.Dispose();
             this._vbo.Dispose();
             this._instanceVbo.Dispose();
@@ -177,9 +177,9 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
         }
 
         public void Begin() {
-            this._shaderGl.Bind();
+            this._shaderGles.Bind();
 
-            this._shaderGl.SetUniform("vx_ModifierX",       Global.GameInstance.WindowManager.PositionMultiplier.X)
+            this._shaderGles.SetUniform("vx_ModifierX",       Global.GameInstance.WindowManager.PositionMultiplier.X)
                    .SetUniform("vx_ModifierY",              Global.GameInstance.WindowManager.PositionMultiplier.Y)
                    .SetUniform("vx_WindowProjectionMatrix", this._backend.ProjectionMatrix);
 
@@ -220,7 +220,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
                 throw new Exception("Begin() has not been called!");
 
             //Ignore calls with invalid textures
-            if (textureGl == null || textureGl is not TextureGL)
+            if (textureGl == null || textureGl is not TextureGLES)
                 return;
 
             if (this._instances >= NUM_INSTANCES || this._usedTextures == this._backend.QueryMaxTextureUnits()) {
@@ -287,7 +287,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
             if (this._instances == 0) return;
 
             for (int i = 0; i < this._usedTextures; i++) {
-                TextureGL tex = this._boundTextures[i] as TextureGL;
+                TextureGLES tex = this._boundTextures[i] as TextureGLES;
 
                 tex.Bind(TextureUnit.Texture0 + i);
             }
