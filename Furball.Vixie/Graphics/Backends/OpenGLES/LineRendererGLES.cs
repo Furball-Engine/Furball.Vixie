@@ -63,9 +63,9 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
             this.MaxVerticies = capacity * 32;
 
             //Load Shader Source
-            string vertexSource = ResourceHelpers.GetStringResource("ShaderCode/LineRenderer/VertexShader.glsl",     true);
-            string fragmentSource = ResourceHelpers.GetStringResource("ShaderCode/LineRenderer/PixelShader.glsl",    true);
-            string geometrySource = ResourceHelpers.GetStringResource("ShaderCode/LineRenderer/GeometryShader.glsl", true);
+            string vertexSource = ResourceHelpers.GetStringResource("ShaderCode/OpenGLES/LineRenderer/VertexShader.glsl",     true);
+            string fragmentSource = ResourceHelpers.GetStringResource("ShaderCode/OpenGLES/LineRenderer/PixelShader.glsl",    true);
+            string geometrySource = ResourceHelpers.GetStringResource("ShaderCode/OpenGLES/LineRenderer/GeometryShader.glsl", true);
 
             //Create, Bind, Attach, Compile and Link the Vertex Fragment and Geometry Shaders
             this._lineShaderGles =
