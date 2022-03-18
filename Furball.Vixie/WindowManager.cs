@@ -84,7 +84,11 @@ namespace Furball.Vixie {
             };
 
             ContextFlags flags = this._backend switch {
+#if DEBUG
+                Backend.OpenGLES => ContextFlags.Debug,
+#else
                 Backend.OpenGLES => ContextFlags.Default,
+#endif
                 _                => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
             };
 
