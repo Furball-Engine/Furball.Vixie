@@ -123,5 +123,11 @@ namespace Furball.Vixie.Graphics.Backends {
         /// </summary>
         /// <param name="deltaTime">Delta Time</param>
         public abstract void ImGuiDraw(double deltaTime);
+        /// <summary>
+        /// Presents
+        /// </summary>
+        public virtual void Present() {
+
+        }
     }
 }

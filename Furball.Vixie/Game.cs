@@ -150,6 +150,7 @@ namespace Furball.Vixie {
         protected virtual void Draw(double deltaTime) {
             this.Components.Draw(deltaTime);
             GraphicsBackend.Current.ImGuiDraw(deltaTime);
+            GraphicsBackend.Current.Present();
         }
         /// <summary>
         /// Dispose any IDisposables and other things left to clean up here
