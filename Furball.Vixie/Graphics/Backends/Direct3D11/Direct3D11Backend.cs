@@ -64,7 +64,7 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
 
             this.CreateSwapchainResources();
 
-            this._clearColor = new RawColor4(0.0f, 0.0f, 0.0f, 1.0f);
+            this._clearColor = new RawColor4(0.1f, 0.1f, 0.1f, 1.0f);
 
 #if DEBUG
             DeviceDebug debug = new DeviceDebug(device);
@@ -87,6 +87,10 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
             RenderTargetView renderTarget = new RenderTargetView(this._device, backBuffer);
 
             this._renderTarget = renderTarget;
+            this._deviceContext.OutputMerger.SetRenderTargets(this._renderTarget);
+        }
+
+        public void SetRenderTargets() {
             this._deviceContext.OutputMerger.SetRenderTargets(this._renderTarget);
         }
 
@@ -121,7 +125,7 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
         }
 
         public override IQuadRenderer CreateTextureRenderer() {
-            return null;
+            return new QuadRendererD3D11(this);
         }
 
         public override ILineRenderer CreateLineRenderer() {

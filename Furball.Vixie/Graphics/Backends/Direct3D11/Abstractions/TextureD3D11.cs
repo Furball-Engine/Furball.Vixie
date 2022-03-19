@@ -28,7 +28,7 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11.Abstractions {
             Texture2DDescription textureDescription = new Texture2DDescription {
                 Width     = 1,
                 Height    = 1,
-                MipLevels = 1,
+                MipLevels = 0,
                 ArraySize = 1,
                 Format    = Format.R8G8B8A8_UNorm_SRgb,
                 SampleDescription = new SampleDescription {
@@ -180,7 +180,7 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11.Abstractions {
             this.Size = new Vector2(image.Width, image.Height);
         }
 
-        public override unsafe Texture SetData<pDataType>(int level, pDataType[] data) {
+        public override Texture SetData<pDataType>(int level, pDataType[] data) {
             this._deviceContext.UpdateSubresource(data, this._texture);
 
             return this;
@@ -188,7 +188,7 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11.Abstractions {
 
         public override unsafe Texture SetData<pDataType>(int level, Rectangle rect, pDataType[] data) {
             fixed (void* dataPtr = data) {
-                this._deviceContext.UpdateSubresource(this._texture, 0, new ResourceRegion(rect.X, rect.Y, 0, rect.X + rect.Width, rect.Y + rect.Height, 1), (IntPtr)dataPtr, 4 * rect.Width, (4 * rect.Width) * rect.Height);
+                this._deviceContext.UpdateSubresource(this._texture, level, new ResourceRegion(rect.X, rect.Y, 0, rect.X + rect.Width, rect.Y + rect.Height, 1), (IntPtr)dataPtr, 4 * rect.Width, (4 * rect.Width) * rect.Height);
             }
 
             this._deviceContext.PixelShader.SetShaderResource(0, this._textureView);
