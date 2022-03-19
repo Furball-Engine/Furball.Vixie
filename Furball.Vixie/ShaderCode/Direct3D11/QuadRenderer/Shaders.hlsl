@@ -32,7 +32,6 @@ VS_Output VS_Main(VS_Input input)
 }
 
 
-
 Texture2D    mytexture : register(t0);
 SamplerState mysampler : register(s0);
 
@@ -40,8 +39,7 @@ PS_Output PS_Main(VS_Output input)
 {
     PS_Output output;
 
-    output.ColorOutput = mytexture.Sample(mysampler, input.TexCoord);
-    //output.ColorOutput = float4(input.TexCoord.x, input.TexCoord.y, 0.0, 1.0);
+    output.ColorOutput = mytexture.Sample(mysampler, input.TexCoord) * input.Color;
 
     return output;
 }
