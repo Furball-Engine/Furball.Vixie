@@ -6,11 +6,14 @@ using SharpDX.Direct3D11;
 using SharpDX.DXGI;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using Device=SharpDX.Direct3D11.Device;
 using Rectangle=System.Drawing.Rectangle;
 
 namespace Furball.Vixie.Graphics.Backends.Direct3D11.Abstractions {
     public class TextureD3D11 : Texture {
         private Direct3D11Backend _backend;
+        private Device            _device;
+        private DeviceContext     _deviceContext;
 
         private Texture2D          _texture;
         private ShaderResourceView _textureView;
@@ -18,7 +21,9 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11.Abstractions {
         public override Vector2 Size { get; protected set; }
 
         public unsafe TextureD3D11(Direct3D11Backend backend) {
-            this._backend = backend;
+            this._backend       = backend;
+            this._device        = backend.GetDevice();
+            this._deviceContext = backend.GetDeviceContext();
 
             Texture2DDescription textureDescription = new Texture2DDescription {
                 Width     = 1,
@@ -48,7 +53,9 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11.Abstractions {
         }
 
         public unsafe TextureD3D11(Direct3D11Backend backend, byte[] imageData, bool qoi = false) {
-            this._backend = backend;
+            this._backend       = backend;
+            this._device        = backend.GetDevice();
+            this._deviceContext = backend.GetDeviceContext();
 
             Image<Rgba32> image;
 
@@ -85,7 +92,9 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11.Abstractions {
         }
 
         public unsafe TextureD3D11(Direct3D11Backend backend, Stream stream) {
-            this._backend = backend;
+            this._backend       = backend;
+            this._device        = backend.GetDevice();
+            this._deviceContext = backend.GetDeviceContext();
 
             Image<Rgba32> image = Image.Load<Rgba32>(stream);
 
@@ -114,7 +123,9 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11.Abstractions {
         }
 
         public TextureD3D11(Direct3D11Backend backend, uint width, uint height) {
-            this._backend = backend;
+            this._backend       = backend;
+            this._device        = backend.GetDevice();
+            this._deviceContext = backend.GetDeviceContext();
 
             Texture2DDescription textureDescription = new Texture2DDescription {
                 Width     = (int) width,
@@ -139,7 +150,9 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11.Abstractions {
         }
 
         public unsafe TextureD3D11(Direct3D11Backend backend, string filepath) {
-            this._backend = backend;
+            this._backend       = backend;
+            this._device        = backend.GetDevice();
+            this._deviceContext = backend.GetDeviceContext();
 
             Image<Rgba32> image = (Image<Rgba32>)Image.Load(filepath);
 
@@ -167,11 +180,19 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11.Abstractions {
             this.Size = new Vector2(image.Width, image.Height);
         }
 
-        public override Texture SetData<pDataType>(int level, pDataType[] data) {
+        public override unsafe Texture SetData<pDataType>(int level, pDataType[] data) {
+            this._deviceContext.UpdateSubresource(data, this._texture);
+
             return this;
         }
 
-        public override Texture SetData<pDataType>(int level, Rectangle rect, pDataType[] data) {
+        public override unsafe Texture SetData<pDataType>(int level, Rectangle rect, pDataType[] data) {
+            fixed (void* dataPtr = data) {
+                this._deviceContext.UpdateSubresource(this._texture, 0, new ResourceRegion(rect.X, rect.Y, 0, rect.X + rect.Width, rect.Y + rect.Height, 1), (IntPtr)dataPtr, 4 * rect.Width, (4 * rect.Width) * rect.Height);
+            }
+
+            this._deviceContext.PixelShader.SetShaderResource(0, this._textureView);
+
             return this;
         }
     }
