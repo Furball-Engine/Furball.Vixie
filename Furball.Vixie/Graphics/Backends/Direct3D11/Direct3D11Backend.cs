@@ -18,9 +18,11 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
         private DeviceContext    _deviceContext;
         private SwapChain1       _swapChain;
         private RenderTargetView _renderTarget;
+        private Texture2D        _backBuffer;
         private DeviceDebug      _debug;
 
-        private RawColor4 _clearColor;
+        private RawColor4    _clearColor;
+        private RawViewportF _viewport;
 
         internal Device GetDevice() => this._device;
         internal DeviceContext GetDeviceContext() => this._deviceContext;
@@ -80,6 +82,17 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
                 queue.GetBreakOnSeverity(MessageSeverity.Warning);
             }
 #endif
+            RasterizerStateDescription rasterizerStateDescription = new RasterizerStateDescription {
+                FillMode                 = FillMode.Solid,
+                CullMode                 = CullMode.None,
+                IsFrontCounterClockwise  = true,
+                IsDepthClipEnabled       = false,
+                IsScissorEnabled         = false,
+                IsMultisampleEnabled     = true,
+                IsAntialiasedLineEnabled = true,
+            };
+
+            deviceContext.Rasterizer.State = new RasterizerState(device, rasterizerStateDescription);
         }
 
         private void CreateSwapchainResources() {
@@ -87,6 +100,8 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
             RenderTargetView renderTarget = new RenderTargetView(this._device, backBuffer);
 
             this._renderTarget = renderTarget;
+            this._backBuffer   = backBuffer;
+
             this._deviceContext.OutputMerger.SetRenderTargets(this._renderTarget);
         }
 
@@ -96,26 +111,30 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
 
         private void DestroySwapchainResources() {
             this._renderTarget.Dispose();
+            this._backBuffer.Dispose();
         }
 
         public override void Cleanup() {
 
         }
 
-        private bool _first = true;
-
         public override void HandleWindowSizeChange(int width, int height) {
-            if (this._first) {
-                this._first = false;
-                return;
-            }
-
             this._deviceContext.Flush();
 
             this.DestroySwapchainResources();
 
             this._swapChain.ResizeBuffers(2, width, height, Format.B8G8R8A8_UNorm, SwapChainFlags.None);
-            this._deviceContext.Rasterizer.SetViewport(0, 0, width, height);
+
+            this._viewport = new RawViewportF {
+                X        = 0,
+                Y        = 0,
+                Width    = width,
+                Height   = height,
+                MinDepth = 0.0f,
+                MaxDepth = 1.0f
+            };
+
+            this._deviceContext.Rasterizer.SetViewport(this._viewport);
 
             this.CreateSwapchainResources();
         }
@@ -137,7 +156,9 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
         }
 
         public override void Clear() {
+            this._deviceContext.OutputMerger.SetRenderTargets(this._renderTarget);
             this._deviceContext.ClearRenderTargetView(this._renderTarget, this._clearColor);
+            this._deviceContext.Rasterizer.SetViewport(this._viewport);
         }
 
         public override TextureRenderTarget CreateRenderTarget(uint width, uint height) {
