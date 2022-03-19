@@ -68,20 +68,6 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
 
             this._clearColor = new RawColor4(0.1f, 0.1f, 0.1f, 1.0f);
 
-#if DEBUG
-            DeviceDebug debug = new DeviceDebug(device);
-            this._debug = debug;
-
-            InfoQueue queue = debug.QueryInterface<InfoQueue>();
-
-            if (queue != null) {
-                queue.GetBreakOnSeverity(MessageSeverity.Corruption);
-                queue.GetBreakOnSeverity(MessageSeverity.Error);
-                queue.GetBreakOnSeverity(MessageSeverity.Information);
-                queue.GetBreakOnSeverity(MessageSeverity.Message);
-                queue.GetBreakOnSeverity(MessageSeverity.Warning);
-            }
-#endif
             RasterizerStateDescription rasterizerStateDescription = new RasterizerStateDescription {
                 FillMode                 = FillMode.Solid,
                 CullMode                 = CullMode.None,
@@ -93,6 +79,25 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
             };
 
             deviceContext.Rasterizer.State = new RasterizerState(device, rasterizerStateDescription);
+
+            BlendStateDescription blendStateDescription = BlendStateDescription.Default();
+            blendStateDescription.IndependentBlendEnable                = false;
+            blendStateDescription.RenderTarget[0].BlendOperation        = BlendOperation.Add;
+            blendStateDescription.RenderTarget[0].AlphaBlendOperation   = BlendOperation.Add;
+
+            blendStateDescription.RenderTarget[0].SourceAlphaBlend      = BlendOption.Zero;
+            blendStateDescription.RenderTarget[0].SourceBlend           = BlendOption.SourceAlpha;
+
+            blendStateDescription.RenderTarget[0].DestinationBlend      = BlendOption.InverseSourceAlpha;
+            blendStateDescription.RenderTarget[0].DestinationAlphaBlend = BlendOption.Zero;
+
+            blendStateDescription.RenderTarget[0].IsBlendEnabled        = true;
+
+            blendStateDescription.RenderTarget[0].RenderTargetWriteMask = ColorWriteMaskFlags.All;
+
+            BlendState blendState = new BlendState(device, blendStateDescription);
+
+            deviceContext.OutputMerger.SetBlendState(blendState, new RawColor4(0, 0, 0, 0));
         }
 
         private void CreateSwapchainResources() {

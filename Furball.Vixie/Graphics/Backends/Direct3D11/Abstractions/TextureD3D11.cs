@@ -195,5 +195,11 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11.Abstractions {
 
             return this;
         }
+
+        public Texture BindToPixelShader(int slot) {
+            this._deviceContext.PixelShader.SetShaderResource(slot, this._textureView);
+
+            return this;
+        }
     }
 }

@@ -3,12 +3,14 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using FontStashSharp;
+using Furball.Vixie.Graphics.Backends.Direct3D11.Abstractions;
 using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using SharpDX.D3DCompiler;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
+using SharpDX.Mathematics.Interop;
 
 namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
     public unsafe class QuadRendererD3D11 : IQuadRenderer {
@@ -21,10 +23,12 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
         private InputLayout  _inputLayout;
         private VertexShader _vertexShader;
         private PixelShader  _pixelShader;
+        private SamplerState _samplerState;
 
         [StructLayout(LayoutKind.Sequential)]
         struct VertexData {
             public Vector2 Position;
+            public Vector2 TexCoord;
             public Vector2 Scale;
             public float   Rotation;
             public Vector4 Color;
@@ -46,6 +50,7 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
 
             InputElement[] elementDescription = new [] {
                 new InputElement("POSITION",  0, Format.R32G32_Float,       (int) Marshal.OffsetOf<VertexData>("Position"),       0),
+                new InputElement("TEXCOORD",  0, Format.R32G32_Float,       (int) Marshal.OffsetOf<VertexData>("TexCoord"),       0),
                 new InputElement("SCALE",     0, Format.R32G32_Float,       (int) Marshal.OffsetOf<VertexData>("Scale"),          0),
                 new InputElement("ROTATION",  0, Format.R32_Float,          (int) Marshal.OffsetOf<VertexData>("Rotation"),       0),
                 new InputElement("COLOR",     0, Format.R32G32B32A32_Float, (int) Marshal.OffsetOf<VertexData>("Color"),          0),
@@ -68,6 +73,16 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
 
             this._vertexShader = new VertexShader(backend.GetDevice(), vertexShaderResult.Bytecode.Data);
             this._pixelShader  = new PixelShader(backend.GetDevice(), pixelShaderResult.Bytecode.Data);
+
+            SamplerStateDescription samplerStateDescription = new SamplerStateDescription {
+                Filter             = Filter.MinMagMipLinear,
+                AddressU           = TextureAddressMode.Wrap,
+                AddressV           = TextureAddressMode.Wrap,
+                AddressW           = TextureAddressMode.Wrap,
+                ComparisonFunction = Comparison.Never
+            };
+
+            this._samplerState = new SamplerState(backend.GetDevice(), samplerStateDescription);
         }
 
         public void Begin() {
@@ -80,13 +95,16 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
         public void Draw(Texture textureGl, Vector2 position, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
             this._vertexBufferPointer->Position = new Vector2(0, 0);
             this._vertexBufferPointer->Color    = new Vector4(1.0f, 0, 0, 1);
+            this._vertexBufferPointer->TexCoord = new Vector2(0, 1);
             this._vertexBufferPointer++;
 
             this._vertexBufferPointer->Position = new Vector2(1, 0);
+            this._vertexBufferPointer->TexCoord = new Vector2(1, 1);
             this._vertexBufferPointer->Color    = new Vector4(0, 1.0f, 0, 1);
             this._vertexBufferPointer++;
 
             this._vertexBufferPointer->Position = new Vector2(0.5f, 1);
+            this._vertexBufferPointer->TexCoord = new Vector2(1f,   0);
             this._vertexBufferPointer->Color    = new Vector4(0, 0, 1.0f, 1);
             this._vertexBufferPointer++;
 
@@ -97,7 +115,9 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
             this._deviceContext.InputAssembler.SetVertexBuffers(0, new VertexBufferBinding(this._vertexBuffer, sizeof(VertexData), 0));
             this._deviceContext.VertexShader.Set(this._vertexShader);
             this._deviceContext.PixelShader.Set(this._pixelShader);
-            this._backend.SetRenderTargets();
+            this._deviceContext.PixelShader.SetSampler(0, this._samplerState);
+
+            (textureGl as TextureD3D11).BindToPixelShader(0);
 
             this._deviceContext.Draw(3, 0);
         }

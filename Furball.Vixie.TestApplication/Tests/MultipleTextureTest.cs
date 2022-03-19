@@ -14,9 +14,9 @@ namespace Furball.Vixie.TestApplication.Tests {
 
         public override void Initialize() {
             for (int i = 0; i != this._textures.Length; i++) {
-                if (i % 2 == 0 && i != 0)
+                //if (i % 2 == 0 && i != 0)
                     this._textures[i]  = Texture.Create(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
-                else this._textures[i] = Texture.Create();
+                //else this._textures[i] = Texture.Create();
             }
 
             this._quadRenderer = GraphicsBackend.Current.CreateTextureRenderer();

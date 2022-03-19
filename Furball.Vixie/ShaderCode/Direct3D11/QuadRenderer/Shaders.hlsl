@@ -1,6 +1,7 @@
 struct VS_Input
 {
     float2 Position       : POSITION;
+    float2 TexCoord       : TEXCOORD;
     float2 Scale          : SCALE;
     float  Rotation       : ROTATION;
     float4 Color          : COLOR;
@@ -10,6 +11,7 @@ struct VS_Input
 struct VS_Output
 {
     float4 Position : SV_Position;
+    float2 TexCoord : TEXCOORD;
     float4 Color : COLOR;
 };
 
@@ -24,15 +26,22 @@ VS_Output VS_Main(VS_Input input)
 
     output.Position = float4(input.Position.x, input.Position.y, 0, 1);
     output.Color = input.Color;
+    output.TexCoord = input.TexCoord;
 
     return output;
 }
+
+
+
+Texture2D    mytexture : register(t0);
+SamplerState mysampler : register(s0);
 
 PS_Output PS_Main(VS_Output input)
 {
     PS_Output output;
 
-    output.ColorOutput = input.Color;
+    output.ColorOutput = mytexture.Sample(mysampler, input.TexCoord);
+    //output.ColorOutput = float4(input.TexCoord.x, input.TexCoord.y, 0.0, 1.0);
 
     return output;
 }
