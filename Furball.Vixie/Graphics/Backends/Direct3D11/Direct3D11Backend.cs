@@ -113,7 +113,7 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
             this._deviceContext.OutputMerger.SetRenderTargets(this._renderTarget);
         }
 
-        public void SetRenderTargets() {
+        public void SetDefaultRenderTarget() {
             this._deviceContext.OutputMerger.SetRenderTargets(this._renderTarget);
         }
 
