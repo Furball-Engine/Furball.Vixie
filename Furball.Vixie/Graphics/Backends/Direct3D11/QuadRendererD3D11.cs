@@ -143,14 +143,7 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
 
             Vector2 size = textureGl.Size * scale;
 
-            Matrix4x4 rotationMatrix = Matrix4x4.CreateRotationZ(rotation, new Vector3(position.X, position.Y, 0));
-
-            Vector2 topLeftPos = Vector2.Transform(new Vector2(position.X, position.Y), rotationMatrix);
-            Vector2 bottomLeftPos = Vector2.Transform(new Vector2(position.X, position.Y + size.Y), rotationMatrix);
-            Vector2 bottomRightPos = Vector2.Transform(new Vector2(position.X + size.X, position.Y + size.Y), rotationMatrix);
-            Vector2 topRightPos = Vector2.Transform(new Vector2(position.X + size.X, position.Y), rotationMatrix);
-
-            this._vertexBufferPointer->Position       = topLeftPos;
+            this._vertexBufferPointer->Position       = position;
             this._vertexBufferPointer->Color          = new Vector4(colorOverride.Rf, colorOverride.Gf, colorOverride.Bf, colorOverride.Af);
             this._vertexBufferPointer->TexCoord       = new Vector2(0, 0);
             this._vertexBufferPointer->Rotation       = rotation;
@@ -158,15 +151,15 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
             this._vertexBufferPointer->RotationOrigin = position + rotOrigin;
             this._vertexBufferPointer++;
 
-            this._vertexBufferPointer->Position       = bottomLeftPos;
-            this._vertexBufferPointer->TexCoord       = new Vector2(0, 1);
+            this._vertexBufferPointer->Position       = new Vector2(position.X, position.Y + size.Y);
+            this._vertexBufferPointer->TexCoord       = new Vector2(0,          1);
             this._vertexBufferPointer->Color          = new Vector4(colorOverride.Rf, colorOverride.Gf, colorOverride.Bf, colorOverride.Af);
             this._vertexBufferPointer->Rotation       = rotation;
             this._vertexBufferPointer->Scale          = scale;
             this._vertexBufferPointer->RotationOrigin = position + rotOrigin;
             this._vertexBufferPointer++;
 
-            this._vertexBufferPointer->Position       = bottomRightPos;
+            this._vertexBufferPointer->Position       = position + size;
             this._vertexBufferPointer->TexCoord       = new Vector2(1f, 1);
             this._vertexBufferPointer->Color          = new Vector4(colorOverride.Rf, colorOverride.Gf, colorOverride.Bf, colorOverride.Af);
             this._vertexBufferPointer->Rotation       = rotation;
@@ -174,8 +167,8 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
             this._vertexBufferPointer->RotationOrigin = position + rotOrigin;
             this._vertexBufferPointer++;
 
-            this._vertexBufferPointer->Position       = topRightPos;
-            this._vertexBufferPointer->TexCoord       = new Vector2(1f, 0);
+            this._vertexBufferPointer->Position       = new Vector2(position.X + size.X, position.Y);
+            this._vertexBufferPointer->TexCoord       = new Vector2(1f,                  0);
             this._vertexBufferPointer->Color          = new Vector4(colorOverride.Rf, colorOverride.Gf, colorOverride.Bf, colorOverride.Af);
             this._vertexBufferPointer->Rotation       = rotation;
             this._vertexBufferPointer->Scale          = scale;
