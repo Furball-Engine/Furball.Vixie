@@ -137,6 +137,12 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
 
             Vector2 size = textureGl.Size * scale;
 
+            ConstantBufferData data = new ConstantBufferData {
+                ProjectionMatrix = this._backend.GetProjectionMatrix()
+            };
+
+            this._deviceContext.UpdateSubresource(ref data, this._constantBuffer);
+
             this._vertexBufferPointer->Position = position;
             this._vertexBufferPointer->Color    = new Vector4(colorOverride.Rf, colorOverride.Gf, colorOverride.Bf, colorOverride.Af);
             this._vertexBufferPointer->TexCoord = new Vector2(0, 0);
