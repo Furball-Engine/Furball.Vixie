@@ -28,12 +28,7 @@ VS_Output VS_Main(VS_Input input)
 {
     VS_Output output;
 
-    float2 inputPos = mul(ProjectionMatrix, float4(input.Position.x, input.Position.y, 0, 1));
-
-    float2x2 rotationMatrix = float2x2(cos(input.Rotation), sin(input.Rotation), -sin(input.Rotation), cos(input.Rotation));
-    float2 newPosition = mul(rotationMatrix, inputPos);
-
-    output.Position = float4(newPosition.x, newPosition.y, 0, 1);
+    output.Position = mul(ProjectionMatrix, float4(input.Position.x, input.Position.y, 0, 1));
     output.Color = input.Color;
     output.TexCoord = input.TexCoord;
 
