@@ -42,21 +42,21 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._quadRendererGl.DrawString(this._font, "VixieFontStashSharpRenderer Testing", new Vector2(10, 10), Color.White, this._rotation, new Vector2(_scale));
             this._quadRendererGl.End();
 
-            #region ImGui menu
-
-            ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
-                       $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
-            );
-            
-            ImGui.SliderFloat("Scale",    ref this._scale,    0f, 5f);
-            ImGui.SliderFloat("Rotation", ref this._rotation, 0f, (float)(Math.PI * 2f));
-            
-            if (ImGui.Button("Go back to test selector")) {
-                this.BaseGame.Components.Add(new BaseTestSelector());
-                this.BaseGame.Components.Remove(this);
-            }
-
-            #endregion
+            //#region ImGui menu
+//
+            //ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
+            //           $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
+            //);
+            //
+            //ImGui.SliderFloat("Scale",    ref this._scale,    0f, 5f);
+            //ImGui.SliderFloat("Rotation", ref this._rotation, 0f, (float)(Math.PI * 2f));
+            //
+            //if (ImGui.Button("Go back to test selector")) {
+            //    this.BaseGame.Components.Add(new BaseTestSelector());
+            //    this.BaseGame.Components.Remove(this);
+            //}
+//
+            //#endregion
 
             base.Draw(deltaTime);
         }

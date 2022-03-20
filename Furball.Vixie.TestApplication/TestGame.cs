@@ -6,7 +6,7 @@ namespace Furball.Vixie.TestApplication {
         public TestGame(WindowOptions options) {}
 
         protected override unsafe void Initialize() {
-            this.Components.Add(new TestRotation());
+            this.Components.Add(new TestFSS());
 
             base.Initialize();
         }
