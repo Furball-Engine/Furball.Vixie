@@ -47,6 +47,8 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
         private VertexData*  _vertexBufferPointer;
         private int          _currentVertex;
 
+        private ConstantBufferData _constantBufferData;
+
         public unsafe QuadRendererD3D11(Direct3D11Backend backend) {
             this._backend       = backend;
             this._deviceContext = backend.GetDeviceContext();
@@ -104,11 +106,11 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
             Buffer constantBuffer = new Buffer(backend.GetDevice(), constantBufferDescription);
             this._constantBuffer = constantBuffer;
 
-            ConstantBufferData data = new ConstantBufferData {
+            _constantBufferData = new ConstantBufferData {
                 ProjectionMatrix = backend.GetProjectionMatrix()
             };
 
-            this._deviceContext.UpdateSubresource(ref data, constantBuffer);
+            this._deviceContext.UpdateSubresource(ref _constantBufferData, constantBuffer);
 
             this._vertexShader = new VertexShader(backend.GetDevice(), vertexShaderResult.Bytecode.Data);
             this._pixelShader  = new PixelShader(backend.GetDevice(), pixelShaderResult.Bytecode.Data);
@@ -130,6 +132,10 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
 
             fixed (VertexData* ptr = this._localVertexBuffer)
                 this._vertexBufferPointer = ptr;
+
+            _constantBufferData.ProjectionMatrix = this._backend.GetProjectionMatrix();
+
+            this._deviceContext.UpdateSubresource(ref _constantBufferData, this._constantBuffer);
         }
         public void Draw(Texture textureGl, Vector2 position, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
             fixed (VertexData* ptr = this._localVertexBuffer)
@@ -137,11 +143,7 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
 
             Vector2 size = textureGl.Size * scale;
 
-            ConstantBufferData data = new ConstantBufferData {
-                ProjectionMatrix = this._backend.GetProjectionMatrix()
-            };
 
-            this._deviceContext.UpdateSubresource(ref data, this._constantBuffer);
 
             this._vertexBufferPointer->Position = position;
             this._vertexBufferPointer->Color    = new Vector4(colorOverride.Rf, colorOverride.Gf, colorOverride.Bf, colorOverride.Af);
