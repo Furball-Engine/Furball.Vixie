@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Numerics;
 using Furball.Vixie.Graphics.Backends.Direct3D11.Abstractions;
 using Furball.Vixie.Graphics.Renderers;
 using SharpDX.Direct3D;
@@ -23,9 +24,11 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
 
         private RawColor4    _clearColor;
         private RawViewportF _viewport;
+        private Matrix4x4    _projectionMatrix;
 
         internal Device GetDevice() => this._device;
         internal DeviceContext GetDeviceContext() => this._deviceContext;
+        internal Matrix4x4 GetProjectionMatrix() => this._projectionMatrix;
 
         public override unsafe void Initialize(IWindow window) {
             Factory2 dxgiFactory2 = new Factory2();
@@ -142,6 +145,8 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
             this._deviceContext.Rasterizer.SetViewport(this._viewport);
 
             this.CreateSwapchainResources();
+
+            this._projectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, height, 0, 1f, 0f);
         }
 
         public override void HandleFramebufferResize(int width, int height) {

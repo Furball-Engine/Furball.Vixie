@@ -26,21 +26,25 @@ namespace Furball.Vixie.TestApplication.Tests {
             GraphicsBackend.Current.Clear();
 
             this._quadRendererGl.Begin();
-            this._quadRendererGl.Draw(this._whiteTextureGl, new Vector2(1280 / 2, 720 / 2), Vector2.One, _rotation);
+
+            for(int i = 0; i != 360; i ++)
+                this._quadRendererGl.Draw(this._whiteTextureGl, new Vector2(1280 / 2, 720 / 2), Vector2.One, (float) i * (3.1415f / 180f));
+
             this._quadRendererGl.End();
+
 
             #region ImGui menu
 
-            ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
-                       $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
-            );
-            
-            ImGui.DragFloat("Rotation", ref this._rotation, 0.01f, 0f, 8f);
-            
-            if (ImGui.Button("Go back to test selector")) {
-                this.BaseGame.Components.Add(new BaseTestSelector());
-                this.BaseGame.Components.Remove(this);
-            }
+            //ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
+            //           $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
+            //);
+            //
+            //ImGui.DragFloat("Rotation", ref this._rotation, 0.01f, 0f, 8f);
+            //
+            //if (ImGui.Button("Go back to test selector")) {
+            //    this.BaseGame.Components.Add(new BaseTestSelector());
+            //    this.BaseGame.Components.Remove(this);
+            //}
 
             #endregion
 

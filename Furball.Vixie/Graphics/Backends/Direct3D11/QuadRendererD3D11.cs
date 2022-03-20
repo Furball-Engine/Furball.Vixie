@@ -19,7 +19,10 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
         private Direct3D11Backend _backend;
         private DeviceContext _deviceContext;
 
-        private Buffer       _vertexBuffer;
+        private Buffer _vertexBuffer;
+        private Buffer _indexBuffer;
+        private Buffer _constantBuffer;
+
         private InputLayout  _inputLayout;
         private VertexShader _vertexShader;
         private PixelShader  _pixelShader;
@@ -33,6 +36,11 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
             public float   Rotation;
             public Vector4 Color;
             public Vector2 RotationOrigin;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        struct ConstantBufferData {
+            public Matrix4x4 ProjectionMatrix;
         }
 
         private VertexData[] _localVertexBuffer;
@@ -60,16 +68,47 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
             InputLayout layout = new InputLayout(backend.GetDevice(), vertexShaderResult.Bytecode.Data, elementDescription);
             this._inputLayout = layout;
 
-            int vertexBufferSize = sizeof(VertexData) * 512;
+            int vertexBufferSize = sizeof(VertexData) * 4;
 
-            BufferDescription description = new BufferDescription {
+            BufferDescription vertexBufferDescription = new BufferDescription {
                 BindFlags   = BindFlags.VertexBuffer,
                 SizeInBytes = vertexBufferSize,
                 Usage       = ResourceUsage.Default
             };
 
-            Buffer vertexBuffer = new Buffer(backend.GetDevice(), description);
+            Buffer vertexBuffer = new Buffer(backend.GetDevice(), vertexBufferDescription);
             this._vertexBuffer = vertexBuffer;
+
+            BufferDescription indexBufferDescription = new BufferDescription {
+                BindFlags = BindFlags.IndexBuffer,
+                SizeInBytes = sizeof(uint) * 6,
+                Usage = ResourceUsage.Default
+            };
+
+            Buffer indexBuffer = new Buffer(backend.GetDevice(), indexBufferDescription);
+            this._indexBuffer = indexBuffer;
+
+            uint[] indicies = new uint[] {
+                0, 1, 2,
+                2, 3, 0
+            };
+
+            this._deviceContext.UpdateSubresource(indicies, indexBuffer);
+
+            BufferDescription constantBufferDescription = new BufferDescription {
+                BindFlags = BindFlags.ConstantBuffer,
+                SizeInBytes = sizeof(ConstantBufferData),
+                Usage = ResourceUsage.Default
+            };
+
+            Buffer constantBuffer = new Buffer(backend.GetDevice(), constantBufferDescription);
+            this._constantBuffer = constantBuffer;
+
+            ConstantBufferData data = new ConstantBufferData {
+                ProjectionMatrix = backend.GetProjectionMatrix()
+            };
+
+            this._deviceContext.UpdateSubresource(ref data, constantBuffer);
 
             this._vertexShader = new VertexShader(backend.GetDevice(), vertexShaderResult.Bytecode.Data);
             this._pixelShader  = new PixelShader(backend.GetDevice(), pixelShaderResult.Bytecode.Data);
@@ -87,39 +126,67 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
 
         public void Begin() {
             this.IsBegun            = true;
-            this._localVertexBuffer = new VertexData[512];
+            this._localVertexBuffer = new VertexData[4];
 
             fixed (VertexData* ptr = this._localVertexBuffer)
                 this._vertexBufferPointer = ptr;
         }
         public void Draw(Texture textureGl, Vector2 position, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
-            this._vertexBufferPointer->Position = new Vector2(0, 0);
-            this._vertexBufferPointer->Color    = new Vector4(1.0f, 0, 0, 1);
-            this._vertexBufferPointer->TexCoord = new Vector2(0, 1);
+            fixed (VertexData* ptr = this._localVertexBuffer)
+                this._vertexBufferPointer = ptr;
+
+            Vector2 size = textureGl.Size * scale;
+
+            this._vertexBufferPointer->Position = position;
+            this._vertexBufferPointer->Color    = new Vector4(colorOverride.Rf, colorOverride.Gf, colorOverride.Bf, colorOverride.Af);
+            this._vertexBufferPointer->TexCoord = new Vector2(0, 0);
+            this._vertexBufferPointer->Rotation = rotation;
+            this._vertexBufferPointer->Scale    = scale;
+            this._vertexBufferPointer->RotationOrigin = rotOrigin;
             this._vertexBufferPointer++;
 
-            this._vertexBufferPointer->Position = new Vector2(1, 0);
-            this._vertexBufferPointer->TexCoord = new Vector2(1, 1);
-            this._vertexBufferPointer->Color    = new Vector4(0, 1.0f, 0, 1);
+            this._vertexBufferPointer->Position       = new Vector2(position.X, position.Y + size.Y);
+            this._vertexBufferPointer->TexCoord       = new Vector2(0,          1);
+            this._vertexBufferPointer->Color          = new Vector4(colorOverride.Rf, colorOverride.Gf, colorOverride.Bf, colorOverride.Af);
+            this._vertexBufferPointer->Rotation       = rotation;
+            this._vertexBufferPointer->Scale          = scale;
+            this._vertexBufferPointer->RotationOrigin = rotOrigin;
             this._vertexBufferPointer++;
 
-            this._vertexBufferPointer->Position = new Vector2(0.5f, 1);
-            this._vertexBufferPointer->TexCoord = new Vector2(1f,   0);
-            this._vertexBufferPointer->Color    = new Vector4(0, 0, 1.0f, 1);
+            this._vertexBufferPointer->Position       = position + size;
+            this._vertexBufferPointer->TexCoord       = new Vector2(1f, 1);
+            this._vertexBufferPointer->Color          = new Vector4(colorOverride.Rf, colorOverride.Gf, colorOverride.Bf, colorOverride.Af);
+            this._vertexBufferPointer->Rotation       = rotation;
+            this._vertexBufferPointer->Scale          = scale;
+            this._vertexBufferPointer->RotationOrigin = rotOrigin;
+            this._vertexBufferPointer++;
+
+            this._vertexBufferPointer->Position       = new Vector2(position.X + size.X, position.Y);
+            this._vertexBufferPointer->TexCoord       = new Vector2(1f,                  0);
+            this._vertexBufferPointer->Color          = new Vector4(colorOverride.Rf, colorOverride.Gf, colorOverride.Bf, colorOverride.Af);
+            this._vertexBufferPointer->Rotation       = rotation;
+            this._vertexBufferPointer->Scale          = scale;
+            this._vertexBufferPointer->RotationOrigin = rotOrigin;
             this._vertexBufferPointer++;
 
             this._deviceContext.UpdateSubresource(this._localVertexBuffer, this._vertexBuffer);
 
             this._deviceContext.InputAssembler.InputLayout       = this._inputLayout;
             this._deviceContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
+
             this._deviceContext.InputAssembler.SetVertexBuffers(0, new VertexBufferBinding(this._vertexBuffer, sizeof(VertexData), 0));
+            this._deviceContext.InputAssembler.SetIndexBuffer(this._indexBuffer, Format.R32_UInt, 0);
+
             this._deviceContext.VertexShader.Set(this._vertexShader);
+            this._deviceContext.VertexShader.SetConstantBuffer(0, this._constantBuffer);
+
             this._deviceContext.PixelShader.Set(this._pixelShader);
+
             this._deviceContext.PixelShader.SetSampler(0, this._samplerState);
 
             (textureGl as TextureD3D11).BindToPixelShader(0);
 
-            this._deviceContext.Draw(3, 0);
+            this._deviceContext.DrawIndexed(6, 0, 0);
         }
         public void Draw(Texture textureGl, Vector2 position, Vector2 scale, float rotation, Color colorOverride, Rectangle sourceRect, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
 

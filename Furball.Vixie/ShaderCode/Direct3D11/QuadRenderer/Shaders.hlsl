@@ -20,17 +20,25 @@ struct PS_Output
     float4 ColorOutput : SV_Target0;
 };
 
+cbuffer VS_ConstantBuffer : register(b0) {
+    float4x4 ProjectionMatrix;
+}
+
 VS_Output VS_Main(VS_Input input)
 {
     VS_Output output;
 
-    output.Position = float4(input.Position.x, input.Position.y, 0, 1);
+    float2 inputPos = input.Position - input.RotationOrigin;
+
+    float2x2 rotationMatrix = float2x2(cos(input.Rotation), sin(input.Rotation), -sin(input.Rotation), cos(input.Rotation));
+    float2 newPosition = mul(rotationMatrix, inputPos);
+
+    output.Position = mul(ProjectionMatrix, float4(newPosition.x, newPosition.y, 0, 1));
     output.Color = input.Color;
     output.TexCoord = input.TexCoord;
 
     return output;
 }
-
 
 Texture2D    mytexture : register(t0);
 SamplerState mysampler : register(s0);
