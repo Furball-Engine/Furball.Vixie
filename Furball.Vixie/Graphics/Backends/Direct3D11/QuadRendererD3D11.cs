@@ -335,7 +335,13 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
         }
 
         public void Dispose() {
-            throw new System.NotImplementedException();
+            this._constantBuffer.Dispose();
+            this._indexBuffer.Dispose();
+            this._inputLayout.Dispose();
+            this._pixelShader.Dispose();
+            this._samplerState.Dispose();
+            this._vertexBuffer.Dispose();
+            this._vertexShader.Dispose();
         }
     }
 }
