@@ -20,7 +20,7 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11.Abstractions {
 
         public override Vector2 Size { get; protected set; }
 
-        public TextureD3D11(Direct3D11Backend backend, Texture2D texture, Vector2 size) {
+        public TextureD3D11(Direct3D11Backend backend, Texture2D texture, ShaderResourceView shaderResourceView, Vector2 size) {
             this._backend       = backend;
             this._deviceContext = backend.GetDeviceContext();
             this._device        = backend.GetDevice();
@@ -28,7 +28,7 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11.Abstractions {
             this.Size = size;
 
             this._texture     = texture;
-            this._textureView = new ShaderResourceView(backend.GetDevice(), texture);
+            this._textureView = shaderResourceView;
         }
 
         public unsafe TextureD3D11(Direct3D11Backend backend) {

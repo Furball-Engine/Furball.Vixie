@@ -148,8 +148,12 @@ namespace Furball.Vixie {
         /// </summary>
         /// <param name="deltaTime"></param>
         protected virtual void Draw(double deltaTime) {
+            GraphicsBackend.Current.BeginScene();
+
             this.Components.Draw(deltaTime);
             GraphicsBackend.Current.ImGuiDraw(deltaTime);
+            GraphicsBackend.Current.EndScene();
+
             GraphicsBackend.Current.Present();
         }
         /// <summary>

@@ -131,5 +131,13 @@ namespace Furball.Vixie.Graphics.Backends {
         public virtual void Present() {
 
         }
+
+        public virtual void BeginScene() {
+
+        }
+
+        public virtual void EndScene() {
+
+        }
     }
 }

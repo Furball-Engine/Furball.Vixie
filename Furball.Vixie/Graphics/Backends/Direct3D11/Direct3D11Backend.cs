@@ -26,6 +26,8 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
         private RawViewportF _viewport;
         private Matrix4x4    _projectionMatrix;
 
+        internal RenderTargetView CurrentlyBoundTarget;
+
         internal Device GetDevice() => this._device;
         internal DeviceContext GetDeviceContext() => this._deviceContext;
         internal Matrix4x4 GetProjectionMatrix() => this._projectionMatrix;
@@ -69,7 +71,7 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
 
             this.CreateSwapchainResources();
 
-            this._clearColor = new RawColor4(0.1f, 0.1f, 0.1f, 1.0f);
+            this._clearColor = new RawColor4(0.0f, 0.0f, 0.0f, 1.0f);
 
             RasterizerStateDescription rasterizerStateDescription = new RasterizerStateDescription {
                 FillMode                 = FillMode.Solid,
@@ -111,10 +113,12 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
             this._backBuffer   = backBuffer;
 
             this._deviceContext.OutputMerger.SetRenderTargets(this._renderTarget);
+            this.CurrentlyBoundTarget = this._renderTarget;
         }
 
         public void SetDefaultRenderTarget() {
             this._deviceContext.OutputMerger.SetRenderTargets(this._renderTarget);
+            this.CurrentlyBoundTarget = this._renderTarget;
         }
 
         private void DestroySwapchainResources() {
@@ -166,13 +170,11 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
         }
 
         public override void Clear() {
-            this._deviceContext.OutputMerger.SetRenderTargets(this._renderTarget);
-            this._deviceContext.ClearRenderTargetView(this._renderTarget, this._clearColor);
-            this._deviceContext.Rasterizer.SetViewport(this._viewport);
+            this._deviceContext.ClearRenderTargetView(this.CurrentlyBoundTarget, this._clearColor);
         }
 
         public override TextureRenderTarget CreateRenderTarget(uint width, uint height) {
-            return null;
+            return new TextureRenderTargetD3D11(this, width, height);
         }
 
         public override Texture CreateTexture(byte[] imageData, bool qoi = false) {
@@ -205,6 +207,12 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
 
         public override void Present() {
             this._swapChain.Present(0, PresentFlags.None);
+        }
+
+        public override void BeginScene() {
+            this._deviceContext.OutputMerger.SetRenderTargets(this._renderTarget);
+            this._deviceContext.ClearRenderTargetView(this._renderTarget, this._clearColor);
+            this._deviceContext.Rasterizer.SetViewport(this._viewport);
         }
     }
 }
