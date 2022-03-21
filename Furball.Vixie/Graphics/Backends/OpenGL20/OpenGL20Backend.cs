@@ -121,12 +121,18 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
             this.gl.Clear(ClearBufferMask.ColorBufferBit);
             this.gl.ClearColor(0.5f, 0, 0, 0);
         }
-        public override TextureRenderTarget CreateRenderTarget(uint width,     uint height)      => new TextureRenderTargetGL20(this, width, height);
-        public override Texture             CreateTexture(byte[]    imageData, bool qoi = false) => new TextureGL20(this, imageData, qoi);
-        public override Texture             CreateTexture(Stream    stream)             => new TextureGL20(this, stream);
-        public override Texture             CreateTexture(uint      width, uint height) => new TextureGL20(this, width, height);
-        public override Texture             CreateTexture(string    filepath) => new TextureGL20(this, filepath);
-        public override Texture             CreateWhitePixelTexture()         => new TextureGL20(this);
+
+        public override TextureRenderTarget CreateRenderTarget(uint width, uint height) => new TextureRenderTargetGL20(this, width, height);
+
+        public override Texture CreateTexture(byte[] imageData, bool qoi = false) => new TextureGL20(this, imageData, qoi);
+
+        public override Texture CreateTexture(Stream stream) => new TextureGL20(this, stream);
+
+        public override Texture CreateTexture(uint width, uint height) => new TextureGL20(this, width, height);
+
+        public override Texture CreateTexture(string filepath) => new TextureGL20(this, filepath);
+
+        public override Texture CreateWhitePixelTexture() => new TextureGL20(this);
 
         [Pure]
         public GL GetOpenGL() => this.gl;
