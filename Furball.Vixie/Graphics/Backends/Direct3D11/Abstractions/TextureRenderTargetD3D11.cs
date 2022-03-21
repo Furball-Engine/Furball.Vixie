@@ -2,6 +2,7 @@ using System.Numerics;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
+using SharpDX.Mathematics.Interop;
 
 namespace Furball.Vixie.Graphics.Backends.Direct3D11.Abstractions {
     public class TextureRenderTargetD3D11 : TextureRenderTarget {
@@ -12,6 +13,8 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11.Abstractions {
         private Texture2D          _renderTargetTexture;
         private RenderTargetView   _renderTarget;
         private ShaderResourceView _shaderResourceView;
+
+        private RawViewportF[] _viewports;
 
         public TextureRenderTargetD3D11(Direct3D11Backend backend, uint width, uint height) {
             this._backend       = backend;
@@ -61,10 +64,21 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11.Abstractions {
             this._deviceContext.OutputMerger.SetRenderTargets(this._renderTarget);
             this._backend.CurrentlyBoundTarget = this._renderTarget;
             this._backend.ResetBlendState();
+
+            this._deviceContext.Rasterizer.GetViewports(this._viewports);
+            this._deviceContext.Rasterizer.SetViewport(new RawViewportF {
+                X        = 0,
+                Y        = 0,
+                Width    = this.Size.X,
+                Height   = this.Size.Y,
+                MinDepth = 0.0f,
+                MaxDepth = 1.0f
+            });
         }
 
         public override void Unbind() {
             this._backend.SetDefaultRenderTarget();
+            this._deviceContext.Rasterizer.SetViewports(this._viewports);
         }
 
         public override Texture GetTexture() => new TextureD3D11(this._backend, this._renderTargetTexture, this._shaderResourceView, Size);
