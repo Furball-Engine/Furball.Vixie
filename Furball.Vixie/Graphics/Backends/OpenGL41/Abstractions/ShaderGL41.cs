@@ -2,21 +2,20 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
-using Furball.Vixie.Graphics.Backends.OpenGL;
 using Furball.Vixie.Helpers;
 using Kettu;
 using Silk.NET.OpenGL;
 
-namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
+namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
     /// <summary>
     /// A Shader, a Program run on the GPU
     /// </summary>
-    public class ShaderGL : IDisposable {
-        private readonly OpenGLBackend _backend;
+    public class ShaderGL41 : IDisposable {
+        private readonly OpenGL41Backend _backend;
         /// <summary>
         /// Currently Bound Shader
         /// </summary>
-        internal static ShaderGL CurrentlyBound;
+        internal static ShaderGL41 CurrentlyBound;
         /// <summary>
         /// Getter to check whether this Shader is bound
         /// </summary>
@@ -41,7 +40,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// <summary>
         /// Creates a unlinked Shader with no source code
         /// </summary>
-        public ShaderGL(OpenGLBackend backend) {
+        public ShaderGL41(OpenGL41Backend backend) {
             this._backend = backend;
             this._backend.CheckThread();
             
@@ -54,7 +53,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
             this._backend.CheckError();
         }
 
-        ~ShaderGL() {
+        ~ShaderGL41() {
             DisposeQueue.Enqueue(this);
         }
 
@@ -65,7 +64,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// <param name="source">Shader source code</param>
         /// <returns>Self, used for Chaining methods</returns>
         /// <exception cref="Exception">Shader Compilation Failure</exception>
-        public ShaderGL AttachShader(ShaderType type, string source) {
+        public ShaderGL41 AttachShader(ShaderType type, string source) {
             this._backend.CheckThread();
             
             uint shaderId = this.gl.CreateShader(type);
@@ -91,7 +90,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// </summary>
         /// <returns>Self, used for Chaining methods</returns>
         /// <exception cref="Exception"></exception>
-        public ShaderGL Link() {
+        public ShaderGL41 Link() {
             this._backend.CheckThread();
             
             //Link Program and get Error incase something failed
@@ -112,7 +111,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// <summary>
         /// Selects this Shader
         /// </summary>
-        public ShaderGL Bind() {
+        public ShaderGL41 Bind() {
             this._backend.CheckThread();
             
             if (this.Locked)
@@ -137,7 +136,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Binds and sets a Lock so that the Shader cannot be unbound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal ShaderGL LockingBind() {
+        internal ShaderGL41 LockingBind() {
             this.Bind();
             this.Lock();
 
@@ -148,7 +147,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Locks the Shader so that other Shaders cannot be bound/unbound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal ShaderGL Lock() {
+        internal ShaderGL41 Lock() {
             this.Locked = true;
 
             return this;
@@ -158,7 +157,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Unlocks the Shader, so that other Shaders can be bound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal ShaderGL Unlock() {
+        internal ShaderGL41 Unlock() {
             this.Locked = false;
 
             return this;
@@ -167,7 +166,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Uninds and unlocks the Shader so that other Shaders can be bound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal ShaderGL UnlockingUnbind() {
+        internal ShaderGL41 UnlockingUnbind() {
             this.Unlock();
             this.Unbind();
 
@@ -203,7 +202,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
             return location;
         }
 
-        public unsafe ShaderGL SetUniform(string uniformName, Matrix4x4 matrix) {
+        public unsafe ShaderGL41 SetUniform(string uniformName, Matrix4x4 matrix) {
             this._backend.CheckThread();
             
             this.gl.UniformMatrix4(this.GetUniformLocation(uniformName), 1, false, (float*) &matrix);
@@ -213,7 +212,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
             return this;
         }
         
-        public ShaderGL SetUniform(string uniformName, float f) {
+        public ShaderGL41 SetUniform(string uniformName, float f) {
             this._backend.CheckThread();
             
             this.gl.Uniform1(this.GetUniformLocation(uniformName), f);
@@ -223,7 +222,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
             return this;
         }
         
-        public ShaderGL SetUniform(string uniformName, float f, float f2) {
+        public ShaderGL41 SetUniform(string uniformName, float f, float f2) {
             this._backend.CheckThread();
             
             this.gl.Uniform2(this.GetUniformLocation(uniformName), f, f2);
@@ -233,7 +232,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
             return this;
         }
         
-        public ShaderGL SetUniform(string uniformName, int i) {
+        public ShaderGL41 SetUniform(string uniformName, int i) {
             this._backend.CheckThread();
             
             this.gl.Uniform1(this.GetUniformLocation(uniformName), i);
@@ -246,7 +245,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Unbinds all Shaders
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        public ShaderGL Unbind() {
+        public ShaderGL41 Unbind() {
             this._backend.CheckThread();
             
             if (this.Locked)

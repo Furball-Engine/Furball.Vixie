@@ -1,14 +1,15 @@
 using System;
 using System.Numerics;
-using Furball.Vixie.Graphics.Backends.OpenGL;
-using Silk.NET.OpenGL;
+using Furball.Vixie.Graphics.Backends.OpenGL41;
+using Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions;
+using Silk.NET.OpenGL.Legacy;
 
-namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
-    public class TextureRenderTargetGL : TextureRenderTarget, IDisposable {
+namespace Furball.Vixie.Graphics.Backends.OpenGL20.Abstractions {
+    public class TextureRenderTargetGL20 : TextureRenderTarget, IDisposable {
         /// <summary>
         /// Currently Bound TextureRenderTarget
         /// </summary>
-        internal static TextureRenderTargetGL CurrentlyBound;
+        internal static TextureRenderTargetGL20 CurrentlyBound;
         /// <summary>
         /// Getter for Checking whether this Target is bound
         /// </summary>
@@ -49,7 +50,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
             protected set => throw new Exception("Setting the size of TextureRenderTargets is currently unsupported.");
         }
 
-        private OpenGLBackend _backend;
+        private OpenGL20Backend _backend;
 
         /// <summary>
         /// Creates a TextureRenderTarget
@@ -57,11 +58,11 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// <param name="width">Desired Width</param>
         /// <param name="height">Desired Width</param>
         /// <exception cref="Exception">Throws Exception if the Target didn't create properly</exception>
-        public unsafe TextureRenderTargetGL(OpenGLBackend backend, uint width, uint height) {
+        public unsafe TextureRenderTargetGL20(OpenGL20Backend backend, uint width, uint height) {
             this._backend = backend;
-            this._backend.CheckThread();
+            // this._backend.CheckThread();
 
-            this.gl       = backend.GetGlApi();
+            this.gl       = backend.GetOpenGL();
 
             //Generate and bind a FrameBuffer
             this._frameBufferId = this.gl.GenFramebuffer();
@@ -80,9 +81,13 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
 
             //Generate the Depth buffer
             this._depthRenderBufferId = this.gl.GenRenderbuffer();
+            this._backend.CheckError();
             this.gl.BindRenderbuffer(RenderbufferTarget.Renderbuffer, this._depthRenderBufferId);
+            this._backend.CheckError();
             this.gl.RenderbufferStorage(RenderbufferTarget.Renderbuffer, InternalFormat.DepthComponent24, width, height);
+            this._backend.CheckError();
             this.gl.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, RenderbufferTarget.Renderbuffer, this._depthRenderBufferId);
+            this._backend.CheckError();
             //Connect the bound texture to the FrameBuffer object
             this.gl.FramebufferTexture(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, this._textureId, 0);
             this._backend.CheckError();
@@ -105,7 +110,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
             this.TargetHeight = height;
         }
 
-        ~TextureRenderTargetGL() {
+        ~TextureRenderTargetGL20() {
             DisposeQueue.Enqueue(this);
         }
 
@@ -113,7 +118,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Binds the Target, from now on drawing will draw to this RenderTarget,
         /// </summary>
         public override void Bind() {
-            this._backend.CheckThread();
+            // this._backend.CheckThread();
             
             if (this.Locked)
                 return;
@@ -138,7 +143,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Binds and sets a Lock so that the Target cannot be unbound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal TextureRenderTargetGL LockingBind() {
+        internal TextureRenderTargetGL20 LockingBind() {
             this.Bind();
             this.Lock();
 
@@ -148,7 +153,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Locks the Target so that other Targets cannot be bound/unbound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal TextureRenderTargetGL Lock() {
+        internal TextureRenderTargetGL20 Lock() {
             this.Locked = true;
 
             return this;
@@ -157,7 +162,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Unlocks the Target, so that other Targets can be bound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal TextureRenderTargetGL Unlock() {
+        internal TextureRenderTargetGL20 Unlock() {
             this.Locked = false;
 
             return this;
@@ -166,7 +171,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Uninds and unlocks the Target so that other Targets can be bound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal TextureRenderTargetGL UnlockingUnbind() {
+        internal TextureRenderTargetGL20 UnlockingUnbind() {
             this.Unlock();
             this.Unbind();
 
@@ -177,7 +182,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Unbinds the Target and resets the Viewport, drawing is now back to normal
         /// </summary>
         public override void Unbind() {
-            this._backend.CheckThread();
+            // this._backend.CheckThread();
             
             if (this.Locked)
                 return;
@@ -192,12 +197,12 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Retrieves the Texture from this RenderTarget
         /// </summary>
         /// <returns>Texture of this RenderTarget</returns>
-        public override Texture GetTexture() => new TextureGL(this._backend, this._textureId, this.TargetWidth, this.TargetHeight);
+        public override Texture GetTexture() => new TextureGL20(this._backend, this._textureId, this.TargetWidth, this.TargetHeight);
 
         private bool _isDisposed = false;
 
         public void Dispose() {
-            this._backend.CheckThread();
+            // this._backend.CheckThread();
             
             if (this.Bound)
                 this.UnlockingUnbind();

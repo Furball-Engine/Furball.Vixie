@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Numerics;
 using System.Threading;
-using Furball.Vixie.Graphics.Backends.OpenGL.Abstractions;
+using Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions;
 using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using Kettu;
@@ -12,9 +12,9 @@ using Silk.NET.OpenGL;
 using Silk.NET.OpenGL.Extensions.ImGui;
 using Silk.NET.Windowing;
 
-namespace Furball.Vixie.Graphics.Backends.OpenGL {
+namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
     // ReSharper disable once InconsistentNaming
-    public class OpenGLBackend : GraphicsBackend {
+    public class OpenGL41Backend : GraphicsBackend {
         /// <summary>
         /// OpenGL API
         /// </summary>
@@ -76,10 +76,10 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
 
             this.ImGuiController = new ImGuiController(this.gl, Global.GameInstance.WindowManager.GameWindow, Global.GameInstance._inputContext);
             
-            Logger.Log($"OpenGL Version: {this.gl.GetStringS(StringName.Version)}",                LoggerLevelOpenGL.InstanceInfo);
-            Logger.Log($"GLSL Version:   {this.gl.GetStringS(StringName.ShadingLanguageVersion)}", LoggerLevelOpenGL.InstanceInfo);
-            Logger.Log($"OpenGL Vendor:  {this.gl.GetStringS(StringName.Vendor)}",                 LoggerLevelOpenGL.InstanceInfo);
-            Logger.Log($"Renderer:       {this.gl.GetStringS(StringName.Renderer)}",               LoggerLevelOpenGL.InstanceInfo);
+            Logger.Log($"OpenGL Version: {this.gl.GetStringS(StringName.Version)}",                LoggerLevelOpenGL41.InstanceInfo);
+            Logger.Log($"GLSL Version:   {this.gl.GetStringS(StringName.ShadingLanguageVersion)}", LoggerLevelOpenGL41.InstanceInfo);
+            Logger.Log($"OpenGL Vendor:  {this.gl.GetStringS(StringName.Vendor)}",                 LoggerLevelOpenGL41.InstanceInfo);
+            Logger.Log($"Renderer:       {this.gl.GetStringS(StringName.Renderer)}",               LoggerLevelOpenGL41.InstanceInfo);
         }
         /// <summary>
         /// Checks for OpenGL errors
@@ -93,7 +93,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
                 throw new Exception($"Got GL Error {error}!");
 #else
                 //Debugger.Break();
-                Logger.Log($"OpenGL Error! Code: {error.ToString()}", LoggerLevelOpenGL.InstanceError);
+                Logger.Log($"OpenGL Error! Code: {error.ToString()}", LoggerLevelOpenGL41.InstanceError);
 #endif
             }
         }
@@ -126,14 +126,14 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
         /// </summary>
         /// <returns>A Texture Renderer</returns>
         public override IQuadRenderer CreateTextureRenderer() {
-            return new QuadRendererGL(this);
+            return new QuadRendererGL41(this);
         }
         /// <summary>
         /// Used to Create a Line Renderer
         /// </summary>
         /// <returns></returns>
         public override ILineRenderer CreateLineRenderer() {
-            return new LineRendererGL(this);
+            return new LineRendererGL41(this);
         }
         /// <summary>
         /// Gets the Amount of Texture Units available for use
@@ -160,7 +160,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
         /// <param name="height">Height of the Target</param>
         /// <returns></returns>
         public override TextureRenderTarget CreateRenderTarget(uint width, uint height) {
-            return new TextureRenderTargetGL(this, width, height);
+            return new TextureRenderTargetGL41(this, width, height);
         }
         /// <summary>
         /// Creates a Texture given some Data
@@ -169,7 +169,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
         /// <param name="qoi">Is the Data in the QOI format?</param>
         /// <returns>Texture</returns>
         public override Texture CreateTexture(byte[] imageData, bool qoi = false) {
-            return new TextureGL(this, imageData, qoi);
+            return new TextureGL41(this, imageData, qoi);
         }
         /// <summary>
         /// Creates a Texture given a Stream
@@ -177,7 +177,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
         /// <param name="stream">Stream to read from</param>
         /// <returns>Texture</returns>
         public override Texture CreateTexture(Stream stream) {
-            return new TextureGL(this, stream);
+            return new TextureGL41(this, stream);
         }
         /// <summary>
         /// Creates a Empty Texture given a Size
@@ -186,7 +186,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
         /// <param name="height">Height of Texture</param>
         /// <returns>Texture</returns>
         public override Texture CreateTexture(uint width, uint height) {
-            return new TextureGL(this, width, height);
+            return new TextureGL41(this, width, height);
         }
         /// <summary>
         /// Creates a Texture from a File
@@ -194,14 +194,14 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
         /// <param name="filepath">Filepath to Image</param>
         /// <returns>Texture</returns>
         public override Texture CreateTexture(string filepath) {
-            return new TextureGL(this, filepath);
+            return new TextureGL41(this, filepath);
         }
         /// <summary>
         /// Used to Create a 1x1 Texture with only a white pixel
         /// </summary>
         /// <returns>White Pixel Texture</returns>
         public override Texture CreateWhitePixelTexture() {
-            return new TextureGL(this);
+            return new TextureGL41(this);
         }
         /// <summary>
         /// Used to Update the ImGuiController in charge of rendering ImGui on this backend
