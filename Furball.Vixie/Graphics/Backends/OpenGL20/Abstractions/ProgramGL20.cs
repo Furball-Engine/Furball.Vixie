@@ -5,7 +5,7 @@ using System.Reflection.Metadata;
 using Silk.NET.OpenGL.Legacy;
 
 namespace Furball.Vixie.Graphics.Backends.OpenGL20.Abstractions {
-    public class ProgramGL20 {
+    public class ProgramGL20 : IDisposable {
         private readonly OpenGL20Backend _backend;
         private readonly GL              gl;
 
@@ -79,6 +79,20 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20.Abstractions {
         }
         public void Unbind() {
             this.gl.UseProgram(0);
+        }
+
+        private bool isDisposed = false;
+        public void Dispose() {
+            if (this.isDisposed) return;
+            
+            this.gl.DeleteShader(this.VertexShader);
+            this.gl.DeleteShader(this.FragmentShader);
+            this.gl.DeleteProgram(this.Program);
+
+            this.isDisposed = true;
+        }
+        ~ProgramGL20() {
+            DisposeQueue.Enqueue(this);
         }
     }
 }
