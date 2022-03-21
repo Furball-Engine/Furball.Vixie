@@ -71,7 +71,7 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
 
             this.CreateSwapchainResources();
 
-            this._clearColor = new RawColor4(0.0f, 0.0f, 0.0f, 1.0f);
+            this._clearColor = new RawColor4(1.0f, 1.0f, 1.0f, 1.0f);
 
             RasterizerStateDescription rasterizerStateDescription = new RasterizerStateDescription {
                 FillMode                 = FillMode.Solid,
