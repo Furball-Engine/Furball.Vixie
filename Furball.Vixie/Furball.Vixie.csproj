@@ -57,4 +57,8 @@
       <EmbeddedResource Include="ShaderCode\Direct3D11\QuadRenderer\Shaders.hlsl" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ClCompile Include="ShaderCode\Direct3D11\ImGui\Shaders.hlsl" />
+    </ItemGroup>
+
 </Project>

@@ -21,6 +21,7 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
         private RenderTargetView _renderTarget;
         private Texture2D        _backBuffer;
         private DeviceDebug      _debug;
+        private BlendState       _defaultBlendState;
 
         private RawColor4    _clearColor;
         private RawViewportF _viewport;
@@ -51,7 +52,7 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
             SwapChainDescription1 swapChainDescription = new SwapChainDescription1 {
                 Width  = window.Size.X,
                 Height = window.Size.Y,
-                Format = Format.B8G8R8A8_UNorm,
+                Format = Format.R8G8B8A8_UNorm,
                 SampleDescription = new SampleDescription {
                     Count = 1, Quality = 0
                 },
@@ -71,7 +72,8 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
 
             this.CreateSwapchainResources();
 
-            this._clearColor = new RawColor4(1.0f, 1.0f, 1.0f, 1.0f);
+            //this._clearColor = new RawColor4(1.0f, 1.0f, 1.0f, 1.0f);
+            this._clearColor = new RawColor4(0.0f, 0.0f, 0.0f, 1.0f);
 
             RasterizerStateDescription rasterizerStateDescription = new RasterizerStateDescription {
                 FillMode                 = FillMode.Solid,
@@ -86,23 +88,21 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
             deviceContext.Rasterizer.State = new RasterizerState(device, rasterizerStateDescription);
 
             BlendStateDescription blendStateDescription = BlendStateDescription.Default();
-            blendStateDescription.IndependentBlendEnable                = false;
-            blendStateDescription.RenderTarget[0].BlendOperation        = BlendOperation.Add;
-            blendStateDescription.RenderTarget[0].AlphaBlendOperation   = BlendOperation.Add;
-
-            blendStateDescription.RenderTarget[0].SourceAlphaBlend      = BlendOption.Zero;
-            blendStateDescription.RenderTarget[0].SourceBlend           = BlendOption.SourceAlpha;
-
-            blendStateDescription.RenderTarget[0].DestinationBlend      = BlendOption.InverseSourceAlpha;
-            blendStateDescription.RenderTarget[0].DestinationAlphaBlend = BlendOption.Zero;
 
             blendStateDescription.RenderTarget[0].IsBlendEnabled        = true;
-
+            blendStateDescription.RenderTarget[0].SourceBlend           = BlendOption.SourceAlpha;
+            blendStateDescription.RenderTarget[0].DestinationBlend      = BlendOption.InverseSourceAlpha;
+            blendStateDescription.RenderTarget[0].BlendOperation        = BlendOperation.Add;
+            blendStateDescription.RenderTarget[0].SourceAlphaBlend      = BlendOption.One;
+            blendStateDescription.RenderTarget[0].DestinationAlphaBlend = BlendOption.InverseSourceAlpha;
+            blendStateDescription.RenderTarget[0].AlphaBlendOperation   = BlendOperation.Add;
             blendStateDescription.RenderTarget[0].RenderTargetWriteMask = ColorWriteMaskFlags.All;
 
             BlendState blendState = new BlendState(device, blendStateDescription);
 
             deviceContext.OutputMerger.SetBlendState(blendState, new RawColor4(0, 0, 0, 0));
+
+            this._defaultBlendState = blendState;
         }
 
         private void CreateSwapchainResources() {
@@ -119,6 +119,10 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
         public void SetDefaultRenderTarget() {
             this._deviceContext.OutputMerger.SetRenderTargets(this._renderTarget);
             this.CurrentlyBoundTarget = this._renderTarget;
+        }
+
+        public void ResetBlendState() {
+            this._deviceContext.OutputMerger.SetBlendState(this._defaultBlendState, new RawColor4(0, 0, 0, 0));
         }
 
         private void DestroySwapchainResources() {
@@ -211,7 +215,7 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11 {
 
         public override void BeginScene() {
             this._deviceContext.OutputMerger.SetRenderTargets(this._renderTarget);
-            this._deviceContext.ClearRenderTargetView(this._renderTarget, this._clearColor);
+            //this._deviceContext.ClearRenderTargetView(this._renderTarget, this._clearColor);
             this._deviceContext.Rasterizer.SetViewport(this._viewport);
         }
     }

@@ -60,6 +60,7 @@ namespace Furball.Vixie.Graphics.Backends.Direct3D11.Abstractions {
         public override void Bind() {
             this._deviceContext.OutputMerger.SetRenderTargets(this._renderTarget);
             this._backend.CurrentlyBoundTarget = this._renderTarget;
+            this._backend.ResetBlendState();
         }
 
         public override void Unbind() {
