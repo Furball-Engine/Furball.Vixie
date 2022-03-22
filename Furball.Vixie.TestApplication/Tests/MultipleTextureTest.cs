@@ -17,6 +17,7 @@ namespace Furball.Vixie.TestApplication.Tests {
                 if (i % 2 == 0 && i != 0)
                     this._textures[i]  = Texture.Create(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
                 else this._textures[i] = Texture.Create();
+                // else this._textures[i] = Texture.Create(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
             }
 
             this._quadRenderer = GraphicsBackend.Current.CreateTextureRenderer();
@@ -33,7 +34,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             int y = 0;
 
             for (int i = 0; i != this._textures.Length; i++) {
-                this._quadRenderer.Draw(this._textures[i], new Vector2(x, y), new Vector2(0.5f, 0.5f));
+                this._quadRenderer.Draw(this._textures[i], new Vector2(x, y), new Vector2(1f, 1f));
                 if (i % 3 == 0 && i != 0) {
                     y += 64;
                     x =  0;

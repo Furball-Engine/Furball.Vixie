@@ -4,14 +4,13 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using FontStashSharp;
 using Furball.Vixie.FontStashSharp;
-using Furball.Vixie.Graphics.Backends.OpenGL;
-using Furball.Vixie.Graphics.Backends.OpenGL.Abstractions;
+using Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions;
 using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using Silk.NET.OpenGL;
 
-namespace Furball.Vixie.Graphics.Backends.OpenGL {
-    public class QuadRendererGL : IQuadRenderer {
+namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
+    public class QuadRendererGL41 : IQuadRenderer {
         [StructLayout(LayoutKind.Sequential)]
         private struct Vertex {
             public Vector2 Position;
@@ -55,47 +54,47 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
             public int     TextureId;
         }
 
-        private BufferObjectGL      _vbo;
-        private BufferObjectGL      _instanceVbo;
-        private VertexArrayObjectGL _vao;
+        private BufferObjectGL41      _vbo;
+        private BufferObjectGL41      _instanceVbo;
+        private VertexArrayObjectGL41 _vao;
 
         private VixieFontStashRenderer _textRenderer;
 
-        private ShaderGL _shaderGL;
+        private ShaderGL41 _shaderGl41;
 
-        private OpenGLBackend _backend;
+        private OpenGL41Backend _backend;
         // ReSharper disable once InconsistentNaming
         private GL gl;
 
-        public unsafe QuadRendererGL(OpenGLBackend backend) {
+        public unsafe QuadRendererGL41(OpenGL41Backend backend) {
             this._backend = backend;
             this._backend.CheckThread();
 
             this.gl       = this._backend.GetGlApi();
 
-            this._boundTextures = new TextureGL[this._backend.QueryMaxTextureUnits()];
+            this._boundTextures = new TextureGL41[this._backend.QueryMaxTextureUnits()];
 
-            string vertSource = ResourceHelpers.GetStringResource("ShaderCode/OpenGL/InstancedRenderer/VertexShader.glsl");
-            string fragSource = ResourceHelpers.GetStringResource("ShaderCode/OpenGL/InstancedRenderer/FragmentShader.glsl");
+            string vertSource = ResourceHelpers.GetStringResource("ShaderCode/OpenGL41/InstancedRenderer/VertexShader.glsl");
+            string fragSource = ResourceHelpers.GetStringResource("ShaderCode/OpenGL41/InstancedRenderer/FragmentShader.glsl");
 
-            this._shaderGL = new ShaderGL(backend);
+            this._shaderGl41 = new ShaderGL41(backend);
 
-            this._shaderGL.AttachShader(ShaderType.VertexShader,   vertSource);
-            this._shaderGL.AttachShader(ShaderType.FragmentShader, fragSource);
-            this._shaderGL.Link();
+            this._shaderGl41.AttachShader(ShaderType.VertexShader,   vertSource);
+            this._shaderGl41.AttachShader(ShaderType.FragmentShader, fragSource);
+            this._shaderGl41.Link();
 
-            this._shaderGL.Bind();
+            this._shaderGl41.Bind();
 
             this._backend.CheckError();
 
             for (int i = 0; i < backend.QueryMaxTextureUnits(); i++) {
-                this._shaderGL.BindUniformToTexUnit($"tex_{i}", i);
+                this._shaderGl41.BindUniformToTexUnit($"tex_{i}", i);
             }
 
-            this._vao = new VertexArrayObjectGL(backend);
+            this._vao = new VertexArrayObjectGL41(backend);
             this._vao.Bind();
 
-            this._vbo = new BufferObjectGL(backend, BufferTargetARB.ArrayBuffer, BufferUsageARB.StaticDraw);
+            this._vbo = new BufferObjectGL41(backend, BufferTargetARB.ArrayBuffer, BufferUsageARB.StaticDraw);
             this._vbo.Bind();
             this._vbo.SetData<Vertex>(_vertices);
 
@@ -109,7 +108,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
             this.gl.EnableVertexAttribArray(1);
             this._backend.CheckError();
 
-            this._instanceVbo = new BufferObjectGL(backend, BufferTargetARB.ArrayBuffer, BufferUsageARB.DynamicDraw);
+            this._instanceVbo = new BufferObjectGL41(backend, BufferTargetARB.ArrayBuffer, BufferUsageARB.DynamicDraw);
             this._instanceVbo.Bind();
 
             this._instanceVbo.SetData(null, (nuint)(sizeof(InstanceData) * NUM_INSTANCES));
@@ -166,7 +165,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
         }
 
         public void Dispose() {
-            this._shaderGL.Dispose();
+            this._shaderGl41.Dispose();
             this._vao.Dispose();
             this._vbo.Dispose();
             this._instanceVbo.Dispose();
@@ -178,9 +177,9 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
         }
 
         public void Begin() {
-            this._shaderGL.Bind();
+            this._shaderGl41.Bind();
 
-            this._shaderGL.SetUniform("vx_ModifierX",       Global.GameInstance.WindowManager.PositionMultiplier.X)
+            this._shaderGl41.SetUniform("vx_ModifierX",       Global.GameInstance.WindowManager.PositionMultiplier.X)
                    .SetUniform("vx_ModifierY",              Global.GameInstance.WindowManager.PositionMultiplier.Y)
                    .SetUniform("vx_WindowProjectionMatrix", this._backend.ProjectionMatrix);
 
@@ -221,7 +220,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
                 throw new Exception("Begin() has not been called!");
 
             //Ignore calls with invalid textures
-            if (textureGl == null || textureGl is not TextureGL)
+            if (textureGl == null || textureGl is not TextureGL41)
                 return;
 
             if (this._instances >= NUM_INSTANCES || this._usedTextures == this._backend.QueryMaxTextureUnits()) {
@@ -290,7 +289,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
             if (this._instances == 0) return;
 
             for (int i = 0; i < this._usedTextures; i++) {
-                TextureGL tex = this._boundTextures[i] as TextureGL;
+                TextureGL41 tex = this._boundTextures[i] as TextureGL41;
 
                 tex.Bind(TextureUnit.Texture0 + i);
             }

@@ -1,21 +1,20 @@
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using Furball.Vixie.Graphics.Backends.OpenGL;
-using Furball.Vixie.Graphics.Backends.OpenGL.Abstractions;
+using Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions;
 using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using Silk.NET.OpenGL;
 
-namespace Furball.Vixie.Graphics.Backends.OpenGL {
+namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
     [StructLayout(LayoutKind.Sequential)]
     public unsafe struct BatchedLineVertex {
         public fixed float Positions[4];
         public fixed float Color[4];
     }
 
-    public class LineRendererGL : IDisposable, ILineRenderer {
-        private readonly OpenGLBackend _backend;
+    public class LineRendererGL41 : IDisposable, ILineRenderer {
+        private readonly OpenGL41Backend _backend;
         /// <summary>
         /// Max Lines allowed in 1 Batch
         /// </summary>
@@ -32,15 +31,15 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
         /// <summary>
         /// Vertex Array which stores the Vertex Buffer layout information
         /// </summary>
-        private readonly VertexArrayObjectGL _vertexArray;
+        private readonly VertexArrayObjectGL41 _vertexArray;
         /// <summary>
         /// Vertex buffer which contains all the Batched Verticies
         /// </summary>
-        private readonly BufferObjectGL      _vertexBuffer;
+        private readonly BufferObjectGL41      _vertexBuffer;
         /// <summary>
         /// Shader which draws those thicc lines
         /// </summary>
-        private readonly ShaderGL            _lineShaderGL;
+        private readonly ShaderGL41            _lineShaderGl41;
 
 
         /// <summary>
@@ -55,7 +54,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
         /// </summary>
         /// <param name="backend">OpenGL API</param>
         /// <param name="capacity">How many Lines to allow in 1 Batch</param>
-        public unsafe LineRendererGL(OpenGLBackend backend, int capacity = 8192) {
+        public unsafe LineRendererGL41(OpenGL41Backend backend, int capacity = 8192) {
             this._backend = backend;
             this.gl       = backend.GetGlApi();
 
@@ -64,35 +63,35 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
             this.MaxVerticies = capacity * 32;
 
             //Load Shader Source
-            string vertexSource = ResourceHelpers.GetStringResource("ShaderCode/OpenGL/LineRenderer/VertexShader.glsl",     true);
-            string fragmentSource = ResourceHelpers.GetStringResource("ShaderCode/OpenGL/LineRenderer/PixelShader.glsl",    true);
-            string geometrySource = ResourceHelpers.GetStringResource("ShaderCode/OpenGL/LineRenderer/GeometryShader.glsl", true);
+            string vertexSource = ResourceHelpers.GetStringResource("ShaderCode/OpenGL41/LineRenderer/VertexShader.glsl",     true);
+            string fragmentSource = ResourceHelpers.GetStringResource("ShaderCode/OpenGL41/LineRenderer/PixelShader.glsl",    true);
+            string geometrySource = ResourceHelpers.GetStringResource("ShaderCode/OpenGL41/LineRenderer/GeometryShader.glsl", true);
+            this._backend.CheckError();
 
             //Create, Bind, Attach, Compile and Link the Vertex Fragment and Geometry Shaders
-            this._lineShaderGL =
-                new ShaderGL(backend)
-                    .Bind()
-                    .AttachShader(ShaderType.VertexShader,   vertexSource)
-                    .AttachShader(ShaderType.FragmentShader, fragmentSource)
-                    .AttachShader(ShaderType.GeometryShader, geometrySource)
-                    .Link();
+            this._lineShaderGl41 = new ShaderGL41(backend);
+            this._lineShaderGl41
+                .AttachShader(ShaderType.VertexShader,   vertexSource)
+                .AttachShader(ShaderType.FragmentShader, fragmentSource)
+                .AttachShader(ShaderType.GeometryShader, geometrySource)
+                .Link();
 
             //Define Layout of the Vertex Buffer
-            VertexBufferLayoutGL layoutGL =
-                new VertexBufferLayoutGL()
+            VertexBufferLayoutGL41 layoutGl41 =
+                new VertexBufferLayoutGL41()
                     .AddElement<float>(4)                  //Position
                     .AddElement<float>(4, true);  //Color
 
             //Create Vertex Buffer with the Required size
-            this._vertexBuffer = new BufferObjectGL(backend, sizeof(BatchedLineVertex) * this.MaxVerticies, BufferTargetARB.ArrayBuffer);
+            this._vertexBuffer = new BufferObjectGL41(backend, sizeof(BatchedLineVertex) * this.MaxVerticies, BufferTargetARB.ArrayBuffer);
 
             //Create the VAO
-            this._vertexArray = new VertexArrayObjectGL(backend);
+            this._vertexArray = new VertexArrayObjectGL41(backend);
 
             //Add the layout to the Vertex Array
             this._vertexArray
                 .Bind()
-                .AddBuffer(this._vertexBuffer, layoutGL);
+                .AddBuffer(this._vertexBuffer, layoutGl41);
 
             //Initialize the Local Vertex Buffer copy
             this._localVertexBuffer = new BatchedLineVertex[this.MaxVerticies];
@@ -119,7 +118,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
                 this._vertexPointer = data;
 
             //Bind the Shader and set the necessary uniforms
-            this._lineShaderGL
+            this._lineShaderGl41
                 .LockingBind()
                 .SetUniform("u_mvp",           this._backend.ProjectionMatrix)
                 .SetUniform("vx_ModifierX",    Global.GameInstance.WindowManager.PositionMultiplier.X)
@@ -198,7 +197,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
             this._vertexBufferIndex = 0;
 
             //Unlock all
-            this._lineShaderGL.Unlock();
+            this._lineShaderGl41.Unlock();
             this._vertexBuffer.Unlock();
             this._vertexArray.Unlock();
 
@@ -210,15 +209,15 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
         public void Dispose() {
             try {
                 //Unlock Shaders and other things
-                if (this._lineShaderGL.Locked)
-                    this._lineShaderGL.Unlock();
+                if (this._lineShaderGl41.Locked)
+                    this._lineShaderGl41.Unlock();
                 if (this._vertexBuffer.Locked)
                     this._vertexBuffer.Unlock();
                 if (this._vertexArray.Locked)
                     this._vertexArray.Unlock();
 
                 this._vertexArray.Dispose();
-                this._lineShaderGL.Dispose();
+                this._lineShaderGl41.Dispose();
                 this._vertexBuffer.Dispose();
             }
             catch {

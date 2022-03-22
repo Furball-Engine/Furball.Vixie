@@ -70,7 +70,6 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
             //Create, Bind, Attach, Compile and Link the Vertex Fragment and Geometry Shaders
             this._lineShaderGles =
                 new ShaderGLES(backend)
-                    .Bind()
                     .AttachShader(ShaderType.VertexShader,   vertexSource)
                     .AttachShader(ShaderType.FragmentShader, fragmentSource)
                     .AttachShader(ShaderType.GeometryShader, geometrySource)
