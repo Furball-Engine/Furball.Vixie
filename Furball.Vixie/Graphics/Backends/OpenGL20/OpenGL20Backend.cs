@@ -124,7 +124,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
         }
         public override void Clear() {
             this.gl.Clear(ClearBufferMask.ColorBufferBit);
-            this.gl.ClearColor(0.5f, 0, 0, 0);
+            this.gl.ClearColor(0f, 0, 0, 0);
         }
 
         public override TextureRenderTarget CreateRenderTarget(uint width, uint height) => new TextureRenderTargetGL20(this, width, height);
