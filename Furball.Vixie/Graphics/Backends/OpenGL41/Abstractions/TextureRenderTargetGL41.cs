@@ -69,19 +69,27 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
 
             //Generate a Texture
             this._textureId = this.gl.GenTexture();
+            this._backend.CheckError();
             this.gl.BindTexture(TextureTarget.Texture2D, this._textureId);
+            this._backend.CheckError();
             //Set it to Empty
             this.gl.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat.Rgb, width, height, 0, PixelFormat.Rgb, PixelType.UnsignedByte, null);
+            this._backend.CheckError();
             //Set The Filtering to nearest (apperantly necessary, idk)
             this.gl.TexParameterI(TextureTarget.Texture2D, GLEnum.TextureMagFilter, (int)GLEnum.Nearest);
+            this._backend.CheckError();
             this.gl.TexParameterI(TextureTarget.Texture2D, GLEnum.TextureMinFilter, (int)GLEnum.Nearest);
             this._backend.CheckError();
 
             //Generate the Depth buffer
             this._depthRenderBufferId = this.gl.GenRenderbuffer();
+            this._backend.CheckError();
             this.gl.BindRenderbuffer(RenderbufferTarget.Renderbuffer, this._depthRenderBufferId);
+            this._backend.CheckError();
             this.gl.RenderbufferStorage(RenderbufferTarget.Renderbuffer, InternalFormat.DepthComponent24, width, height);
+            this._backend.CheckError();
             this.gl.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, RenderbufferTarget.Renderbuffer, this._depthRenderBufferId);
+            this._backend.CheckError();
             //Connect the bound texture to the FrameBuffer object
             this.gl.FramebufferTexture(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, this._textureId, 0);
             this._backend.CheckError();

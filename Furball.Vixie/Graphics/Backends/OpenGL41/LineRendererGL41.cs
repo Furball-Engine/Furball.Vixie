@@ -66,15 +66,15 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
             string vertexSource = ResourceHelpers.GetStringResource("ShaderCode/OpenGL41/LineRenderer/VertexShader.glsl",     true);
             string fragmentSource = ResourceHelpers.GetStringResource("ShaderCode/OpenGL41/LineRenderer/PixelShader.glsl",    true);
             string geometrySource = ResourceHelpers.GetStringResource("ShaderCode/OpenGL41/LineRenderer/GeometryShader.glsl", true);
+            this._backend.CheckError();
 
             //Create, Bind, Attach, Compile and Link the Vertex Fragment and Geometry Shaders
-            this._lineShaderGl41 =
-                new ShaderGL41(backend)
-                    .Bind()
-                    .AttachShader(ShaderType.VertexShader,   vertexSource)
-                    .AttachShader(ShaderType.FragmentShader, fragmentSource)
-                    .AttachShader(ShaderType.GeometryShader, geometrySource)
-                    .Link();
+            this._lineShaderGl41 = new ShaderGL41(backend);
+            this._lineShaderGl41
+                .AttachShader(ShaderType.VertexShader,   vertexSource)
+                .AttachShader(ShaderType.FragmentShader, fragmentSource)
+                .AttachShader(ShaderType.GeometryShader, geometrySource)
+                .Link();
 
             //Define Layout of the Vertex Buffer
             VertexBufferLayoutGL41 layoutGl41 =

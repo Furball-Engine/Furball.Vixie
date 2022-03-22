@@ -8,6 +8,7 @@ using Furball.Vixie.Graphics.Backends.OpenGL41;
 using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using Kettu;
+using Silk.NET.Core.Contexts;
 using Silk.NET.Core.Native;
 using Silk.NET.OpenGL.Legacy;
 using Silk.NET.OpenGL.Legacy.Extensions.EXT;
@@ -42,7 +43,10 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
         
         public override void Initialize(IWindow window) {
             this.gl = window.CreateLegacyOpenGL();
-            
+
+            //TODO: Lets just assume they have it for now :^)
+            this.framebufferObjectEXT = new ExtFramebufferObject(this.gl.Context);
+
 #if DEBUGWITHGL
             unsafe {
                 //Enables Debugging
@@ -110,7 +114,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
         public override IQuadRenderer CreateTextureRenderer() => new QuadRendererGL20(this);
         public override ILineRenderer CreateLineRenderer()    => new LineRendererGL20(this);
 
-        private         int _maxTexUnits = -1;
+        private int    _maxTexUnits = -1;
+        private ExtFramebufferObject framebufferObjectEXT;
         public override int QueryMaxTextureUnits() {
             if (this._maxTexUnits == -1)
                 this._maxTexUnits = this.gl.GetInteger((GLEnum)GetPName.MaxTextureImageUnits);
@@ -136,6 +141,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
 
         [Pure]
         public GL GetOpenGL() => this.gl;
+        [Pure]
+        public ExtFramebufferObject GetOpenGLFramebufferEXT() => this.framebufferObjectEXT;
         
         public override void ImGuiUpdate(double deltaTime) {
             this._imgui.Update((float)deltaTime);

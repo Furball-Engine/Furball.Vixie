@@ -3,6 +3,7 @@ using System.Numerics;
 using Furball.Vixie.Graphics.Backends.OpenGL41;
 using Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions;
 using Silk.NET.OpenGL.Legacy;
+using Silk.NET.OpenGL.Legacy.Extensions.EXT;
 
 namespace Furball.Vixie.Graphics.Backends.OpenGL20.Abstractions {
     public class TextureRenderTargetGL20 : TextureRenderTarget, IDisposable {
@@ -62,11 +63,12 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20.Abstractions {
             this._backend = backend;
             // this._backend.CheckThread();
 
-            this.gl       = backend.GetOpenGL();
+            this.gl  = backend.GetOpenGL();
+            this.ext = backend.GetOpenGLFramebufferEXT();
 
             //Generate and bind a FrameBuffer
-            this._frameBufferId = this.gl.GenFramebuffer();
-            this.gl.BindFramebuffer(FramebufferTarget.Framebuffer, this._frameBufferId);
+            this._frameBufferId = this.ext.GenFramebuffer();
+            this.ext.BindFramebuffer(FramebufferTarget.Framebuffer, this._frameBufferId);
             this._backend.CheckError();
 
             //Generate a Texture
@@ -80,16 +82,16 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20.Abstractions {
             this._backend.CheckError();
 
             //Generate the Depth buffer
-            this._depthRenderBufferId = this.gl.GenRenderbuffer();
+            this._depthRenderBufferId = this.ext.GenRenderbuffer();
             this._backend.CheckError();
-            this.gl.BindRenderbuffer(RenderbufferTarget.Renderbuffer, this._depthRenderBufferId);
+            this.ext.BindRenderbuffer(RenderbufferTarget.Renderbuffer, this._depthRenderBufferId);
             this._backend.CheckError();
-            this.gl.RenderbufferStorage(RenderbufferTarget.Renderbuffer, InternalFormat.DepthComponent24, width, height);
+            this.ext.RenderbufferStorage(RenderbufferTarget.Renderbuffer, InternalFormat.DepthComponent24, width, height);
             this._backend.CheckError();
-            this.gl.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, RenderbufferTarget.Renderbuffer, this._depthRenderBufferId);
+            this.ext.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, RenderbufferTarget.Renderbuffer, this._depthRenderBufferId);
             this._backend.CheckError();
             //Connect the bound texture to the FrameBuffer object
-            this.gl.FramebufferTexture(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, this._textureId, 0);
+            this.ext.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, this._textureId, 0);
             this._backend.CheckError();
 
             GLEnum[] drawBuffers = new GLEnum[1] {
@@ -99,11 +101,11 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20.Abstractions {
             this._backend.CheckError();
 
             //Check if FrameBuffer created successfully
-            if (this.gl.CheckFramebufferStatus(FramebufferTarget.Framebuffer) != GLEnum.FramebufferComplete) {
+            if (this.ext.CheckFramebufferStatus(FramebufferTarget.Framebuffer) != EXT.FramebufferCompleteExt) {
                 throw new Exception("Failed to create TextureRenderTarget!");
             }
 
-            this.gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+            this.ext.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
 
             this._oldViewPort  = new int[4];
             this.TargetWidth  = width;
@@ -123,7 +125,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20.Abstractions {
             if (this.Locked)
                 return;
 
-            this.gl.BindFramebuffer(FramebufferTarget.Framebuffer, this._frameBufferId);
+            this.ext.BindFramebuffer(FramebufferTarget.Framebuffer, this._frameBufferId);
             //Store the old viewport for later
             this.gl.GetInteger(GetPName.Viewport, this._oldViewPort);
             this.gl.Viewport(0, 0, this.TargetWidth, this.TargetHeight);
@@ -187,7 +189,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20.Abstractions {
             if (this.Locked)
                 return;
 
-            this.gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+            this.ext.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
             this.gl.Viewport(this._oldViewPort[0], this._oldViewPort[1], (uint) this._oldViewPort[2], (uint) this._oldViewPort[3]);
             this._backend.CheckError();
 
@@ -199,7 +201,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20.Abstractions {
         /// <returns>Texture of this RenderTarget</returns>
         public override Texture GetTexture() => new TextureGL20(this._backend, this._textureId, this.TargetWidth, this.TargetHeight);
 
-        private bool _isDisposed = false;
+        private          bool                 _isDisposed = false;
+        private readonly ExtFramebufferObject ext;
 
         public void Dispose() {
             // this._backend.CheckThread();
@@ -213,9 +216,9 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20.Abstractions {
             this._isDisposed = true;
 
             try {
-                this.gl.DeleteFramebuffer(this._frameBufferId);
+                this.ext.DeleteFramebuffer(this._frameBufferId);
                 this.gl.DeleteTexture(this._textureId);
-                this.gl.DeleteRenderbuffer(this._depthRenderBufferId);
+                this.ext.DeleteRenderbuffer(this._depthRenderBufferId);
             }
             catch {
 

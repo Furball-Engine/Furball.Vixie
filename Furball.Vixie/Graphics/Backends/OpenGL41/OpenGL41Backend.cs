@@ -61,25 +61,34 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
 
             this.gl = window.CreateOpenGL();
 
-#if DEBUGWITHGL
+// #if DEBUGWITHGL
             unsafe {
                 //Enables Debugging
                 gl.Enable(EnableCap.DebugOutput);
                 gl.Enable(EnableCap.DebugOutputSynchronous);
                 gl.DebugMessageCallback(this.Callback, null);
             }
-#endif
+// #endif
 
             //Enables Blending (Required for Transparent Objects)
             this.gl.Enable(EnableCap.Blend);
-            this.gl.BlendFunc(GLEnum.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+            this.CheckError();
+            this.gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+            this.CheckError();
 
             this.ImGuiController = new ImGuiController(this.gl, Global.GameInstance.WindowManager.GameWindow, Global.GameInstance._inputContext);
-            
+            this.CheckError();
+
             Logger.Log($"OpenGL Version: {this.gl.GetStringS(StringName.Version)}",                LoggerLevelOpenGL41.InstanceInfo);
+            this.CheckError();
             Logger.Log($"GLSL Version:   {this.gl.GetStringS(StringName.ShadingLanguageVersion)}", LoggerLevelOpenGL41.InstanceInfo);
+            this.CheckError();
             Logger.Log($"OpenGL Vendor:  {this.gl.GetStringS(StringName.Vendor)}",                 LoggerLevelOpenGL41.InstanceInfo);
+            this.CheckError();
             Logger.Log($"Renderer:       {this.gl.GetStringS(StringName.Renderer)}",               LoggerLevelOpenGL41.InstanceInfo);
+            this.CheckError();
+            
+            this.CheckError();
         }
         /// <summary>
         /// Checks for OpenGL errors
@@ -90,8 +99,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
             
             if (error != GLEnum.NoError) {
 #if DEBUGWITHGL
-                throw new Exception($"Got GL Error {error}!");
 #else
+                throw new Exception($"Got GL Error {error}!");
                 //Debugger.Break();
                 Logger.Log($"OpenGL Error! Code: {error.ToString()}", LoggerLevelOpenGL41.InstanceError);
 #endif
@@ -142,6 +151,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
         public override int QueryMaxTextureUnits() {
             if (this._maxTextureUnits == -1) {
                 this.gl.GetInteger(GetPName.MaxTextureImageUnits, out int maxTexSlots);
+                this.CheckError();
                 this._maxTextureUnits = maxTexSlots;
             }
 

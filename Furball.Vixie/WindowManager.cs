@@ -110,7 +110,7 @@ namespace Furball.Vixie {
             this._windowOptions.API = new GraphicsAPI(api, profile, flags, version);
 
             this.GameWindow = Window.Create(this._windowOptions);
-            
+
             this.GameWindow.FramebufferResize += newSize => {
                 this.UpdateProjectionAndSize(newSize.X, newSize.Y);
             };

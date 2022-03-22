@@ -68,6 +68,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
             this._backend.CheckThread();
             
             uint shaderId = this.gl.CreateShader(type);
+            this._backend.CheckError();
 
             this.gl.ShaderSource(shaderId, source);
             this.gl.CompileShader(shaderId);
