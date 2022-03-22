@@ -336,7 +336,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20.Abstractions {
         /// <summary>
         /// Disposes the Texture and the Local Image Buffer
         /// </summary>
-        public void Dispose() {
+        public unsafe void Dispose() {
             // if (this.Bound)
                 // this.UnlockingUnbind();
 
@@ -346,7 +346,9 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20.Abstractions {
             this._isDisposed = true;
 
             try {
-                this.gl.DeleteTexture(this.TextureId);
+                // this.gl.DeleteTexture(this.TextureId);
+                fixed(uint* ptr = &this.TextureId)
+                    this.gl.DeleteTextures(1, ptr);
                 this._localBuffer.Dispose();
             }
             catch {

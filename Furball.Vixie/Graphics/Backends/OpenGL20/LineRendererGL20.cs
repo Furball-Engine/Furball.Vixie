@@ -43,7 +43,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
             
         }
         ~LineRendererGL20() {
-            this._program.Dispose();
+            DisposeQueue.Enqueue(this._program);
         }
         public bool IsBegun {
             get;
