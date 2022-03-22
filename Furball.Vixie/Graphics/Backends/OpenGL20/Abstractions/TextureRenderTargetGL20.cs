@@ -204,7 +204,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20.Abstractions {
         private          bool                 _isDisposed = false;
         private readonly ExtFramebufferObject ext;
 
-        public void Dispose() {
+        public unsafe void Dispose() {
             // this._backend.CheckThread();
             
             if (this.Bound)
@@ -217,7 +217,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20.Abstractions {
 
             try {
                 this.ext.DeleteFramebuffer(this._frameBufferId);
-                this.gl.DeleteTexture(this._textureId);
+                fixed(uint* ptr = &this._textureId)
+                    this.gl.DeleteTextures(1, ptr);
                 this.ext.DeleteRenderbuffer(this._depthRenderBufferId);
             }
             catch {
