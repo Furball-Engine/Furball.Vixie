@@ -201,7 +201,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
             if (this._instances >= NUM_INSTANCES || this._usedTextures == this._backend.QueryMaxTextureUnits()) {
                 this.Flush();
             }
-
+            
             this._instanceData[this._instances].Position              = position;
             this._instanceData[this._instances].Size                  = textureGl.Size * scale;
             this._instanceData[this._instances].Color                 = colorOverride;
@@ -233,6 +233,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
 
             //Apply Scale
             size *= scale;
+            
+            sourceRect.Y = textureGl.Height - sourceRect.Y - sourceRect.Height;
 
             this._instanceData[this._instances].Position              = position;
             this._instanceData[this._instances].Size                  = size;

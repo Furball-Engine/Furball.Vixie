@@ -232,6 +232,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
 
             //Apply Scale
             size *= scale;
+            
+            sourceRect.Y = textureGl.Height - sourceRect.Y - sourceRect.Height;
 
             this._instanceData[this._instances].Position              = position;
             this._instanceData[this._instances].Size                  = size;
