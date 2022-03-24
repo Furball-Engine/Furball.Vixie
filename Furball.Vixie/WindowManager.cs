@@ -1,6 +1,7 @@
 using System;
 using System.Numerics;
 using Furball.Vixie.Graphics.Backends;
+using Furball.Vixie.Graphics.Backends.Veldrid;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
 using Silk.NET.Windowing.Glfw;
@@ -68,17 +69,49 @@ namespace Furball.Vixie {
             GraphicsBackend.Current.HandleWindowSizeChange(width, height);
         }
 
+        private ContextAPI GetVeldridContextApi(Veldrid.GraphicsBackend gb) {
+            switch (gb) {
+                case Veldrid.GraphicsBackend.OpenGL:
+                    return ContextAPI.OpenGL;
+                case Veldrid.GraphicsBackend.OpenGLES:
+                    return ContextAPI.OpenGLES;
+                case Veldrid.GraphicsBackend.Direct3D11:
+                case Veldrid.GraphicsBackend.Vulkan:
+                case Veldrid.GraphicsBackend.Metal:
+                    return ContextAPI.None;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof (gb), gb, null);
+            }
+        }
+
+        private APIVersion GetVeldridApiVersion(Veldrid.GraphicsBackend gb) {
+            switch (gb) {
+                case Veldrid.GraphicsBackend.OpenGL:
+                    return new(4, 0);
+                case Veldrid.GraphicsBackend.OpenGLES:
+                    return new(3, 0);
+                case Veldrid.GraphicsBackend.Direct3D11:
+                case Veldrid.GraphicsBackend.Vulkan:
+                case Veldrid.GraphicsBackend.Metal:
+                    return new(1, 0);
+                default:
+                    throw new ArgumentOutOfRangeException(nameof (gb), gb, null);
+            }
+        }
+
         /// <summary>
         /// Creates the Window and grabs the OpenGL API of Window
         /// </summary>
         public void Create() {
             GlfwWindowing.Use(); //dont tell perskey and kai that i do this! shhhhhhhhhhhhhhh
 
+            VeldridBackend.PrefferedBackend = Veldrid.GraphicsBackend.OpenGLES;
+            
             ContextAPI api = this._backend switch {
                 Backend.OpenGLES   => ContextAPI.OpenGLES,
                 Backend.OpenGL20   => ContextAPI.OpenGL,
                 Backend.OpenGL41   => ContextAPI.OpenGL,
-                Backend.Veldrid    => ContextAPI.None,
+                Backend.Veldrid    => GetVeldridContextApi(VeldridBackend.PrefferedBackend),
                 Backend.Direct3D11 => ContextAPI.None,
                 _                  => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
             };
@@ -110,11 +143,11 @@ namespace Furball.Vixie {
             };
 
             APIVersion version = this._backend switch {
+                Backend.OpenGLES   => new APIVersion(3, 0),
+                Backend.OpenGL20   => new APIVersion(2, 0),
+                Backend.OpenGL41   => new APIVersion(4, 1),
+                Backend.Veldrid    => GetVeldridApiVersion(VeldridBackend.PrefferedBackend),
                 Backend.Direct3D11 => new APIVersion(11, 0),
-                Backend.OpenGLES   => new APIVersion(3,  0),
-                Backend.OpenGL20   => new APIVersion(2,  0),
-                Backend.OpenGL41   => new APIVersion(4,  1),
-                Backend.Veldrid    => new APIVersion(1,  0),
                 _                  => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
             };
 

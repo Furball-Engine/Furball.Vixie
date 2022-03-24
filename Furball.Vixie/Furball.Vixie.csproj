@@ -57,9 +57,57 @@
       <EmbeddedResource Include="ShaderCode\OpenGL20\LineFragmentShader.glsl" />
       <None Remove="ShaderCode\OpenGL20\LineVertexShader.glsl" />
       <EmbeddedResource Include="ShaderCode\OpenGL20\LineVertexShader.glsl" />
+        
+        <EmbeddedResource Include="Graphics\Backends\Veldrid\ImGuiShaders\GLSL\imgui-frag.glsl"> 
+            <LogicalName>imgui-frag.glsl</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Graphics\Backends\Veldrid\ImGuiShaders\GLSL\imgui-vertex.glsl"> 
+            <LogicalName>imgui-vertex.glsl</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Graphics\Backends\Veldrid\ImGuiShaders\GLSL\imgui-vertex-legacy.glsl"> 
+            <LogicalName>imgui-vertex-legacy.glsl</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Graphics\Backends\Veldrid\ImGuiShaders\GLSLES\imgui-frag.glsles"> 
+            <LogicalName>imgui-frag.glsles</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Graphics\Backends\Veldrid\ImGuiShaders\GLSLES\imgui-vertex.glsles"> 
+            <LogicalName>imgui-vertex.glsles</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Graphics\Backends\Veldrid\ImGuiShaders\GLSLES\imgui-vertex-legacy.glsles"> 
+            <LogicalName>imgui-vertex-legacy.glsles</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Graphics\Backends\Veldrid\ImGuiShaders\HLSL\imgui-frag.hlsl.bytes"> 
+            <LogicalName>imgui-frag.hlsl.bytes</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Graphics\Backends\Veldrid\ImGuiShaders\HLSL\imgui-vertex-legacy.hlsl.bytes"> 
+            <LogicalName>imgui-vertex-legacy.hlsl.bytes</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Graphics\Backends\Veldrid\ImGuiShaders\HLSL\imgui-vertex.hlsl.bytes"> 
+            <LogicalName>imgui-vertex.hlsl.bytes</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Graphics\Backends\Veldrid\ImGuiShaders\Metal\imgui-frag.metal"> 
+            <LogicalName>imgui-frag.metal</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Graphics\Backends\Veldrid\ImGuiShaders\Metal\imgui-frag.metallib"> 
+            <LogicalName>imgui-frag.metallib</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Graphics\Backends\Veldrid\ImGuiShaders\Metal\imgui-vertex.metal"> 
+            <LogicalName>imgui-vertex.metal</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Graphics\Backends\Veldrid\ImGuiShaders\Metal\imgui-vertex.metallib"> 
+            <LogicalName>imgui-vertex.metallib</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Graphics\Backends\Veldrid\ImGuiShaders\SPIR-V\imgui-frag.spv"> 
+            <LogicalName>imgui-frag.spv</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Graphics\Backends\Veldrid\ImGuiShaders\SPIR-V\imgui-vertex.spv"> 
+            <LogicalName>imgui-vertex.spv</LogicalName>
+        </EmbeddedResource>
+        
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Graphics\Backends\Veldrid\ImGuiShaders" />
       <Folder Include="ShaderCode\" />
     </ItemGroup>
 
@@ -78,6 +126,12 @@
       <Reference Include="Silk.NET.OpenGLES.Extensions.ImGui, Version=2.14.0.0, Culture=neutral, PublicKeyToken=null">
         <HintPath>Silk.NET.OpenGLES.Extensions.ImGui.dll</HintPath>
       </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="Graphics\Backends\Veldrid\ImGuiShaders\HLSL\imgui-frag.hlsl" />
+      <EmbeddedResource Include="Graphics\Backends\Veldrid\ImGuiShaders\HLSL\imgui-vertex-legacy.hlsl" />
+      <EmbeddedResource Include="Graphics\Backends\Veldrid\ImGuiShaders\HLSL\imgui-vertex.hlsl" />
     </ItemGroup>
 
 </Project>

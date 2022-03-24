@@ -18,11 +18,11 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         
         internal GraphicsDevice  GraphicsDevice;
         internal ResourceFactory ResourceFactory;
-        internal CommandList     CommandList;
+        internal CommandList     BackendCommandList;
         
-        internal Matrix4x4     ProjectionMatrix;
-        private  ImGuiRenderer _imGui;
-        private  IWindow       _window;
+        internal Matrix4x4       ProjectionMatrix;
+        private  IWindow         _window;
+        private  ImGuiController _imgui;
 
         public override void Initialize(IWindow window) {
             this._window = window;
@@ -34,7 +34,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
 
             this.GraphicsDevice  = window.CreateGraphicsDevice(options, PrefferedBackend);
             this.ResourceFactory = this.GraphicsDevice.ResourceFactory;
-            this.CommandList     = this.ResourceFactory.CreateCommandList();
+            this.BackendCommandList     = this.ResourceFactory.CreateCommandList();
 
             var features = this.GraphicsDevice.Features;
             Logger.Log(
@@ -55,7 +55,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
                     BackendInfoVulkan info = this.GraphicsDevice.GetVulkanInfo();
                     
                     Logger.Log($"Vulkan Driver Name: {info.DriverName}", LoggerLevelVeldrid.InstanceInfo);
-                    Logger.Log($"Vulkan Driver Info{info.DriverInfo}",   LoggerLevelVeldrid.InstanceInfo);
+                    Logger.Log($"Vulkan Driver Info: {info.DriverInfo}",   LoggerLevelVeldrid.InstanceInfo);
                     
                     ReadOnlyCollection<BackendInfoVulkan.ExtensionProperties> availableDeviceExtensions = info.AvailableDeviceExtensions;
                     foreach (BackendInfoVulkan.ExtensionProperties extension in availableDeviceExtensions) 
@@ -96,7 +96,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
                     throw new ArgumentOutOfRangeException();
             }
 
-            this._imGui = new ImGuiRenderer(this.GraphicsDevice, this.GraphicsDevice.MainSwapchain.Framebuffer.OutputDescription, window.FramebufferSize.X, window.FramebufferSize.Y); 
+            this._imgui = new ImGuiController(this.GraphicsDevice, this.GraphicsDevice.SwapchainFramebuffer.OutputDescription, window, Global.GameInstance._inputContext);
         }
         
         public override void Cleanup() {
@@ -106,23 +106,33 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         public override void HandleWindowSizeChange(int width, int height) {
             this.GraphicsDevice.ResizeMainWindow((uint)width, (uint)height);
             this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, 0, height, 1f, 0f);
-            
-            this._imGui.WindowResized(width, height);
         }
 
         public override void HandleFramebufferResize(int width, int height) {
-            // this.GraphicsDevice.ResizeMainWindow((uint)width, (uint)height);
+            this.GraphicsDevice.ResizeMainWindow((uint)width, (uint)height);
         }
         public override IQuadRenderer CreateTextureRenderer() => throw new System.NotImplementedException();
         public override ILineRenderer CreateLineRenderer()    => throw new System.NotImplementedException();
         public override int           QueryMaxTextureUnits()  => throw new System.NotImplementedException();
-        public override void Clear() {
-            // this.CommandList.Begin();
-            this.CommandList.ClearColorTarget(0, RgbaFloat.Black);
-            // this.CommandList.End();
-            
-            this.GraphicsDevice.SubmitCommands(this.CommandList);
+
+        public override void BeginScene() {
+            this.BackendCommandList.Begin();
+            this.BackendCommandList.SetFramebuffer(this.GraphicsDevice.SwapchainFramebuffer);
         }
+
+        public override void EndScene() {
+            this.BackendCommandList.End();
+            this.GraphicsDevice.SubmitCommands(this.BackendCommandList);
+        }
+
+        public override void Present() {
+            this.GraphicsDevice.SwapBuffers();
+        }
+
+        public override void Clear() {
+            this.BackendCommandList.ClearColorTarget(0, RgbaFloat.Black);
+        }
+        
         public override TextureRenderTarget CreateRenderTarget(uint width,     uint height)      => throw new System.NotImplementedException();
         public override Texture             CreateTexture(byte[]    imageData, bool qoi = false) => throw new System.NotImplementedException();
         public override Texture             CreateTexture(Stream    stream)             => throw new System.NotImplementedException();
@@ -131,13 +141,10 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         public override Texture             CreateWhitePixelTexture()         => throw new System.NotImplementedException();
         
         public override void ImGuiUpdate(double deltaTime) {
-            // this._imGui.Update((float)deltaTime, );
+            this._imgui.Update((float)deltaTime);
         }
         public override void ImGuiDraw(double deltaTime) {
-            this.CommandList.Begin();
-            this.CommandList.SetFramebuffer(this.GraphicsDevice.MainSwapchain.Framebuffer);
-            this._imGui.Render(this.GraphicsDevice, this.CommandList);
-            this.CommandList.End();
+            this._imgui.Render(this.GraphicsDevice, this.BackendCommandList);
         }
     }
 }
