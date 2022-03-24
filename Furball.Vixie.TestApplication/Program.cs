@@ -6,4 +6,4 @@ using Silk.NET.Windowing;
 var options = WindowOptions.Default;
 options.VSync           = false;
 
-new TestGame(options).Run(options, Backend.Direct3D11);
+new TestGame(options).Run(options, Backend.Veldrid);
