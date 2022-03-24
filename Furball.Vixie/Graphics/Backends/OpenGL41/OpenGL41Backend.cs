@@ -61,14 +61,14 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
 
             this.gl = window.CreateOpenGL();
 
-// #if DEBUGWITHGL
+#if DEBUGWITHGL
             unsafe {
                 //Enables Debugging
                 gl.Enable(EnableCap.DebugOutput);
                 gl.Enable(EnableCap.DebugOutputSynchronous);
                 gl.DebugMessageCallback(this.Callback, null);
             }
-// #endif
+#endif
 
             //Enables Blending (Required for Transparent Objects)
             this.gl.Enable(EnableCap.Blend);
