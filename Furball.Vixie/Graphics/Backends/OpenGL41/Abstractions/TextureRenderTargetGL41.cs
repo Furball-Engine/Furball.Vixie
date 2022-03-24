@@ -1,14 +1,13 @@
 using System;
 using System.Numerics;
-using Furball.Vixie.Graphics.Backends.OpenGL;
 using Silk.NET.OpenGL;
 
-namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
-    public class TextureRenderTargetGL : TextureRenderTarget, IDisposable {
+namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
+    public class TextureRenderTargetGL41 : TextureRenderTarget, IDisposable {
         /// <summary>
         /// Currently Bound TextureRenderTarget
         /// </summary>
-        internal static TextureRenderTargetGL CurrentlyBound;
+        internal static TextureRenderTargetGL41 CurrentlyBound;
         /// <summary>
         /// Getter for Checking whether this Target is bound
         /// </summary>
@@ -49,7 +48,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
             protected set => throw new Exception("Setting the size of TextureRenderTargets is currently unsupported.");
         }
 
-        private OpenGLBackend _backend;
+        private OpenGL41Backend _backend;
 
         /// <summary>
         /// Creates a TextureRenderTarget
@@ -57,7 +56,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// <param name="width">Desired Width</param>
         /// <param name="height">Desired Width</param>
         /// <exception cref="Exception">Throws Exception if the Target didn't create properly</exception>
-        public unsafe TextureRenderTargetGL(OpenGLBackend backend, uint width, uint height) {
+        public unsafe TextureRenderTargetGL41(OpenGL41Backend backend, uint width, uint height) {
             this._backend = backend;
             this._backend.CheckThread();
 
@@ -70,19 +69,27 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
 
             //Generate a Texture
             this._textureId = this.gl.GenTexture();
+            this._backend.CheckError();
             this.gl.BindTexture(TextureTarget.Texture2D, this._textureId);
+            this._backend.CheckError();
             //Set it to Empty
             this.gl.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat.Rgb, width, height, 0, PixelFormat.Rgb, PixelType.UnsignedByte, null);
+            this._backend.CheckError();
             //Set The Filtering to nearest (apperantly necessary, idk)
             this.gl.TexParameterI(TextureTarget.Texture2D, GLEnum.TextureMagFilter, (int)GLEnum.Nearest);
+            this._backend.CheckError();
             this.gl.TexParameterI(TextureTarget.Texture2D, GLEnum.TextureMinFilter, (int)GLEnum.Nearest);
             this._backend.CheckError();
 
             //Generate the Depth buffer
             this._depthRenderBufferId = this.gl.GenRenderbuffer();
+            this._backend.CheckError();
             this.gl.BindRenderbuffer(RenderbufferTarget.Renderbuffer, this._depthRenderBufferId);
+            this._backend.CheckError();
             this.gl.RenderbufferStorage(RenderbufferTarget.Renderbuffer, InternalFormat.DepthComponent24, width, height);
+            this._backend.CheckError();
             this.gl.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, RenderbufferTarget.Renderbuffer, this._depthRenderBufferId);
+            this._backend.CheckError();
             //Connect the bound texture to the FrameBuffer object
             this.gl.FramebufferTexture(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, this._textureId, 0);
             this._backend.CheckError();
@@ -105,7 +112,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
             this.TargetHeight = height;
         }
 
-        ~TextureRenderTargetGL() {
+        ~TextureRenderTargetGL41() {
             DisposeQueue.Enqueue(this);
         }
 
@@ -138,7 +145,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Binds and sets a Lock so that the Target cannot be unbound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal TextureRenderTargetGL LockingBind() {
+        internal TextureRenderTargetGL41 LockingBind() {
             this.Bind();
             this.Lock();
 
@@ -148,7 +155,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Locks the Target so that other Targets cannot be bound/unbound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal TextureRenderTargetGL Lock() {
+        internal TextureRenderTargetGL41 Lock() {
             this.Locked = true;
 
             return this;
@@ -157,7 +164,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Unlocks the Target, so that other Targets can be bound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal TextureRenderTargetGL Unlock() {
+        internal TextureRenderTargetGL41 Unlock() {
             this.Locked = false;
 
             return this;
@@ -166,7 +173,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Uninds and unlocks the Target so that other Targets can be bound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal TextureRenderTargetGL UnlockingUnbind() {
+        internal TextureRenderTargetGL41 UnlockingUnbind() {
             this.Unlock();
             this.Unbind();
 
@@ -192,7 +199,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Retrieves the Texture from this RenderTarget
         /// </summary>
         /// <returns>Texture of this RenderTarget</returns>
-        public override Texture GetTexture() => new TextureGL(this._backend, this._textureId, this.TargetWidth, this.TargetHeight);
+        public override Texture GetTexture() => new TextureGL41(this._backend, this._textureId, this.TargetWidth, this.TargetHeight);
 
         private bool _isDisposed = false;
 

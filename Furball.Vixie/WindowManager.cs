@@ -75,14 +75,16 @@ namespace Furball.Vixie {
 
             ContextAPI api = this._backend switch {
                 Backend.OpenGLES   => ContextAPI.OpenGLES,
-                Backend.OpenGL     => ContextAPI.OpenGL,
                 Backend.Direct3D11 => ContextAPI.None,
+                Backend.OpenGL20   => ContextAPI.OpenGL,
+                Backend.OpenGL41   => ContextAPI.OpenGL,
                 _                  => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
             };
 
             ContextProfile profile = this._backend switch {
                 Backend.OpenGLES   => ContextProfile.Core,
-                Backend.OpenGL     => ContextProfile.Core,
+                Backend.OpenGL20   => ContextProfile.Compatability,
+                Backend.OpenGL41   => ContextProfile.Core,
                 Backend.Direct3D11 => ContextProfile.Core,
                 _                  => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
             };
@@ -90,27 +92,30 @@ namespace Furball.Vixie {
             ContextFlags flags = this._backend switch {
 #if DEBUG
                 Backend.OpenGLES   => ContextFlags.Debug,
-                Backend.OpenGL     => ContextFlags.Debug,
                 Backend.Direct3D11 => ContextFlags.Debug,
+                Backend.OpenGL20   => ContextFlags.Debug,
+                Backend.OpenGL41   => ContextFlags.Debug,
 #else
                 Backend.OpenGLES   => ContextFlags.Default,
-                Backend.OpenGL     => ContextFlags.Default,
                 Backend.Direct3D11 => ContextFlags.Default,
+                Backend.OpenGL20   => ContextFlags.Default,
+                Backend.OpenGL41   => ContextFlags.Default,
 #endif
-                _                => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
+                _                  => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
             };
 
             APIVersion version = this._backend switch {
-                Backend.OpenGLES   => new APIVersion(3, 0),
-                Backend.OpenGL     => new APIVersion(4, 1),
                 Backend.Direct3D11 => new APIVersion(11, 0),
+                Backend.OpenGLES   => new APIVersion(3,  0),
+                Backend.OpenGL20   => new APIVersion(2,  0),
+                Backend.OpenGL41   => new APIVersion(4,  1),
                 _                  => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
             };
 
             this._windowOptions.API = new GraphicsAPI(api, profile, flags, version);
 
             this.GameWindow = Window.Create(this._windowOptions);
-            
+
             this.GameWindow.FramebufferResize += newSize => {
                 this.UpdateProjectionAndSize(newSize.X, newSize.Y);
             };

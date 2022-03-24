@@ -2,15 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
-using Furball.Vixie.Graphics.Backends.OpenGL;
 using Silk.NET.OpenGL;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using Rectangle=System.Drawing.Rectangle;
 
-namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
-    public class TextureGL : Texture, IDisposable {
-        private readonly OpenGLBackend _backend;
+namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
+    public class TextureGL41 : Texture, IDisposable {
+        private readonly OpenGL41Backend _backend;
         /// <summary>
         /// All the Currently Bound Textures
         /// </summary>
@@ -84,7 +83,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Creates a Texture from a File
         /// </summary>
         /// <param name="filepath">Path to an Image</param>
-        public unsafe TextureGL(OpenGLBackend backend, string filepath) {
+        public unsafe TextureGL41(OpenGL41Backend backend, string filepath) {
             this._backend = backend;
             this.gl       = backend.GetGlApi();
 
@@ -103,7 +102,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Creates a Texture from a byte array which contains Image Data
         /// </summary>
         /// <param name="imageData">Image Data</param>
-        public unsafe TextureGL(OpenGLBackend backend, byte[] imageData, bool qoi = false) {
+        public unsafe TextureGL41(OpenGL41Backend backend, byte[] imageData, bool qoi = false) {
             this._backend = backend;
             this.gl       = backend.GetGlApi();
 
@@ -129,7 +128,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// <summary>
         /// Creates a Texture with a single White Pixel
         /// </summary>
-        public unsafe TextureGL(OpenGLBackend backend) {
+        public unsafe TextureGL41(OpenGL41Backend backend) {
             this._backend = backend;
             this._backend.CheckThread();
             
@@ -158,7 +157,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// </summary>
         /// <param name="width">Desired Width</param>
         /// <param name="height">Desired Height</param>
-        public unsafe TextureGL(OpenGLBackend backend, uint width, uint height) {
+        public unsafe TextureGL41(OpenGL41Backend backend, uint width, uint height) {
             this._backend = backend;
             this._backend.CheckThread();
             
@@ -184,7 +183,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Creates a Texture from a Stream which Contains Image Data
         /// </summary>
         /// <param name="stream">Image Data Stream</param>
-        public unsafe TextureGL(OpenGLBackend backend, Stream stream) {
+        public unsafe TextureGL41(OpenGL41Backend backend, Stream stream) {
             this._backend = backend;
             this.gl       = backend.GetGlApi();
 
@@ -200,7 +199,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
             this.Size = new Vector2(width, height);
         }
 
-        ~TextureGL() {
+        ~TextureGL41() {
             DisposeQueue.Enqueue(this);
         }
 
@@ -223,7 +222,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// <param name="textureId">OpenGL Texture ID</param>
         /// <param name="width">Width of the Texture</param>
         /// <param name="height">Height of the Texture</param>
-        internal TextureGL(OpenGLBackend backend, uint textureId, uint width, uint height) {
+        internal TextureGL41(OpenGL41Backend backend, uint textureId, uint width, uint height) {
             this.gl = backend.GetGlApi();
 
             this._backend  = backend;
@@ -259,7 +258,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// <param name="data">Data to put there</param>
         /// <typeparam name="pDataType">Type of the Data</typeparam>
         /// <returns>Self, used for chaining methods</returns>
-        public override unsafe TextureGL SetData<pDataType>(int level, pDataType[] data) {
+        public override unsafe TextureGL41 SetData<pDataType>(int level, pDataType[] data) {
             this.LockingBind();
 
             fixed(void* d = data)
@@ -280,7 +279,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// <param name="data">Data to put there</param>
         /// <typeparam name="pDataType">Type of Data to put</typeparam>
         /// <returns>Self, used for chaining methods</returns>
-        public override unsafe TextureGL SetData<pDataType>(int level, Rectangle rect, pDataType[] data) {
+        public override unsafe TextureGL41 SetData<pDataType>(int level, Rectangle rect, pDataType[] data) {
             this.LockingBind();
 
             fixed(void* d = data)
@@ -297,7 +296,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// </summary>
         /// <param name="textureSlot">Desired Texture Slot</param>
         /// <returns>Self, used for chaining methods</returns>
-        public TextureGL Bind(TextureUnit textureSlot = TextureUnit.Texture0) {
+        public TextureGL41 Bind(TextureUnit textureSlot = TextureUnit.Texture0) {
             if (this.Locked)
                 return null;
 
@@ -322,7 +321,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Binds and sets a Lock so that the Texture cannot be unbound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal TextureGL LockingBind() {
+        internal TextureGL41 LockingBind() {
             this.Bind();
             this.Lock();
 
@@ -332,7 +331,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Locks the Texture so that other Textures cannot be bound/unbound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal TextureGL Lock() {
+        internal TextureGL41 Lock() {
             this.Locked = true;
 
             return this;
@@ -341,7 +340,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Unlocks the Texture, so that other Textures can be bound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal TextureGL Unlock() {
+        internal TextureGL41 Unlock() {
             this.Locked = false;
 
             return this;
@@ -350,7 +349,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Uninds and unlocks the Texture so that other Textures can be bound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal TextureGL UnlockingUnbind() {
+        internal TextureGL41 UnlockingUnbind() {
             this.Unlock();
             this.Unbind();
 
@@ -361,7 +360,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL.Abstractions {
         /// Unbinds the Texture
         /// </summary>
         /// <returns>Self, used for chaining methods</returns>
-        public TextureGL Unbind() {
+        public TextureGL41 Unbind() {
             if (this.Locked)
                 return null;
 
