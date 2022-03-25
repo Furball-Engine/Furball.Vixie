@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Numerics;
+using Furball.Vixie.Graphics.Backends.Veldrid.Abstractions;
 using Furball.Vixie.Graphics.Renderers;
 using Kettu;
 using Silk.NET.Input.Extensions;
@@ -24,6 +25,8 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         private  IWindow         _window;
         private  ImGuiController _imgui;
 
+        internal ResourceSet SamplerResourceSet;
+        
         public override void Initialize(IWindow window) {
             this._window = window;
             
@@ -97,6 +100,16 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             }
 
             this._imgui = new ImGuiController(this.GraphicsDevice, this.GraphicsDevice.SwapchainFramebuffer.OutputDescription, window, Global.GameInstance._inputContext);
+
+            for (int i = 0; i < MAX_TEXTURE_UNITS; i++) {
+                ResourceLayout layout = this.ResourceFactory.CreateResourceLayout(new(new ResourceLayoutElementDescription($"tex_{i}", ResourceKind.TextureReadOnly, ShaderStages.Fragment)));
+
+                TextureVeldrid.ResourceLayouts[i] = layout;
+            }
+
+            ResourceLayout samplerLayout = this.ResourceFactory.CreateResourceLayout(new(new ResourceLayoutElementDescription("tex_sampler", ResourceKind.Sampler, ShaderStages.Fragment)));
+
+            this.SamplerResourceSet = this.ResourceFactory.CreateResourceSet(new(samplerLayout, this.GraphicsDevice.Aniso4xSampler));
         }
         
         public override void Cleanup() {
@@ -115,15 +128,19 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         public override IQuadRenderer CreateTextureRenderer() => throw new System.NotImplementedException();
         public override ILineRenderer CreateLineRenderer()    => throw new System.NotImplementedException();
 
+        public const int MAX_TEXTURE_UNITS = 8;
+        
         public override int QueryMaxTextureUnits() {
             //this is a trick we call
             //lying
-            return 8;
+            return MAX_TEXTURE_UNITS;
         }
 
         public override void BeginScene() {
             this.BackendCommandList.Begin();
             this.BackendCommandList.SetFramebuffer(this.GraphicsDevice.SwapchainFramebuffer);
+            
+            this.BackendCommandList.SetFullViewports();
         }
 
         public override void EndScene() {

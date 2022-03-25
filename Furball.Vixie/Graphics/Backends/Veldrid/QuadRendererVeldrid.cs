@@ -44,6 +44,40 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         private readonly DeviceBuffer _projectionBuffer;
         private readonly ResourceSet  _projectionBufferResourceSet;
         
+        private readonly DeviceBuffer _instanceVertexBuffer;
+        private readonly DeviceBuffer _vertexBuffer;//TODO: maybe this can be static?
+        private readonly DeviceBuffer _indexBuffer;//TODO: maybe this can be static?
+
+        private static ushort[] _Indicies = new ushort[] {
+            //Tri 1
+            0, 1, 2,
+            //Tri 2
+            2, 3, 0
+        };
+
+        private static Vertex[] _Vertices = new Vertex[] {
+            //Bottom left
+            new() {
+                VertexPosition    = new(0, 1),
+                TextureCoordinate = new(0, 1)
+            },
+            //Bottom right
+            new() {
+                VertexPosition    = new(1, 1),
+                TextureCoordinate = new(1, 1)
+            },
+            //Top right
+            new() {
+                VertexPosition    = new(1, 0),
+                TextureCoordinate = new(1, 0)
+            },
+            //Top left
+            new() {
+                VertexPosition    = new(0, 0),
+                TextureCoordinate = new(0, 0)
+            }
+        };
+        
         public unsafe QuadRendererVeldrid(VeldridBackend backend) {
             this._backend = backend;
 
@@ -75,6 +109,21 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
                 InstanceStepRate = 1
             };
 
+            #region create projection buffer
+            BufferDescription projBufDesc = new BufferDescription((uint)sizeof(Matrix4x4), BufferUsage.UniformBuffer);
+            this._projectionBuffer = this._backend.ResourceFactory.CreateBuffer(projBufDesc);
+            
+            ResourceSetDescription projBufResourceSetDesc = new() {
+                BoundResources = new[] {
+                    this._projectionBuffer
+                },
+                Layout = this._backend.ResourceFactory.CreateResourceLayout(new(new[] {
+                    new ResourceLayoutElementDescription("ProjectionMatrix", ResourceKind.UniformBuffer, ShaderStages.Fragment)
+                }))
+            };
+            this._projectionBufferResourceSet = this._backend.ResourceFactory.CreateResourceSet(projBufResourceSetDesc);
+            #endregion
+
             GraphicsPipelineDescription pipelineDescription = new() {
                 ShaderSet = new ShaderSetDescription {
                     Shaders = shaders,
@@ -85,33 +134,48 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
                 Outputs           = backend.GraphicsDevice.SwapchainFramebuffer.OutputDescription,
                 BlendState        = BlendStateDescription.SingleAlphaBlend,
                 PrimitiveTopology = PrimitiveTopology.TriangleList,
-                RasterizerState   = new RasterizerStateDescription(FaceCullMode.None, PolygonFillMode.Solid, FrontFace.Clockwise, false, true)
+                ResourceLayouts = new[] {
+                    projBufResourceSetDesc.Layout
+                },
+                RasterizerState = new RasterizerStateDescription(FaceCullMode.None, PolygonFillMode.Solid, FrontFace.Clockwise, false, true)
             };
 
             this._pipeline = backend.ResourceFactory.CreateGraphicsPipeline(pipelineDescription);
 
-            BufferDescription projBufDesc = new BufferDescription((uint)sizeof(Matrix4x4), BufferUsage.UniformBuffer);
-            this._projectionBuffer = this._backend.ResourceFactory.CreateBuffer(projBufDesc);
+            this._boundTextures = new TextureVeldrid[backend.QueryMaxTextureUnits()];
 
-            ResourceSetDescription projBufResourceSetDesc = new() {
-                BoundResources = new[] {
-                    this._projectionBuffer
-                },
-                Layout = this._backend.ResourceFactory.CreateResourceLayout(new(new[] {
-                    new ResourceLayoutElementDescription("ProjectionMatrix", ResourceKind.UniformBuffer, ShaderStages.Fragment)
-                }))
-            };
-            this._projectionBufferResourceSet = this._backend.ResourceFactory.CreateResourceSet(projBufResourceSetDesc);
+            #region Create render buffers
+            BufferDescription vtxBufferDesc         = new BufferDescription((uint)sizeof(Vertex)       * 4,             BufferUsage.VertexBuffer);
+            BufferDescription instanceVtxBufferDesc = new BufferDescription((uint)sizeof(InstanceData) * NUM_INSTANCES, BufferUsage.VertexBuffer);
 
-            this._boundTextures = new Texture[backend.QueryMaxTextureUnits()];
+            BufferDescription indexBufferDesc = new BufferDescription((uint)sizeof(ushort) * 6, BufferUsage.IndexBuffer);
+            
+            this._vertexBuffer = this._backend.ResourceFactory.CreateBuffer(vtxBufferDesc);
+            this._instanceVertexBuffer = this._backend.ResourceFactory.CreateBuffer(instanceVtxBufferDesc);
+
+            this._indexBuffer = this._backend.ResourceFactory.CreateBuffer(indexBufferDesc);
+            
+            //Fill our vertex and index buffer
+            this._backend.GraphicsDevice.UpdateBuffer(this._vertexBuffer, 0, _Vertices);
+            this._backend.GraphicsDevice.UpdateBuffer(this._indexBuffer,  0, _Indicies);
+            #endregion
         }
         
         public void Begin() {
             this.IsBegun = true;
+            
+            this._backend.BackendCommandList.SetPipeline(this._pipeline);
 
             //Update the UBO with the projection matrix
             this._backend.BackendCommandList.UpdateBuffer(this._projectionBuffer, 0, this._backend.ProjectionMatrix);
             this._backend.BackendCommandList.SetGraphicsResourceSet(0, this._projectionBufferResourceSet);
+            
+            //Set the index buffer
+            this._backend.BackendCommandList.SetIndexBuffer(this._indexBuffer, IndexFormat.UInt16);
+            //Set the main vertex buffer
+            this._backend.BackendCommandList.SetVertexBuffer(0, this._vertexBuffer);
+            //Set the vertex buffer that contains our instance data
+            this._backend.BackendCommandList.SetVertexBuffer(1, this._instanceVertexBuffer);
         }
 
         public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
@@ -119,7 +183,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
                 throw new Exception("Begin() has not been called!");
 
             //Ignore calls with invalid textures
-            if (texture == null || texture is not TextureVeldrid)
+            if (texture == null || texture is not TextureVeldrid textureVeldrid)
                 return;
 
             if (this._instances >= NUM_INSTANCES || this._usedTextures == this._backend.QueryMaxTextureUnits()) {
@@ -131,7 +195,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             this._instanceData[this._instances].InstanceColor                 = colorOverride;
             this._instanceData[this._instances].InstanceRotation              = rotation;
             this._instanceData[this._instances].InstanceRotationOrigin        = rotOrigin;
-            this._instanceData[this._instances].InstanceTextureId             = this.GetTextureId(texture);
+            this._instanceData[this._instances].InstanceTextureId             = this.GetTextureId(textureVeldrid);
             this._instanceData[this._instances].InstanceTextureRectPosition.X = 0;
             this._instanceData[this._instances].InstanceTextureRectPosition.Y = 0;
             this._instanceData[this._instances].InstanceTextureRectSize.X     = 1;
@@ -140,7 +204,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             this._instances++;
         }
         
-        private int GetTextureId(Texture tex) {
+        private int GetTextureId(TextureVeldrid tex) {
             if(this._usedTextures != 0)
                 for (int i = 0; i < this._usedTextures; i++) {
                     Texture tex2 = this._boundTextures[i];
@@ -155,9 +219,9 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             return this._usedTextures - 1;
         }
 
-        private          int            _instances    = 0;
+        private          uint            _instances    = 0;
         private readonly InstanceData[] _instanceData = new InstanceData[NUM_INSTANCES];
-        private readonly Texture[]      _boundTextures;
+        private readonly TextureVeldrid[]      _boundTextures;
         private          int            _usedTextures = 0;
 
         public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, Rectangle sourceRect, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
@@ -165,7 +229,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
                 throw new Exception("Begin() has not been called!");
 
             //Ignore calls with invalid textures
-            if (texture == null || texture is not TextureVeldrid)
+            if (texture == null || texture is not TextureVeldrid textureVeldrid)
                 return;
 
             if (this._instances >= NUM_INSTANCES || this._usedTextures == this._backend.QueryMaxTextureUnits()) {
@@ -185,7 +249,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             this._instanceData[this._instances].InstanceColor                 = colorOverride;
             this._instanceData[this._instances].InstanceRotation              = rotation;
             this._instanceData[this._instances].InstanceRotationOrigin        = rotOrigin;
-            this._instanceData[this._instances].InstanceTextureId             = this.GetTextureId(texture);
+            this._instanceData[this._instances].InstanceTextureId             = this.GetTextureId(textureVeldrid);
             this._instanceData[this._instances].InstanceTextureRectPosition.X = (float)sourceRect.X      / texture.Width;
             this._instanceData[this._instances].InstanceTextureRectPosition.Y = (float)sourceRect.Y      / texture.Height;
             this._instanceData[this._instances].InstanceTextureRectSize.X     = (float)sourceRect.Width  / texture.Width;
@@ -196,8 +260,26 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         
         private const int NUM_INSTANCES = 1024;
 
-        private void Flush() {
+        private unsafe void Flush() {
             if (this._instances == 0) return;
+
+            //Iterate through all used textures and bind them
+            for (int i = 0; i < this._usedTextures; i++) {
+                //Bind the texture to the resource sets
+                this._backend.BackendCommandList.SetGraphicsResourceSet((uint)(i + 1), this._boundTextures[i].GetResourceSet(this._backend, i));
+            }
+            //Sets the last slot to the sampler
+            this._backend.BackendCommandList.SetGraphicsResourceSet(9, this._backend.SamplerResourceSet);
+
+            //Update the vertex buffer with just the data we use
+            fixed (void* ptr = this._instanceData)
+                this._backend.BackendCommandList.UpdateBuffer(this._instanceVertexBuffer, 0, (IntPtr)ptr, (uint)(sizeof(InstanceData) * this._instances));
+
+            //Draw the data to the screen
+            this._backend.BackendCommandList.DrawIndexed(6, this._instances, 0, 0, 0);
+            
+            this._instances    = 0;
+            this._usedTextures = 0;
         }
 
         public void End() {
@@ -205,7 +287,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             this.IsBegun = false;
         }
 
-        private          bool        _isDisposed = false;
+        private bool _isDisposed = false;
         public void Dispose() {
             if (this._isDisposed) return;
         }
