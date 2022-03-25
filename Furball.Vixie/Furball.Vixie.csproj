@@ -103,6 +103,16 @@
         <EmbeddedResource Include="Graphics\Backends\Veldrid\ImGuiShaders\SPIR-V\imgui-vertex.spv"> 
             <LogicalName>imgui-vertex.spv</LogicalName>
         </EmbeddedResource>
+        <None Remove="ShaderCode\Veldrid\FragmentShader.glsl" />
+        <EmbeddedResource Include="ShaderCode\Veldrid\FragmentShader.glsl" />
+        <None Remove="ShaderCode\Veldrid\VertexShader.glsl" />
+        <EmbeddedResource Include="ShaderCode\Veldrid\VertexShader.glsl" />
+        <None Remove="ShaderCode\Veldrid\Lines\GeometryShader.glsl" />
+        <EmbeddedResource Include="ShaderCode\Veldrid\Lines\GeometryShader.glsl" />
+        <None Remove="ShaderCode\Veldrid\Lines\FragmentShader.glsl" />
+        <EmbeddedResource Include="ShaderCode\Veldrid\Lines\FragmentShader.glsl" />
+        <None Remove="ShaderCode\Veldrid\Lines\VertexShader.glsl" />
+        <EmbeddedResource Include="ShaderCode\Veldrid\Lines\VertexShader.glsl" />
         
     </ItemGroup>
 

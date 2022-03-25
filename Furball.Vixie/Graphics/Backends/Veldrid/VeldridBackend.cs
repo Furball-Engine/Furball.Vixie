@@ -105,6 +105,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         
         public override void HandleWindowSizeChange(int width, int height) {
             this.GraphicsDevice.ResizeMainWindow((uint)width, (uint)height);
+            
             this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, 0, height, 1f, 0f);
         }
 
@@ -113,7 +114,12 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         }
         public override IQuadRenderer CreateTextureRenderer() => throw new System.NotImplementedException();
         public override ILineRenderer CreateLineRenderer()    => throw new System.NotImplementedException();
-        public override int           QueryMaxTextureUnits()  => throw new System.NotImplementedException();
+
+        public override int QueryMaxTextureUnits() {
+            //this is a trick we call
+            //lying
+            return 8;
+        }
 
         public override void BeginScene() {
             this.BackendCommandList.Begin();
