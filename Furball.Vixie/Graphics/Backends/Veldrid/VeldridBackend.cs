@@ -124,7 +124,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
 
             this.BlankResourceSet = this.ResourceFactory.CreateResourceSet(new(blankLayout, (this.CreateWhitePixelTexture() as TextureVeldrid).Texture));
 
-            this.SamplerResourceLayout = this.ResourceFactory.CreateResourceLayout(new(new ResourceLayoutElementDescription("tex_sampler", ResourceKind.Sampler, ShaderStages.Fragment)));
+            this.SamplerResourceLayout = this.ResourceFactory.CreateResourceLayout(new(new ResourceLayoutElementDescription("TextureSampler", ResourceKind.Sampler, ShaderStages.Fragment)));
 
             this.SamplerResourceSet = this.ResourceFactory.CreateResourceSet(new(this.SamplerResourceLayout, this.GraphicsDevice.Aniso4xSampler));
         }
