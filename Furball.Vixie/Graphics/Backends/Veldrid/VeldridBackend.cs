@@ -46,6 +46,8 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             this.ResourceFactory    = this.GraphicsDevice.ResourceFactory;
             this.BackendCommandList = this.ResourceFactory.CreateCommandList();
 
+            //we do a little trolling
+            this.GraphicsDevice.SyncToVerticalBlank = true;
             this.GraphicsDevice.SyncToVerticalBlank = false;
 
             var features = this.GraphicsDevice.Features;
