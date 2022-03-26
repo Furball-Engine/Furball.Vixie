@@ -59,22 +59,22 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             //Bottom left
             new() {
                 VertexPosition    = new(0, 1),
-                TextureCoordinate = new(0, 1)
+                TextureCoordinate = new(0, 0)
             },
             //Bottom right
             new() {
                 VertexPosition    = new(1, 1),
-                TextureCoordinate = new(1, 1)
+                TextureCoordinate = new(1, 0)
             },
             //Top right
             new() {
                 VertexPosition    = new(1, 0),
-                TextureCoordinate = new(1, 0)
+                TextureCoordinate = new(1, 1)
             },
             //Top left
             new() {
                 VertexPosition    = new(0, 0),
-                TextureCoordinate = new(0, 0)
+                TextureCoordinate = new(0, 1)
             }
         };
         
@@ -118,7 +118,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
                     this._projectionBuffer
                 },
                 Layout = this._backend.ResourceFactory.CreateResourceLayout(new(new[] {
-                    new ResourceLayoutElementDescription("ProjectionMatrix", ResourceKind.UniformBuffer, ShaderStages.Fragment)
+                    new ResourceLayoutElementDescription("ProjectionMatrixUniform", ResourceKind.UniformBuffer, ShaderStages.Fragment)
                 }))
             };
             this._projectionBufferResourceSet = this._backend.ResourceFactory.CreateResourceSet(projBufResourceSetDesc);
@@ -135,9 +135,18 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
                 BlendState        = BlendStateDescription.SingleAlphaBlend,
                 PrimitiveTopology = PrimitiveTopology.TriangleList,
                 ResourceLayouts = new[] {
-                    projBufResourceSetDesc.Layout
+                    projBufResourceSetDesc.Layout,
+                    TextureVeldrid.ResourceLayouts[0],
+                    TextureVeldrid.ResourceLayouts[1],
+                    TextureVeldrid.ResourceLayouts[2],
+                    TextureVeldrid.ResourceLayouts[3],
+                    TextureVeldrid.ResourceLayouts[4],
+                    TextureVeldrid.ResourceLayouts[5],
+                    TextureVeldrid.ResourceLayouts[6],
+                    TextureVeldrid.ResourceLayouts[7],
+                    this._backend.SamplerResourceLayout
                 },
-                RasterizerState = new RasterizerStateDescription(FaceCullMode.None, PolygonFillMode.Solid, FrontFace.Clockwise, false, true)
+                RasterizerState = new RasterizerStateDescription(FaceCullMode.None, PolygonFillMode.Solid, FrontFace.Clockwise, true, true)
             };
 
             this._pipeline = backend.ResourceFactory.CreateGraphicsPipeline(pipelineDescription);
@@ -176,6 +185,10 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             this._backend.BackendCommandList.SetVertexBuffer(0, this._vertexBuffer);
             //Set the vertex buffer that contains our instance data
             this._backend.BackendCommandList.SetVertexBuffer(1, this._instanceVertexBuffer);
+
+            for (uint i = 0; i < VeldridBackend.MAX_TEXTURE_UNITS; i++) {
+                this._backend.BackendCommandList.SetGraphicsResourceSet(i + 1, this._backend.BlankResourceSet);
+            }
         }
 
         public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {

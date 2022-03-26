@@ -11,6 +11,7 @@ using Silk.NET.Windowing;
 using Silk.NET.Windowing.Extensions.Veldrid;
 using Veldrid;
 using Veldrid.MetalBindings;
+using Vulkan;
 using InputSnapshot=Silk.NET.Input.Extensions.InputSnapshot;
 
 namespace Furball.Vixie.Graphics.Backends.Veldrid {
@@ -25,19 +26,27 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         private  IWindow         _window;
         private  ImGuiController _imgui;
 
-        internal ResourceSet SamplerResourceSet;
+        internal ResourceLayout SamplerResourceLayout;
+        internal ResourceSet    SamplerResourceSet;
+        public   ResourceSet    BlankResourceSet;
         
         public override void Initialize(IWindow window) {
             this._window = window;
             
             GraphicsDeviceOptions options = new() {
-                SyncToVerticalBlank = window.VSync,
-                Debug               = window.API.Flags.HasFlag(ContextFlags.Debug)
+                SyncToVerticalBlank               = window.VSync,
+                Debug                             = window.API.Flags.HasFlag(ContextFlags.Debug),
+                ResourceBindingModel              = ResourceBindingModel.Improved,
+                PreferStandardClipSpaceYDirection = true,
             };
 
-            this.GraphicsDevice  = window.CreateGraphicsDevice(options, PrefferedBackend);
-            this.ResourceFactory = this.GraphicsDevice.ResourceFactory;
-            this.BackendCommandList     = this.ResourceFactory.CreateCommandList();
+            this.GraphicsDevice     = PrefferedBackend == global::Veldrid.GraphicsBackend.Vulkan 
+                                          ? VeldridWindow.CreateVulkanGraphicsDevice(options, window) 
+                                          : window.CreateGraphicsDevice(options, PrefferedBackend);
+            this.ResourceFactory    = this.GraphicsDevice.ResourceFactory;
+            this.BackendCommandList = this.ResourceFactory.CreateCommandList();
+
+            this.GraphicsDevice.SyncToVerticalBlank = false;
 
             var features = this.GraphicsDevice.Features;
             Logger.Log(
@@ -102,16 +111,24 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             this._imgui = new ImGuiController(this.GraphicsDevice, this.GraphicsDevice.SwapchainFramebuffer.OutputDescription, window, Global.GameInstance._inputContext);
 
             for (int i = 0; i < MAX_TEXTURE_UNITS; i++) {
-                ResourceLayout layout = this.ResourceFactory.CreateResourceLayout(new(new ResourceLayoutElementDescription($"tex_{i}", ResourceKind.TextureReadOnly, ShaderStages.Fragment)));
+                ResourceLayout layout = this.ResourceFactory.CreateResourceLayout(new(new ResourceLayoutElementDescription[] {
+                    new($"tex_{i}", ResourceKind.TextureReadOnly, ShaderStages.Fragment)
+                }));
 
                 TextureVeldrid.ResourceLayouts[i] = layout;
             }
+            
+            ResourceLayout blankLayout = this.ResourceFactory.CreateResourceLayout(new(new ResourceLayoutElementDescription[] {
+                new($"tex_blank", ResourceKind.TextureReadOnly, ShaderStages.Fragment)
+            }));
 
-            ResourceLayout samplerLayout = this.ResourceFactory.CreateResourceLayout(new(new ResourceLayoutElementDescription("tex_sampler", ResourceKind.Sampler, ShaderStages.Fragment)));
+            this.BlankResourceSet = this.ResourceFactory.CreateResourceSet(new(blankLayout, (this.CreateWhitePixelTexture() as TextureVeldrid).Texture));
 
-            this.SamplerResourceSet = this.ResourceFactory.CreateResourceSet(new(samplerLayout, this.GraphicsDevice.Aniso4xSampler));
+            this.SamplerResourceLayout = this.ResourceFactory.CreateResourceLayout(new(new ResourceLayoutElementDescription("tex_sampler", ResourceKind.Sampler, ShaderStages.Fragment)));
+
+            this.SamplerResourceSet = this.ResourceFactory.CreateResourceSet(new(this.SamplerResourceLayout, this.GraphicsDevice.Aniso4xSampler));
         }
-        
+
         public override void Cleanup() {
             this.GraphicsDevice.Dispose();
         }
@@ -119,13 +136,13 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         public override void HandleWindowSizeChange(int width, int height) {
             this.GraphicsDevice.ResizeMainWindow((uint)width, (uint)height);
             
-            this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, 0, height, 1f, 0f);
+            this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, height, 0, 1f, 0f);
         }
 
         public override void HandleFramebufferResize(int width, int height) {
             this.GraphicsDevice.ResizeMainWindow((uint)width, (uint)height);
         }
-        public override IQuadRenderer CreateTextureRenderer() => throw new System.NotImplementedException();
+        public override IQuadRenderer CreateTextureRenderer() => new QuadRendererVeldrid(this);
         public override ILineRenderer CreateLineRenderer()    => throw new System.NotImplementedException();
 
         public const int MAX_TEXTURE_UNITS = 8;
@@ -153,15 +170,20 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         }
 
         public override void Clear() {
-            this.BackendCommandList.ClearColorTarget(0, RgbaFloat.Black);
+            this.BackendCommandList.ClearColorTarget(0, RgbaFloat.DarkRed);
         }
         
         public override TextureRenderTarget CreateRenderTarget(uint width,     uint height)      => throw new System.NotImplementedException();
-        public override Texture             CreateTexture(byte[]    imageData, bool qoi = false) => throw new System.NotImplementedException();
-        public override Texture             CreateTexture(Stream    stream)             => throw new System.NotImplementedException();
-        public override Texture             CreateTexture(uint      width, uint height) => throw new System.NotImplementedException();
-        public override Texture             CreateTexture(string    filepath) => throw new System.NotImplementedException();
-        public override Texture             CreateWhitePixelTexture()         => throw new System.NotImplementedException();
+        
+        public override Texture CreateTexture(byte[] imageData, bool qoi = false) => new TextureVeldrid(this, imageData, qoi);
+
+        public override Texture CreateTexture(Stream stream) => new TextureVeldrid(this, stream);
+
+        public override Texture CreateTexture(uint width, uint height) => new TextureVeldrid(this, width, height);
+
+        public override Texture CreateTexture(string filepath) => new TextureVeldrid(this, filepath);
+
+        public override Texture CreateWhitePixelTexture() => new TextureVeldrid(this);
         
         public override void ImGuiUpdate(double deltaTime) {
             this._imgui.Update((float)deltaTime);

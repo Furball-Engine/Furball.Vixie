@@ -2,8 +2,10 @@ using System;
 using System.Numerics;
 using Furball.Vixie.Graphics.Backends;
 using Furball.Vixie.Graphics.Backends.Veldrid;
+using Silk.NET.GLFW;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
+using Silk.NET.Windowing.Extensions.Veldrid;
 using Silk.NET.Windowing.Glfw;
 using Silk.NET.Windowing.Sdl;
 
@@ -69,49 +71,19 @@ namespace Furball.Vixie {
             GraphicsBackend.Current.HandleWindowSizeChange(width, height);
         }
 
-        private ContextAPI GetVeldridContextApi(Veldrid.GraphicsBackend gb) {
-            switch (gb) {
-                case Veldrid.GraphicsBackend.OpenGL:
-                    return ContextAPI.OpenGL;
-                case Veldrid.GraphicsBackend.OpenGLES:
-                    return ContextAPI.OpenGLES;
-                case Veldrid.GraphicsBackend.Direct3D11:
-                case Veldrid.GraphicsBackend.Vulkan:
-                case Veldrid.GraphicsBackend.Metal:
-                    return ContextAPI.None;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof (gb), gb, null);
-            }
-        }
-
-        private APIVersion GetVeldridApiVersion(Veldrid.GraphicsBackend gb) {
-            switch (gb) {
-                case Veldrid.GraphicsBackend.OpenGL:
-                    return new(4, 0);
-                case Veldrid.GraphicsBackend.OpenGLES:
-                    return new(3, 0);
-                case Veldrid.GraphicsBackend.Direct3D11:
-                case Veldrid.GraphicsBackend.Vulkan:
-                case Veldrid.GraphicsBackend.Metal:
-                    return new(1, 0);
-                default:
-                    throw new ArgumentOutOfRangeException(nameof (gb), gb, null);
-            }
-        }
-
         /// <summary>
         /// Creates the Window and grabs the OpenGL API of Window
         /// </summary>
         public void Create() {
-            GlfwWindowing.Use(); //dont tell perskey and kai that i do this! shhhhhhhhhhhhhhh
+            SdlWindowing.Use(); //dont tell perskey and kai that i do this! shhhhhhhhhhhhhhh
 
-            VeldridBackend.PrefferedBackend = Veldrid.GraphicsBackend.OpenGLES;
+            VeldridBackend.PrefferedBackend = Veldrid.GraphicsBackend.Vulkan;
             
             ContextAPI api = this._backend switch {
                 Backend.OpenGLES   => ContextAPI.OpenGLES,
                 Backend.OpenGL20   => ContextAPI.OpenGL,
                 Backend.OpenGL41   => ContextAPI.OpenGL,
-                Backend.Veldrid    => GetVeldridContextApi(VeldridBackend.PrefferedBackend),
+                Backend.Veldrid    => ContextAPI.None,
                 Backend.Direct3D11 => ContextAPI.None,
                 _                  => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
             };
@@ -143,16 +115,22 @@ namespace Furball.Vixie {
             };
 
             APIVersion version = this._backend switch {
-                Backend.OpenGLES   => new APIVersion(3, 0),
-                Backend.OpenGL20   => new APIVersion(2, 0),
-                Backend.OpenGL41   => new APIVersion(4, 1),
-                Backend.Veldrid    => GetVeldridApiVersion(VeldridBackend.PrefferedBackend),
+                Backend.OpenGLES   => new APIVersion(3,  0),
+                Backend.OpenGL20   => new APIVersion(2,  0),
+                Backend.OpenGL41   => new APIVersion(4,  1),
+                Backend.Veldrid    => new APIVersion(0,  0),
                 Backend.Direct3D11 => new APIVersion(11, 0),
                 _                  => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
             };
 
             this._windowOptions.API = new GraphicsAPI(api, profile, flags, version);
 
+            if (this._backend == Backend.Veldrid) {
+                this._windowOptions.API = VeldridBackend.PrefferedBackend.ToGraphicsAPI();
+
+                this._windowOptions.ShouldSwapAutomatically = false;
+            }
+            
             this.GameWindow = Window.Create(this._windowOptions);
 
             this.GameWindow.FramebufferResize += newSize => {
