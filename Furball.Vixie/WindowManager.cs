@@ -77,7 +77,7 @@ namespace Furball.Vixie {
         public void Create() {
             SdlWindowing.Use(); //dont tell perskey and kai that i do this! shhhhhhhhhhhhhhh
 
-            VeldridBackend.PrefferedBackend = Veldrid.GraphicsBackend.Vulkan;
+            VeldridBackend.PrefferedBackend = Veldrid.GraphicsBackend.OpenGL;
             
             ContextAPI api = this._backend switch {
                 Backend.OpenGLES   => ContextAPI.OpenGLES,
@@ -133,6 +133,10 @@ namespace Furball.Vixie {
             
             this.GameWindow = Window.Create(this._windowOptions);
 
+            if (this._backend == Backend.Veldrid) {
+                this.GameWindow.IsContextControlDisabled = true;
+            }
+            
             this.GameWindow.FramebufferResize += newSize => {
                 this.UpdateProjectionAndSize(newSize.X, newSize.Y);
             };
