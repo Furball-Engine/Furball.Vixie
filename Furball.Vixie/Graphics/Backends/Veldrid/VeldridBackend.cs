@@ -40,9 +40,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
                 PreferStandardClipSpaceYDirection = true,
             };
 
-            this.GraphicsDevice     = PrefferedBackend == global::Veldrid.GraphicsBackend.Vulkan 
-                                          ? VeldridWindow.CreateVulkanGraphicsDevice(options, window) 
-                                          : window.CreateGraphicsDevice(options, PrefferedBackend);
+            this.GraphicsDevice     = window.CreateGraphicsDevice(options, PrefferedBackend);
             this.ResourceFactory    = this.GraphicsDevice.ResourceFactory;
             this.BackendCommandList = this.ResourceFactory.CreateCommandList();
 
@@ -57,6 +55,9 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             Logger.Log($"Using backend {this.GraphicsDevice.BackendType}", LoggerLevelVeldrid.InstanceInfo);
             Logger.Log($"Vendor Name: {this.GraphicsDevice.VendorName}",   LoggerLevelVeldrid.InstanceInfo);
 
+            if (!features.GeometryShader)
+                throw new Exception("Your GPU does not support Geometry Shaders with this veldrid backend! Try a different one!");
+            
             switch (this.GraphicsDevice.BackendType) {
                 case global::Veldrid.GraphicsBackend.Direct3D11: {
                     //we dont actually get anything useful from this :/
