@@ -45,8 +45,10 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             this.BackendCommandList = this.ResourceFactory.CreateCommandList();
 
             //we do a little trolling
-            this.GraphicsDevice.SyncToVerticalBlank = true;
-            this.GraphicsDevice.SyncToVerticalBlank = false;
+            if(this.GraphicsDevice.BackendType is global::Veldrid.GraphicsBackend.OpenGL or global::Veldrid.GraphicsBackend.OpenGLES && !window.VSync) {
+                this.GraphicsDevice.SyncToVerticalBlank = true;
+                this.GraphicsDevice.SyncToVerticalBlank = false;
+            }
 
             var features = this.GraphicsDevice.Features;
             Logger.Log(
