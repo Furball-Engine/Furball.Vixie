@@ -9,8 +9,8 @@ layout(set = 0, binding = 0) uniform ProjectionMatrixUniform
 };
 
 //The main vertices
-layout(location = 0) in      vec2  VertexPosition;
-layout(location = 1) in      vec2  TextureCoordinate;
+layout(location = 0) in vec2 VertexPosition;
+layout(location = 1) in vec2 TextureCoordinate;
 
 //The instance data
 layout(location = 2) in vec2  InstancePosition;

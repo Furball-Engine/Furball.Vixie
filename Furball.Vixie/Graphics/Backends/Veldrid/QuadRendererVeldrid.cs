@@ -118,7 +118,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
                     this._projectionBuffer
                 },
                 Layout = this._backend.ResourceFactory.CreateResourceLayout(new(new[] {
-                    new ResourceLayoutElementDescription("ProjectionMatrixUniform", ResourceKind.UniformBuffer, ShaderStages.Fragment)
+                    new ResourceLayoutElementDescription("ProjectionMatrixUniform", ResourceKind.UniformBuffer, ShaderStages.Vertex)
                 }))
             };
             this._projectionBufferResourceSet = this._backend.ResourceFactory.CreateResourceSet(projBufResourceSetDesc);
