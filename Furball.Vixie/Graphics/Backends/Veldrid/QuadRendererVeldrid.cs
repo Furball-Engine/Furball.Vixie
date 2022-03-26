@@ -90,21 +90,21 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             Shader[] shaders = this._backend.ResourceFactory.CreateFromSpirv(vertexShaderDescription, fragmentShaderDescription);
 
             VertexLayoutDescription vtxLayout = new VertexLayoutDescription(new[] {
-                new VertexElementDescription("VertexPosition", VertexElementFormat.Float2, VertexElementSemantic.Position), 
+                new VertexElementDescription("VertexPosition",    VertexElementFormat.Float2, VertexElementSemantic.TextureCoordinate), 
                 new VertexElementDescription("TextureCoordinate", VertexElementFormat.Float2, VertexElementSemantic.TextureCoordinate)
             }) {
                 InstanceStepRate = 0
             };
 
             VertexLayoutDescription instanceVtxLayout = new VertexLayoutDescription(new[] {
-                new VertexElementDescription("InstancePosition",            VertexElementFormat.Float2, VertexElementSemantic.Position), 
+                new VertexElementDescription("InstancePosition",            VertexElementFormat.Float2, VertexElementSemantic.TextureCoordinate), 
                 new VertexElementDescription("InstanceSize",                VertexElementFormat.Float2, VertexElementSemantic.TextureCoordinate),
-                new VertexElementDescription("InstanceColor",               VertexElementFormat.Float4, VertexElementSemantic.Color),
+                new VertexElementDescription("InstanceColor",               VertexElementFormat.Float4, VertexElementSemantic.TextureCoordinate),
                 new VertexElementDescription("InstanceTextureRectPosition", VertexElementFormat.Float2, VertexElementSemantic.TextureCoordinate),
                 new VertexElementDescription("InstanceTextureRectSize",     VertexElementFormat.Float2, VertexElementSemantic.TextureCoordinate),
                 new VertexElementDescription("InstanceRotationOrigin",      VertexElementFormat.Float2, VertexElementSemantic.TextureCoordinate),
                 new VertexElementDescription("InstanceRotation",            VertexElementFormat.Float1, VertexElementSemantic.TextureCoordinate),
-                new VertexElementDescription("InstanceTextureId",            VertexElementFormat.Int1, VertexElementSemantic.TextureCoordinate),
+                new VertexElementDescription("InstanceTextureId",           VertexElementFormat.Int1,   VertexElementSemantic.TextureCoordinate),
             }) {
                 InstanceStepRate = 1
             };
