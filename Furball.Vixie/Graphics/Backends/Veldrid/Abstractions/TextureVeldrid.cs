@@ -14,6 +14,8 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid.Abstractions {
             protected set;
         }
 
+        internal int UsedId = -1;
+
         public           ResourceSet[]    ResourceSets    = new ResourceSet[VeldridBackend.MAX_TEXTURE_UNITS];
         public static    ResourceLayout[] ResourceLayouts = new ResourceLayout[VeldridBackend.MAX_TEXTURE_UNITS];
         

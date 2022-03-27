@@ -218,6 +218,8 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         }
         
         private int GetTextureId(TextureVeldrid tex) {
+            if(tex.UsedId != -1) return tex.UsedId;
+            
             if(this._usedTextures != 0)
                 for (int i = 0; i < this._usedTextures; i++) {
                     Texture tex2 = this._boundTextures[i];
@@ -227,6 +229,9 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
                 }
 
             this._boundTextures[this._usedTextures] = tex;
+
+            tex.UsedId = this._usedTextures;
+            
             this._usedTextures++;
 
             return this._usedTextures - 1;
@@ -280,6 +285,8 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             for (int i = 0; i < this._usedTextures; i++) {
                 //Bind the texture to the resource sets
                 this._backend.BackendCommandList.SetGraphicsResourceSet((uint)(i + 1), this._boundTextures[i].GetResourceSet(this._backend, i));
+
+                this._boundTextures[i].UsedId = -1;
             }
             //Sets the last slot to the sampler
             this._backend.BackendCommandList.SetGraphicsResourceSet(9, this._backend.SamplerResourceSet);

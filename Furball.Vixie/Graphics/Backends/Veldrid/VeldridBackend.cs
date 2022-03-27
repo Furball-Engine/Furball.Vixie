@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Numerics;
 using Furball.Vixie.Graphics.Backends.Veldrid.Abstractions;
+using Furball.Vixie.Graphics.Exceptions;
 using Furball.Vixie.Graphics.Renderers;
 using Kettu;
 using Silk.NET.Input.Extensions;
@@ -58,7 +59,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             Logger.Log($"Vendor Name: {this.GraphicsDevice.VendorName}",   LoggerLevelVeldrid.InstanceInfo);
 
             if (!features.GeometryShader)
-                throw new Exception("Your GPU does not support Geometry Shaders with this veldrid backend! Try a different one!");
+                throw new GeometryShadersNotSupportedException();
             
             switch (this.GraphicsDevice.BackendType) {
                 case global::Veldrid.GraphicsBackend.Direct3D11: {
