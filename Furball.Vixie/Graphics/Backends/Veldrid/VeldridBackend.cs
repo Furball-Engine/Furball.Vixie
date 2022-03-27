@@ -149,7 +149,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             this.GraphicsDevice.ResizeMainWindow((uint)width, (uint)height);
         }
         public override IQuadRenderer CreateTextureRenderer() => new QuadRendererVeldrid(this);
-        public override ILineRenderer CreateLineRenderer()    => throw new System.NotImplementedException();
+        public override ILineRenderer CreateLineRenderer()    => new LineRendererVeldrid(this);
 
         public const int MAX_TEXTURE_UNITS = 8;
         

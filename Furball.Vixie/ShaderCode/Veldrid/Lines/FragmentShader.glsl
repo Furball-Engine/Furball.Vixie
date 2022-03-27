@@ -1,4 +1,4 @@
-#version 410
+#version 450
 
 layout(set = 1, binding = 0) uniform u_aa_radiusUniform {
     vec2 u_aa_radius;

@@ -17,9 +17,5 @@ void main()
 {
     v_col = col;
     v_line_width = pos_width.w;
-    gl_Position = u_ProjectionMatrix * vec4(pos_width.xyz, 1.0);
-
-    // This flips the position into the coordinate space we want
-    gl_Position.x *= vx_ModifierX;
-    gl_Position.y *= vx_ModifierY;
+    gl_Position = ProjectionMatrix * vec4(pos_width.xyz, 1.0);
 }
