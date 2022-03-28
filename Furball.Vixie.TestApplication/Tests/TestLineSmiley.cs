@@ -1,34 +1,31 @@
 using System;
-
 using System.Globalization;
-using System.Numerics;
 using Furball.Vixie.Graphics;
 using Furball.Vixie.Graphics.Backends;
 using Furball.Vixie.Graphics.Renderers;
 using ImGuiNET;
 
-
 namespace Furball.Vixie.TestApplication.Tests {
-    public class TestBatchedLineRendering : GameComponent {
-        private ILineRenderer _lineRendererGl;
-
+    public class TestLineSmiley : GameComponent {
+        private ILineRenderer renderer;
+        
         public override void Initialize() {
-            this._lineRendererGl = GraphicsBackend.Current.CreateLineRenderer();
-
+            this.renderer = GraphicsBackend.Current.CreateLineRenderer();
+            
             base.Initialize();
         }
 
         public override void Draw(double deltaTime) {
             GraphicsBackend.Current.Clear();
 
-            this._lineRendererGl.Begin();
-
-            for (int i = 0; i != 1280; i++) {
-                this._lineRendererGl.Draw(new Vector2(i, 0), new Vector2(1280 - i, 720), 4, Color.White);
-            }
-
-            this._lineRendererGl.End();
-
+            this.renderer.Begin();
+            
+            this.renderer.Draw(new(100, 100), new(100, 200), 2, Color.Blue);
+            this.renderer.Draw(new(200, 100), new(200, 200), 2, Color.Green);
+            this.renderer.Draw(new(100, 300), new(200, 300), 2, Color.Orange);
+            
+            this.renderer.End();
+            
             #region ImGui menu
 
             ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
@@ -41,14 +38,8 @@ namespace Furball.Vixie.TestApplication.Tests {
             }
 
             #endregion
-
+            
             base.Draw(deltaTime);
-        }
-
-        public override void Dispose() {
-            this._lineRendererGl.Dispose();
-
-            base.Dispose();
         }
     }
 }

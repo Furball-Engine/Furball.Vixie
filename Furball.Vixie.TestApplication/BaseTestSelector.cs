@@ -19,8 +19,8 @@ namespace Furball.Vixie.TestApplication {
                 this.BaseGame.Components.Remove(this);
             }
             
-            if (ImGui.Button("Batched Line Rendering Test")) {
-                this.BaseGame.Components.Add(new TestBatchedLineRendering());
+            if (ImGui.Button("Line Smiley Test")) {
+                this.BaseGame.Components.Add(new TestLineSmiley());
                 this.BaseGame.Components.Remove(this);
             }
             

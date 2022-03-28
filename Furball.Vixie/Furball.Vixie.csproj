@@ -33,7 +33,7 @@
       <PackageReference Include="Silk.NET.OpenGLES.ANGLE.Native" Version="2022.3.11" />
       <PackageReference Include="Silk.NET.OpenGLES.Extensions.ANGLE" Version="2.14.0" />
       <PackageReference Include="Silk.NET.Windowing" Version="2.14.0" />
-      <PackageReference Include="Silk.NET.Windowing.Extensions.Veldrid" Version="2.14.0-build2142.0" />
+      <PackageReference Include="Silk.NET.Windowing.Extensions.Veldrid" Version="2.14.0" />
       <PackageReference Include="SixLabors.ImageSharp" Version="2.0.0" />
       <PackageReference Include="Veldrid.ImGui" Version="5.72.0" />
       <PackageReference Include="Veldrid.SPIRV" Version="1.0.14" />
@@ -106,13 +106,12 @@
         <None Remove="ShaderCode\Veldrid\FragmentShader.glsl" />
         <EmbeddedResource Include="ShaderCode\Veldrid\FragmentShader.glsl" />
         <None Remove="ShaderCode\Veldrid\VertexShader.glsl" />
+        <EmbeddedResource Include="ShaderCode\Veldrid\Lines\FragmentShader.glsl" />
+        <EmbeddedResource Include="ShaderCode\Veldrid\Lines\VertexShader.glsl" />
         <EmbeddedResource Include="ShaderCode\Veldrid\VertexShader.glsl" />
         <None Remove="ShaderCode\Veldrid\Lines\GeometryShader.glsl" />
-        <EmbeddedResource Include="ShaderCode\Veldrid\Lines\GeometryShader.glsl" />
         <None Remove="ShaderCode\Veldrid\Lines\FragmentShader.glsl" />
-        <EmbeddedResource Include="ShaderCode\Veldrid\Lines\FragmentShader.glsl" />
         <None Remove="ShaderCode\Veldrid\Lines\VertexShader.glsl" />
-        <EmbeddedResource Include="ShaderCode\Veldrid\Lines\VertexShader.glsl" />
         
     </ItemGroup>
 

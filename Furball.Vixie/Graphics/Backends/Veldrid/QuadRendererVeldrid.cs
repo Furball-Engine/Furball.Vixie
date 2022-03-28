@@ -173,21 +173,21 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         public void Begin() {
             this.IsBegun = true;
             
-            this._backend.BackendCommandList.SetPipeline(this._pipeline);
+            this._backend.CommandList.SetPipeline(this._pipeline);
 
             //Update the UBO with the projection matrix
-            this._backend.BackendCommandList.UpdateBuffer(this._projectionBuffer, 0, this._backend.ProjectionMatrix);
-            this._backend.BackendCommandList.SetGraphicsResourceSet(0, this._projectionBufferResourceSet);
+            this._backend.CommandList.UpdateBuffer(this._projectionBuffer, 0, this._backend.ProjectionMatrix);
+            this._backend.CommandList.SetGraphicsResourceSet(0, this._projectionBufferResourceSet);
             
             //Set the index buffer
-            this._backend.BackendCommandList.SetIndexBuffer(this._indexBuffer, IndexFormat.UInt16);
+            this._backend.CommandList.SetIndexBuffer(this._indexBuffer, IndexFormat.UInt16);
             //Set the main vertex buffer
-            this._backend.BackendCommandList.SetVertexBuffer(0, this._vertexBuffer);
+            this._backend.CommandList.SetVertexBuffer(0, this._vertexBuffer);
             //Set the vertex buffer that contains our instance data
-            this._backend.BackendCommandList.SetVertexBuffer(1, this._instanceVertexBuffer);
+            this._backend.CommandList.SetVertexBuffer(1, this._instanceVertexBuffer);
 
             for (uint i = 0; i < VeldridBackend.MAX_TEXTURE_UNITS; i++) {
-                this._backend.BackendCommandList.SetGraphicsResourceSet(i + 1, this._backend.BlankResourceSet);
+                this._backend.CommandList.SetGraphicsResourceSet(i + 1, this._backend.WhitePixelResourceSet);
             }
         }
 
@@ -284,19 +284,19 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             //Iterate through all used textures and bind them
             for (int i = 0; i < this._usedTextures; i++) {
                 //Bind the texture to the resource sets
-                this._backend.BackendCommandList.SetGraphicsResourceSet((uint)(i + 1), this._boundTextures[i].GetResourceSet(this._backend, i));
+                this._backend.CommandList.SetGraphicsResourceSet((uint)(i + 1), this._boundTextures[i].GetResourceSet(this._backend, i));
 
                 this._boundTextures[i].UsedId = -1;
             }
             //Sets the last slot to the sampler
-            this._backend.BackendCommandList.SetGraphicsResourceSet(9, this._backend.SamplerResourceSet);
+            this._backend.CommandList.SetGraphicsResourceSet(9, this._backend.SamplerResourceSet);
 
             //Update the vertex buffer with just the data we use
             fixed (void* ptr = this._instanceData)
-                this._backend.BackendCommandList.UpdateBuffer(this._instanceVertexBuffer, 0, (IntPtr)ptr, (uint)(sizeof(InstanceData) * this._instances));
+                this._backend.CommandList.UpdateBuffer(this._instanceVertexBuffer, 0, (IntPtr)ptr, (uint)(sizeof(InstanceData) * this._instances));
 
             //Draw the data to the screen
-            this._backend.BackendCommandList.DrawIndexed(6, this._instances, 0, 0, 0);
+            this._backend.CommandList.DrawIndexed(6, this._instances, 0, 0, 0);
             
             this._instances    = 0;
             this._usedTextures = 0;

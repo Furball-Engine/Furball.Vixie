@@ -21,7 +21,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         
         internal GraphicsDevice  GraphicsDevice;
         internal ResourceFactory ResourceFactory;
-        internal CommandList     BackendCommandList;
+        internal CommandList     CommandList;
         
         internal Matrix4x4       ProjectionMatrix;
         private  IWindow         _window;
@@ -29,7 +29,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
 
         internal ResourceLayout SamplerResourceLayout;
         internal ResourceSet    SamplerResourceSet;
-        public   ResourceSet    BlankResourceSet;
+        public   ResourceSet    WhitePixelResourceSet;
         
         public override void Initialize(IWindow window) {
             this._window = window;
@@ -43,7 +43,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
 
             this.GraphicsDevice     = window.CreateGraphicsDevice(options, PrefferedBackend);
             this.ResourceFactory    = this.GraphicsDevice.ResourceFactory;
-            this.BackendCommandList = this.ResourceFactory.CreateCommandList();
+            this.CommandList = this.ResourceFactory.CreateCommandList();
 
             //we do a little trolling
             if(this.GraphicsDevice.BackendType is global::Veldrid.GraphicsBackend.OpenGL or global::Veldrid.GraphicsBackend.OpenGLES && !window.VSync) {
@@ -128,7 +128,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
                 new($"tex_blank", ResourceKind.TextureReadOnly, ShaderStages.Fragment)
             }));
 
-            this.BlankResourceSet = this.ResourceFactory.CreateResourceSet(new(blankLayout, (this.CreateWhitePixelTexture() as TextureVeldrid).Texture));
+            this.WhitePixelResourceSet = this.ResourceFactory.CreateResourceSet(new(blankLayout, (this.CreateWhitePixelTexture() as TextureVeldrid).Texture));
 
             this.SamplerResourceLayout = this.ResourceFactory.CreateResourceLayout(new(new ResourceLayoutElementDescription("TextureSampler", ResourceKind.Sampler, ShaderStages.Fragment)));
 
@@ -160,15 +160,15 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         }
 
         public override void BeginScene() {
-            this.BackendCommandList.Begin();
-            this.BackendCommandList.SetFramebuffer(this.GraphicsDevice.SwapchainFramebuffer);
+            this.CommandList.Begin();
+            this.CommandList.SetFramebuffer(this.GraphicsDevice.SwapchainFramebuffer);
             
-            this.BackendCommandList.SetFullViewports();
+            this.CommandList.SetFullViewports();
         }
 
         public override void EndScene() {
-            this.BackendCommandList.End();
-            this.GraphicsDevice.SubmitCommands(this.BackendCommandList);
+            this.CommandList.End();
+            this.GraphicsDevice.SubmitCommands(this.CommandList);
         }
 
         public override void Present() {
@@ -176,7 +176,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         }
 
         public override void Clear() {
-            this.BackendCommandList.ClearColorTarget(0, RgbaFloat.DarkRed);
+            this.CommandList.ClearColorTarget(0, RgbaFloat.Black);
         }
         
         public override TextureRenderTarget CreateRenderTarget(uint width,     uint height)      => throw new System.NotImplementedException();
@@ -195,7 +195,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             this._imgui.Update((float)deltaTime);
         }
         public override void ImGuiDraw(double deltaTime) {
-            this._imgui.Render(this.GraphicsDevice, this.BackendCommandList);
+            this._imgui.Render(this.GraphicsDevice, this.CommandList);
         }
     }
 }
