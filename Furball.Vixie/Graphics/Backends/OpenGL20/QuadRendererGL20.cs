@@ -178,8 +178,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
             this.BatchedTextureIds[this.BatchedQuads]           = GetTextureId(textureGl);
             this.BatchedTextureCoordinates[this.BatchedQuads].X = 0;
             this.BatchedTextureCoordinates[this.BatchedQuads].Y = 0;
-            this.BatchedTextureCoordinates[this.BatchedQuads].Z = 1;
-            this.BatchedTextureCoordinates[this.BatchedQuads].W = 1;
+            this.BatchedTextureCoordinates[this.BatchedQuads].Z = texFlip == TextureFlip.FlipHorizontal ? -1 : 1;
+            this.BatchedTextureCoordinates[this.BatchedQuads].W = texFlip == TextureFlip.FlipVertical ? -1 : 1;
 
             this.BatchedQuads++;
         }
@@ -215,8 +215,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
             this.BatchedTextureIds[this.BatchedQuads]           = GetTextureId(textureGl);
             this.BatchedTextureCoordinates[this.BatchedQuads].X = (float)sourceRect.X      / textureGl.Width;
             this.BatchedTextureCoordinates[this.BatchedQuads].Y = (float)sourceRect.Y      / textureGl.Height;
-            this.BatchedTextureCoordinates[this.BatchedQuads].Z = (float)sourceRect.Width  / textureGl.Width;
-            this.BatchedTextureCoordinates[this.BatchedQuads].W = (float)sourceRect.Height / textureGl.Height;
+            this.BatchedTextureCoordinates[this.BatchedQuads].Z = (float)sourceRect.Width  / textureGl.Width * (texFlip == TextureFlip.FlipHorizontal ? -1 : 1);
+            this.BatchedTextureCoordinates[this.BatchedQuads].W = (float)sourceRect.Height / textureGl.Height * (texFlip == TextureFlip.FlipVertical ? -1 : 1);
 
             this.BatchedQuads++;
         }

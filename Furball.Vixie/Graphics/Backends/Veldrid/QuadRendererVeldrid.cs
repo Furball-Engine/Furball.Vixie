@@ -211,9 +211,12 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             this._instanceData[this._instances].InstanceTextureId             = this.GetTextureId(textureVeldrid);
             this._instanceData[this._instances].InstanceTextureRectPosition.X = 0;
             this._instanceData[this._instances].InstanceTextureRectPosition.Y = 0;
-            this._instanceData[this._instances].InstanceTextureRectSize.X     = 1;
-            this._instanceData[this._instances].InstanceTextureRectSize.Y     = 1;
+            this._instanceData[this._instances].InstanceTextureRectSize.X     = texFlip == TextureFlip.FlipHorizontal ? -1 : 1;
+            this._instanceData[this._instances].InstanceTextureRectSize.Y     = texFlip == TextureFlip.FlipVertical ? -1 : 1;
 
+            if(textureVeldrid.IsFbAndShouldFlip)
+                this._instanceData[this._instances].InstanceTextureRectSize.Y *= -1;
+            
             this._instances++;
         }
         
@@ -268,11 +271,14 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             this._instanceData[this._instances].InstanceRotation              = rotation;
             this._instanceData[this._instances].InstanceRotationOrigin        = rotOrigin;
             this._instanceData[this._instances].InstanceTextureId             = this.GetTextureId(textureVeldrid);
-            this._instanceData[this._instances].InstanceTextureRectPosition.X = (float)sourceRect.X      / texture.Width;
-            this._instanceData[this._instances].InstanceTextureRectPosition.Y = (float)sourceRect.Y      / texture.Height;
-            this._instanceData[this._instances].InstanceTextureRectSize.X     = (float)sourceRect.Width  / texture.Width;
-            this._instanceData[this._instances].InstanceTextureRectSize.Y     = (float)sourceRect.Height / texture.Height;
+            this._instanceData[this._instances].InstanceTextureRectPosition.X = (float)sourceRect.X                       / texture.Width;
+            this._instanceData[this._instances].InstanceTextureRectPosition.Y = (float)sourceRect.Y                       / texture.Height;
+            this._instanceData[this._instances].InstanceTextureRectSize.X     = (float)sourceRect.Width  / texture.Width  * (texFlip == TextureFlip.FlipHorizontal ? -1 : 1);
+            this._instanceData[this._instances].InstanceTextureRectSize.Y     = (float)sourceRect.Height / texture.Height * (texFlip == TextureFlip.FlipVertical ? -1 : 1);
 
+            if(textureVeldrid.IsFbAndShouldFlip)
+                this._instanceData[this._instances].InstanceTextureRectSize.Y *= -1;
+            
             this._instances++;
         }
         
