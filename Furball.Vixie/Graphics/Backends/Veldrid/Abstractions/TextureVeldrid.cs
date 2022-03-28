@@ -14,13 +14,15 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid.Abstractions {
             protected set;
         }
 
+        public bool IsFbAndShouldFlip = false;
+
         internal int UsedId = -1;
 
         public           ResourceSet[]    ResourceSets    = new ResourceSet[VeldridBackend.MAX_TEXTURE_UNITS];
         public static    ResourceLayout[] ResourceLayouts = new ResourceLayout[VeldridBackend.MAX_TEXTURE_UNITS];
         
         private readonly VeldridBackend _backend;
-        private readonly Image<Rgba32>  _localBuffer;
+        private readonly Image<Bgra32>  _localBuffer;
 
         public ResourceSet GetResourceSet(VeldridBackend backend, int i) {
             return this.ResourceSets[i] ?? (this.ResourceSets[i] = backend.ResourceFactory.CreateResourceSet(new ResourceSetDescription(ResourceLayouts[i], this.Texture)));
@@ -29,7 +31,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid.Abstractions {
         public unsafe TextureVeldrid(VeldridBackend backend, string filepath) {
             this._backend = backend;
 
-            Image<Rgba32> image = (Image<Rgba32>)Image.Load(filepath);
+            Image<Bgra32> image = (Image<Bgra32>)Image.Load(filepath);
 
             this._localBuffer = image;
 
@@ -41,8 +43,8 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid.Abstractions {
             this.Size = new Vector2(width, height);
         }
         
-        private unsafe void Load(Image<Rgba32> image) {
-            TextureDescription textureDescription = TextureDescription.Texture2D((uint)image.Width, (uint)image.Height, 1, 1, PixelFormat.R8_G8_B8_A8_UNorm, TextureUsage.Sampled | TextureUsage.RenderTarget);
+        private unsafe void Load(Image<Bgra32> image) {
+            TextureDescription textureDescription = TextureDescription.Texture2D((uint)image.Width, (uint)image.Height, 1, 1, PixelFormat.B8_G8_R8_A8_UNorm, TextureUsage.Sampled | TextureUsage.RenderTarget);
 
             this.Texture = this._backend.ResourceFactory.CreateTexture(textureDescription);
             
@@ -64,14 +66,14 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid.Abstractions {
         public unsafe TextureVeldrid(VeldridBackend backend, byte[] imageData, bool qoi = false) {
             this._backend = backend;
 
-            Image<Rgba32> image;
+            Image<Bgra32> image;
 
             if(qoi) {
                 (Rgba32[] pixels, QoiLoader.QoiHeader header) data  = QoiLoader.Load(imageData);
 
-                image = Image.LoadPixelData(data.pixels, (int)data.header.Width, (int)data.header.Height);
+                image = Image.LoadPixelData(data.pixels, (int)data.header.Width, (int)data.header.Height).CloneAs<Bgra32>();
             } else {
-                image = Image.Load<Rgba32>(imageData);
+                image = Image.Load<Bgra32>(imageData);
             }
 
             this._localBuffer = image;
@@ -90,7 +92,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid.Abstractions {
             this._backend = backend;
             // this._backend.CheckThread();
 
-            Image<Rgba32> px = new(1, 1, new Rgba32(1f, 1f, 1f, 1f));
+            Image<Bgra32> px = new(1, 1, new Bgra32(255, 255, 255, 255));
 
             this._localBuffer = px;
             this.Load(px);
@@ -106,7 +108,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid.Abstractions {
             this._backend = backend;
             // this._backend.CheckThread();
             
-            Image<Rgba32> px = new((int)width, (int)height, new Rgba32(0f, 0f, 0f, 0f));
+            Image<Bgra32> px = new((int)width, (int)height, new Bgra32(0, 0, 0, 0));
 
             this._localBuffer = px;
             this.Load(px);
@@ -120,7 +122,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid.Abstractions {
         public unsafe TextureVeldrid(VeldridBackend backend, Stream stream) {
             this._backend = backend;
 
-            Image<Rgba32> image = Image.Load<Rgba32>(stream);
+            Image<Bgra32> image = Image.Load<Bgra32>(stream);
 
             this._localBuffer = image;
 
@@ -148,7 +150,6 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid.Abstractions {
         }
         
         private bool IsDisposed = false;
-        
         public void Dispose() {
             if (this.IsDisposed) return;
             this.IsDisposed = true;

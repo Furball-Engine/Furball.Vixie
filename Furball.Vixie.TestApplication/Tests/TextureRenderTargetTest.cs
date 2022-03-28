@@ -43,19 +43,19 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._resultTexture ??= this._renderTarget.GetTexture();
 //
             this._quadRenderer.Begin();
-            this._quadRenderer.Draw(this._resultTexture, Vector2.Zero, Vector2.One, 0, Color.Blue);
+            this._quadRenderer.Draw(this._resultTexture, Vector2.Zero, Vector2.One, 0, Color.White);
             this._quadRenderer.End();
 
             #region ImGui menu
 
-            //ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
-            //           $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
-            //);
-//
-            //if (ImGui.Button("Go back to test selector")) {
-            //    this.BaseGame.Components.Add(new BaseTestSelector());
-            //    this.BaseGame.Components.Remove(this);
-            //}
+            ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
+                       $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
+            );
+
+            if (ImGui.Button("Go back to test selector")) {
+                this.BaseGame.Components.Add(new BaseTestSelector());
+                this.BaseGame.Components.Remove(this);
+            }
 
             #endregion
 

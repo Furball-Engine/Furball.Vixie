@@ -182,6 +182,11 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             this.GraphicsDevice.SubmitCommands(this.CommandList);
         }
 
+        public void Flush() {
+            this.EndScene();
+            this.BeginScene();
+        }
+        
         public override void Present() {
             this.GraphicsDevice.SwapBuffers();
         }
@@ -189,8 +194,8 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         public override void Clear() {
             this.CommandList.ClearColorTarget(0, RgbaFloat.Black);
         }
-        
-        public override TextureRenderTarget CreateRenderTarget(uint width,     uint height)      => throw new System.NotImplementedException();
+
+        public override TextureRenderTarget CreateRenderTarget(uint width, uint height) => new TextureRenderTargetVeldrid(this, width, height);
         
         public override Texture CreateTexture(byte[] imageData, bool qoi = false) => new TextureVeldrid(this, imageData, qoi);
 
