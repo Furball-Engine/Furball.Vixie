@@ -110,7 +110,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
                         vtxLayout, instanceVtxLayout
                     }
                 },
-                Outputs           = backend.GraphicsDevice.SwapchainFramebuffer.OutputDescription,
+                Outputs           = backend.RenderFramebuffer.OutputDescription,
                 BlendState        = BlendStateDescription.SingleAlphaBlend,
                 PrimitiveTopology = PrimitiveTopology.TriangleList,
                 ResourceLayouts = new[] {

@@ -17,8 +17,8 @@ namespace Furball.Vixie.TestApplication.Tests {
             for (int i = 0; i != this._textures.Length; i++) {
                 if (i % 2 == 0 && i != 0)
                     this._textures[i]  = Texture.Create(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
-                else this._textures[i] = Texture.Create();
-                // else this._textures[i] = Texture.Create(File.ReadAllBytes("testrgba.qoi"), true);
+                // else this._textures[i] = Texture.Create();
+                else this._textures[i] = Texture.Create(File.ReadAllBytes("testrgba.qoi"), true);
             }
 
             this._quadRenderer = GraphicsBackend.Current.CreateTextureRenderer();
@@ -48,14 +48,14 @@ namespace Furball.Vixie.TestApplication.Tests {
 
             #region ImGui menu
 
-            //ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
-            //           $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
-            //);
-            //
-            //if (ImGui.Button("Go back to test selector")) {
-            //    this.BaseGame.Components.Add(new BaseTestSelector());
-            //    this.BaseGame.Components.Remove(this);
-            //}
+            ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
+                       $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
+            );
+            
+            if (ImGui.Button("Go back to test selector")) {
+                this.BaseGame.Components.Add(new BaseTestSelector());
+                this.BaseGame.Components.Remove(this);
+            }
 
             #endregion
 

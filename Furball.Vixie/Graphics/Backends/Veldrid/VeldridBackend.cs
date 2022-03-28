@@ -31,7 +31,12 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         internal ResourceSet    SamplerResourceSet;
         public   TextureVeldrid WhitePixel;
         public   ResourceSet    WhitePixelResourceSet;
-        
+
+        public Framebuffer             RenderFramebuffer;
+        public global::Veldrid.Texture MainFramebufferTexture;
+        public ResourceSet             MainFramebufferTextureSet;
+        public ResourceLayout          MainFramebufferTextureLayout;
+        public FullScreenQuad          FullScreenQuad;
         public override void Initialize(IWindow window) {
             this._window = window;
             
@@ -39,7 +44,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
                 SyncToVerticalBlank               = window.VSync,
                 Debug                             = window.API.Flags.HasFlag(ContextFlags.Debug),
                 ResourceBindingModel              = ResourceBindingModel.Improved,
-                PreferStandardClipSpaceYDirection = true,
+                PreferStandardClipSpaceYDirection = true
             };
 
             this.GraphicsDevice     = window.CreateGraphicsDevice(options, PrefferedBackend);
@@ -59,9 +64,6 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             Logger.Log($"Using backend {this.GraphicsDevice.BackendType}", LoggerLevelVeldrid.InstanceInfo);
             Logger.Log($"Vendor Name: {this.GraphicsDevice.VendorName}",   LoggerLevelVeldrid.InstanceInfo);
 
-            if (!features.GeometryShader)
-                throw new GeometryShadersNotSupportedException();
-            
             switch (this.GraphicsDevice.BackendType) {
                 case global::Veldrid.GraphicsBackend.Direct3D11: {
                     //we dont actually get anything useful from this :/
@@ -115,7 +117,9 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
                     throw new ArgumentOutOfRangeException();
             }
 
-            this._imgui = new ImGuiController(this.GraphicsDevice, this.GraphicsDevice.SwapchainFramebuffer.OutputDescription, window, Global.GameInstance._inputContext);
+            this.CreateFramebuffer(this.GraphicsDevice.SwapchainFramebuffer.Width, this.GraphicsDevice.SwapchainFramebuffer.Height);
+
+            this._imgui = new ImGuiController(this.GraphicsDevice, this.RenderFramebuffer.OutputDescription, window, Global.GameInstance._inputContext);
 
             for (int i = 0; i < MAX_TEXTURE_UNITS; i++) {
                 ResourceLayout layout = this.ResourceFactory.CreateResourceLayout(new(new ResourceLayoutElementDescription[] {
@@ -136,6 +140,43 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             this.SamplerResourceLayout = this.ResourceFactory.CreateResourceLayout(new(new ResourceLayoutElementDescription("TextureSampler", ResourceKind.Sampler, ShaderStages.Fragment)));
 
             this.SamplerResourceSet = this.ResourceFactory.CreateResourceSet(new(this.SamplerResourceLayout, this.GraphicsDevice.Aniso4xSampler));
+
+            this.CommandList.Begin();
+            this.FullScreenQuad = new FullScreenQuad(this);
+            this.CommandList.End();
+            this.GraphicsDevice.SubmitCommands(this.CommandList);
+        }
+        
+
+        private void CreateFramebuffer(uint width, uint height) {
+            this.RenderFramebuffer?.Dispose();
+            this.MainFramebufferTexture?.Dispose();
+            this.MainFramebufferTextureSet?.Dispose();
+            this.MainFramebufferTextureLayout?.Dispose();
+
+            this.MainFramebufferTexture = this.ResourceFactory.CreateTexture(TextureDescription.Texture2D(width, height, 1, 1, PixelFormat.R8_G8_B8_A8_UNorm, TextureUsage.RenderTarget | TextureUsage.Sampled));
+
+            FramebufferDescription fbdesc = new FramebufferDescription {
+                ColorTargets = new[] {
+                    new FramebufferAttachmentDescription(this.MainFramebufferTexture, 0)
+                }
+            };
+            this.RenderFramebuffer = this.ResourceFactory.CreateFramebuffer(fbdesc);
+
+            this.MainFramebufferTextureLayout = this.ResourceFactory.CreateResourceLayout(new(new[] {
+                new ResourceLayoutElementDescription("SourceTexture", ResourceKind.TextureReadOnly, ShaderStages.Fragment), 
+                new ResourceLayoutElementDescription("SourceSampler", ResourceKind.Sampler, ShaderStages.Fragment)
+            }));
+            
+            var resourceSetDesc = new ResourceSetDescription {
+                BoundResources = new BindableResource[] {
+                    this.MainFramebufferTexture,
+                    this.GraphicsDevice.PointSampler,
+                }
+            };
+            resourceSetDesc.Layout = MainFramebufferTextureLayout;
+
+            this.MainFramebufferTextureSet = this.ResourceFactory.CreateResourceSet(resourceSetDesc);
         }
 
         public override void Cleanup() {
@@ -154,6 +195,8 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             this.GraphicsDevice.ResizeMainWindow((uint)width, (uint)height);
 
             this.SetProjectionMatrix((uint)width, (uint)height);
+            
+            this.CreateFramebuffer(this.GraphicsDevice.SwapchainFramebuffer.Width, this.GraphicsDevice.SwapchainFramebuffer.Height);
         }
 
         public void SetProjectionMatrix(uint width, uint height) {
@@ -162,6 +205,8 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
 
         public override void HandleFramebufferResize(int width, int height) {
             this.GraphicsDevice.ResizeMainWindow((uint)width, (uint)height);
+            
+            this.CreateFramebuffer(this.GraphicsDevice.SwapchainFramebuffer.Width, this.GraphicsDevice.SwapchainFramebuffer.Height);
         }
         public override IQuadRenderer CreateTextureRenderer() => new QuadRendererVeldrid(this);
         public override ILineRenderer CreateLineRenderer()    => new LineRendererVeldrid(this);
@@ -176,10 +221,10 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
 
         public override void BeginScene() {
             this.CommandList.Begin();
-            this.CommandList.SetFramebuffer(this.GraphicsDevice.SwapchainFramebuffer);
-            
+            this.CommandList.SetFramebuffer(this.RenderFramebuffer);
+
             this.CommandList.SetFullViewports();
-            this.SetProjectionMatrix(this.GraphicsDevice.SwapchainFramebuffer.Width, this.GraphicsDevice.SwapchainFramebuffer.Height);
+            this.SetProjectionMatrix(this.RenderFramebuffer.Width, this.RenderFramebuffer.Height);
         }
 
         public override void EndScene() {
@@ -193,6 +238,13 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         }
         
         public override void Present() {
+            this.CommandList.Begin();
+            this.CommandList.SetFramebuffer(this.GraphicsDevice.SwapchainFramebuffer);
+            // this.CommandList.CopyTexture(this.MainFramebufferTexture, this.GraphicsDevice.SwapchainFramebuffer.ColorTargets[0].Target);
+            this.FullScreenQuad.Render();
+            this.CommandList.End();
+            this.GraphicsDevice.SubmitCommands(this.CommandList);
+            
             this.GraphicsDevice.SwapBuffers();
         }
 

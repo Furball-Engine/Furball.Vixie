@@ -43,7 +43,8 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid.Abstractions {
         public override void Unbind() {
             this._backend.Flush();
             
-            this._backend.CommandList.SetFramebuffer(this._backend.GraphicsDevice.SwapchainFramebuffer);
+            this._backend.CommandList.SetFramebuffer(this._backend.RenderFramebuffer);
+            
             this._backend.CommandList.SetFullViewports();
         }
 
