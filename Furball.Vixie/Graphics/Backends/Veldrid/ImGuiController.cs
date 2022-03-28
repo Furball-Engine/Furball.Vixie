@@ -150,6 +150,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             io.DeltaTime = deltaSeconds;// DeltaTime is in seconds.
         }
 
+        private Key[] keyEnumValues = (Key[])Enum.GetValues(typeof(Key));
         private void UpdateImGuiInput() {
             var io = ImGuiNET.ImGui.GetIO();
 
@@ -167,7 +168,8 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             io.MouseWheel  = wheel.Y;
             io.MouseWheelH = wheel.X;
 
-            foreach (Key key in Enum.GetValues(typeof(Key))) {
+            for (var i = 0; i < this.keyEnumValues.Length; i++) {
+                Key key = this.keyEnumValues[i];
                 if (key == Key.Unknown) {
                     continue;
                 }

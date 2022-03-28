@@ -174,11 +174,11 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
 
             thickness *= 1.4f;
             
-            this._instanceData[this._instances].InstancePosition              = begin;
-            this._instanceData[this._instances].InstanceSize.X                = (end - begin).Length();
-            this._instanceData[this._instances].InstanceSize.Y                = thickness;
-            this._instanceData[this._instances].InstanceColor                 = color;
-            this._instanceData[this._instances].InstanceRotation              = MathF.Atan2(end.Y - begin.Y, end.X - begin.X);
+            this._instanceData[this._instances].InstancePosition = begin;
+            this._instanceData[this._instances].InstanceSize.X   = (end - begin).Length();
+            this._instanceData[this._instances].InstanceSize.Y   = thickness;
+            this._instanceData[this._instances].InstanceColor    = color;
+            this._instanceData[this._instances].InstanceRotation = MathF.Atan2(end.Y - begin.Y, end.X - begin.X);
 
             this._instances++;
         }
@@ -197,8 +197,8 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
 
             //Draw the data to the screen
             this._backend.CommandList.DrawIndexed(6, this._instances, 0, 0, 0);
-            
-            this._instances    = 0;
+
+            this._instances = 0;
         }
         
         public void End() {
