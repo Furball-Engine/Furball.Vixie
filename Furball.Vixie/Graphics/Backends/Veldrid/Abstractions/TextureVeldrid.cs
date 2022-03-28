@@ -142,5 +142,24 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid.Abstractions {
             
             return this;
         }
+
+        ~TextureVeldrid() {
+            this.Dispose();
+        }
+        
+        private bool IsDisposed = false;
+        
+        public void Dispose() {
+            if (this.IsDisposed) return;
+            this.IsDisposed = true;
+            
+            this.Texture.Dispose();
+            foreach (ResourceSet resourceSet in this.ResourceSets) {
+                resourceSet?.Dispose();
+            }
+            
+            this._localBuffer.Dispose();
+
+        }
     }
 }

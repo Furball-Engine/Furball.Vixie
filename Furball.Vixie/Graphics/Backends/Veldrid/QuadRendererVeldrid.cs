@@ -310,10 +310,18 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         private bool _isDisposed = false;
         public void Dispose() {
             if (this._isDisposed) return;
+            this._isDisposed = true;
+            
+            this._pipeline.Dispose();
+            this._indexBuffer.Dispose();
+            this._projectionBuffer.Dispose();
+            this._vertexBuffer.Dispose();
+            this._instanceVertexBuffer.Dispose();
+            this._projectionBufferResourceSet.Dispose();
         }
 
         ~QuadRendererVeldrid() {
-            DisposeQueue.Enqueue(this);
+            this.Dispose();
         }
         
         public void Draw(Texture textureGl, Vector2 position, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {

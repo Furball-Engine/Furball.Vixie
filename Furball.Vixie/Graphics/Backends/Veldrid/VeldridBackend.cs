@@ -29,6 +29,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
 
         internal ResourceLayout SamplerResourceLayout;
         internal ResourceSet    SamplerResourceSet;
+        public   TextureVeldrid WhitePixel;
         public   ResourceSet    WhitePixelResourceSet;
         
         public override void Initialize(IWindow window) {
@@ -128,7 +129,9 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
                 new($"tex_blank", ResourceKind.TextureReadOnly, ShaderStages.Fragment)
             }));
 
-            this.WhitePixelResourceSet = this.ResourceFactory.CreateResourceSet(new(blankLayout, (this.CreateWhitePixelTexture() as TextureVeldrid).Texture));
+            this.WhitePixel = this.CreateWhitePixelTexture() as TextureVeldrid;
+            
+            this.WhitePixelResourceSet = this.ResourceFactory.CreateResourceSet(new(blankLayout, WhitePixel.Texture));
 
             this.SamplerResourceLayout = this.ResourceFactory.CreateResourceLayout(new(new ResourceLayoutElementDescription("TextureSampler", ResourceKind.Sampler, ShaderStages.Fragment)));
 
@@ -136,7 +139,15 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         }
 
         public override void Cleanup() {
+            this.WhitePixelResourceSet.Dispose();
+            this.WhitePixel.Dispose();
+            this.SamplerResourceSet.Dispose();
+            this.SamplerResourceLayout.Dispose();
+            this._imgui.Dispose();
+            this.CommandList.Dispose();
+
             this.GraphicsDevice.Dispose();
+            
         }
         
         public override void HandleWindowSizeChange(int width, int height) {

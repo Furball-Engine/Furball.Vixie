@@ -21,15 +21,6 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         private readonly List<char>    _pressedChars = new List<char>();
         private          IKeyboard     _keyboard;
 
-        private int  _attribLocationTex;
-        private int  _attribLocationProjMtx;
-        private int  _attribLocationVtxPos;
-        private int  _attribLocationVtxUV;
-        private int  _attribLocationVtxColor;
-        private uint _vboHandle;
-        private uint _elementsHandle;
-        private uint _vertexArrayObject;
-
         private int            _windowWidth;
         private int            _windowHeight;
         private GraphicsDevice _gd;
@@ -49,13 +40,12 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         private IntPtr                  _fontAtlasID = (IntPtr)1;
 
         // Image trackers
-        private readonly Dictionary<TextureView, ResourceSetInfo> _setsByView         = new Dictionary<TextureView, ResourceSetInfo>();
-        private readonly Dictionary<Texture, TextureView>         _autoViewsByTexture = new Dictionary<Texture, TextureView>();
-        private readonly Dictionary<IntPtr, ResourceSetInfo>      _viewsById          = new Dictionary<IntPtr, ResourceSetInfo>();
-        private readonly List<IDisposable>                        _ownedResources     = new List<IDisposable>();
-        private          int                                      _lastAssignedID     = 100;
-        private          ColorSpaceHandling                       _colorSpaceHandling = ColorSpaceHandling.Legacy;
-        private          Assembly                                 _assembly;
+        private readonly Dictionary<IntPtr, ResourceSetInfo> _viewsById          = new Dictionary<IntPtr, ResourceSetInfo>();
+        private readonly List<IDisposable>                   _ownedResources     = new List<IDisposable>();
+        private          ColorSpaceHandling                  _colorSpaceHandling = ColorSpaceHandling.Legacy;
+        public           Assembly                            _assembly;
+
+        private IntPtr _context;
 
         /// <summary>
         /// Constructs a new ImGuiController with font configuration and onConfigure Action.
@@ -65,7 +55,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
 
             this.Init(gd, view, input);
 
-            var io = ImGuiNET.ImGui.GetIO();
+            var io = ImGui.GetIO();
 
             io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;
 
@@ -84,13 +74,13 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             this._windowWidth  = view.Size.X;
             this._windowHeight = view.Size.Y;
 
-            IntPtr context = ImGuiNET.ImGui.CreateContext();
-            ImGuiNET.ImGui.SetCurrentContext(context);
-            ImGuiNET.ImGui.StyleColorsDark();
+            this._context = ImGui.CreateContext();
+            ImGui.SetCurrentContext(this._context);
+            ImGui.StyleColorsDark();
         }
 
         private void BeginFrame() {
-            ImGuiNET.ImGui.NewFrame();
+            ImGui.NewFrame();
             this._frameBegun       =  true;
             this._keyboard         =  this._input.Keyboards[0];
             this._view.Resize      += this.WindowResized;
@@ -115,8 +105,8 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         public void Render(GraphicsDevice gd, CommandList cl) {
             if (this._frameBegun) {
                 this._frameBegun = false;
-                ImGuiNET.ImGui.Render();
-                this.RenderImDrawData(ImGuiNET.ImGui.GetDrawData(), gd, cl);
+                ImGui.Render();
+                this.RenderImDrawData(ImGui.GetDrawData(), gd, cl);
             }
         }
 
@@ -125,14 +115,14 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         /// </summary>
         public void Update(float deltaSeconds) {
             if (this._frameBegun) {
-                ImGuiNET.ImGui.Render();
+                ImGui.Render();
             }
 
             this.SetPerFrameImGuiData(deltaSeconds);
             this.UpdateImGuiInput();
 
             this._frameBegun = true;
-            ImGuiNET.ImGui.NewFrame();
+            ImGui.NewFrame();
         }
 
         /// <summary>
@@ -140,7 +130,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         /// This is called by Update(float).
         /// </summary>
         private void SetPerFrameImGuiData(float deltaSeconds) {
-            var io = ImGuiNET.ImGui.GetIO();
+            var io = ImGui.GetIO();
             io.DisplaySize = new Vector2(this._windowWidth, this._windowHeight);
 
             if (this._windowWidth > 0 && this._windowHeight > 0) {
@@ -150,9 +140,9 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             io.DeltaTime = deltaSeconds;// DeltaTime is in seconds.
         }
 
-        private Key[] keyEnumValues = (Key[])Enum.GetValues(typeof(Key));
+        private Key[]  keyEnumValues = (Key[])Enum.GetValues(typeof(Key));
         private void UpdateImGuiInput() {
-            var io = ImGuiNET.ImGui.GetIO();
+            var io = ImGui.GetIO();
 
             var mouseState    = this._input.Mice[0].CaptureState();
             var keyboardState = this._input.Keyboards[0];
@@ -193,7 +183,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         }
 
         private static void SetKeyMappings() {
-            var io = ImGuiNET.ImGui.GetIO();
+            var io = ImGui.GetIO();
             io.KeyMap[(int)ImGuiKey.Tab]        = (int)Key.Tab;
             io.KeyMap[(int)ImGuiKey.LeftArrow]  = (int)Key.Left;
             io.KeyMap[(int)ImGuiKey.RightArrow] = (int)Key.Right;
@@ -217,7 +207,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
 
         public ResourceSet GetImageResourceSet(IntPtr imGuiBinding) {
             if (!_viewsById.TryGetValue(imGuiBinding, out ResourceSetInfo rsi)) {
-                throw new InvalidOperationException("No registered ImGui binding with id " + imGuiBinding.ToString());
+                throw new InvalidOperationException("No registered ImGui binding with id " + imGuiBinding);
             }
 
             return rsi.ResourceSet;
@@ -279,19 +269,18 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
                     ImDrawCmdPtr pcmd = cmd_list.CmdBuffer[cmd_i];
                     if (pcmd.UserCallback != IntPtr.Zero) {
                         throw new NotImplementedException();
-                    } else {
-                        if (pcmd.TextureId != IntPtr.Zero) {
-                            if (pcmd.TextureId == _fontAtlasID) {
-                                cl.SetGraphicsResourceSet(1, _fontTextureResourceSet);
-                            } else {
-                                cl.SetGraphicsResourceSet(1, GetImageResourceSet(pcmd.TextureId));
-                            }
-                        }
-
-                        cl.SetScissorRect(0, (uint)pcmd.ClipRect.X, (uint)pcmd.ClipRect.Y, (uint)(pcmd.ClipRect.Z - pcmd.ClipRect.X), (uint)(pcmd.ClipRect.W - pcmd.ClipRect.Y));
-
-                        cl.DrawIndexed(pcmd.ElemCount, 1, pcmd.IdxOffset + (uint)idx_offset, (int)(pcmd.VtxOffset + vtx_offset), 0);
                     }
+                    if (pcmd.TextureId != IntPtr.Zero) {
+                        if (pcmd.TextureId == this._fontAtlasID) {
+                            cl.SetGraphicsResourceSet(1, this._fontTextureResourceSet);
+                        } else {
+                            cl.SetGraphicsResourceSet(1, this.GetImageResourceSet(pcmd.TextureId));
+                        }
+                    }
+
+                    cl.SetScissorRect(0, (uint)pcmd.ClipRect.X, (uint)pcmd.ClipRect.Y, (uint)(pcmd.ClipRect.Z - pcmd.ClipRect.X), (uint)(pcmd.ClipRect.W - pcmd.ClipRect.Y));
+
+                    cl.DrawIndexed(pcmd.ElemCount, 1, pcmd.IdxOffset + (uint)idx_offset, (int)(pcmd.VtxOffset + vtx_offset), 0);
                 }
 
                 idx_offset += cmd_list.IdxBuffer.Size;
@@ -434,6 +423,8 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             foreach (IDisposable resource in _ownedResources) {
                 resource.Dispose();
             }
+
+            ImGui.DestroyContext(this._context);
         }
 
         private struct ResourceSetInfo {

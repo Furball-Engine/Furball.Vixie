@@ -137,9 +137,23 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             this._backend.GraphicsDevice.UpdateBuffer(this._indexBuffer,  0, _Indicies);
             #endregion
         }
-        
+
+        private bool _isDisposed = false;
         public void Dispose() {
+            if (this._isDisposed) return;
             
+            this._isDisposed = true;
+            
+            this._pipeline.Dispose();
+            this._indexBuffer.Dispose();
+            this._projectionBuffer.Dispose();
+            this._vertexBuffer.Dispose();
+            this._instanceVertexBuffer.Dispose();
+            this._projectionBufferResourceSet.Dispose();
+        }
+
+        ~LineRendererVeldrid() {
+            this.Dispose();
         }
         
         public bool IsBegun {
