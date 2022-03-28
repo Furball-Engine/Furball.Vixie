@@ -36,6 +36,8 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid.Abstractions {
             
             this._backend.CommandList.SetFramebuffer(_fb);
             this._backend.CommandList.SetFullViewports();
+            
+            this._backend.SetProjectionMatrix(this._fb.Width, this._fb.Height);
         }
         
         public override void Unbind() {

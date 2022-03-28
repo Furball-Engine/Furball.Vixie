@@ -152,7 +152,11 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         
         public override void HandleWindowSizeChange(int width, int height) {
             this.GraphicsDevice.ResizeMainWindow((uint)width, (uint)height);
-            
+
+            this.SetProjectionMatrix((uint)width, (uint)height);
+        }
+
+        public void SetProjectionMatrix(uint width, uint height) {
             this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, height, 0, 1f, 0f);
         }
 
@@ -175,6 +179,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             this.CommandList.SetFramebuffer(this.GraphicsDevice.SwapchainFramebuffer);
             
             this.CommandList.SetFullViewports();
+            this.SetProjectionMatrix(this.GraphicsDevice.SwapchainFramebuffer.Width, this.GraphicsDevice.SwapchainFramebuffer.Height);
         }
 
         public override void EndScene() {

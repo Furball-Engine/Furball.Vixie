@@ -18,7 +18,7 @@ namespace Furball.Vixie.TestApplication.Tests {
 
         public override void Initialize() {
             this._lineRenderer = GraphicsBackend.Current.CreateLineRenderer();
-            this._renderTarget = TextureRenderTarget.Create(1280, 720);
+            this._renderTarget = TextureRenderTarget.Create(200, 200);
             this._quadRenderer = GraphicsBackend.Current.CreateTextureRenderer();
             this._whiteTexture = Texture.Create();
 
