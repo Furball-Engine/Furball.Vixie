@@ -4,6 +4,7 @@ using System.Numerics;
 using FontStashSharp;
 using Furball.Vixie.FontStashSharp;
 using Furball.Vixie.Graphics.Backends.OpenGL20.Abstractions;
+using Furball.Vixie.Graphics.Backends.OpenGL41;
 using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using Silk.NET.OpenGL.Legacy;
@@ -40,7 +41,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
             this._gl      = backend.GetOpenGL();
 
             string vertex   = ResourceHelpers.GetStringResource("ShaderCode/OpenGL20/VertexShader.glsl");
-            string fragment = ResourceHelpers.GetStringResource("ShaderCode/OpenGL20/FragmentShader.glsl");
+            string fragment = ShadersGL20.GetFragment(backend);
 
             this._program = new(this._backend, vertex, fragment);
             this._backend.CheckError();
