@@ -211,7 +211,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         public override IQuadRenderer CreateTextureRenderer() => new QuadRendererVeldrid(this);
         public override ILineRenderer CreateLineRenderer()    => new LineRendererVeldrid(this);
 
-        public const int MAX_TEXTURE_UNITS = 8;
+        public const int MAX_TEXTURE_UNITS = 4;
         
         public override int QueryMaxTextureUnits() {
             //this is a trick we call

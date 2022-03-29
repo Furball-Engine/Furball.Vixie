@@ -143,10 +143,10 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
                     TextureVeldrid.ResourceLayouts[1],
                     TextureVeldrid.ResourceLayouts[2],
                     TextureVeldrid.ResourceLayouts[3],
-                    TextureVeldrid.ResourceLayouts[4],
-                    TextureVeldrid.ResourceLayouts[5],
-                    TextureVeldrid.ResourceLayouts[6],
-                    TextureVeldrid.ResourceLayouts[7],
+                    // TextureVeldrid.ResourceLayouts[4],
+                    // TextureVeldrid.ResourceLayouts[5],
+                    // TextureVeldrid.ResourceLayouts[6],
+                    // TextureVeldrid.ResourceLayouts[7],
                     this._backend.SamplerResourceLayout
                 },
                 RasterizerState = new RasterizerStateDescription(FaceCullMode.None, PolygonFillMode.Solid, FrontFace.Clockwise, true, true)
@@ -194,6 +194,9 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             for (uint i = 0; i < VeldridBackend.MAX_TEXTURE_UNITS; i++) {
                 this._backend.CommandList.SetGraphicsResourceSet(i + 1, this._backend.WhitePixelResourceSet);
             }
+            
+            //Sets the last slot to the sampler
+            this._backend.CommandList.SetGraphicsResourceSet(5, this._backend.SamplerResourceSet);
         }
 
         public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
@@ -299,8 +302,6 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
 
                 this._boundTextures[i].UsedId = -1;
             }
-            //Sets the last slot to the sampler
-            this._backend.CommandList.SetGraphicsResourceSet(9, this._backend.SamplerResourceSet);
 
             //Update the vertex buffer with just the data we use
             fixed (void* ptr = this._instanceData)
