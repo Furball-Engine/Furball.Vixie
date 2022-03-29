@@ -77,10 +77,10 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
 
             this.ImGuiController = new ImGuiController(gl, Global.GameInstance.WindowManager.GameWindow, Global.GameInstance._inputContext);
             
-            Logger.Log($"OpenGL Version: {this.gl.GetStringS(StringName.Version)}",                LoggerLevelOpenGL41.InstanceInfo);
-            Logger.Log($"GLSL Version:   {this.gl.GetStringS(StringName.ShadingLanguageVersion)}", LoggerLevelOpenGL41.InstanceInfo);
-            Logger.Log($"OpenGL Vendor:  {this.gl.GetStringS(StringName.Vendor)}",                 LoggerLevelOpenGL41.InstanceInfo);
-            Logger.Log($"Renderer:       {this.gl.GetStringS(StringName.Renderer)}",               LoggerLevelOpenGL41.InstanceInfo);
+            Logger.Log($"OpenGL Version: {this.gl.GetStringS(StringName.Version)}",                LoggerLevelOpenGLES.InstanceInfo);
+            Logger.Log($"GLSL Version:   {this.gl.GetStringS(StringName.ShadingLanguageVersion)}", LoggerLevelOpenGLES.InstanceInfo);
+            Logger.Log($"OpenGL Vendor:  {this.gl.GetStringS(StringName.Vendor)}",                 LoggerLevelOpenGLES.InstanceInfo);
+            Logger.Log($"Renderer:       {this.gl.GetStringS(StringName.Renderer)}",               LoggerLevelOpenGLES.InstanceInfo);
         }
         /// <summary>
         /// Checks for OpenGL errors
