@@ -49,14 +49,9 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid.Abstractions {
             this.Texture = this._backend.ResourceFactory.CreateTexture(textureDescription);
             
             image.ProcessPixelRows(accessor => {
-                for (int i = 0; i < accessor.Height; i++) {
-                    this._backend.GraphicsDevice.UpdateTexture(this.Texture, accessor.GetRowSpan(i), 0, (uint)i, 0, (uint)image.Width, 1, 1, 0, 0);
-                    // fixed(void* ptr = &accessor.GetRowSpan(i).GetPinnableReference())
-
-                    // this.gl.TexSubImage2D(TextureTarget.Texture2D, 0, 0, i, (uint)accessor.Width, 1, PixelFormat.Rgba, PixelType.UnsignedByte, ptr);
-                }
+                for (int i = 0; i < accessor.Height; i++)
+                    this._backend.GraphicsDevice.UpdateTexture(this.Texture, accessor.GetRowSpan(i), 0, (uint) i, 0, (uint) image.Width, 1, 1, 0, 0);
             });
-
         }
         
         /// <summary>

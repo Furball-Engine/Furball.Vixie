@@ -54,35 +54,21 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         
         public float[] GetFullScreenQuadVerts()
         {
-            // if (gd.IsClipSpaceYInverted)
-            // {
-                // return new float[]
-                // {
-                    // -1, -1, 0, 0,
-                     // 1, -1, 1, 0,
-                     // 1,  1, 1, 1,
-                    // -1,  1, 0, 1
-                // };
-            // }
-            // else
-            // {
             if(this._backend.GraphicsDevice.IsUvOriginTopLeft)
                 return new float[]
                 {
                     -1,  1, 0, 0,
-                    1,  1, 1, 0,
-                    1, -1, 1, 1,
+                     1,  1, 1, 0,
+                     1, -1, 1, 1,
                     -1, -1, 0, 1
                 };
-            else
-                return new float[]
-                {
-                    -1,  1, 0, 1,
-                    1,  1, 1, 1,
-                    1, -1, 1, 0,
-                    -1, -1, 0, 0
-                };
-            // }
+            return new float[]
+            {
+                -1,  1, 0, 1,
+                 1,  1, 1, 1,
+                 1, -1, 1, 0,
+                -1, -1, 0, 0
+            };
         }
 
         ~FullScreenQuad() {
@@ -109,3 +95,4 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
         }
     }
 }
+    

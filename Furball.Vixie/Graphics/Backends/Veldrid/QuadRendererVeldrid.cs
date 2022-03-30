@@ -143,10 +143,6 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
                     TextureVeldrid.ResourceLayouts[1],
                     TextureVeldrid.ResourceLayouts[2],
                     TextureVeldrid.ResourceLayouts[3],
-                    // TextureVeldrid.ResourceLayouts[4],
-                    // TextureVeldrid.ResourceLayouts[5],
-                    // TextureVeldrid.ResourceLayouts[6],
-                    // TextureVeldrid.ResourceLayouts[7],
                     this._backend.SamplerResourceLayout
                 },
                 RasterizerState = new RasterizerStateDescription(FaceCullMode.None, PolygonFillMode.Solid, FrontFace.Clockwise, true, true)
