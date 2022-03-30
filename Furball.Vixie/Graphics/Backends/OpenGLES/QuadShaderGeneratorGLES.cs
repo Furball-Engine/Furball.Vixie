@@ -2,10 +2,10 @@ using System.Collections.Immutable;
 using System.Text;
 using Furball.Vixie.Helpers;
 
-namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
-    public static class ShadersGL41 {
+namespace Furball.Vixie.Graphics.Backends.OpenGLES {
+    public static class QuadShaderGeneratorGLES {
         public static string GetFragment(GraphicsBackend backend) {
-            string orig = ResourceHelpers.GetStringResource("ShaderCode/OpenGL41/InstancedRenderer/FragmentShader.glsl");
+            string orig = ResourceHelpers.GetStringResource("ShaderCode/OpenGLES/InstancedRenderer/FragmentShader.glsl");
 
             StringBuilder uniformBuilder = new();
             StringBuilder ifBuilder = new();

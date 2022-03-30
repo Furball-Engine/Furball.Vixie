@@ -75,7 +75,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
             this._boundTextures = new TextureGL41[this._backend.QueryMaxTextureUnits()];
 
             string vertSource = ResourceHelpers.GetStringResource("ShaderCode/OpenGL41/InstancedRenderer/VertexShader.glsl");
-            string fragSource = ShadersGL41.GetFragment(backend);
+            string fragSource = QuadShaderGeneratorGL41.GetFragment(backend);
 
             this._shaderGl41 = new ShaderGL41(backend);
 

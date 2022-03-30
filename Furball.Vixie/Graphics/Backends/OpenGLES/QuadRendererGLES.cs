@@ -75,7 +75,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
             this._boundTextures = new TextureGLES[this._backend.QueryMaxTextureUnits()];
 
             string vertSource = ResourceHelpers.GetStringResource("ShaderCode/OpenGLES/InstancedRenderer/VertexShader.glsl");
-            string fragSource = ShadersGLES.GetFragment(backend);
+            string fragSource = QuadShaderGeneratorGLES.GetFragment(backend);
 
             this._shaderGles = new ShaderGLES(backend);
 

@@ -41,7 +41,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
             this._gl      = backend.GetOpenGL();
 
             string vertex   = ResourceHelpers.GetStringResource("ShaderCode/OpenGL20/VertexShader.glsl");
-            string fragment = ShadersGL20.GetFragment(backend);
+            string fragment = QuadShaderGeneratorGL20.GetFragment(backend);
 
             this._program = new(this._backend, vertex, fragment);
             this._backend.CheckError();

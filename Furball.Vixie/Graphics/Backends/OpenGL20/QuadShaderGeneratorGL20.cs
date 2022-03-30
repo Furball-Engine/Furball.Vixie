@@ -2,10 +2,10 @@ using System.Collections.Immutable;
 using System.Text;
 using Furball.Vixie.Helpers;
 
-namespace Furball.Vixie.Graphics.Backends.OpenGLES {
-    public static class ShadersGLES {
+namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
+    public static class QuadShaderGeneratorGL20 {
         public static string GetFragment(GraphicsBackend backend) {
-            string orig = ResourceHelpers.GetStringResource("ShaderCode/OpenGLES/InstancedRenderer/FragmentShader.glsl");
+            string orig = ResourceHelpers.GetStringResource("ShaderCode/OpenGL20/FragmentShader.glsl");
 
             StringBuilder uniformBuilder = new();
             StringBuilder ifBuilder = new();
@@ -15,7 +15,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
 
                 if (i != 0) ifBuilder.Append("else ");
 
-                ifBuilder.Append($"if(fs_in_texid == {i}) {{ OutputColor = texture(tex_{i}, fs_in_tex) * fs_in_col; }}");
+                ifBuilder.Append($"if(tex_id == {i}) {{ gl_FragColor = texture2D(tex_{i}, fs_in_tex) * fs_in_col; }}");
             }
 
             return orig
