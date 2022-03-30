@@ -29,18 +29,20 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
 
             Shader[] shaders = this._backend.ResourceFactory.CreateFromSpirv(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(FullScreenQuadShaders.VertexShader), "main"), new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(FullScreenQuadShaders.FragmentShader), "main"));
 
-            GraphicsPipelineDescription pd = new GraphicsPipelineDescription(new BlendStateDescription(RgbaFloat.Black, BlendAttachmentDescription.OverrideBlend),
-                                                                             DepthStencilStateDescription.Disabled,
-                                                                             new RasterizerStateDescription(FaceCullMode.Back, PolygonFillMode.Solid, FrontFace.Clockwise, true, false),
-                                                                             PrimitiveTopology.TriangleList,
-                                                                             new ShaderSetDescription(new[] {
-                                                                                                          new VertexLayoutDescription(new VertexElementDescription("Position", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2), new VertexElementDescription("TexCoords", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2))
-                                                                                                      },
-                                                                                                      shaders),
-                                                                             new ResourceLayout[] {
-                                                                                 resourceLayout
-                                                                             },
-                                                                             gd.SwapchainFramebuffer.OutputDescription);
+            GraphicsPipelineDescription pd = new GraphicsPipelineDescription(
+                new BlendStateDescription(RgbaFloat.Black, BlendAttachmentDescription.OverrideBlend),
+                DepthStencilStateDescription.Disabled,
+                new RasterizerStateDescription(FaceCullMode.Back, PolygonFillMode.Solid, FrontFace.Clockwise, true, false),
+                PrimitiveTopology.TriangleList,
+                new ShaderSetDescription(
+                    new[] {
+                        new VertexLayoutDescription(new VertexElementDescription("Position", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2), new VertexElementDescription("TexCoords", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2))
+                    },
+                    shaders),
+                new ResourceLayout[] {
+                    resourceLayout
+                },
+                gd.SwapchainFramebuffer.OutputDescription);
             _pipeline = factory.CreateGraphicsPipeline(ref pd);
 
             float[] verts = this.GetFullScreenQuadVerts();
