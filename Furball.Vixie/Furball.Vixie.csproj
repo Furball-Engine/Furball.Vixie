@@ -112,6 +112,10 @@
         <None Remove="ShaderCode\Veldrid\Lines\GeometryShader.glsl" />
         <None Remove="ShaderCode\Veldrid\Lines\FragmentShader.glsl" />
         <None Remove="ShaderCode\Veldrid\Lines\VertexShader.glsl" />
+        <None Remove="ShaderCode\Veldrid\FullScreenQuad\VertexShader.glsl" />
+        <EmbeddedResource Include="ShaderCode\Veldrid\FullScreenQuad\VertexShader.glsl" />
+        <None Remove="ShaderCode\Veldrid\FullScreenQuad\FragmentShader.glsl" />
+        <EmbeddedResource Include="ShaderCode\Veldrid\FullScreenQuad\FragmentShader.glsl" />
         
     </ItemGroup>
 

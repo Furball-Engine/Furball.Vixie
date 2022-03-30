@@ -1,18 +1,4 @@
-namespace Furball.Vixie.Graphics.Backends.Veldrid {
-    internal class FullScreenQuadShaders {
-        public static string VertexShader = @"#version 450
-
-layout(location = 0) in vec2 Position;
-layout(location = 1) in vec2 TexCoords;
-layout(location = 0) out vec2 fsin_0;
-
-void main()
-{
-    fsin_0 = TexCoords;
-    gl_Position = vec4(Position.x, Position.y, 0, 1);
-}";
-
-        public static string FragmentShader = @"#version 450
+#version 450
 
 layout(set = 0, binding = 0) uniform texture2D SourceTexture;
 layout(set = 0, binding = 1) uniform sampler SourceSampler;
@@ -42,6 +28,4 @@ void main()
     }
 
     OutputColor = color;
-}";
-    }
 }

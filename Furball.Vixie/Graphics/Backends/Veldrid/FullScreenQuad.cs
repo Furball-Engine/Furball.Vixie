@@ -27,7 +27,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             
             ResourceLayout resourceLayout = backend.ResourceFactory.CreateResourceLayout(new ResourceLayoutDescription(new ResourceLayoutElementDescription("SourceTexture", ResourceKind.TextureReadOnly, ShaderStages.Fragment), new ResourceLayoutElementDescription("SourceSampler", ResourceKind.Sampler, ShaderStages.Fragment)));
 
-            Shader[] shaders = this._backend.ResourceFactory.CreateFromSpirv(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(FullScreenQuadShaders.VertexShader), "main"), new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(FullScreenQuadShaders.FragmentShader), "main"));
+            Shader[] shaders = this._backend.ResourceFactory.CreateFromSpirv(new ShaderDescription(ShaderStages.Vertex, ResourceHelpers.GetByteResource("ShaderCode/Veldrid/FullScreenQuad/VertexShader.glsl", true), "main"), new ShaderDescription(ShaderStages.Fragment, ResourceHelpers.GetByteResource("ShaderCode/Veldrid/FullScreenQuad/FragmentShader.glsl", true), "main"));
 
             GraphicsPipelineDescription pd = new GraphicsPipelineDescription(
                 new BlendStateDescription(RgbaFloat.Black, BlendAttachmentDescription.OverrideBlend),
