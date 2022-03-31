@@ -32,6 +32,11 @@ namespace Furball.Vixie {
         public Vector2 PositionMultiplier = new(1, -1f);
 
         public Vector2 WindowSize { get; private set; }
+        public bool Fullscreen {
+            get => this.GameWindow.WindowState == WindowState.Fullscreen;
+            set => this.GameWindow.WindowState = value ? WindowState.Fullscreen : WindowState.Normal;
+        }
+
         /// <summary>
         /// Creates a Window Manager
         /// </summary>
