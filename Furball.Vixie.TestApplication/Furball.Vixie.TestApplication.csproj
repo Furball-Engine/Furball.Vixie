@@ -27,6 +27,8 @@
       <EmbeddedResource Include="Resources\pippidonclear0.png" />
       <None Remove="Resources\font.ttf" />
       <EmbeddedResource Include="Resources\font.ttf" />
+      <None Remove="Resources\test.qoi" />
+      <EmbeddedResource Include="Resources\test.qoi" />
     </ItemGroup>
     
     <ItemGroup>

@@ -13,12 +13,13 @@ namespace Furball.Vixie.TestApplication.Tests {
         private Texture[]     _textures = new Texture[32];
         private IQuadRenderer _quadRenderer;
 
+        private float _scale = 0.5f;
+        
         public override void Initialize() {
             for (int i = 0; i != this._textures.Length; i++) {
                 if (i % 2 == 0 && i != 0)
                     this._textures[i]  = Texture.Create(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
-                else this._textures[i] = Texture.Create();
-                // else this._textures[i] = Texture.Create(File.ReadAllBytes("testrgba.qoi"), true);
+                else this._textures[i] = Texture.Create(ResourceHelpers.GetByteResource("Resources/test.qoi"), true);
             }
 
             this._quadRenderer = GraphicsBackend.Current.CreateTextureRenderer();
@@ -35,7 +36,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             int y = 0;
 
             for (int i = 0; i != this._textures.Length; i++) {
-                this._quadRenderer.Draw(this._textures[i], new Vector2(x, y), new Vector2(0.5f, 0.5f), 0, TextureFlip.FlipVertical);
+                this._quadRenderer.Draw(this._textures[i], new Vector2(x, y), new Vector2(this._scale) * (i % 2 == 0 ? 1f : 0.25f), i % 2 == 0 ? Color.White : new(1f, 1f, 1f, 0.7f), 0, i % 5 == 0 ? TextureFlip.FlipVertical : TextureFlip.FlipHorizontal);
                 if (i % 3 == 0 && i != 0) {
                     y += 64;
                     x =  0;
@@ -52,6 +53,8 @@ namespace Furball.Vixie.TestApplication.Tests {
                        $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
             );
             
+            ImGui.SliderFloat("Texture Scale", ref this._scale, 0f, 20f);
+
             if (ImGui.Button("Go back to test selector")) {
                 this.BaseGame.Components.Add(new BaseTestSelector());
                 this.BaseGame.Components.Remove(this);
