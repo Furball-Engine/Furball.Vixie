@@ -15,6 +15,7 @@ namespace Furball.Vixie.TestApplication.Tests {
         private Texture             _resultTexture;
         private IQuadRenderer       _quadRenderer;
         private Texture             _whiteTexture;
+        private float               _scale = 1f;
 
         public override void Initialize() {
             this._lineRenderer = GraphicsBackend.Current.CreateLineRenderer();
@@ -43,7 +44,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._resultTexture ??= this._renderTarget.GetTexture();
 //
             this._quadRenderer.Begin();
-            this._quadRenderer.Draw(this._resultTexture, Vector2.Zero, Vector2.One, 0, Color.White);
+            this._quadRenderer.Draw(this._resultTexture, Vector2.Zero, new(this._scale), 0, Color.White);
             this._quadRenderer.End();
 
             #region ImGui menu
@@ -51,6 +52,8 @@ namespace Furball.Vixie.TestApplication.Tests {
             ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
                        $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
             );
+
+            ImGui.SliderFloat("Final Texture Scale", ref this._scale, 0f, 2f);
 
             if (ImGui.Button("Go back to test selector")) {
                 this.BaseGame.Components.Add(new BaseTestSelector());
