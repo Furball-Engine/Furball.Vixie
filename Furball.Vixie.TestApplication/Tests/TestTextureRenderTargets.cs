@@ -18,9 +18,11 @@ namespace Furball.Vixie.TestApplication.Tests {
         private float               _scale = 1f;
 
         public override void Initialize() {
-            this._lineRenderer = GraphicsBackend.Current.CreateLineRenderer();
             this._renderTarget = TextureRenderTarget.Create(200, 200);
+            
+            this._lineRenderer = GraphicsBackend.Current.CreateLineRenderer();
             this._quadRenderer = GraphicsBackend.Current.CreateTextureRenderer();
+            
             this._whiteTexture = Texture.Create();
 
             base.Initialize();
@@ -32,17 +34,17 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._renderTarget.Bind();
             GraphicsBackend.Current.Clear();
 
-            //this._lineRenderer.Begin();
-            //this._lineRenderer.Draw(new Vector2(1280, 720), new Vector2(0, 0), 16f, Color.Red);
-            //this._lineRenderer.End();
+            this._lineRenderer.Begin();
+            this._lineRenderer.Draw(new Vector2(0, 0), new Vector2(1280, 720), 16f, Color.Red);
+            this._lineRenderer.End();
             this._quadRenderer.Begin();
-            this._quadRenderer.Draw(this._whiteTexture, new Vector2(5, 5), new Vector2(128, 128), Color.Red);
+            this._quadRenderer.Draw(this._whiteTexture, new Vector2(5, 5), new Vector2(128, 128), Color.Green);
             this._quadRenderer.End();
 
             this._renderTarget.Unbind();
 
             this._resultTexture ??= this._renderTarget.GetTexture();
-//
+            
             this._quadRenderer.Begin();
             this._quadRenderer.Draw(this._resultTexture, Vector2.Zero, new(this._scale), 0, Color.White);
             this._quadRenderer.End();
