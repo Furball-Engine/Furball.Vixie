@@ -1,8 +1,10 @@
 using System;
 using System.IO;
+using Furball.Vixie.Graphics.Backends.Direct3D11;
 using Furball.Vixie.Graphics.Backends.OpenGL20;
 using Furball.Vixie.Graphics.Backends.OpenGL41;
 using Furball.Vixie.Graphics.Backends.OpenGLES;
+using Furball.Vixie.Graphics.Backends.Veldrid;
 using Furball.Vixie.Graphics.Renderers;
 using Silk.NET.Windowing;
 
@@ -22,10 +24,12 @@ namespace Furball.Vixie.Graphics.Backends {
         /// <exception cref="ArgumentOutOfRangeException">Throws if a Invalid API was chosen</exception>
         public static void SetBackend(Backend backend) {
             Current = backend switch {
-                Backend.OpenGLES => new OpenGLESBackend(),
-                Backend.OpenGL20 => new OpenGL20Backend(),
-                Backend.OpenGL41 => new OpenGL41Backend(),
-                _                => throw new ArgumentOutOfRangeException(nameof (backend), backend, "Invalid API")
+                Backend.OpenGLES   => new OpenGLESBackend(),
+                Backend.Direct3D11 => new Direct3D11Backend(),
+                Backend.OpenGL20   => new OpenGL20Backend(),
+                Backend.OpenGL41   => new OpenGL41Backend(),
+                Backend.Veldrid    => new VeldridBackend(),
+                _                  => throw new ArgumentOutOfRangeException(nameof (backend), backend, "Invalid API")
             };
         }
         /// <summary>
@@ -125,5 +129,19 @@ namespace Furball.Vixie.Graphics.Backends {
         /// </summary>
         /// <param name="deltaTime">Delta Time</param>
         public abstract void ImGuiDraw(double deltaTime);
+        /// <summary>
+        /// Presents
+        /// </summary>
+        public virtual void Present() {
+
+        }
+
+        public virtual void BeginScene() {
+
+        }
+
+        public virtual void EndScene() {
+
+        }
     }
 }

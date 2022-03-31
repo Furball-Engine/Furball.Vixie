@@ -8,6 +8,11 @@ namespace Furball.Vixie.TestApplication {
             GraphicsBackend.Current.Clear();
 
             ImGui.Begin("Test Selector");
+
+            if (ImGui.Button("Mixed Rendering Test")) {
+                this.BaseGame.Components.Add(new TestMixedRendering());
+                this.BaseGame.Components.Remove(this);
+            }
             
             if (ImGui.Button("Batched Rendering Test")) {
                 this.BaseGame.Components.Add(new TestQuadRendering());
@@ -19,13 +24,13 @@ namespace Furball.Vixie.TestApplication {
                 this.BaseGame.Components.Remove(this);
             }
             
-            if (ImGui.Button("Batched Line Rendering Test")) {
-                this.BaseGame.Components.Add(new TestBatchedLineRendering());
+            if (ImGui.Button("Line Smiley Test")) {
+                this.BaseGame.Components.Add(new TestLineSmiley());
                 this.BaseGame.Components.Remove(this);
             }
             
             if (ImGui.Button("TextureRenderTarget Test")) {
-                this.BaseGame.Components.Add(new TextureRenderTargetTest());
+                this.BaseGame.Components.Add(new TestTextureRenderTargets());
                 this.BaseGame.Components.Remove(this);
             }
             
@@ -39,13 +44,13 @@ namespace Furball.Vixie.TestApplication {
                 this.BaseGame.Components.Remove(this);
             }
             
-            if (ImGui.Button("Test FontStashSharp")) {
+            if (ImGui.Button("FontStashSharp Test")) {
                 this.BaseGame.Components.Add(new TestFSS());
                 this.BaseGame.Components.Remove(this);
             }
             
-            if (ImGui.Button("Test Drawing Multiple Textures")) {
-                this.BaseGame.Components.Add(new MultipleTextureTest());
+            if (ImGui.Button("Multiple Textures Test")) {
+                this.BaseGame.Components.Add(new TestMultipleTextures());
                 this.BaseGame.Components.Remove(this);
             }
             

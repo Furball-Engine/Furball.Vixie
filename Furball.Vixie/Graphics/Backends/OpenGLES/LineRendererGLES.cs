@@ -154,10 +154,10 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
             this._vertexPointer->Positions[1] = begin.Y;
             this._vertexPointer->Positions[2] = 0;
             this._vertexPointer->Positions[3] = thickness;
-            this._vertexPointer->Color[0]     = color.R;
-            this._vertexPointer->Color[1]     = color.G;
-            this._vertexPointer->Color[2]     = color.B;
-            this._vertexPointer->Color[3]     = color.A;
+            this._vertexPointer->Color[0]     = color.Rf;
+            this._vertexPointer->Color[1]     = color.Gf;
+            this._vertexPointer->Color[2]     = color.Bf;
+            this._vertexPointer->Color[3]     = color.Af;
             this._vertexPointer++;
 
             //Vertex 2, End Point
@@ -165,10 +165,10 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
             this._vertexPointer->Positions[1] = end.Y;
             this._vertexPointer->Positions[2] = 0;
             this._vertexPointer->Positions[3] = thickness;
-            this._vertexPointer->Color[0]     = color.R;
-            this._vertexPointer->Color[1]     = color.G;
-            this._vertexPointer->Color[2]     = color.B;
-            this._vertexPointer->Color[3]     = color.A;
+            this._vertexPointer->Color[0]     = color.Rf;
+            this._vertexPointer->Color[1]     = color.Gf;
+            this._vertexPointer->Color[2]     = color.Bf;
+            this._vertexPointer->Color[3]     = color.Af;
             this._vertexPointer++;
 
             this._vertexBufferIndex  += 32;

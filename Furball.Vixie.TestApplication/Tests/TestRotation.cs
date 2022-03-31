@@ -26,8 +26,12 @@ namespace Furball.Vixie.TestApplication.Tests {
             GraphicsBackend.Current.Clear();
 
             this._quadRendererGl.Begin();
-            this._quadRendererGl.Draw(this._whiteTextureGl, new Vector2(1280 / 2, 720 / 2), Vector2.One, _rotation);
+
+            for(int i = 0; i != 360; i ++)
+                this._quadRendererGl.Draw(this._whiteTextureGl, new Vector2(1280 / 2, 720 / 2), Vector2.One, (float) i * (3.1415f / 180f) + this._rotation);
+
             this._quadRendererGl.End();
+
 
             #region ImGui menu
 

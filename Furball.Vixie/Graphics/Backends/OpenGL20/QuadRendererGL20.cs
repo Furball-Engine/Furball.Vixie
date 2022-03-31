@@ -4,6 +4,7 @@ using System.Numerics;
 using FontStashSharp;
 using Furball.Vixie.FontStashSharp;
 using Furball.Vixie.Graphics.Backends.OpenGL20.Abstractions;
+using Furball.Vixie.Graphics.Backends.OpenGL41;
 using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using Silk.NET.OpenGL.Legacy;
@@ -40,7 +41,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
             this._gl      = backend.GetOpenGL();
 
             string vertex   = ResourceHelpers.GetStringResource("ShaderCode/OpenGL20/VertexShader.glsl");
-            string fragment = ResourceHelpers.GetStringResource("ShaderCode/OpenGL20/FragmentShader.glsl");
+            string fragment = QuadShaderGeneratorGL20.GetFragment(backend);
 
             this._program = new(this._backend, vertex, fragment);
             this._backend.CheckError();
@@ -178,8 +179,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
             this.BatchedTextureIds[this.BatchedQuads]           = GetTextureId(textureGl);
             this.BatchedTextureCoordinates[this.BatchedQuads].X = 0;
             this.BatchedTextureCoordinates[this.BatchedQuads].Y = 0;
-            this.BatchedTextureCoordinates[this.BatchedQuads].Z = 1;
-            this.BatchedTextureCoordinates[this.BatchedQuads].W = 1;
+            this.BatchedTextureCoordinates[this.BatchedQuads].Z = texFlip == TextureFlip.FlipHorizontal ? -1 : 1;
+            this.BatchedTextureCoordinates[this.BatchedQuads].W = texFlip == TextureFlip.FlipVertical ? -1 : 1;
 
             this.BatchedQuads++;
         }
@@ -215,8 +216,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
             this.BatchedTextureIds[this.BatchedQuads]           = GetTextureId(textureGl);
             this.BatchedTextureCoordinates[this.BatchedQuads].X = (float)sourceRect.X      / textureGl.Width;
             this.BatchedTextureCoordinates[this.BatchedQuads].Y = (float)sourceRect.Y      / textureGl.Height;
-            this.BatchedTextureCoordinates[this.BatchedQuads].Z = (float)sourceRect.Width  / textureGl.Width;
-            this.BatchedTextureCoordinates[this.BatchedQuads].W = (float)sourceRect.Height / textureGl.Height;
+            this.BatchedTextureCoordinates[this.BatchedQuads].Z = (float)sourceRect.Width  / textureGl.Width * (texFlip == TextureFlip.FlipHorizontal ? -1 : 1);
+            this.BatchedTextureCoordinates[this.BatchedQuads].W = (float)sourceRect.Height / textureGl.Height * (texFlip == TextureFlip.FlipVertical ? -1 : 1);
 
             this.BatchedQuads++;
         }

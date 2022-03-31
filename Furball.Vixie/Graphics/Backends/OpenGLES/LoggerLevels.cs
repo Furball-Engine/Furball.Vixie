@@ -2,7 +2,7 @@ using Kettu;
 
 namespace Furball.Vixie.Graphics.Backends.OpenGLES {
     internal class LoggerLevelOpenGLES : LoggerLevel {
-        public override string Name => "OpenGL";
+        public override string Name => "OpenGLES";
 
         private enum Channel {
             Error,

@@ -1,4 +1,5 @@
 using System;
+using System.Drawing;
 using System.Globalization;
 using System.Numerics;
 using Furball.Vixie.Graphics;
@@ -6,51 +7,48 @@ using Furball.Vixie.Graphics.Backends;
 using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using ImGuiNET;
+using Color=Furball.Vixie.Graphics.Color;
 
 namespace Furball.Vixie.TestApplication.Tests {
-    public class MultipleTextureTest : GameComponent {
-        private Texture[]     _textures = new Texture[32];
+    public class TestMixedRendering : GameComponent {
         private IQuadRenderer _quadRenderer;
+        private ILineRenderer _lineRenderer;
+        private Texture       _testTexture;
 
         public override void Initialize() {
-            for (int i = 0; i != this._textures.Length; i++) {
-                if (i % 2 == 0 && i != 0)
-                    this._textures[i]  = Texture.Create(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
-                else this._textures[i] = Texture.Create();
-                // else this._textures[i] = Texture.Create(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
-            }
-
             this._quadRenderer = GraphicsBackend.Current.CreateTextureRenderer();
+            this._testTexture = Texture.Create(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
 
+            this._lineRenderer = GraphicsBackend.Current.CreateLineRenderer();
+            
             base.Initialize();
         }
+        
+        private float _lineWidth = 3f;
 
         public override void Draw(double deltaTime) {
             GraphicsBackend.Current.Clear();
 
             this._quadRenderer.Begin();
-
-            int x = 0;
-            int y = 0;
-
-            for (int i = 0; i != this._textures.Length; i++) {
-                this._quadRenderer.Draw(this._textures[i], new Vector2(x, y), new Vector2(1f, 1f));
-                if (i % 3 == 0 && i != 0) {
-                    y += 64;
-                    x =  0;
-                }
-
-                x += 256;
-            }
-
+            this._quadRenderer.Draw(this._testTexture, new Vector2(1280 / 2, 720 / 2), new(0.5f), 0, Color.Red);
             this._quadRenderer.End();
 
+            this._lineRenderer.Begin();
+            this._lineRenderer.Draw(Vector2.Zero, new(1280, 720), _lineWidth, Color.Blue);
+            this._lineRenderer.End();
+            
+            this._quadRenderer.Begin();
+            this._quadRenderer.Draw(this._testTexture, new Vector2(1280 / 2 + 100, 720 / 2 + 100), new(0.5f), 0, Color.Green);
+            this._quadRenderer.End();
+            
             #region ImGui menu
 
             ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
                        $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
             );
             
+            ImGui.SliderFloat("Line Width", ref this._lineWidth, 0f, 20f);
+
             if (ImGui.Button("Go back to test selector")) {
                 this.BaseGame.Components.Add(new BaseTestSelector());
                 this.BaseGame.Components.Remove(this);

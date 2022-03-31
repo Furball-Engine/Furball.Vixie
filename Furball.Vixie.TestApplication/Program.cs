@@ -4,6 +4,7 @@ using Furball.Vixie.TestApplication;
 using Silk.NET.Windowing;
 
 var options = WindowOptions.Default;
-options.VSync           = false;
 
-new TestGame(options).Run(options, Backend.OpenGL20);
+options.VSync = false;
+
+new TestGame(options).Run(options, Backend.Veldrid);

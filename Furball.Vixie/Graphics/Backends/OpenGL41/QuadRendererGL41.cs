@@ -75,7 +75,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
             this._boundTextures = new TextureGL41[this._backend.QueryMaxTextureUnits()];
 
             string vertSource = ResourceHelpers.GetStringResource("ShaderCode/OpenGL41/InstancedRenderer/VertexShader.glsl");
-            string fragSource = ResourceHelpers.GetStringResource("ShaderCode/OpenGL41/InstancedRenderer/FragmentShader.glsl");
+            string fragSource = QuadShaderGeneratorGL41.GetFragment(backend);
 
             this._shaderGl41 = new ShaderGL41(backend);
 
@@ -207,10 +207,10 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
             this._instanceData[this._instances].Rotation              = rotation;
             this._instanceData[this._instances].RotationOrigin        = rotOrigin;
             this._instanceData[this._instances].TextureId             = this.GetTextureId(textureGl);
-            this._instanceData[this._instances].TextureRectPosition.X = (float)0         / textureGl.Width;
-            this._instanceData[this._instances].TextureRectPosition.Y = (float)0         / textureGl.Height;
-            this._instanceData[this._instances].TextureRectSize.X     = textureGl.Size.X / textureGl.Width;
-            this._instanceData[this._instances].TextureRectSize.Y     = textureGl.Size.Y / textureGl.Height;
+            this._instanceData[this._instances].TextureRectPosition.X = 0;
+            this._instanceData[this._instances].TextureRectPosition.Y = 0;
+            this._instanceData[this._instances].TextureRectSize.X     = texFlip == TextureFlip.FlipHorizontal ? -1 : 1;
+            this._instanceData[this._instances].TextureRectSize.Y     = texFlip == TextureFlip.FlipVertical ? -1 : 1;
 
             this._instances++;
         }
@@ -243,8 +243,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
             this._instanceData[this._instances].TextureId             = this.GetTextureId(textureGl);
             this._instanceData[this._instances].TextureRectPosition.X = (float)sourceRect.X      / textureGl.Width;
             this._instanceData[this._instances].TextureRectPosition.Y = (float)sourceRect.Y      / textureGl.Height;
-            this._instanceData[this._instances].TextureRectSize.X     = (float)sourceRect.Width  / textureGl.Width;
-            this._instanceData[this._instances].TextureRectSize.Y     = (float)sourceRect.Height / textureGl.Height;
+            this._instanceData[this._instances].TextureRectSize.X     = (float)sourceRect.Width  / textureGl.Width * (texFlip == TextureFlip.FlipHorizontal ? -1 : 1);
+            this._instanceData[this._instances].TextureRectSize.Y     = (float)sourceRect.Height / textureGl.Height * (texFlip == TextureFlip.FlipVertical ? -1 : 1);
 
             this._instances++;
         }
