@@ -10,7 +10,7 @@ using ImGuiNET;
 using Color=Furball.Vixie.Graphics.Color;
 
 namespace Furball.Vixie.TestApplication.Tests {
-    public class MixedTest : GameComponent {
+    public class TestMixedRendering : GameComponent {
         private IQuadRenderer _quadRenderer;
         private ILineRenderer _lineRenderer;
         private Texture       _testTexture;

@@ -9,7 +9,7 @@ using ImGuiNET;
 
 
 namespace Furball.Vixie.TestApplication.Tests {
-    public class TextureRenderTargetTest : GameComponent {
+    public class TestTextureRenderTargets : GameComponent {
         private ILineRenderer       _lineRenderer;
         private TextureRenderTarget _renderTarget;
         private Texture             _resultTexture;

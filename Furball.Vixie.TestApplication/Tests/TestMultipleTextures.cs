@@ -9,7 +9,7 @@ using Furball.Vixie.Helpers;
 using ImGuiNET;
 
 namespace Furball.Vixie.TestApplication.Tests {
-    public class MultipleTextureTest : GameComponent {
+    public class TestMultipleTextures : GameComponent {
         private Texture[]     _textures = new Texture[32];
         private IQuadRenderer _quadRenderer;
 
