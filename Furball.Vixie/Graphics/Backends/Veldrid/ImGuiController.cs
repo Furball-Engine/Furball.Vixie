@@ -286,6 +286,8 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
                 idx_offset += cmd_list.IdxBuffer.Size;
                 vtx_offset += cmd_list.VtxBuffer.Size;
             }
+            
+            cl.SetFullScissorRect(0);
         }
 
         private string GetEmbeddedResourceText(string resourceName) {
