@@ -1,11 +1,14 @@
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using Furball.Vixie.Graphics.Backends.Direct3D11;
 using Furball.Vixie.Graphics.Backends.OpenGL20;
 using Furball.Vixie.Graphics.Backends.OpenGL41;
 using Furball.Vixie.Graphics.Backends.OpenGLES;
 using Furball.Vixie.Graphics.Backends.Veldrid;
 using Furball.Vixie.Graphics.Renderers;
+using Furball.Vixie.Helpers;
+using Kettu;
 using Silk.NET.Windowing;
 
 namespace Furball.Vixie.Graphics.Backends {
@@ -142,6 +145,58 @@ namespace Furball.Vixie.Graphics.Backends {
 
         public virtual void EndScene() {
 
+        }
+
+        public static bool IsOnUnsupportedPlatform {
+            get;
+            private set;
+        } = false;
+
+        public static Backend PrefferedBackends = Backend.None;
+        public static Backend GetReccomendedBackend() {
+            bool preferVeldridOverNative  = PrefferedBackends.HasFlag(Backend.Veldrid);
+            bool preferOpenGl             = PrefferedBackends.HasFlag(Backend.OpenGL41);
+            bool preferOpenGlLegacy       = PrefferedBackends.HasFlag(Backend.OpenGL20);
+            bool preferOpenGlesOverOpenGl = PrefferedBackends.HasFlag(Backend.OpenGLES);
+            
+            if (OperatingSystem.IsWindows()) {
+                if (preferVeldridOverNative) 
+                    return Backend.Veldrid;
+                return preferOpenGlesOverOpenGl ? Backend.OpenGLES : preferOpenGlLegacy ? Backend.OpenGL20 : Backend.OpenGL41;
+            }
+            if (OperatingSystem.IsAndroid()) {
+                return preferVeldridOverNative ? Backend.Veldrid : Backend.OpenGLES;
+            }
+            if (OperatingSystem.IsLinux()) {
+                if (preferVeldridOverNative) 
+                    return Backend.Veldrid;
+                return preferOpenGlesOverOpenGl ? Backend.OpenGLES : preferOpenGlLegacy ? Backend.OpenGL20 : Backend.OpenGL41;
+            }
+            if (OperatingSystem.IsMacOSVersionAtLeast(10, 11)) { //Most models that run this version are guarenteed Metal support, so go with veldrid
+                if (preferOpenGl) {
+                    if(preferOpenGlesOverOpenGl)
+                        Logger.Log("OpenGLES is considered unsupported on MacOS!", LoggerLevelDebugMessageCallback.InstanceNotification);
+
+                    return preferOpenGlesOverOpenGl ? Backend.OpenGLES : preferOpenGlLegacy ? Backend.OpenGL20 : Backend.OpenGL41;
+                }
+                return Backend.Veldrid;
+            }
+            if(OperatingSystem.IsMacOS()) { //if we are on older macos, then we cant use Metal probably, so just stick with GL
+                if (preferVeldridOverNative) 
+                    return Backend.Veldrid; //we can just pray that Veldrid doesnt actually choose metal for these old things
+                
+                if(preferOpenGlesOverOpenGl)
+                    Logger.Log("OpenGLES is considered unsupported on MacOS!", LoggerLevelDebugMessageCallback.InstanceNotification);
+
+                return preferOpenGlesOverOpenGl ? Backend.OpenGLES : preferOpenGlLegacy ? Backend.OpenGL20 : Backend.OpenGL41;
+            }
+            if (OperatingSystem.IsFreeBSD()) {
+                return preferOpenGlesOverOpenGl ? Backend.OpenGLES : preferOpenGlLegacy ? Backend.OpenGL20 : Backend.OpenGL41;
+            }
+
+            Logger.Log("You are running on an untested, unsupported platform!", LoggerLevelDebugMessageCallback.InstanceNotification);
+            IsOnUnsupportedPlatform = true;
+            return Backend.OpenGL20; //return the most supported backend
         }
     }
 }

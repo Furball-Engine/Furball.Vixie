@@ -38,7 +38,10 @@ namespace Furball.Vixie {
         /// <summary>
         /// Runs the Game
         /// </summary>
-        public void Run(WindowOptions options, Backend backend) {
+        public void Run(WindowOptions options, Backend backend = Backend.None) {
+            if (backend == Backend.None)
+                backend = GraphicsBackend.GetReccomendedBackend();
+            
             this.WindowManager = new WindowManager(options, backend);
             this.WindowManager.Create();
 
