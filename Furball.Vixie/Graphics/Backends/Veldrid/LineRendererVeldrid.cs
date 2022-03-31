@@ -185,8 +185,6 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid {
             if (this._instances >= NUM_INSTANCES) {
                 this.Flush();
             }
-
-            thickness *= 1.4f;
             
             this._instanceData[this._instances].InstancePosition = begin;
             this._instanceData[this._instances].InstanceSize.X   = (end - begin).Length();
