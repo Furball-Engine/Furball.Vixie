@@ -27,7 +27,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             GraphicsBackend.Current.Clear();
 
             this._quadRenderer.Begin();
-            this._quadRenderer.Draw(this._whiteTexture, new Vector2(1280 / 2, 720 / 2), Vector2.One, 0, Color.White, new Rectangle(371 / 2, 0, 371 / 2, 326));
+            this._quadRenderer.Draw(this._whiteTexture, new Vector2(1280 / 2, 720 / 2), Vector2.One, this._rotation, Color.White, new Rectangle(371 / 2, 0, 371 / 2, 326 / 2));
             this._quadRenderer.End();
 
             #region ImGui menu
@@ -36,7 +36,7 @@ namespace Furball.Vixie.TestApplication.Tests {
                        $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
             );
             
-            ImGui.DragFloat("Rotation", ref this._rotation, 0.01f, 0f, 8f);
+            ImGui.SliderFloat("Rotation", ref this._rotation, 0f, MathF.PI * 2f);
             
             if (ImGui.Button("Go back to test selector")) {
                 this.BaseGame.Components.Add(new BaseTestSelector());
