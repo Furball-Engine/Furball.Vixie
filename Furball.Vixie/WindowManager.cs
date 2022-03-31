@@ -82,7 +82,7 @@ namespace Furball.Vixie {
         public void Create() {
             SdlWindowing.Use(); //dont tell perskey and kai that i do this! shhhhhhhhhhhhhhh
 
-            VeldridBackend.PrefferedBackend = Veldrid.GraphicsBackend.Vulkan;
+            VeldridBackend.PrefferedBackend = Veldrid.GraphicsBackend.OpenGLES;
             
             ContextAPI api = this._backend switch {
                 Backend.OpenGLES   => ContextAPI.OpenGLES,

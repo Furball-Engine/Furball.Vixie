@@ -8,6 +8,11 @@ namespace Furball.Vixie.TestApplication {
             GraphicsBackend.Current.Clear();
 
             ImGui.Begin("Test Selector");
+
+            if (ImGui.Button("Mixed Rendering Test")) {
+                this.BaseGame.Components.Add(new MixedTest());
+                this.BaseGame.Components.Remove(this);
+            }
             
             if (ImGui.Button("Batched Rendering Test")) {
                 this.BaseGame.Components.Add(new TestQuadRendering());
