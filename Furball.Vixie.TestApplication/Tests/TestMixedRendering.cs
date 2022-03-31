@@ -23,8 +23,8 @@ namespace Furball.Vixie.TestApplication.Tests {
             
             base.Initialize();
         }
-
-        private float _rotation = 1f;
+        
+        private float _lineWidth = 3f;
 
         public override void Draw(double deltaTime) {
             GraphicsBackend.Current.Clear();
@@ -34,7 +34,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._quadRenderer.End();
 
             this._lineRenderer.Begin();
-            this._lineRenderer.Draw(Vector2.Zero, new(1280, 720), 3, Color.Blue);
+            this._lineRenderer.Draw(Vector2.Zero, new(1280, 720), _lineWidth, Color.Blue);
             this._lineRenderer.End();
             
             this._quadRenderer.Begin();
@@ -46,6 +46,8 @@ namespace Furball.Vixie.TestApplication.Tests {
             ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
                        $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
             );
+            
+            ImGui.SliderFloat("Line Width", ref this._lineWidth, 0f, 20f);
 
             if (ImGui.Button("Go back to test selector")) {
                 this.BaseGame.Components.Add(new BaseTestSelector());
