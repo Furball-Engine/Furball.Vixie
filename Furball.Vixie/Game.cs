@@ -43,7 +43,7 @@ namespace Furball.Vixie {
             this.WindowManager.Create();
 
             this.WindowManager.GameWindow.Update            += this.Update;
-            this.WindowManager.GameWindow.Render            += this.Draw;
+            this.WindowManager.GameWindow.Render            += this.VixieDraw;
             this.WindowManager.GameWindow.Load              += this.RendererInitialize;
             this.WindowManager.GameWindow.Closing           += this.RendererOnClosing;
             this.WindowManager.GameWindow.FileDrop          += this.OnFileDrop;
@@ -144,17 +144,25 @@ namespace Furball.Vixie {
             DisposeQueue.DoDispose();
         }
         /// <summary>
+        /// Sets up and ends the scene
+        /// </summary>
+        /// <param name="deltaTime"></param>
+        private void VixieDraw(double deltaTime) {
+            GraphicsBackend.Current.BeginScene();
+
+            this.Draw(deltaTime);
+            
+            GraphicsBackend.Current.EndScene();
+
+            GraphicsBackend.Current.Present();
+        }
+        /// <summary>
         /// Draw Method, do your Drawing work in there
         /// </summary>
         /// <param name="deltaTime"></param>
         protected virtual void Draw(double deltaTime) {
-            GraphicsBackend.Current.BeginScene();
-
             this.Components.Draw(deltaTime);
             GraphicsBackend.Current.ImGuiDraw(deltaTime);
-            GraphicsBackend.Current.EndScene();
-
-            GraphicsBackend.Current.Present();
         }
         /// <summary>
         /// Dispose any IDisposables and other things left to clean up here
