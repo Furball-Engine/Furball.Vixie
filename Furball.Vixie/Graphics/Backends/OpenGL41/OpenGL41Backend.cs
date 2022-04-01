@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Numerics;
 using System.Threading;
+using Furball.Vixie.Graphics.Backends.OpenGL_;
 using Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions;
 using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
@@ -14,7 +15,7 @@ using Silk.NET.Windowing;
 
 namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
     // ReSharper disable once InconsistentNaming
-    public class OpenGL41Backend : GraphicsBackend {
+    public class OpenGL41Backend : GraphicsBackend, IGLBasedBackend {
         /// <summary>
         /// OpenGL API
         /// </summary>
@@ -90,18 +91,21 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
             
             this.CheckError();
         }
+        public void CheckError(string message = "") {
+            this.CheckErrorInternal(message);
+        }
         /// <summary>
         /// Checks for OpenGL errors
         /// </summary>
         [Conditional("DEBUG")]
-        public void CheckError() {
+        public void CheckErrorInternal(string message = "") {
             GLEnum error = this.gl.GetError();
             
             if (error != GLEnum.NoError) {
 #if DEBUGWITHGL
-#else
                 throw new Exception($"Got GL Error {error}!");
-                //Debugger.Break();
+#else
+                Debugger.Break();
                 Logger.Log($"OpenGL Error! Code: {error.ToString()}", LoggerLevelOpenGL41.InstanceError);
 #endif
             }
@@ -247,6 +251,24 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
             };
 
             Console.WriteLine(stringMessage);
+        }
+        public GLBackendType             GetType()     => GLBackendType.Modern;
+        public GL                        GetModernGL() => this.gl;
+        public Silk.NET.OpenGL.Legacy.GL GetLegacyGL() => throw new WrongGLBackendException();
+        public Silk.NET.OpenGLES.GL      GetGLES()     => throw new WrongGLBackendException();
+        
+        public uint                      GenBuffer()   => this.gl.GenBuffer();
+        public void BindBuffer(BufferTargetARB usage, uint buf) {
+            this.gl.BindBuffer(usage, buf);
+        }
+        public unsafe void BufferData(BufferTargetARB bufferType, nuint size, void* data, BufferUsageARB bufferUsage) {
+            this.gl.BufferData(bufferType, size, data, bufferUsage);
+        }
+        public unsafe void BufferSubData(BufferTargetARB bufferType, nint offset, nuint size, void* data) {
+            this.gl.BufferSubData(bufferType, offset, size, data);
+        }
+        public void DeleteBuffer(uint bufferId) {
+            this.gl.DeleteBuffer(bufferId);
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Numerics;
 using System.Threading;
+using Furball.Vixie.Graphics.Backends.OpenGL_;
 using Furball.Vixie.Graphics.Backends.OpenGL41;
 using Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions;
 using Furball.Vixie.Graphics.Renderers;
@@ -12,10 +13,12 @@ using Silk.NET.Core.Native;
 using Silk.NET.OpenGLES;
 using Silk.NET.OpenGLES.Extensions.ImGui;
 using Silk.NET.Windowing;
+using BufferTargetARB=Silk.NET.OpenGL.BufferTargetARB;
+using BufferUsageARB=Silk.NET.OpenGL.BufferUsageARB;
 
 namespace Furball.Vixie.Graphics.Backends.OpenGLES {
     // ReSharper disable once InconsistentNaming
-    public class OpenGLESBackend : GraphicsBackend {
+    public class OpenGLESBackend : GraphicsBackend, IGLBasedBackend {
         /// <summary>
         /// OpenGLES API
         /// </summary>
@@ -82,18 +85,21 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
             Logger.Log($"OpenGL Vendor:  {this.gl.GetStringS(StringName.Vendor)}",                 LoggerLevelOpenGLES.InstanceInfo);
             Logger.Log($"Renderer:       {this.gl.GetStringS(StringName.Renderer)}",               LoggerLevelOpenGLES.InstanceInfo);
         }
+        public void CheckError(string message = "") {
+            this.CheckErrorInternal();
+        }
         /// <summary>
         /// Checks for OpenGL errors
         /// </summary>
         [Conditional("DEBUG")]
-        public void CheckError() {
+        public void CheckErrorInternal(string message = "") {
             GLEnum error = this.gl.GetError();
             
             if (error != GLEnum.NoError) {
 #if DEBUGWITHGL
                 throw new Exception($"Got GL Error {error}!");
 #else
-                //Debugger.Break();
+                Debugger.Break();
                 Logger.Log($"OpenGLES Error! Code: {error.ToString()}", LoggerLevelOpenGLES.InstanceError);
 #endif
             }
@@ -238,6 +244,24 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
             };
 
             Console.WriteLine(stringMessage);
+        }
+        public GLBackendType             GetType()     => GLBackendType.ES;
+        public Silk.NET.OpenGL.GL        GetModernGL() => throw new WrongGLBackendException();
+        public Silk.NET.OpenGL.Legacy.GL GetLegacyGL() => throw new WrongGLBackendException();
+        public GL                        GetGLES()     => this.gl;
+        
+        public uint                      GenBuffer()   => this.gl.GenBuffer();
+        public void BindBuffer(BufferTargetARB usage, uint buf) {
+            this.gl.BindBuffer((Silk.NET.OpenGLES.BufferTargetARB)usage, buf);
+        }
+        public unsafe void BufferData(BufferTargetARB bufferType, nuint size, void* data, BufferUsageARB bufferUsage) {
+            this.gl.BufferData((Silk.NET.OpenGLES.BufferTargetARB)bufferType, size, data, (Silk.NET.OpenGLES.BufferUsageARB)bufferUsage);
+        }
+        public unsafe void BufferSubData(BufferTargetARB bufferType, nint offset, nuint size, void* data) {
+            this.gl.BufferSubData((Silk.NET.OpenGLES.BufferTargetARB)bufferType, offset, size, data);
+        }
+        public void DeleteBuffer(uint bufferId) {
+            this.gl.DeleteBuffer(bufferId);
         }
     }
 }

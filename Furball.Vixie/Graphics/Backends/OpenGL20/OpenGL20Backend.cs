@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Numerics;
+using Furball.Vixie.Graphics.Backends.OpenGL_;
 using Furball.Vixie.Graphics.Backends.OpenGL20.Abstractions;
 using Furball.Vixie.Graphics.Backends.OpenGL41;
 using Furball.Vixie.Graphics.Renderers;
@@ -14,21 +15,27 @@ using Silk.NET.OpenGL.Legacy;
 using Silk.NET.OpenGL.Legacy.Extensions.EXT;
 using Silk.NET.OpenGL.Legacy.Extensions.ImGui;
 using Silk.NET.Windowing;
+using BufferTargetARB=Silk.NET.OpenGL.BufferTargetARB;
+using BufferUsageARB=Silk.NET.OpenGL.BufferUsageARB;
 
 namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
-    public class OpenGL20Backend : GraphicsBackend {
+    public class OpenGL20Backend : GraphicsBackend, IGLBasedBackend {
         private GL gl;
 
         private ImGuiController _imgui;
         
         public  Matrix4x4       ProjectionMatrix;
 
+        public void CheckError(string message = "") {
+            this.CheckErrorInternal(message);
+        }
+
         /// <summary>
         /// Checks for OpenGL errors
         /// </summary>
         /// <param name="erorr"></param>
         [Conditional("DEBUG")]
-        public void CheckError(string erorr = "") {
+        private void CheckErrorInternal(string erorr = "") {
             GLEnum error = this.gl.GetError();
             
             if (error != GLEnum.NoError) {
@@ -149,6 +156,25 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
         }
         public override void ImGuiDraw(double deltaTime) {
             this._imgui.Render();
+        }
+
+        public new GLBackendType        GetType()     => GLBackendType.Legacy;
+        public     Silk.NET.OpenGL.GL   GetModernGL() => throw new WrongGLBackendException();
+        public     GL                   GetLegacyGL() => this.gl;
+        public     Silk.NET.OpenGLES.GL GetGLES()     => throw new WrongGLBackendException();
+        
+        public     uint                 GenBuffer()   => this.gl.GenBuffer();
+        public void BindBuffer(BufferTargetARB usage, uint buf) {
+            this.gl.BindBuffer((Silk.NET.OpenGL.Legacy.BufferTargetARB)usage, buf);
+        }
+        public unsafe void BufferData(BufferTargetARB bufferType, nuint size, void* data, BufferUsageARB bufferUsage) {
+            this.gl.BufferData((Silk.NET.OpenGL.Legacy.BufferTargetARB)bufferType, size, data, (Silk.NET.OpenGL.Legacy.BufferUsageARB)bufferUsage);
+        }
+        public unsafe void BufferSubData(BufferTargetARB bufferType, nint offset, nuint size, void* data) {
+            this.gl.BufferSubData((Silk.NET.OpenGL.Legacy.BufferTargetARB)bufferType, offset, size, data);
+        }
+        public void DeleteBuffer(uint bufferId) {
+            this.gl.DeleteBuffer(bufferId);
         }
     }
 }

@@ -1,12 +1,10 @@
 using System;
+using Furball.Vixie.Graphics.Backends.OpenGLES;
 using Silk.NET.OpenGL;
 
-namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
-    /// <summary>
-    /// OpenGL Buffer Objecct
-    /// </summary>
-    public class BufferObjectGL41 : IDisposable {
-        internal static BufferObjectGL41 CurrentlyBound;
+namespace Furball.Vixie.Graphics.Backends.OpenGL_ {
+    public class BufferObjectGL : IDisposable {
+        internal static BufferObjectGL CurrentlyBound;
         public bool Bound => CurrentlyBound == this;
 
         /// <summary>
@@ -16,7 +14,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
         /// <summary>
         /// Backend to which this belongs to
         /// </summary>
-        private readonly OpenGL41Backend _backend;
+        private readonly IGLBasedBackend _backend;
         /// <summary>
         /// Type of Buffer, is it a Vertex Buffer? a Index Buffer? a different buffer entirely?
         /// </summary>
@@ -25,10 +23,6 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
         /// How is this buffer going to be used?
         /// </summary>
         private BufferUsageARB _bufferUsage;
-        /// <summary>
-        /// OpenGL api, used to not have to do Global.Gl.function everytime, saves time and makes code shorter
-        /// </summary>
-        private GL gl;
         /// <summary>
         /// Amount of Data supplied in Constructor
         /// </summary>
@@ -40,19 +34,17 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
         /// <param name="size">Size of the Buffer</param>
         /// <param name="bufferType">What kind of buffer is it?</param>
         /// <param name="usage">How is this buffer going to be used?</param>
-        public unsafe BufferObjectGL41(OpenGL41Backend backend, int size, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StreamDraw) {
+        public unsafe BufferObjectGL(IGLBasedBackend backend, int size, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StreamDraw) {
             this._backend     = backend;
-            this._backend.CheckThread();
             
-            this.gl           = backend.GetGlApi();
             this._bufferType  = bufferType;
             this._bufferUsage = usage;
             //Generate Buffer
-            this.BufferId = this.gl.GenBuffer();
+            this.BufferId = this._backend.GenBuffer();
             //Select buffer, as we're going to allocate memory in it
-            this.gl.BindBuffer(this._bufferType, this.BufferId);
+            this._backend.BindBuffer(this._bufferType, this.BufferId);
             //Allocate Memory
-            this.gl.BufferData(this._bufferType, (nuint) size, null, this._bufferUsage);
+            this._backend.BufferData(this._bufferType, (nuint) size, null, this._bufferUsage);
             this._backend.CheckError();
         }
         /// <summary>
@@ -61,21 +53,19 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
         /// <param name="backend">OpenGL backend to which this belongs to</param>
         /// <param name="bufferType">What kind of Buffer is it</param>
         /// <param name="usage">How is this buffer going to be used?</param>
-        public BufferObjectGL41(OpenGL41Backend backend, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StreamDraw) {
+        public BufferObjectGL(IGLBasedBackend backend, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StreamDraw) {
             this._backend     = backend;
-            this._backend.CheckThread();
             
-            this.gl           = backend.GetGlApi();
             this._bufferType  = bufferType;
             this._bufferUsage = usage;
             //Generate Buffer
-            this.BufferId = this.gl.GenBuffer();
+            this.BufferId = this._backend.GenBuffer();
             this._backend.CheckError();
         }
 
         public delegate void VoidDelegate();
 
-        ~BufferObjectGL41() {
+        ~BufferObjectGL() {
             DisposeQueue.Enqueue(this);
         }
 
@@ -85,25 +75,21 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
         /// <param name="data">Data to put there</param>
         /// <param name="size">Size of the Data</param>
         /// <returns></returns>
-        public unsafe BufferObjectGL41 SetData(void* data, nuint size) {
-            this._backend.CheckThread();
-            
-            this.gl.BufferData(this._bufferType, size, data, this._bufferUsage);
+        public unsafe BufferObjectGL SetData(void* data, nuint size) {
+            this._backend.BufferData(this._bufferType, size, data, this._bufferUsage);
             this._backend.CheckError();
 
             return this;
         }
 
-        public unsafe BufferObjectGL41 SetSubData(void* data, nuint size, nint offset = 0) {
-            this._backend.CheckThread();
-            
-            this.gl.BufferSubData(this._bufferType, offset, size, data);
+        public unsafe BufferObjectGL SetSubData(void* data, nuint size, nint offset = 0) {
+            this._backend.BufferSubData(this._bufferType, offset, size, data);
             this._backend.CheckError();
 
             return this;
         }
 
-        public unsafe BufferObjectGL41 SetSubData<pDataType>(Span<pDataType> data) where pDataType : unmanaged {
+        public unsafe BufferObjectGL SetSubData<pDataType>(Span<pDataType> data) where pDataType : unmanaged {
             fixed (void* d = data) {
                 this.SetSubData(d, (nuint)(data.Length * sizeof(pDataType)));
             }
@@ -118,7 +104,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
         /// <param name="data">Data to put</param>
         /// <typeparam name="pDataType">Type of data to put</typeparam>
         /// <returns>Self, used for chaining Methods</returns>
-        public unsafe BufferObjectGL41 SetData<pDataType>(Span<pDataType> data) where pDataType : unmanaged {
+        public unsafe BufferObjectGL SetData<pDataType>(Span<pDataType> data) where pDataType : unmanaged {
             fixed (void* d = data) {
                 this.SetData(d, (nuint)(data.Length * sizeof(pDataType)));
             }
@@ -134,32 +120,30 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
         /// <param name="usage">How is this buffer going to be used?</param>
         /// <typeparam name="pDataType">Type of Data to initially store</typeparam>
         /// <returns>Self, used for chaining Methods</returns>
-        public static unsafe BufferObjectGL41 CreateNew<pDataType>(OpenGL41Backend backend, Span<pDataType> data, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StreamDraw)
+        public static unsafe BufferObjectGL CreateNew<pDataType>(IGLBasedBackend backend, Span<pDataType> data, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StreamDraw)
             where pDataType : unmanaged
         {
-            BufferObjectGL41 bufferObjectGl41 = new BufferObjectGL41(backend, bufferType, usage);
-            bufferObjectGl41.Bind();
+            BufferObjectGL BufferObjectGL = new BufferObjectGL(backend, bufferType, usage);
+            BufferObjectGL.Bind();
 
             fixed (void* d = data) {
-                bufferObjectGl41.SetData(d, (nuint)(data.Length * sizeof(pDataType)));
+                BufferObjectGL.SetData(d, (nuint)(data.Length * sizeof(pDataType)));
             }
 
-            bufferObjectGl41.DataCount = (uint) data.Length;
+            BufferObjectGL.DataCount = (uint) data.Length;
 
-            return bufferObjectGl41;
+            return BufferObjectGL;
         }
 
         /// <summary>
         /// Selects this Buffer
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        public BufferObjectGL41 Bind() {
-            this._backend.CheckThread();
-            
+        public BufferObjectGL Bind() {
             if (this.Locked)
                 return null;
 
-            this.gl.BindBuffer(this._bufferType, this.BufferId);
+            this._backend.BindBuffer(this._bufferType, this.BufferId);
             this._backend.CheckError();
 
             CurrentlyBound = this;
@@ -178,7 +162,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
         /// Binds and sets a Lock so that the Buffer cannot be unbound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal BufferObjectGL41 LockingBind() {
+        internal BufferObjectGL LockingBind() {
             this.Bind();
             this.Lock();
 
@@ -189,7 +173,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
         /// Locks the Buffer so that other Buffers cannot be bound/unbound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal BufferObjectGL41 Lock() {
+        internal BufferObjectGL Lock() {
             this.Locked = true;
 
             return this;
@@ -199,7 +183,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
         /// Unlocks the Buffer, so that other buffers can be bound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal BufferObjectGL41 Unlock() {
+        internal BufferObjectGL Unlock() {
             this.Locked = false;
 
             return this;
@@ -208,7 +192,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
         /// Uninds and unlocks the Buffer so that other buffers can be bound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal BufferObjectGL41 UnlockingUnbind() {
+        internal BufferObjectGL UnlockingUnbind() {
             this.Unlock();
             this.Unbind();
 
@@ -218,12 +202,11 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
         /// Unbinds any bound Buffer
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        public BufferObjectGL41 Unbind() {
-            this._backend.CheckThread();
+        public BufferObjectGL Unbind() {
             if (this.Locked)
                 return null;
 
-            this.gl.BindBuffer(this._bufferType, 0);
+            this._backend.BindBuffer(this._bufferType, 0);
             this._backend.CheckError();
 
             CurrentlyBound = null;
@@ -232,6 +215,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
         }
 
         private bool _isDisposed = false;
+        public BufferObjectGL(IGLBasedBackend backend, int                               maxVerticies, Silk.NET.OpenGLES.BufferTargetARB arrayBuffer) : this(backend, maxVerticies, (BufferTargetARB)arrayBuffer) {}
+        public BufferObjectGL(IGLBasedBackend backend, Silk.NET.OpenGLES.BufferTargetARB target,       Silk.NET.OpenGLES.BufferUsageARB  usage = Silk.NET.OpenGLES.BufferUsageARB.StreamDraw) : this(backend, (BufferTargetARB)target, (BufferUsageARB)usage) {}
 
         /// <summary>
         /// Disposes the Buffer
@@ -246,7 +231,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
             this._isDisposed = true;
 
             try {
-                this.gl.DeleteBuffer(this.BufferId);
+                this._backend.DeleteBuffer(this.BufferId);
             }
             catch {
 

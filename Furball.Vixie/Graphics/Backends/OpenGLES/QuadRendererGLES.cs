@@ -4,6 +4,7 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using FontStashSharp;
 using Furball.Vixie.FontStashSharp;
+using Furball.Vixie.Graphics.Backends.OpenGL_;
 using Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions;
 using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
@@ -54,8 +55,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
             public int     TextureId;
         }
 
-        private BufferObjectGLES      _vbo;
-        private BufferObjectGLES      _instanceVbo;
+        private BufferObjectGL      _vbo;
+        private BufferObjectGL      _instanceVbo;
         private VertexArrayObjectGLES _vao;
 
         private VixieFontStashRenderer _textRenderer;
@@ -94,7 +95,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
             this._vao = new VertexArrayObjectGLES(backend);
             this._vao.Bind();
 
-            this._vbo = new BufferObjectGLES(backend, BufferTargetARB.ArrayBuffer, BufferUsageARB.StaticDraw);
+            this._vbo = new BufferObjectGL(backend, BufferTargetARB.ArrayBuffer, BufferUsageARB.StaticDraw);
             this._vbo.Bind();
             this._vbo.SetData<Vertex>(_vertices);
 
@@ -108,7 +109,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
             this.gl.EnableVertexAttribArray(1);
             this._backend.CheckError();
 
-            this._instanceVbo = new BufferObjectGLES(backend, BufferTargetARB.ArrayBuffer, BufferUsageARB.DynamicDraw);
+            this._instanceVbo = new BufferObjectGL(backend, BufferTargetARB.ArrayBuffer, BufferUsageARB.DynamicDraw);
             this._instanceVbo.Bind();
 
             this._instanceVbo.SetData(null, (nuint)(sizeof(InstanceData) * NUM_INSTANCES));

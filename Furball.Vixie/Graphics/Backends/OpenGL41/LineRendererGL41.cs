@@ -1,6 +1,7 @@
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using Furball.Vixie.Graphics.Backends.OpenGL_;
 using Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions;
 using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
@@ -35,7 +36,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
         /// <summary>
         /// Vertex buffer which contains all the Batched Verticies
         /// </summary>
-        private readonly BufferObjectGL41      _vertexBuffer;
+        private readonly BufferObjectGL      _vertexBuffer;
         /// <summary>
         /// Shader which draws those thicc lines
         /// </summary>
@@ -83,7 +84,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
                     .AddElement<float>(4, true);  //Color
 
             //Create Vertex Buffer with the Required size
-            this._vertexBuffer = new BufferObjectGL41(backend, sizeof(BatchedLineVertex) * this.MaxVerticies, BufferTargetARB.ArrayBuffer);
+            this._vertexBuffer = new BufferObjectGL(backend, sizeof(BatchedLineVertex) * this.MaxVerticies, BufferTargetARB.ArrayBuffer);
 
             //Create the VAO
             this._vertexArray = new VertexArrayObjectGL41(backend);

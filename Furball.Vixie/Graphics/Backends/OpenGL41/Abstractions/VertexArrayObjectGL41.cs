@@ -1,4 +1,5 @@
 using System;
+using Furball.Vixie.Graphics.Backends.OpenGL_;
 using Silk.NET.OpenGL;
 
 namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
@@ -40,7 +41,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
         /// </summary>
         /// <param name="vertexBuffer">Vertex Buffer to add</param>
         /// <param name="layoutGl41">Layout of said Vertex Buffer</param>
-        public unsafe VertexArrayObjectGL41 AddBuffer(BufferObjectGL41 vertexBuffer, VertexBufferLayoutGL41 layoutGl41) {
+        public unsafe VertexArrayObjectGL41 AddBuffer(BufferObjectGL vertexBuffer, VertexBufferLayoutGL41 layoutGl41) {
             this._backend.CheckThread();
             
             //Bind both this and the Vertex Buffer

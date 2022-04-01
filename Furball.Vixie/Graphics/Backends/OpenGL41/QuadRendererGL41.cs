@@ -4,6 +4,7 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using FontStashSharp;
 using Furball.Vixie.FontStashSharp;
+using Furball.Vixie.Graphics.Backends.OpenGL_;
 using Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions;
 using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
@@ -54,8 +55,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
             public int     TextureId;
         }
 
-        private BufferObjectGL41      _vbo;
-        private BufferObjectGL41      _instanceVbo;
+        private BufferObjectGL      _vbo;
+        private BufferObjectGL      _instanceVbo;
         private VertexArrayObjectGL41 _vao;
 
         private VixieFontStashRenderer _textRenderer;
@@ -94,7 +95,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
             this._vao = new VertexArrayObjectGL41(backend);
             this._vao.Bind();
 
-            this._vbo = new BufferObjectGL41(backend, BufferTargetARB.ArrayBuffer, BufferUsageARB.StaticDraw);
+            this._vbo = new BufferObjectGL(backend, BufferTargetARB.ArrayBuffer, BufferUsageARB.StaticDraw);
             this._vbo.Bind();
             this._vbo.SetData<Vertex>(_vertices);
 
@@ -108,7 +109,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
             this.gl.EnableVertexAttribArray(1);
             this._backend.CheckError();
 
-            this._instanceVbo = new BufferObjectGL41(backend, BufferTargetARB.ArrayBuffer, BufferUsageARB.DynamicDraw);
+            this._instanceVbo = new BufferObjectGL(backend, BufferTargetARB.ArrayBuffer, BufferUsageARB.DynamicDraw);
             this._instanceVbo.Bind();
 
             this._instanceVbo.SetData(null, (nuint)(sizeof(InstanceData) * NUM_INSTANCES));

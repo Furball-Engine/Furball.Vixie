@@ -120,6 +120,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Graphics\Backends\OpenGL*" />
       <Folder Include="ShaderCode\" />
     </ItemGroup>
 
