@@ -33,6 +33,11 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20.Abstractions {
         public override Vector2 Size { get; protected set; }
 
         /// <summary>
+        /// Used for determening whether or not to Flip it internally because it's a framebuffer
+        /// </summary>
+        internal bool IsFramebufferTexture;
+
+        /// <summary>
         /// Creates a Texture from a File
         /// </summary>
         /// <param name="filepath">Path to an Image</param>

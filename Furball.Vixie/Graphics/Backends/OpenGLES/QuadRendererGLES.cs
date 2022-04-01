@@ -195,7 +195,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
                 throw new Exception("Begin() has not been called!");
 
             //Ignore calls with invalid textures
-            if (textureGl == null)
+            if (textureGl == null || textureGl is not TextureGLES textureGles)
                 return;
 
             if (this._instances >= NUM_INSTANCES || this._usedTextures == this._backend.QueryMaxTextureUnits()) {
@@ -212,6 +212,9 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
             this._instanceData[this._instances].TextureRectPosition.Y = 0;
             this._instanceData[this._instances].TextureRectSize.X     = texFlip == TextureFlip.FlipHorizontal ? -1 : 1;
             this._instanceData[this._instances].TextureRectSize.Y     = texFlip == TextureFlip.FlipVertical ? -1 : 1;
+
+            if(textureGles.IsFramebufferTexture)
+                this._instanceData[this._instances].TextureRectSize.Y *= -1;
 
             this._instances++;
         }

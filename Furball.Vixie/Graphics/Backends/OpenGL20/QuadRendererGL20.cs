@@ -161,7 +161,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
                 throw new Exception("Begin() has not been called!");
 
             //Ignore calls with invalid textures
-            if (textureGl == null)
+            if (textureGl == null || textureGl is not TextureGL20 textureGl20)
                 return;
 
             if (scale.X == 0 || scale.Y == 0 || colorOverride.A == 0) return;
@@ -181,6 +181,9 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
             this.BatchedTextureCoordinates[this.BatchedQuads].Y = 0;
             this.BatchedTextureCoordinates[this.BatchedQuads].Z = texFlip == TextureFlip.FlipHorizontal ? -1 : 1;
             this.BatchedTextureCoordinates[this.BatchedQuads].W = texFlip == TextureFlip.FlipVertical ? -1 : 1;
+
+            if(textureGl20.IsFramebufferTexture)
+                this.BatchedTextureCoordinates[this.BatchedQuads].W *= -1;
 
             this.BatchedQuads++;
         }

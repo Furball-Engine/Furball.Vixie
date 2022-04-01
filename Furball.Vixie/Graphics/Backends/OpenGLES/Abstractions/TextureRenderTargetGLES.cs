@@ -191,7 +191,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Retrieves the Texture from this RenderTarget
         /// </summary>
         /// <returns>Texture of this RenderTarget</returns>
-        public override Texture GetTexture() => new TextureGLES(this._backend, this._textureId, this.TargetWidth, this.TargetHeight);
+        public override Texture GetTexture() => new TextureGLES(this._backend, this._textureId, this.TargetWidth, this.TargetHeight) { IsFramebufferTexture = true };
 
         private bool _isDisposed = false;
 
