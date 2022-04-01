@@ -1,6 +1,4 @@
-﻿using System;
-using Furball.Vixie.Graphics.Backends;
-using Furball.Vixie.Graphics.Backends.Veldrid;
+﻿using Furball.Vixie.Graphics.Backends;
 using Furball.Vixie.TestApplication;
 using Silk.NET.Windowing;
 
