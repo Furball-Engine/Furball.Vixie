@@ -4,7 +4,7 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using FontStashSharp;
 using Furball.Vixie.FontStashSharp;
-using Furball.Vixie.Graphics.Backends.OpenGL_;
+using Furball.Vixie.Graphics.Backends.OpenGL;
 using Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions;
 using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
@@ -69,11 +69,11 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
 
         public unsafe QuadRendererGLES(OpenGLESBackend backend) {
             this._backend = backend;
-            this._backend.CheckThread();
+            
 
             this.gl       = this._backend.GetGlApi();
 
-            this._boundTextures = new TextureGLES[this._backend.QueryMaxTextureUnits()];
+            this._boundTextures = new TextureGL[this._backend.QueryMaxTextureUnits()];
 
             string vertSource = ResourceHelpers.GetStringResource("ShaderCode/OpenGLES/InstancedRenderer/VertexShader.glsl");
             string fragSource = QuadShaderGeneratorGLES.GetFragment(backend);
@@ -195,7 +195,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
                 throw new Exception("Begin() has not been called!");
 
             //Ignore calls with invalid textures
-            if (textureGl == null || textureGl is not TextureGLES textureGles)
+            if (textureGl == null || textureGl is not TextureGL textureGles)
                 return;
 
             if (this._instances >= NUM_INSTANCES || this._usedTextures == this._backend.QueryMaxTextureUnits()) {
@@ -224,7 +224,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
                 throw new Exception("Begin() has not been called!");
 
             //Ignore calls with invalid textures
-            if (textureGl == null || textureGl is not TextureGLES)
+            if (textureGl == null || textureGl is not TextureGL)
                 return;
 
             if (this._instances >= NUM_INSTANCES || this._usedTextures == this._backend.QueryMaxTextureUnits()) {
@@ -293,7 +293,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
             if (this._instances == 0) return;
 
             for (int i = 0; i < this._usedTextures; i++) {
-                TextureGLES tex = this._boundTextures[i] as TextureGLES;
+                TextureGL tex = this._boundTextures[i] as TextureGL;
 
                 tex.Bind(TextureUnit.Texture0 + i);
             }

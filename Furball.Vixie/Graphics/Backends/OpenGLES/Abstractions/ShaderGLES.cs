@@ -42,7 +42,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// </summary>
         public ShaderGLES(OpenGLESBackend backend) {
             this._backend = backend;
-            this._backend.CheckThread();
+            
             
             this.gl = backend.GetGlApi();
 
@@ -65,7 +65,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <returns>Self, used for Chaining methods</returns>
         /// <exception cref="Exception">Shader Compilation Failure</exception>
         public ShaderGLES AttachShader(ShaderType type, string source) {
-            this._backend.CheckThread();
+            
             
             uint shaderId = this.gl.CreateShader(type);
 
@@ -91,7 +91,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <returns>Self, used for Chaining methods</returns>
         /// <exception cref="Exception"></exception>
         public ShaderGLES Link() {
-            this._backend.CheckThread();
+            
             
             //Link Program and get Error incase something failed
             this.gl.LinkProgram(this.ProgramId);
@@ -112,7 +112,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Selects this Shader
         /// </summary>
         public ShaderGLES Bind() {
-            this._backend.CheckThread();
+            
             
             if (this.Locked)
                 return null;
@@ -179,7 +179,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <param name="uniformName">The name of the uniform</param>
         /// <returns>The location</returns>
         internal int GetUniformLocation(string uniformName) {
-            this._backend.CheckThread();
+            
             
             //If cache missed, get from OpenGL and store in cache
             if (!this._uniformLocationCache.TryGetValue(uniformName, out int location)) {
@@ -203,7 +203,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         }
 
         public unsafe ShaderGLES SetUniform(string uniformName, Matrix4x4 matrix) {
-            this._backend.CheckThread();
+            
             
             this.gl.UniformMatrix4(this.GetUniformLocation(uniformName), 1, false, (float*) &matrix);
             this._backend.CheckError();
@@ -213,7 +213,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         }
         
         public ShaderGLES SetUniform(string uniformName, float f) {
-            this._backend.CheckThread();
+            
             
             this.gl.Uniform1(this.GetUniformLocation(uniformName), f);
             this._backend.CheckError();
@@ -223,7 +223,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         }
         
         public ShaderGLES SetUniform(string uniformName, float f, float f2) {
-            this._backend.CheckThread();
+            
             
             this.gl.Uniform2(this.GetUniformLocation(uniformName), f, f2);
             this._backend.CheckError();
@@ -233,7 +233,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         }
         
         public ShaderGLES SetUniform(string uniformName, int i) {
-            this._backend.CheckThread();
+            
             
             this.gl.Uniform1(this.GetUniformLocation(uniformName), i);
             this._backend.CheckError();
@@ -246,7 +246,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         public ShaderGLES Unbind() {
-            this._backend.CheckThread();
+            
             
             if (this.Locked)
                 return null;
@@ -265,7 +265,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Cleans up the Shader
         /// </summary>
         public void Dispose() {
-            this._backend.CheckThread();
+            
             
             if (this.Bound)
                 this.UnlockingUnbind();
@@ -290,7 +290,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <param name="uniform"></param>
         /// <param name="unit"></param>
         public void BindUniformToTexUnit(string uniform, int unit) {
-            this._backend.CheckThread();
+            
 
             int location = this.GetUniformLocation(uniform);
 

@@ -1,5 +1,5 @@
 using System;
-using Furball.Vixie.Graphics.Backends.OpenGL_;
+using Furball.Vixie.Graphics.Backends.OpenGL;
 using Silk.NET.OpenGL;
 
 namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
@@ -24,7 +24,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
 
         public VertexArrayObjectGL41(OpenGL41Backend backend) {
             this._backend = backend;
-            this._backend.CheckThread();
+            
 
             this.gl = backend.GetGlApi();
             //Generate Vertex Array
@@ -42,7 +42,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
         /// <param name="vertexBuffer">Vertex Buffer to add</param>
         /// <param name="layoutGl41">Layout of said Vertex Buffer</param>
         public unsafe VertexArrayObjectGL41 AddBuffer(BufferObjectGL vertexBuffer, VertexBufferLayoutGL41 layoutGl41) {
-            this._backend.CheckThread();
+            
             
             //Bind both this and the Vertex Buffer
             this.Bind();
@@ -72,7 +72,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
         /// Binds or Selects this current Vertex Array
         /// </summary>
         public VertexArrayObjectGL41 Bind() {
-            this._backend.CheckThread();
+            
             
             if (this.Locked)
                 return null;
@@ -135,7 +135,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
         /// Unbinds all Vertex Arrays
         /// </summary>
         public VertexArrayObjectGL41 Unbind() {
-            this._backend.CheckThread();
+            
             
             if (this.Locked)
                 return null;
@@ -154,7 +154,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
         /// Disposes this Vertex Array
         /// </summary>
         public void Dispose() {
-            this._backend.CheckThread();
+            
             
             if (this.Bound)
                 this.UnlockingUnbind();

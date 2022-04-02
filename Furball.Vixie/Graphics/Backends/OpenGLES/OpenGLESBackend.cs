@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Numerics;
 using System.Threading;
-using Furball.Vixie.Graphics.Backends.OpenGL_;
+using Furball.Vixie.Graphics.Backends.OpenGL;
 using Furball.Vixie.Graphics.Backends.OpenGL41;
 using Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions;
 using Furball.Vixie.Graphics.Renderers;
@@ -15,6 +15,15 @@ using Silk.NET.OpenGLES.Extensions.ImGui;
 using Silk.NET.Windowing;
 using BufferTargetARB=Silk.NET.OpenGL.BufferTargetARB;
 using BufferUsageARB=Silk.NET.OpenGL.BufferUsageARB;
+using FramebufferAttachment=Silk.NET.OpenGL.FramebufferAttachment;
+using FramebufferTarget=Silk.NET.OpenGL.FramebufferTarget;
+using InternalFormat=Silk.NET.OpenGL.InternalFormat;
+using PixelFormat=Silk.NET.OpenGL.PixelFormat;
+using PixelType=Silk.NET.OpenGL.PixelType;
+using RenderbufferTarget=Silk.NET.OpenGL.RenderbufferTarget;
+using TextureParameterName=Silk.NET.OpenGL.TextureParameterName;
+using TextureTarget=Silk.NET.OpenGL.TextureTarget;
+using TextureUnit=Silk.NET.OpenGL.TextureUnit;
 
 namespace Furball.Vixie.Graphics.Backends.OpenGLES {
     // ReSharper disable once InconsistentNaming
@@ -84,6 +93,9 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
             Logger.Log($"GLSL Version:   {this.gl.GetStringS(StringName.ShadingLanguageVersion)}", LoggerLevelOpenGLES.InstanceInfo);
             Logger.Log($"OpenGL Vendor:  {this.gl.GetStringS(StringName.Vendor)}",                 LoggerLevelOpenGLES.InstanceInfo);
             Logger.Log($"Renderer:       {this.gl.GetStringS(StringName.Renderer)}",               LoggerLevelOpenGLES.InstanceInfo);
+        }
+        public void ActiveTexture(TextureUnit textureSlot) {
+            this.gl.ActiveTexture((GLEnum)textureSlot);
         }
         public void CheckError(string message = "") {
             this.CheckErrorInternal();
@@ -167,7 +179,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
         /// <param name="height">Height of the Target</param>
         /// <returns></returns>
         public override TextureRenderTarget CreateRenderTarget(uint width, uint height) {
-            return new TextureRenderTargetGLES(this, width, height);
+            return new TextureRenderTargetGL(this, width, height);
         }
         /// <summary>
         /// Creates a Texture given some Data
@@ -176,7 +188,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
         /// <param name="qoi">Is the Data in the QOI format?</param>
         /// <returns>Texture</returns>
         public override Texture CreateTexture(byte[] imageData, bool qoi = false) {
-            return new TextureGLES(this, imageData, qoi);
+            return new TextureGL(this, imageData, qoi);
         }
         /// <summary>
         /// Creates a Texture given a Stream
@@ -184,7 +196,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
         /// <param name="stream">Stream to read from</param>
         /// <returns>Texture</returns>
         public override Texture CreateTexture(Stream stream) {
-            return new TextureGLES(this, stream);
+            return new TextureGL(this, stream);
         }
         /// <summary>
         /// Creates a Empty Texture given a Size
@@ -193,7 +205,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
         /// <param name="height">Height of Texture</param>
         /// <returns>Texture</returns>
         public override Texture CreateTexture(uint width, uint height) {
-            return new TextureGLES(this, width, height);
+            return new TextureGL(this, width, height);
         }
         /// <summary>
         /// Creates a Texture from a File
@@ -201,14 +213,14 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
         /// <param name="filepath">Filepath to Image</param>
         /// <returns>Texture</returns>
         public override Texture CreateTexture(string filepath) {
-            return new TextureGLES(this, filepath);
+            return new TextureGL(this, filepath);
         }
         /// <summary>
         /// Used to Create a 1x1 Texture with only a white pixel
         /// </summary>
         /// <returns>White Pixel Texture</returns>
         public override Texture CreateWhitePixelTexture() {
-            return new TextureGLES(this);
+            return new TextureGL(this);
         }
         /// <summary>
         /// Used to Update the ImGuiController in charge of rendering ImGui on this backend
@@ -262,6 +274,60 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
         }
         public void DeleteBuffer(uint bufferId) {
             this.gl.DeleteBuffer(bufferId);
+        }
+        public void DeleteFramebuffer(uint frameBufferId) {
+            this.gl.DeleteFramebuffer(frameBufferId);
+        }
+        public void DeleteTexture(uint textureId) {
+            this.gl.DeleteTexture(textureId);
+        }
+        public void DeleteRenderbuffer(uint bufId) {
+            this.gl.DeleteRenderbuffer(bufId);
+        }
+        public unsafe void DrawBuffers(uint i, in Silk.NET.OpenGL.GLEnum[] drawBuffers) {
+            //this isnt pretty, but should work
+            fixed (void* ptr = drawBuffers)
+                this.gl.DrawBuffers(i, (GLEnum*)ptr);
+        }
+        public void BindFramebuffer(FramebufferTarget framebuffer, uint frameBufferId) {
+            this.gl.BindFramebuffer((GLEnum)framebuffer, frameBufferId);
+        }
+        public uint GenFramebuffer() => this.gl.GenFramebuffer();
+        public void BindTexture(TextureTarget target, uint textureId) {
+            this.gl.BindTexture((Silk.NET.OpenGLES.TextureTarget)target, textureId);
+        }
+        public unsafe void TexImage2D(TextureTarget target, int level, InternalFormat format, uint width, uint height, int border, PixelFormat pxFormat, PixelType type, void* data) {
+            this.gl.TexImage2D((GLEnum)target, level, (Silk.NET.OpenGLES.InternalFormat)format, width, height, border, (GLEnum)pxFormat, (GLEnum)type, data);
+        }
+        public void TexParameterI(TextureTarget target, Silk.NET.OpenGL.GLEnum param, int paramData) {
+            this.gl.TexParameterI((GLEnum)target, (GLEnum)param, paramData);
+        }
+        public uint GenRenderbuffer() => this.gl.GenRenderbuffer();
+        public void Viewport(int x, int y, uint width, uint height) {
+            this.gl.Viewport(x, y, width, height);
+        }
+        public uint GenTexture() => this.gl.GenTexture();
+        public void BindRenderbuffer(RenderbufferTarget target, uint id) {
+            this.gl.BindRenderbuffer((GLEnum)target, id);
+        }
+        public void RenderbufferStorage(RenderbufferTarget target, InternalFormat format, uint width, uint height) {
+            this.gl.RenderbufferStorage((GLEnum)target, (GLEnum)format, width, height);
+        }
+        public void FramebufferRenderbuffer(FramebufferTarget target, FramebufferAttachment attachment, RenderbufferTarget rbTarget, uint id) {
+            this.gl.FramebufferRenderbuffer((GLEnum)target, (GLEnum)attachment, (GLEnum)rbTarget, id);
+        }
+        public void FramebufferTexture(FramebufferTarget target, FramebufferAttachment colorAttachment0, uint textureId, int level) {
+            this.gl.FramebufferTexture((GLEnum)target, (GLEnum)colorAttachment0, textureId, level);
+        }
+        public Silk.NET.OpenGL.GLEnum CheckFramebufferStatus(FramebufferTarget target) => (Silk.NET.OpenGL.GLEnum)this.gl.CheckFramebufferStatus((GLEnum)target);
+        public void GetInteger(Silk.NET.OpenGL.GetPName viewport, Span<int> oldViewPort) {
+            this.gl.GetInteger((GLEnum)viewport, oldViewPort);
+        }
+        public void TexParameter(TextureTarget target, TextureParameterName paramName, int param) {
+            this.gl.TexParameter((GLEnum)target, (GLEnum)paramName, param);
+        }
+        public unsafe void TexSubImage2D(TextureTarget target, int level, int x, int y, uint width, uint height, PixelFormat pxformat, PixelType pxtype, void* data) {
+            this.gl.TexSubImage2D((GLEnum)target, level, x, y, width, height, (GLEnum)pxformat, (GLEnum)pxtype, data);
         }
     }
 }

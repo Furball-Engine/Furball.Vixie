@@ -1,8 +1,7 @@
 using System;
-using Furball.Vixie.Graphics.Backends.OpenGLES;
 using Silk.NET.OpenGL;
 
-namespace Furball.Vixie.Graphics.Backends.OpenGL_ {
+namespace Furball.Vixie.Graphics.Backends.OpenGL {
     public class BufferObjectGL : IDisposable {
         internal static BufferObjectGL CurrentlyBound;
         public bool Bound => CurrentlyBound == this;

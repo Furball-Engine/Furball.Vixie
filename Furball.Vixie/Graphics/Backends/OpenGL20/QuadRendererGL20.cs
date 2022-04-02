@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Numerics;
 using FontStashSharp;
 using Furball.Vixie.FontStashSharp;
+using Furball.Vixie.Graphics.Backends.OpenGL;
 using Furball.Vixie.Graphics.Backends.OpenGL20.Abstractions;
 using Furball.Vixie.Graphics.Backends.OpenGL41;
 using Furball.Vixie.Graphics.Renderers;
@@ -144,13 +145,13 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
         private int GetTextureId(Texture tex) {
             if (this.UsedTextures != 0)
                 for (int i = 0; i < this.UsedTextures; i++) {
-                    TextureGL20 tex2 = this.TextureArray[i];
+                    TextureGL tex2 = this.TextureArray[i];
 
                     if (tex2 == null) break;
                     if (tex  == tex2) return i;
                 }
 
-            this.TextureArray[this.UsedTextures] = (TextureGL20)tex;
+            this.TextureArray[this.UsedTextures] = (TextureGL)tex;
             this.UsedTextures++;
 
             return this.UsedTextures - 1;
@@ -161,7 +162,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
                 throw new Exception("Begin() has not been called!");
 
             //Ignore calls with invalid textures
-            if (textureGl == null || textureGl is not TextureGL20 textureGl20)
+            if (textureGl == null || textureGl is not TextureGL textureGl20)
                 return;
 
             if (scale.X == 0 || scale.Y == 0 || colorOverride.A == 0) return;
@@ -193,7 +194,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
                 throw new Exception("Begin() has not been called!");
 
             //Ignore calls with invalid textures
-            if (textureGl == null || textureGl is not TextureGL20)
+            if (textureGl == null || textureGl is not TextureGL)
                 return;
 
             if (scale.X == 0 || scale.Y == 0 || colorOverride.A == 0) return;
@@ -254,7 +255,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
         private float[]         BatchedTextureIds         = new float[BATCH_COUNT];
         private Vector4[]       BatchedTextureCoordinates = new Vector4[BATCH_COUNT];
 
-        private          TextureGL20[]          TextureArray = new TextureGL20[32];
+        private          TextureGL[]          TextureArray = new TextureGL[32];
         private readonly VixieFontStashRenderer _textRenderer;
 
         private unsafe void Flush() {
@@ -264,7 +265,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
 
             //Bind all the textures
             for (var i = 0; i < this.UsedTextures; i++) {
-                TextureGL20 tex = this.TextureArray[i];
+                TextureGL tex = this.TextureArray[i];
 
                 if (tex == null) continue;
 

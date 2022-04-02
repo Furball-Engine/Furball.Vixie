@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Numerics;
-using Furball.Vixie.Graphics.Backends.OpenGL_;
+using Furball.Vixie.Graphics.Backends.OpenGL;
 using Furball.Vixie.Graphics.Backends.OpenGL20.Abstractions;
 using Furball.Vixie.Graphics.Backends.OpenGL41;
 using Furball.Vixie.Graphics.Renderers;
@@ -17,6 +17,15 @@ using Silk.NET.OpenGL.Legacy.Extensions.ImGui;
 using Silk.NET.Windowing;
 using BufferTargetARB=Silk.NET.OpenGL.BufferTargetARB;
 using BufferUsageARB=Silk.NET.OpenGL.BufferUsageARB;
+using FramebufferAttachment=Silk.NET.OpenGL.FramebufferAttachment;
+using FramebufferTarget=Silk.NET.OpenGL.FramebufferTarget;
+using InternalFormat=Silk.NET.OpenGL.InternalFormat;
+using PixelFormat=Silk.NET.OpenGL.PixelFormat;
+using PixelType=Silk.NET.OpenGL.PixelType;
+using RenderbufferTarget=Silk.NET.OpenGL.RenderbufferTarget;
+using TextureParameterName=Silk.NET.OpenGL.TextureParameterName;
+using TextureTarget=Silk.NET.OpenGL.TextureTarget;
+using TextureUnit=Silk.NET.OpenGL.TextureUnit;
 
 namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
     public class OpenGL20Backend : GraphicsBackend, IGLBasedBackend {
@@ -26,6 +35,9 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
         
         public  Matrix4x4       ProjectionMatrix;
 
+        public void ActiveTexture(TextureUnit textureSlot) {
+            throw new NotImplementedException();
+        }
         public void CheckError(string message = "") {
             this.CheckErrorInternal(message);
         }
@@ -40,8 +52,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
             
             if (error != GLEnum.NoError) {
 #if DEBUGWITHGL
-#else
                 throw new Exception($"Got GL Error {error}!");
+#else
                 Debugger.Break();
                 Logger.Log($"OpenGL Error! Code: {error.ToString()} Extra Info: {erorr}", LoggerLevelOpenGL20.InstanceError);
 #endif
@@ -134,17 +146,17 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
             this.gl.ClearColor(0f, 0, 0, 0);
         }
 
-        public override TextureRenderTarget CreateRenderTarget(uint width, uint height) => new TextureRenderTargetGL20(this, width, height);
+        public override TextureRenderTarget CreateRenderTarget(uint width, uint height) => new TextureRenderTargetGL(this, width, height);
 
-        public override Texture CreateTexture(byte[] imageData, bool qoi = false) => new TextureGL20(this, imageData, qoi);
+        public override Texture CreateTexture(byte[] imageData, bool qoi = false) => new TextureGL(this, imageData, qoi);
 
-        public override Texture CreateTexture(Stream stream) => new TextureGL20(this, stream);
+        public override Texture CreateTexture(Stream stream) => new TextureGL(this, stream);
 
-        public override Texture CreateTexture(uint width, uint height) => new TextureGL20(this, width, height);
+        public override Texture CreateTexture(uint width, uint height) => new TextureGL(this, width, height);
 
-        public override Texture CreateTexture(string filepath) => new TextureGL20(this, filepath);
+        public override Texture CreateTexture(string filepath) => new TextureGL(this, filepath);
 
-        public override Texture CreateWhitePixelTexture() => new TextureGL20(this);
+        public override Texture CreateWhitePixelTexture() => new TextureGL(this);
 
         [Pure]
         public GL GetOpenGL() => this.gl;
@@ -175,6 +187,58 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
         }
         public void DeleteBuffer(uint bufferId) {
             this.gl.DeleteBuffer(bufferId);
+        }
+        public void DeleteFramebuffer(uint frameBufferId) {
+            throw new NotImplementedException();
+        }
+        public void DeleteTexture(uint textureId) {
+            throw new NotImplementedException();
+        }
+        public void DeleteRenderbuffer(uint bufId) {
+            throw new NotImplementedException();
+        }
+        public void DrawBuffers(uint i, in Silk.NET.OpenGL.GLEnum[] drawBuffers) {
+            throw new NotImplementedException();
+        }
+        public void BindFramebuffer(FramebufferTarget framebuffer, uint frameBufferId) {
+            throw new NotImplementedException();
+        }
+        public uint GenFramebuffer() => throw new NotImplementedException();
+        public void BindTexture(TextureTarget target, uint textureId) {
+            throw new NotImplementedException();
+        }
+        public unsafe void TexImage2D(TextureTarget target, int level, InternalFormat format, uint width, uint height, int border, PixelFormat pxFormat, PixelType type, void* data) {
+            throw new NotImplementedException();
+        }
+        public void TexParameterI(TextureTarget target, Silk.NET.OpenGL.GLEnum param, int paramData) {
+            throw new NotImplementedException();
+        }
+        public uint GenRenderbuffer() => throw new NotImplementedException();
+        public void Viewport(int x, int y, uint width, uint height) {
+            throw new NotImplementedException();
+        }
+        public uint GenTexture() => throw new NotImplementedException();
+        public void BindRenderbuffer(RenderbufferTarget target, uint id) {
+            throw new NotImplementedException();
+        }
+        public void RenderbufferStorage(RenderbufferTarget target, InternalFormat format, uint width, uint height) {
+            throw new NotImplementedException();
+        }
+        public void FramebufferRenderbuffer(FramebufferTarget target, FramebufferAttachment attachment, RenderbufferTarget rbTarget, uint id) {
+            throw new NotImplementedException();
+        }
+        public void FramebufferTexture(FramebufferTarget target, FramebufferAttachment colorAttachment0, uint textureId, int level) {
+            throw new NotImplementedException();
+        }
+        public Silk.NET.OpenGL.GLEnum CheckFramebufferStatus(FramebufferTarget target) => throw new NotImplementedException();
+        public void GetInteger(Silk.NET.OpenGL.GetPName viewport, Span<int> oldViewPort) {
+            throw new NotImplementedException();
+        }
+        public void TexParameter(TextureTarget target, TextureParameterName paramName, int param) {
+            throw new NotImplementedException();
+        }
+        public unsafe void TexSubImage2D(TextureTarget target, int level, int x, int y, uint width, uint height, PixelFormat pxformat, PixelType pxtype, void* data) {
+            throw new NotImplementedException();
         }
     }
 }

@@ -1,5 +1,5 @@
 using System;
-using Furball.Vixie.Graphics.Backends.OpenGL_;
+using Furball.Vixie.Graphics.Backends.OpenGL;
 using Silk.NET.OpenGLES;
 
 namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
@@ -24,7 +24,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
 
         public VertexArrayObjectGLES(OpenGLESBackend backend) {
             this._backend = backend;
-            this._backend.CheckThread();
+            
 
             this.gl = backend.GetGlApi();
             //Generate Vertex Array
@@ -42,7 +42,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <param name="vertexBuffer">Vertex Buffer to add</param>
         /// <param name="layoutGles">Layout of said Vertex Buffer</param>
         public unsafe VertexArrayObjectGLES AddBuffer(BufferObjectGL vertexBuffer, VertexBufferLayoutGLES layoutGles) {
-            this._backend.CheckThread();
+            
             
             //Bind both this and the Vertex Buffer
             this.Bind();
@@ -72,7 +72,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Binds or Selects this current Vertex Array
         /// </summary>
         public VertexArrayObjectGLES Bind() {
-            this._backend.CheckThread();
+            
             
             if (this.Locked)
                 return null;
@@ -135,7 +135,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Unbinds all Vertex Arrays
         /// </summary>
         public VertexArrayObjectGLES Unbind() {
-            this._backend.CheckThread();
+            
             
             if (this.Locked)
                 return null;
@@ -154,7 +154,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Disposes this Vertex Array
         /// </summary>
         public void Dispose() {
-            this._backend.CheckThread();
+            
             
             if (this.Bound)
                 this.UnlockingUnbind();

@@ -42,7 +42,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
         /// </summary>
         public ShaderGL41(OpenGL41Backend backend) {
             this._backend = backend;
-            this._backend.CheckThread();
+            
             
             this.gl = backend.GetGlApi();
 
@@ -65,7 +65,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
         /// <returns>Self, used for Chaining methods</returns>
         /// <exception cref="Exception">Shader Compilation Failure</exception>
         public ShaderGL41 AttachShader(ShaderType type, string source) {
-            this._backend.CheckThread();
+            
             
             uint shaderId = this.gl.CreateShader(type);
             this._backend.CheckError();
@@ -92,7 +92,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
         /// <returns>Self, used for Chaining methods</returns>
         /// <exception cref="Exception"></exception>
         public ShaderGL41 Link() {
-            this._backend.CheckThread();
+            
             
             //Link Program and get Error incase something failed
             this.gl.LinkProgram(this.ProgramId);
@@ -113,7 +113,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
         /// Selects this Shader
         /// </summary>
         public ShaderGL41 Bind() {
-            this._backend.CheckThread();
+            
             
             if (this.Locked)
                 return null;
@@ -180,7 +180,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
         /// <param name="uniformName">The name of the uniform</param>
         /// <returns>The location</returns>
         internal int GetUniformLocation(string uniformName) {
-            this._backend.CheckThread();
+            
             
             //If cache missed, get from OpenGL and store in cache
             if (!this._uniformLocationCache.TryGetValue(uniformName, out int location)) {
@@ -204,7 +204,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
         }
 
         public unsafe ShaderGL41 SetUniform(string uniformName, Matrix4x4 matrix) {
-            this._backend.CheckThread();
+            
             
             this.gl.UniformMatrix4(this.GetUniformLocation(uniformName), 1, false, (float*) &matrix);
             this._backend.CheckError();
@@ -214,7 +214,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
         }
         
         public ShaderGL41 SetUniform(string uniformName, float f) {
-            this._backend.CheckThread();
+            
             
             this.gl.Uniform1(this.GetUniformLocation(uniformName), f);
             this._backend.CheckError();
@@ -224,7 +224,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
         }
         
         public ShaderGL41 SetUniform(string uniformName, float f, float f2) {
-            this._backend.CheckThread();
+            
             
             this.gl.Uniform2(this.GetUniformLocation(uniformName), f, f2);
             this._backend.CheckError();
@@ -234,7 +234,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
         }
         
         public ShaderGL41 SetUniform(string uniformName, int i) {
-            this._backend.CheckThread();
+            
             
             this.gl.Uniform1(this.GetUniformLocation(uniformName), i);
             this._backend.CheckError();
@@ -247,7 +247,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         public ShaderGL41 Unbind() {
-            this._backend.CheckThread();
+            
             
             if (this.Locked)
                 return null;
@@ -266,7 +266,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
         /// Cleans up the Shader
         /// </summary>
         public void Dispose() {
-            this._backend.CheckThread();
+            
             
             if (this.Bound)
                 this.UnlockingUnbind();
@@ -291,7 +291,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions {
         /// <param name="uniform"></param>
         /// <param name="unit"></param>
         public void BindUniformToTexUnit(string uniform, int unit) {
-            this._backend.CheckThread();
+            
 
             int location = this.GetUniformLocation(uniform);
 
