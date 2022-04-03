@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
-using Furball.Vixie.Graphics.Backends.OpenGL41;
-using Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions;
 using Furball.Vixie.Helpers;
 using Kettu;
 using Silk.NET.OpenGL;

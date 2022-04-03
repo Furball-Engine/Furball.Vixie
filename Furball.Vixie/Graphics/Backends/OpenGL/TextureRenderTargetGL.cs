@@ -1,8 +1,5 @@
 using System;
 using System.Numerics;
-using System.Reflection.Metadata;
-using Furball.Vixie.Graphics.Backends.OpenGL41;
-using Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions;
 using Silk.NET.OpenGL;
 
 namespace Furball.Vixie.Graphics.Backends.OpenGL {

@@ -2,10 +2,9 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Numerics;
+using System.Reflection.Metadata;
 using System.Threading;
 using Furball.Vixie.Graphics.Backends.OpenGL;
-using Furball.Vixie.Graphics.Backends.OpenGL41;
-using Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions;
 using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using Kettu;
@@ -24,6 +23,8 @@ using RenderbufferTarget=Silk.NET.OpenGL.RenderbufferTarget;
 using TextureParameterName=Silk.NET.OpenGL.TextureParameterName;
 using TextureTarget=Silk.NET.OpenGL.TextureTarget;
 using TextureUnit=Silk.NET.OpenGL.TextureUnit;
+using VertexAttribIType=Silk.NET.OpenGL.VertexAttribIType;
+using VertexAttribPointerType=Silk.NET.OpenGL.VertexAttribPointerType;
 
 namespace Furball.Vixie.Graphics.Backends.OpenGLES {
     // ReSharper disable once InconsistentNaming
@@ -93,9 +94,6 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
             Logger.Log($"GLSL Version:   {this.gl.GetStringS(StringName.ShadingLanguageVersion)}", LoggerLevelOpenGLES.InstanceInfo);
             Logger.Log($"OpenGL Vendor:  {this.gl.GetStringS(StringName.Vendor)}",                 LoggerLevelOpenGLES.InstanceInfo);
             Logger.Log($"Renderer:       {this.gl.GetStringS(StringName.Renderer)}",               LoggerLevelOpenGLES.InstanceInfo);
-        }
-        public void ActiveTexture(TextureUnit textureSlot) {
-            this.gl.ActiveTexture((GLEnum)textureSlot);
         }
         public void CheckError(string message = "") {
             this.CheckErrorInternal();
@@ -372,6 +370,26 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
         }
         public void DeleteProgram(uint programId) {
             this.gl.DeleteProgram(programId);
+        }
+        public void ActiveTexture(TextureUnit textureSlot) {
+            this.gl.ActiveTexture((GLEnum)textureSlot);
+        }
+        public void DeleteVertexArray(uint arrayId) {
+            this.gl.DeleteVertexArray(arrayId);
+        }
+        public uint GenVertexArray() => this.gl.GenVertexArray();
+        public void EnableVertexAttribArray(uint u) {
+            this.gl.EnableVertexAttribArray(u);
+        }
+        public unsafe void VertexAttribPointer(uint u, int currentElementCount, VertexAttribPointerType currentElementType, bool currentElementNormalized, uint getStride, void* offset) {
+            this.gl.VertexAttribPointer(u, currentElementCount, (GLEnum)currentElementType, currentElementNormalized, getStride, offset);
+        }
+        public unsafe void VertexAttribIPointer(uint u, int currentElementCount, VertexAttribIType vertexAttribIType, uint getStride, void* offset) {
+            this.gl.VertexAttribIPointer(u, currentElementCount, (GLEnum)vertexAttribIType, getStride, offset);
+
+        }
+        public void BindVertexArray(uint arrayId) {
+            this.gl.BindVertexArray(arrayId);
         }
     }
 }

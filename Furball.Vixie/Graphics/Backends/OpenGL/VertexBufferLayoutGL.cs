@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using Silk.NET.OpenGLES;
+using Silk.NET.OpenGL;
 
-namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
+namespace Furball.Vixie.Graphics.Backends.OpenGL {
     public struct LayoutElement {
         /// <summary>
         /// Element Count, for example in a 2 component Vector this would be 2
@@ -41,7 +41,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         }
     }
 
-    public class VertexBufferLayoutGLES {
+    public class VertexBufferLayoutGL {
         /// <summary>
         /// All of the Layout Elements
         /// </summary>
@@ -51,7 +51,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// </summary>
         private uint                _stride;
 
-        public VertexBufferLayoutGLES() {
+        public VertexBufferLayoutGL() {
             this._elements = new List<LayoutElement>();
         }
         /// <summary>
@@ -61,7 +61,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <param name="normalized">Do they need to be Normalized?</param>
         /// <typeparam name="pElementType">Type of Element</typeparam>
         /// <returns></returns>
-        public unsafe VertexBufferLayoutGLES AddElement<pElementType>(int count, bool normalized = false) where pElementType : unmanaged {
+        public unsafe VertexBufferLayoutGL AddElement<pElementType>(int count, bool normalized = false) where pElementType : unmanaged {
             VertexAttribPointerType type = Type.GetTypeCode(typeof(pElementType)) switch {
                 TypeCode.Single => VertexAttribPointerType.Float,
                 TypeCode.Byte   => VertexAttribPointerType.Byte,

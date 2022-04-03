@@ -5,7 +5,6 @@ using System.Runtime.InteropServices;
 using FontStashSharp;
 using Furball.Vixie.FontStashSharp;
 using Furball.Vixie.Graphics.Backends.OpenGL;
-using Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions;
 using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using Silk.NET.OpenGL;
@@ -57,7 +56,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
 
         private BufferObjectGL      _vbo;
         private BufferObjectGL      _instanceVbo;
-        private VertexArrayObjectGL41 _vao;
+        private VertexArrayObjectGL _vao;
 
         private VixieFontStashRenderer _textRenderer;
 
@@ -92,7 +91,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
                 this._shaderGl41.BindUniformToTexUnit($"tex_{i}", i);
             }
 
-            this._vao = new VertexArrayObjectGL41(backend);
+            this._vao = new VertexArrayObjectGL(backend);
             this._vao.Bind();
 
             this._vbo = new BufferObjectGL(backend, BufferTargetARB.ArrayBuffer, BufferUsageARB.StaticDraw);

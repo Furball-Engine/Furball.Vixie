@@ -4,7 +4,6 @@ using System.IO;
 using System.Numerics;
 using System.Threading;
 using Furball.Vixie.Graphics.Backends.OpenGL;
-using Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions;
 using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using Kettu;
@@ -368,6 +367,23 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
         }
         public void DeleteProgram(uint programId) {
             this.gl.DeleteProgram(programId);
+        }
+        public void DeleteVertexArray(uint arrayId) {
+            this.gl.DeleteVertexArray(arrayId);
+        }
+        public uint GenVertexArray() => this.gl.GenVertexArray();
+        public void EnableVertexAttribArray(uint u) {
+            this.gl.EnableVertexAttribArray(u);
+        }
+        public unsafe void VertexAttribPointer(uint u, int currentElementCount, Silk.NET.OpenGL.VertexAttribPointerType currentElementType, bool currentElementNormalized, uint getStride, void* offset) {
+            this.gl.VertexAttribPointer(u, currentElementCount, (GLEnum)currentElementType, currentElementNormalized, getStride, offset);
+        }
+        public unsafe void VertexAttribIPointer(uint u, int currentElementCount, Silk.NET.OpenGL.VertexAttribIType vertexAttribIType, uint getStride, void* offset) {
+            this.gl.VertexAttribIPointer(u, currentElementCount, (GLEnum)vertexAttribIType, getStride, offset);
+
+        }
+        public void BindVertexArray(uint arrayId) {
+            this.gl.BindVertexArray(arrayId);
         }
     }
 }

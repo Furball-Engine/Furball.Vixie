@@ -2,7 +2,6 @@ using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Furball.Vixie.Graphics.Backends.OpenGL;
-using Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions;
 using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using Silk.NET.OpenGLES;
@@ -32,7 +31,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
         /// <summary>
         /// Vertex Array which stores the Vertex Buffer layout information
         /// </summary>
-        private readonly VertexArrayObjectGLES _vertexArray;
+        private readonly VertexArrayObjectGL _vertexArray;
         /// <summary>
         /// Vertex buffer which contains all the Batched Verticies
         /// </summary>
@@ -77,8 +76,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
                     .Link();
 
             //Define Layout of the Vertex Buffer
-            VertexBufferLayoutGLES layoutGles =
-                new VertexBufferLayoutGLES()
+            VertexBufferLayoutGL layoutGles =
+                new VertexBufferLayoutGL()
                     .AddElement<float>(4)                  //Position
                     .AddElement<float>(4, true);  //Color
 
@@ -86,7 +85,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
             this._vertexBuffer = new BufferObjectGL(backend, sizeof(BatchedLineVertex) * this.MaxVerticies, BufferTargetARB.ArrayBuffer);
 
             //Create the VAO
-            this._vertexArray = new VertexArrayObjectGLES(backend);
+            this._vertexArray = new VertexArrayObjectGL(backend);
 
             //Add the layout to the Vertex Array
             this._vertexArray

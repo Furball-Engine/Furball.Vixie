@@ -1,38 +1,31 @@
 using System;
-using Furball.Vixie.Graphics.Backends.OpenGL;
-using Silk.NET.OpenGLES;
+using Silk.NET.OpenGL;
 
-namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
-    public class VertexArrayObjectGLES : IDisposable {
-        private readonly OpenGLESBackend _backend;
+namespace Furball.Vixie.Graphics.Backends.OpenGL {
+    public class VertexArrayObjectGL : IDisposable {
+        private readonly IGLBasedBackend _backend;
         /// <summary>
         /// Current Bound VAO
         /// </summary>
-        internal static VertexArrayObjectGLES CurrentlyBound;
+        internal static VertexArrayObjectGL CurrentlyBound;
         /// <summary>
         /// Getter to check whether this VAO is bound
         /// </summary>
         public bool Bound => CurrentlyBound == this;
         /// <summary>
-        /// OpenGL Api, used to not have to write Global.GL.function everytime
-        /// </summary>
-        private GL gl;
-        /// <summary>
         /// Unique Identifier for this Array Object
         /// </summary>
         internal uint ArrayId;
 
-        public VertexArrayObjectGLES(OpenGLESBackend backend) {
+        public VertexArrayObjectGL(IGLBasedBackend backend) {
             this._backend = backend;
             
-
-            this.gl = backend.GetGlApi();
             //Generate Vertex Array
-            this.ArrayId = this.gl.GenVertexArray();
+            this.ArrayId = this._backend.GenVertexArray();
             this._backend.CheckError();
         }
 
-        ~VertexArrayObjectGLES() {
+        ~VertexArrayObjectGL() {
             DisposeQueue.Enqueue(this);
         }
 
@@ -40,27 +33,27 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Adds a VertexBuffer with a certain Layout to this Vertex Array
         /// </summary>
         /// <param name="vertexBuffer">Vertex Buffer to add</param>
-        /// <param name="layoutGles">Layout of said Vertex Buffer</param>
-        public unsafe VertexArrayObjectGLES AddBuffer(BufferObjectGL vertexBuffer, VertexBufferLayoutGLES layoutGles) {
+        /// <param name="layoutGl41">Layout of said Vertex Buffer</param>
+        public unsafe VertexArrayObjectGL AddBuffer(BufferObjectGL vertexBuffer, VertexBufferLayoutGL layoutGl41) {
             
             
             //Bind both this and the Vertex Buffer
             this.Bind();
             vertexBuffer.Bind();
             //Get all the elements
-            var elements = layoutGles.GetElements();
+            var elements = layoutGl41.GetElements();
 
             uint offset = 0;
             //Loop over the elements
             for (uint i = 0; i != elements.Count; i++) {
                 LayoutElement currentElement = elements[(int) i];
                 //Define the Layout of this Element
-                this.gl.EnableVertexAttribArray(i);
+                this._backend.EnableVertexAttribArray(i);
 
                 if (currentElement.Type != VertexAttribPointerType.Int)
-                    this.gl.VertexAttribPointer(i, currentElement.Count, currentElement.Type, currentElement.Normalized, layoutGles.GetStride(), (void*)offset);
+                    this._backend.VertexAttribPointer(i, currentElement.Count, currentElement.Type, currentElement.Normalized, layoutGl41.GetStride(), (void*)offset);
                 else
-                    this.gl.VertexAttribIPointer(i, currentElement.Count, VertexAttribIType.Int, layoutGles.GetStride(), (void*)offset);
+                    this._backend.VertexAttribIPointer(i, currentElement.Count, VertexAttribIType.Int, layoutGl41.GetStride(), (void*)offset);
 
                 offset += (uint) currentElement.Count * LayoutElement.GetSizeOfType(currentElement.Type);
             }
@@ -71,13 +64,11 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <summary>
         /// Binds or Selects this current Vertex Array
         /// </summary>
-        public VertexArrayObjectGLES Bind() {
-            
-            
+        public VertexArrayObjectGL Bind() {
             if (this.Locked)
                 return null;
 
-            this.gl.BindVertexArray(this.ArrayId);
+            this._backend.BindVertexArray(this.ArrayId);
             this._backend.CheckError();
 
             CurrentlyBound = this;
@@ -96,7 +87,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Binds and sets a Lock so that the Texture cannot be unbound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal VertexArrayObjectGLES LockingBind() {
+        internal VertexArrayObjectGL LockingBind() {
             this.Bind();
             this.Lock();
 
@@ -106,7 +97,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Locks the Texture so that other Textures cannot be bound/unbound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal VertexArrayObjectGLES Lock() {
+        internal VertexArrayObjectGL Lock() {
             this.Locked = true;
 
             return this;
@@ -115,7 +106,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Unlocks the Texture, so that other Textures can be bound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal VertexArrayObjectGLES Unlock() {
+        internal VertexArrayObjectGL Unlock() {
             this.Locked = false;
 
             return this;
@@ -124,7 +115,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Uninds and unlocks the Texture so that other Textures can be bound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal VertexArrayObjectGLES UnlockingUnbind() {
+        internal VertexArrayObjectGL UnlockingUnbind() {
             this.Unlock();
             this.Unbind();
 
@@ -134,13 +125,13 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <summary>
         /// Unbinds all Vertex Arrays
         /// </summary>
-        public VertexArrayObjectGLES Unbind() {
+        public VertexArrayObjectGL Unbind() {
             
             
             if (this.Locked)
                 return null;
 
-            this.gl.BindVertexArray(0);
+            this._backend.BindVertexArray(0);
             this._backend.CheckError();
 
             CurrentlyBound = null;
@@ -165,7 +156,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
             this._isDisposed = true;
 
             try {
-                this.gl.DeleteVertexArray(this.ArrayId);
+                this._backend.DeleteVertexArray(this.ArrayId);
                 this._backend.CheckError();
             }
             catch {

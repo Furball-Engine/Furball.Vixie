@@ -59,7 +59,13 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
         public        void   Uniform2(int            getUniformLocation, float  f, float f2);
         public        void   Uniform2(int            getUniformLocation, int    f, int   f2);
         public        void   DeleteProgram(uint      programId);
+        public        uint   GenVertexArray();
+        public        void   EnableVertexAttribArray(uint u);
+        public unsafe void   VertexAttribPointer(uint     u, int currentElementCount, VertexAttribPointerType currentElementType, bool currentElementNormalized, uint  getStride, void* offset);
+        public unsafe void   VertexAttribIPointer(uint    u, int currentElementCount, VertexAttribIType       vertexAttribIType,  uint getStride,                void* offset);
+        public        void   BindVertexArray(uint         arrayId);
+        public        void   DeleteVertexArray(uint       arrayId);
         
-        public void CheckError(string  error = "");
+        public void CheckError(string      error = "");
     }
 }
