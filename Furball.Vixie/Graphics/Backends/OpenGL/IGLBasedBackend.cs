@@ -37,9 +37,9 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
         public        void   FramebufferRenderbuffer(FramebufferTarget target, FramebufferAttachment attachment,       RenderbufferTarget rbTarget,  uint id);
         public        void   FramebufferTexture(FramebufferTarget      target, FramebufferAttachment colorAttachment0, uint               textureId, int  level);
         public        GLEnum CheckFramebufferStatus(FramebufferTarget  target);
-        public        void   GetInteger(GetPName                       viewport, Span<int>            oldViewPort);
+        public        void   GetInteger(GetPName                       viewport, ref int[]            oldViewPort);
         public        void   TexParameter(TextureTarget                target,   TextureParameterName paramName, int param);
-        public unsafe void   TexSubImage2D(TextureTarget               target,   int                  level,     int x, int y, uint width, uint height, PixelFormat pxformat, PixelType pxtype, void* data);
+        public unsafe void   TexSubImage2D(TextureTarget               target,   int                  level,     int     x, int y, uint width, uint height, PixelFormat pxformat, PixelType pxtype, void* data);
         public        void   ActiveTexture(TextureUnit                 textureSlot);
         
         public void CheckError(string         error = "");

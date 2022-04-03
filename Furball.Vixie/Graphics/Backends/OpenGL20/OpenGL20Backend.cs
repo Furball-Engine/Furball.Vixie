@@ -231,7 +231,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
             throw new NotImplementedException();
         }
         public Silk.NET.OpenGL.GLEnum CheckFramebufferStatus(FramebufferTarget target) => throw new NotImplementedException();
-        public void GetInteger(Silk.NET.OpenGL.GetPName viewport, Span<int> oldViewPort) {
+        public void GetInteger(Silk.NET.OpenGL.GetPName viewport, ref int[] oldViewPort) {
             throw new NotImplementedException();
         }
         public void TexParameter(TextureTarget target, TextureParameterName paramName, int param) {

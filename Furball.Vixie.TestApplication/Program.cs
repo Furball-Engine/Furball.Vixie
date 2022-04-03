@@ -6,6 +6,6 @@ var options = WindowOptions.Default;
 
 options.VSync = false;
 
-GraphicsBackend.PrefferedBackends = Backend.OpenGL41 | Backend.OpenGLES;
+GraphicsBackend.PrefferedBackends = Backend.OpenGL41;
 
 new TestGame(options).Run(options);

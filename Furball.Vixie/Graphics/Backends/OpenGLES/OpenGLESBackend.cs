@@ -320,7 +320,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
             this.gl.FramebufferTexture((GLEnum)target, (GLEnum)colorAttachment0, textureId, level);
         }
         public Silk.NET.OpenGL.GLEnum CheckFramebufferStatus(FramebufferTarget target) => (Silk.NET.OpenGL.GLEnum)this.gl.CheckFramebufferStatus((GLEnum)target);
-        public void GetInteger(Silk.NET.OpenGL.GetPName viewport, Span<int> oldViewPort) {
+        public void GetInteger(Silk.NET.OpenGL.GetPName viewport, ref int[] oldViewPort) {
             this.gl.GetInteger((GLEnum)viewport, oldViewPort);
         }
         public void TexParameter(TextureTarget target, TextureParameterName paramName, int param) {

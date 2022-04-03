@@ -116,14 +116,12 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
         /// Binds the Target, from now on drawing will draw to this RenderTarget,
         /// </summary>
         public override void Bind() {
-            
-            
             if (this.Locked)
                 return;
 
             this._backend.BindFramebuffer(FramebufferTarget.Framebuffer, this._frameBufferId);
             //Store the old viewport for later
-            this._backend.GetInteger(GetPName.Viewport, this._oldViewPort);
+            this._backend.GetInteger(GetPName.Viewport, ref this._oldViewPort);
             this._backend.Viewport(0, 0, this.TargetWidth, this.TargetHeight);
             this._backend.CheckError();
 

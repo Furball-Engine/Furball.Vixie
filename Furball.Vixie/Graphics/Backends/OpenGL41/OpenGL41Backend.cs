@@ -91,9 +91,6 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
             
             this.CheckError();
         }
-        public void ActiveTexture(TextureUnit textureSlot) {
-            throw new NotImplementedException();
-        }
         public void CheckError(string message = "") {
             this.CheckErrorInternal(message);
         }
@@ -273,57 +270,60 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
         public void DeleteBuffer(uint bufferId) {
             this.gl.DeleteBuffer(bufferId);
         }
+        public void ActiveTexture(TextureUnit textureSlot) {
+            this.gl.ActiveTexture(textureSlot);
+        }
         public void DeleteFramebuffer(uint frameBufferId) {
-            throw new NotImplementedException();
+            this.gl.DeleteFramebuffer(frameBufferId);
         }
         public void DeleteTexture(uint textureId) {
-            throw new NotImplementedException();
+            this.gl.DeleteTexture(textureId);
         }
         public void DeleteRenderbuffer(uint bufId) {
-            throw new NotImplementedException();
+            this.gl.DeleteRenderbuffer(bufId);
         }
         public void DrawBuffers(uint i, in GLEnum[] drawBuffers) {
-            throw new NotImplementedException();
+            this.gl.DrawBuffers(i, drawBuffers);
         }
         public void BindFramebuffer(FramebufferTarget framebuffer, uint frameBufferId) {
-            throw new NotImplementedException();
+            this.gl.BindFramebuffer(framebuffer, frameBufferId);
         }
-        public uint GenFramebuffer() => throw new NotImplementedException();
+        public uint GenFramebuffer() => this.gl.GenFramebuffer();
         public void BindTexture(TextureTarget target, uint textureId) {
-            throw new NotImplementedException();
+            this.gl.BindTexture(target, textureId);
         }
         public unsafe void TexImage2D(TextureTarget target, int level, InternalFormat format, uint width, uint height, int border, PixelFormat pxFormat, PixelType type, void* data) {
-            throw new NotImplementedException();
+            this.gl.TexImage2D(target, level, format, width, height, border, pxFormat, type, data);
         }
         public void TexParameterI(TextureTarget target, GLEnum param, int paramData) {
-            throw new NotImplementedException();
+            this.gl.TexParameterI(target, param, paramData);
         }
-        public uint GenRenderbuffer() => throw new NotImplementedException();
+        public uint GenRenderbuffer() => this.gl.GenRenderbuffer();
         public void Viewport(int x, int y, uint width, uint height) {
-            throw new NotImplementedException();
+            this.gl.Viewport(x, y, width, height);
         }
-        public uint GenTexture() => throw new NotImplementedException();
+        public uint GenTexture() => this.gl.GenTexture();
         public void BindRenderbuffer(RenderbufferTarget target, uint id) {
-            throw new NotImplementedException();
+            this.gl.BindRenderbuffer(target, id);
         }
         public void RenderbufferStorage(RenderbufferTarget target, InternalFormat format, uint width, uint height) {
-            throw new NotImplementedException();
+            this.gl.RenderbufferStorage(target, format, width, height);
         }
         public void FramebufferRenderbuffer(FramebufferTarget target, FramebufferAttachment attachment, RenderbufferTarget rbTarget, uint id) {
-            throw new NotImplementedException();
+            this.gl.FramebufferRenderbuffer(target, attachment, rbTarget, id);
         }
         public void FramebufferTexture(FramebufferTarget target, FramebufferAttachment colorAttachment0, uint textureId, int level) {
-            throw new NotImplementedException();
+            this.gl.FramebufferTexture(target, colorAttachment0, textureId, level);
         }
-        public GLEnum CheckFramebufferStatus(FramebufferTarget target) => throw new NotImplementedException();
-        public void GetInteger(GetPName viewport, Span<int> oldViewPort) {
-            throw new NotImplementedException();
+        public GLEnum CheckFramebufferStatus(FramebufferTarget target) => this.gl.CheckFramebufferStatus(target);
+        public void GetInteger(GetPName viewport, ref int[] oldViewPort) {
+            this.gl.GetInteger(viewport, oldViewPort);
         }
         public void TexParameter(TextureTarget target, TextureParameterName paramName, int param) {
-            throw new NotImplementedException();
+            this.gl.TexParameter(target, paramName, param);
         }
         public unsafe void TexSubImage2D(TextureTarget target, int level, int x, int y, uint width, uint height, PixelFormat pxformat, PixelType pxtype, void* data) {
-            throw new NotImplementedException();
+            this.gl.TexSubImage2D(target, level, x, y, width, height, pxformat, pxtype, data);
         }
     }
 }
