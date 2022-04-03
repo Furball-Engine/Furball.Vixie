@@ -40,7 +40,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
         /// <summary>
         /// Shader which draws those thicc lines
         /// </summary>
-        private readonly ShaderGL41            _lineShaderGl41;
+        private readonly ShaderGL            _lineShaderGl41;
 
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
             this._backend.CheckError();
 
             //Create, Bind, Attach, Compile and Link the Vertex Fragment and Geometry Shaders
-            this._lineShaderGl41 = new ShaderGL41(backend);
+            this._lineShaderGl41 = new ShaderGL(backend);
             this._lineShaderGl41
                 .AttachShader(ShaderType.VertexShader,   vertexSource)
                 .AttachShader(ShaderType.FragmentShader, fragmentSource)

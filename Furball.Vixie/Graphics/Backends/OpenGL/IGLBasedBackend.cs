@@ -39,9 +39,27 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL {
         public        GLEnum CheckFramebufferStatus(FramebufferTarget  target);
         public        void   GetInteger(GetPName                       viewport, ref int[]            oldViewPort);
         public        void   TexParameter(TextureTarget                target,   TextureParameterName paramName, int param);
-        public unsafe void   TexSubImage2D(TextureTarget               target,   int                  level,     int     x, int y, uint width, uint height, PixelFormat pxformat, PixelType pxtype, void* data);
+        public unsafe void   TexSubImage2D(TextureTarget               target,   int                  level,     int x, int y, uint width, uint height, PixelFormat pxformat, PixelType pxtype, void* data);
         public        void   ActiveTexture(TextureUnit                 textureSlot);
+        public        uint   CreateProgram();
+        public        uint   CreateShader(ShaderType type);
+        public        void   ShaderSource(uint       shaderId, string source);
+        public        void   CompileShader(uint      shaderId);
+        public        string GetShaderInfoLog(uint   shaderId);
+        public        void   AttachShader(uint       programId, uint shaderId);
+        public        void   LinkProgram(uint        programId);
+        public        void   GetProgram(uint         programId, ProgramPropertyARB linkStatus, out int i);
+        public        void   DeleteShader(uint       shader);
+        public        string GetProgramInfoLog(uint  programId);
+        public        void   UseProgram(uint         programId);
+        public        int    GetUniformLocation(uint programId,          string uniformName);
+        public unsafe void   UniformMatrix4(int      getUniformLocation, uint   i, bool b, float* f);
+        public        void   Uniform1(int            getUniformLocation, float  f);
+        public        void   Uniform1(int            getUniformLocation, int    f);
+        public        void   Uniform2(int            getUniformLocation, float  f, float f2);
+        public        void   Uniform2(int            getUniformLocation, int    f, int   f2);
+        public        void   DeleteProgram(uint      programId);
         
-        public void CheckError(string         error = "");
+        public void CheckError(string  error = "");
     }
 }

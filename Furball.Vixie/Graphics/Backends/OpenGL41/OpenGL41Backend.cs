@@ -325,5 +325,49 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
         public unsafe void TexSubImage2D(TextureTarget target, int level, int x, int y, uint width, uint height, PixelFormat pxformat, PixelType pxtype, void* data) {
             this.gl.TexSubImage2D(target, level, x, y, width, height, pxformat, pxtype, data);
         }
+        public uint CreateProgram()               => this.gl.CreateProgram();
+        public uint CreateShader(ShaderType type) => this.gl.CreateShader(type);
+        public void ShaderSource(uint shaderId, string source) {
+            this.gl.ShaderSource(shaderId, source);
+        }
+        public void CompileShader(uint shaderId) {
+            this.gl.CompileShader(shaderId);
+        }
+        public string GetShaderInfoLog(uint shaderId) => this.gl.GetShaderInfoLog(shaderId);
+        public void AttachShader(uint programId, uint shaderId) {
+            this.gl.AttachShader(programId, shaderId);
+        }
+        public void LinkProgram(uint programId) {
+            this.gl.LinkProgram(programId);
+        }
+        public void GetProgram(uint programId, ProgramPropertyARB linkStatus, out int i) {
+            this.gl.GetProgram(programId, linkStatus, out i);
+        }
+        public void DeleteShader(uint shader) {
+            this.gl.DeleteShader(shader);
+        }
+        public string GetProgramInfoLog(uint programId) => this.gl.GetProgramInfoLog(programId);
+        public void UseProgram(uint programId) {
+            this.gl.UseProgram(programId);
+        }
+        public int GetUniformLocation(uint programId, string uniformName) => this.gl.GetUniformLocation(programId, uniformName);
+        public unsafe void UniformMatrix4(int getUniformLocation, uint i, bool b, float* f) {
+            this.gl.UniformMatrix4(getUniformLocation, i, b, f);
+        }
+        public void Uniform1(int getUniformLocation, float f) {
+            this.gl.Uniform1(getUniformLocation, f);
+        }
+        public void Uniform2(int getUniformLocation, float f, float f2) {
+            this.gl.Uniform2(getUniformLocation, f, f2);
+        }
+        public void Uniform1(int getUniformLocation, int f) {
+            this.gl.Uniform1(getUniformLocation, f);
+        }
+        public void Uniform2(int getUniformLocation, int f, int f2) {
+            this.gl.Uniform2(getUniformLocation, f, f2);
+        }
+        public void DeleteProgram(uint programId) {
+            this.gl.DeleteProgram(programId);
+        }
     }
 }

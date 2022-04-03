@@ -61,7 +61,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
 
         private VixieFontStashRenderer _textRenderer;
 
-        private ShaderGLES _shaderGles;
+        private ShaderGL _shaderGles;
 
         private OpenGLESBackend _backend;
         // ReSharper disable once InconsistentNaming
@@ -78,7 +78,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES {
             string vertSource = ResourceHelpers.GetStringResource("ShaderCode/OpenGLES/InstancedRenderer/VertexShader.glsl");
             string fragSource = QuadShaderGeneratorGLES.GetFragment(backend);
 
-            this._shaderGles = new ShaderGLES(backend);
+            this._shaderGles = new ShaderGL(backend);
 
             this._shaderGles.AttachShader(ShaderType.VertexShader,   vertSource);
             this._shaderGles.AttachShader(ShaderType.FragmentShader, fragSource);

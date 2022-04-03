@@ -61,7 +61,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
 
         private VixieFontStashRenderer _textRenderer;
 
-        private ShaderGL41 _shaderGl41;
+        private ShaderGL _shaderGl41;
 
         private OpenGL41Backend _backend;
         // ReSharper disable once InconsistentNaming
@@ -78,7 +78,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
             string vertSource = ResourceHelpers.GetStringResource("ShaderCode/OpenGL41/InstancedRenderer/VertexShader.glsl");
             string fragSource = QuadShaderGeneratorGL41.GetFragment(backend);
 
-            this._shaderGl41 = new ShaderGL41(backend);
+            this._shaderGl41 = new ShaderGL(backend);
 
             this._shaderGl41.AttachShader(ShaderType.VertexShader,   vertSource);
             this._shaderGl41.AttachShader(ShaderType.FragmentShader, fragSource);
