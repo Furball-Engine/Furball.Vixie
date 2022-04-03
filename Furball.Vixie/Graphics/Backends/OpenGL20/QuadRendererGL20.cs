@@ -4,18 +4,18 @@ using System.Numerics;
 using FontStashSharp;
 using Furball.Vixie.FontStashSharp;
 using Furball.Vixie.Graphics.Backends.OpenGL;
-using Furball.Vixie.Graphics.Backends.OpenGL20.Abstractions;
 using Furball.Vixie.Graphics.Backends.OpenGL41;
 using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using Silk.NET.OpenGL.Legacy;
+using ShaderType=Silk.NET.OpenGL.ShaderType;
 
 namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
     public class QuadRendererGL20 : IQuadRenderer {
         private readonly OpenGL20Backend _backend;
         private readonly GL              _gl;
 
-        private readonly ProgramGL20 _program;
+        private readonly ShaderGL _program;
         private readonly uint        _vertexBuffer;
 
         private bool disposed = true;
@@ -44,7 +44,14 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
             string vertex   = ResourceHelpers.GetStringResource("ShaderCode/OpenGL20/VertexShader.glsl");
             string fragment = QuadShaderGeneratorGL20.GetFragment(backend);
 
-            this._program = new(this._backend, vertex, fragment);
+            this._program = new(this._backend);
+
+            this._program.AttachShader(ShaderType.VertexShader, vertex)
+                         .AttachShader(ShaderType.FragmentShader, fragment)
+                         .Link();
+            
+            this._program.Bind();
+            
             this._backend.CheckError();
 
             this._quadColorsUniformPosition             = this._program.GetUniformLocation("u_QuadColors");
@@ -57,9 +64,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
             this._backend.CheckError();
 
             for (int i = 0; i < backend.QueryMaxTextureUnits(); i++) {
-                int location = this._program.GetUniformLocation($"tex_{i}");
-
-                this._gl.Uniform1(location, i);
+                this._program.BindUniformToTexUnit($"tex_{i}", i);
                 this._backend.CheckError();
             }
 

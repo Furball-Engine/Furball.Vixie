@@ -5,7 +5,6 @@ using System.IO;
 using System.Numerics;
 using System.Reflection.Metadata;
 using Furball.Vixie.Graphics.Backends.OpenGL;
-using Furball.Vixie.Graphics.Backends.OpenGL20.Abstractions;
 using Furball.Vixie.Graphics.Backends.OpenGL41;
 using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
