@@ -93,7 +93,7 @@ namespace Furball.Vixie {
 
             ContextProfile profile = this._backend switch {
                 Backend.OpenGLES   => ContextProfile.Core,
-                Backend.OpenGL20   => ContextProfile.Compatability,
+                Backend.OpenGL20   => ContextProfile.Core,
                 Backend.OpenGL41   => ContextProfile.Core,
                 Backend.Veldrid    => ContextProfile.Core,
                 Backend.Direct3D11 => ContextProfile.Core,

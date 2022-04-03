@@ -167,9 +167,9 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
 
             if (scale.X == 0 || scale.Y == 0 || colorOverride.A == 0) return;
 
+            // Checks if we have filled the current batch or run out of texture slots
             if (this.BatchedQuads == BATCH_COUNT || this.UsedTextures == this._backend.QueryMaxTextureUnits()) {
                 this.Flush();
-                return;
             }
 
             this.BatchedColors[this.BatchedQuads]               = colorOverride;
@@ -199,9 +199,9 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
 
             if (scale.X == 0 || scale.Y == 0 || colorOverride.A == 0) return;
 
+            // Checks if we have filled the batch or run out of textures
             if (this.BatchedQuads == BATCH_COUNT || this.UsedTextures == this._backend.QueryMaxTextureUnits()) {
                 this.Flush();
-                return;
             }
 
             //Set Size to the Source Rectangle
@@ -307,8 +307,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
             this._gl.DrawElements<ushort>(PrimitiveType.Triangles, (uint)(this.BatchedQuads * 6), DrawElementsType.UnsignedShort, BatchedIndicies);
 
             this._backend.CheckError();
-
-
+            
             _gl.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
 
             this.BatchedQuads = 0;
