@@ -15,7 +15,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
         
         private readonly OpenGL20Backend _backend;
 
-        private const int BATCH_MAX = 128; //cut this in two for actual line couyt, as we use 2 LineData structs per line :^)
+        private const int BATCH_MAX = 128; //cut this in two for actual line count, as we use 2 LineData structs per line :^)
         
         private readonly ShaderGL _program;
         private readonly uint        _arrayBuf;
