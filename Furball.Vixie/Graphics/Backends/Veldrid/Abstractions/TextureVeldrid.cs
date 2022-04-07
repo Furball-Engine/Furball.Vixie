@@ -85,7 +85,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid.Abstractions {
         /// </summary>
         public unsafe TextureVeldrid(VeldridBackend backend) {
             this._backend = backend;
-            // this._backend.CheckThread();
+            // 
 
             Image<Rgba32> px = new(1, 1, new Rgba32(255, 255, 255, 255));
 
@@ -101,7 +101,7 @@ namespace Furball.Vixie.Graphics.Backends.Veldrid.Abstractions {
         /// <param name="height">Desired Height</param>
         public unsafe TextureVeldrid(VeldridBackend backend, uint width, uint height) {
             this._backend = backend;
-            // this._backend.CheckThread();
+            // 
             
             Image<Rgba32> px = new((int)width, (int)height, new Rgba32(0, 0, 0, 0));
 

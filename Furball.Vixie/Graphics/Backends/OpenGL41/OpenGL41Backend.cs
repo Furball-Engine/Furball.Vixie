@@ -3,8 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Numerics;
 using System.Threading;
-using Furball.Vixie.Graphics.Backends.OpenGL_;
-using Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions;
+using Furball.Vixie.Graphics.Backends.OpenGL;
 using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using Kettu;
@@ -80,15 +79,15 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
             this.ImGuiController = new ImGuiController(this.gl, Global.GameInstance.WindowManager.GameWindow, Global.GameInstance._inputContext);
             this.CheckError();
 
-            Logger.Log($"OpenGL Version: {this.gl.GetStringS(StringName.Version)}",                LoggerLevelOpenGL41.InstanceInfo);
+            Logger.Log($"OpenGL Version: {this.gl.GetStringS(StringName.Version)}", LoggerLevelOpenGL41.InstanceInfo);
             this.CheckError();
             Logger.Log($"GLSL Version:   {this.gl.GetStringS(StringName.ShadingLanguageVersion)}", LoggerLevelOpenGL41.InstanceInfo);
             this.CheckError();
-            Logger.Log($"OpenGL Vendor:  {this.gl.GetStringS(StringName.Vendor)}",                 LoggerLevelOpenGL41.InstanceInfo);
+            Logger.Log($"OpenGL Vendor:  {this.gl.GetStringS(StringName.Vendor)}", LoggerLevelOpenGL41.InstanceInfo);
             this.CheckError();
-            Logger.Log($"Renderer:       {this.gl.GetStringS(StringName.Renderer)}",               LoggerLevelOpenGL41.InstanceInfo);
+            Logger.Log($"Renderer:       {this.gl.GetStringS(StringName.Renderer)}", LoggerLevelOpenGL41.InstanceInfo);
             this.CheckError();
-            
+
             this.CheckError();
         }
         public void CheckError(string message = "") {
@@ -100,7 +99,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
         [Conditional("DEBUG")]
         public void CheckErrorInternal(string message = "") {
             GLEnum error = this.gl.GetError();
-            
+
             if (error != GLEnum.NoError) {
 #if DEBUGWITHGL
                 throw new Exception($"Got GL Error {error}!");
@@ -122,7 +121,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
         /// <param name="width">New width</param>
         /// <param name="height">New height</param>
         public override void HandleWindowSizeChange(int width, int height) {
-            this.gl.Viewport(0, 0, (uint) width, (uint) height);
+            this.gl.Viewport(0, 0, (uint)width, (uint)height);
 
             this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, 0, height, 1f, 0f);
         }
@@ -132,7 +131,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
         /// <param name="width">New width</param>
         /// <param name="height">New height</param>
         public override void HandleFramebufferResize(int width, int height) {
-            this.gl.Viewport(0, 0, (uint) width, (uint) height);
+            this.gl.Viewport(0, 0, (uint)width, (uint)height);
         }
         /// <summary>
         /// Used to Create a Texture Renderer
@@ -174,7 +173,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
         /// <param name="height">Height of the Target</param>
         /// <returns></returns>
         public override TextureRenderTarget CreateRenderTarget(uint width, uint height) {
-            return new TextureRenderTargetGL41(this, width, height);
+            return new TextureRenderTargetGL(this, width, height);
         }
         /// <summary>
         /// Creates a Texture given some Data
@@ -183,7 +182,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
         /// <param name="qoi">Is the Data in the QOI format?</param>
         /// <returns>Texture</returns>
         public override Texture CreateTexture(byte[] imageData, bool qoi = false) {
-            return new TextureGL41(this, imageData, qoi);
+            return new TextureGL(this, imageData, qoi);
         }
         /// <summary>
         /// Creates a Texture given a Stream
@@ -191,7 +190,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
         /// <param name="stream">Stream to read from</param>
         /// <returns>Texture</returns>
         public override Texture CreateTexture(Stream stream) {
-            return new TextureGL41(this, stream);
+            return new TextureGL(this, stream);
         }
         /// <summary>
         /// Creates a Empty Texture given a Size
@@ -200,7 +199,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
         /// <param name="height">Height of Texture</param>
         /// <returns>Texture</returns>
         public override Texture CreateTexture(uint width, uint height) {
-            return new TextureGL41(this, width, height);
+            return new TextureGL(this, width, height);
         }
         /// <summary>
         /// Creates a Texture from a File
@@ -208,14 +207,14 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
         /// <param name="filepath">Filepath to Image</param>
         /// <returns>Texture</returns>
         public override Texture CreateTexture(string filepath) {
-            return new TextureGL41(this, filepath);
+            return new TextureGL(this, filepath);
         }
         /// <summary>
         /// Used to Create a 1x1 Texture with only a white pixel
         /// </summary>
         /// <returns>White Pixel Texture</returns>
         public override Texture CreateWhitePixelTexture() {
-            return new TextureGL41(this);
+            return new TextureGL(this);
         }
         /// <summary>
         /// Used to Update the ImGuiController in charge of rendering ImGui on this backend
@@ -256,19 +255,183 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL41 {
         public GL                        GetModernGL() => this.gl;
         public Silk.NET.OpenGL.Legacy.GL GetLegacyGL() => throw new WrongGLBackendException();
         public Silk.NET.OpenGLES.GL      GetGLES()     => throw new WrongGLBackendException();
-        
-        public uint                      GenBuffer()   => this.gl.GenBuffer();
+
+        public uint GenBuffer() => this.gl.GenBuffer();
+
         public void BindBuffer(BufferTargetARB usage, uint buf) {
             this.gl.BindBuffer(usage, buf);
         }
+
         public unsafe void BufferData(BufferTargetARB bufferType, nuint size, void* data, BufferUsageARB bufferUsage) {
             this.gl.BufferData(bufferType, size, data, bufferUsage);
         }
+
         public unsafe void BufferSubData(BufferTargetARB bufferType, nint offset, nuint size, void* data) {
             this.gl.BufferSubData(bufferType, offset, size, data);
         }
+
         public void DeleteBuffer(uint bufferId) {
             this.gl.DeleteBuffer(bufferId);
+        }
+
+        public void ActiveTexture(TextureUnit textureSlot) {
+            this.gl.ActiveTexture(textureSlot);
+        }
+
+        public void DeleteFramebuffer(uint frameBufferId) {
+            this.gl.DeleteFramebuffer(frameBufferId);
+        }
+
+        public void DeleteTexture(uint textureId) {
+            this.gl.DeleteTexture(textureId);
+        }
+
+        public void DeleteRenderbuffer(uint bufId) {
+            this.gl.DeleteRenderbuffer(bufId);
+        }
+
+        public void DrawBuffers(uint i, in GLEnum[] drawBuffers) {
+            this.gl.DrawBuffers(i, drawBuffers);
+        }
+
+        public void BindFramebuffer(FramebufferTarget framebuffer, uint frameBufferId) {
+            this.gl.BindFramebuffer(framebuffer, frameBufferId);
+        }
+
+        public uint GenFramebuffer() => this.gl.GenFramebuffer();
+
+        public void BindTexture(TextureTarget target, uint textureId) {
+            this.gl.BindTexture(target, textureId);
+        }
+
+        public unsafe void TexImage2D(TextureTarget target, int level, InternalFormat format, uint width, uint height, int border, PixelFormat pxFormat, PixelType type, void* data) {
+            this.gl.TexImage2D(target, level, format, width, height, border, pxFormat, type, data);
+        }
+
+        public void TexParameterI(TextureTarget target, GLEnum param, int paramData) {
+            this.gl.TexParameterI(target, param, paramData);
+        }
+
+        public uint GenRenderbuffer() => this.gl.GenRenderbuffer();
+
+        public void Viewport(int x, int y, uint width, uint height) {
+            this.gl.Viewport(x, y, width, height);
+        }
+
+        public uint GenTexture() => this.gl.GenTexture();
+
+        public void BindRenderbuffer(RenderbufferTarget target, uint id) {
+            this.gl.BindRenderbuffer(target, id);
+        }
+
+        public void RenderbufferStorage(RenderbufferTarget target, InternalFormat format, uint width, uint height) {
+            this.gl.RenderbufferStorage(target, format, width, height);
+        }
+
+        public void FramebufferRenderbuffer(FramebufferTarget target, FramebufferAttachment attachment, RenderbufferTarget rbTarget, uint id) {
+            this.gl.FramebufferRenderbuffer(target, attachment, rbTarget, id);
+        }
+
+        public void FramebufferTexture(FramebufferTarget target, FramebufferAttachment colorAttachment0, uint textureId, int level) {
+            this.gl.FramebufferTexture(target, colorAttachment0, textureId, level);
+        }
+
+        public GLEnum CheckFramebufferStatus(FramebufferTarget target) => this.gl.CheckFramebufferStatus(target);
+
+        public void GetInteger(GetPName viewport, ref int[] oldViewPort) {
+            this.gl.GetInteger(viewport, oldViewPort);
+        }
+
+        public void TexParameter(TextureTarget target, TextureParameterName paramName, int param) {
+            this.gl.TexParameter(target, paramName, param);
+        }
+
+        public unsafe void TexSubImage2D(TextureTarget target, int level, int x, int y, uint width, uint height, PixelFormat pxformat, PixelType pxtype, void* data) {
+            this.gl.TexSubImage2D(target, level, x, y, width, height, pxformat, pxtype, data);
+        }
+
+        public uint CreateProgram() => this.gl.CreateProgram();
+
+        public uint CreateShader(ShaderType type) => this.gl.CreateShader(type);
+
+        public void ShaderSource(uint shaderId, string source) {
+            this.gl.ShaderSource(shaderId, source);
+        }
+
+        public void CompileShader(uint shaderId) {
+            this.gl.CompileShader(shaderId);
+        }
+
+        public string GetShaderInfoLog(uint shaderId) => this.gl.GetShaderInfoLog(shaderId);
+
+        public void AttachShader(uint programId, uint shaderId) {
+            this.gl.AttachShader(programId, shaderId);
+        }
+
+        public void LinkProgram(uint programId) {
+            this.gl.LinkProgram(programId);
+        }
+
+        public void GetProgram(uint programId, ProgramPropertyARB linkStatus, out int i) {
+            this.gl.GetProgram(programId, linkStatus, out i);
+        }
+
+        public void DeleteShader(uint shader) {
+            this.gl.DeleteShader(shader);
+        }
+
+        public string GetProgramInfoLog(uint programId) => this.gl.GetProgramInfoLog(programId);
+
+        public void UseProgram(uint programId) {
+            this.gl.UseProgram(programId);
+        }
+
+        public int GetUniformLocation(uint programId, string uniformName) => this.gl.GetUniformLocation(programId, uniformName);
+
+        public unsafe void UniformMatrix4(int getUniformLocation, uint i, bool b, float* f) {
+            this.gl.UniformMatrix4(getUniformLocation, i, b, f);
+        }
+
+        public void Uniform1(int getUniformLocation, float f) {
+            this.gl.Uniform1(getUniformLocation, f);
+        }
+
+        public void Uniform2(int getUniformLocation, float f, float f2) {
+            this.gl.Uniform2(getUniformLocation, f, f2);
+        }
+
+        public void Uniform1(int getUniformLocation, int f) {
+            this.gl.Uniform1(getUniformLocation, f);
+        }
+
+        public void Uniform2(int getUniformLocation, int f, int f2) {
+            this.gl.Uniform2(getUniformLocation, f, f2);
+        }
+
+        public void DeleteProgram(uint programId) {
+            this.gl.DeleteProgram(programId);
+        }
+
+        public void DeleteVertexArray(uint arrayId) {
+            this.gl.DeleteVertexArray(arrayId);
+        }
+
+        public uint GenVertexArray() => this.gl.GenVertexArray();
+
+        public void EnableVertexAttribArray(uint u) {
+            this.gl.EnableVertexAttribArray(u);
+        }
+
+        public unsafe void VertexAttribPointer(uint u, int currentElementCount, Silk.NET.OpenGL.VertexAttribPointerType currentElementType, bool currentElementNormalized, uint getStride, void* offset) {
+            this.gl.VertexAttribPointer(u, currentElementCount, (GLEnum)currentElementType, currentElementNormalized, getStride, offset);
+        }
+
+        public unsafe void VertexAttribIPointer(uint u, int currentElementCount, Silk.NET.OpenGL.VertexAttribIType vertexAttribIType, uint getStride, void* offset) {
+            this.gl.VertexAttribIPointer(u, currentElementCount, (GLEnum)vertexAttribIType, getStride, offset);
+        }
+
+        public void BindVertexArray(uint arrayId) {
+            this.gl.BindVertexArray(arrayId);
         }
     }
 }

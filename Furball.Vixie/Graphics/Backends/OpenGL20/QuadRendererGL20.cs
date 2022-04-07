@@ -3,18 +3,19 @@ using System.Drawing;
 using System.Numerics;
 using FontStashSharp;
 using Furball.Vixie.FontStashSharp;
-using Furball.Vixie.Graphics.Backends.OpenGL20.Abstractions;
+using Furball.Vixie.Graphics.Backends.OpenGL;
 using Furball.Vixie.Graphics.Backends.OpenGL41;
 using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using Silk.NET.OpenGL.Legacy;
+using ShaderType=Silk.NET.OpenGL.ShaderType;
 
 namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
     public class QuadRendererGL20 : IQuadRenderer {
         private readonly OpenGL20Backend _backend;
         private readonly GL              _gl;
 
-        private readonly ProgramGL20 _program;
+        private readonly ShaderGL _program;
         private readonly uint        _vertexBuffer;
 
         private bool disposed = true;
@@ -43,7 +44,14 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
             string vertex   = ResourceHelpers.GetStringResource("ShaderCode/OpenGL20/VertexShader.glsl");
             string fragment = QuadShaderGeneratorGL20.GetFragment(backend);
 
-            this._program = new(this._backend, vertex, fragment);
+            this._program = new(this._backend);
+
+            this._program.AttachShader(ShaderType.VertexShader, vertex)
+                         .AttachShader(ShaderType.FragmentShader, fragment)
+                         .Link();
+            
+            this._program.Bind();
+            
             this._backend.CheckError();
 
             this._quadColorsUniformPosition             = this._program.GetUniformLocation("u_QuadColors");
@@ -56,9 +64,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
             this._backend.CheckError();
 
             for (int i = 0; i < backend.QueryMaxTextureUnits(); i++) {
-                int location = this._program.GetUniformLocation($"tex_{i}");
-
-                this._gl.Uniform1(location, i);
+                this._program.BindUniformToTexUnit($"tex_{i}", i);
                 this._backend.CheckError();
             }
 
@@ -144,13 +150,13 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
         private int GetTextureId(Texture tex) {
             if (this.UsedTextures != 0)
                 for (int i = 0; i < this.UsedTextures; i++) {
-                    TextureGL20 tex2 = this.TextureArray[i];
+                    TextureGL tex2 = this.TextureArray[i];
 
                     if (tex2 == null) break;
                     if (tex  == tex2) return i;
                 }
 
-            this.TextureArray[this.UsedTextures] = (TextureGL20)tex;
+            this.TextureArray[this.UsedTextures] = (TextureGL)tex;
             this.UsedTextures++;
 
             return this.UsedTextures - 1;
@@ -161,14 +167,14 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
                 throw new Exception("Begin() has not been called!");
 
             //Ignore calls with invalid textures
-            if (textureGl == null || textureGl is not TextureGL20 textureGl20)
+            if (textureGl == null || textureGl is not TextureGL textureGl20)
                 return;
 
             if (scale.X == 0 || scale.Y == 0 || colorOverride.A == 0) return;
 
+            // Checks if we have filled the current batch or run out of texture slots
             if (this.BatchedQuads == BATCH_COUNT || this.UsedTextures == this._backend.QueryMaxTextureUnits()) {
                 this.Flush();
-                return;
             }
 
             this.BatchedColors[this.BatchedQuads]               = colorOverride;
@@ -193,14 +199,14 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
                 throw new Exception("Begin() has not been called!");
 
             //Ignore calls with invalid textures
-            if (textureGl == null || textureGl is not TextureGL20)
+            if (textureGl == null || textureGl is not TextureGL)
                 return;
 
             if (scale.X == 0 || scale.Y == 0 || colorOverride.A == 0) return;
 
+            // Checks if we have filled the batch or run out of textures
             if (this.BatchedQuads == BATCH_COUNT || this.UsedTextures == this._backend.QueryMaxTextureUnits()) {
                 this.Flush();
-                return;
             }
 
             //Set Size to the Source Rectangle
@@ -254,7 +260,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
         private float[]         BatchedTextureIds         = new float[BATCH_COUNT];
         private Vector4[]       BatchedTextureCoordinates = new Vector4[BATCH_COUNT];
 
-        private          TextureGL20[]          TextureArray = new TextureGL20[32];
+        private          TextureGL[]          TextureArray = new TextureGL[32];
         private readonly VixieFontStashRenderer _textRenderer;
 
         private unsafe void Flush() {
@@ -264,7 +270,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
 
             //Bind all the textures
             for (var i = 0; i < this.UsedTextures; i++) {
-                TextureGL20 tex = this.TextureArray[i];
+                TextureGL tex = this.TextureArray[i];
 
                 if (tex == null) continue;
 
@@ -306,8 +312,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
             this._gl.DrawElements<ushort>(PrimitiveType.Triangles, (uint)(this.BatchedQuads * 6), DrawElementsType.UnsignedShort, BatchedIndicies);
 
             this._backend.CheckError();
-
-
+            
             _gl.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
 
             this.BatchedQuads = 0;

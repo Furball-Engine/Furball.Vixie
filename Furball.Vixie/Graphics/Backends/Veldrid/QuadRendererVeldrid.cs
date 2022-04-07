@@ -1,11 +1,9 @@
 using System;
-using System.IO.Compression;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 using FontStashSharp;
 using Furball.Vixie.FontStashSharp;
-using Furball.Vixie.Graphics.Backends.OpenGL41.Abstractions;
 using Furball.Vixie.Graphics.Backends.Veldrid.Abstractions;
 using Furball.Vixie.Graphics.Renderers;
 using Veldrid;

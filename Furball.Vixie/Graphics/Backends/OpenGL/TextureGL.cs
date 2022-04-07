@@ -2,14 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
-using Silk.NET.OpenGLES;
+using Furball.Vixie.Graphics.Backends.OpenGL41;
+using Silk.NET.OpenGL;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using Rectangle=System.Drawing.Rectangle;
 
-namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
-    public class TextureGLES : Texture, IDisposable {
-        private readonly OpenGLESBackend _backend;
+namespace Furball.Vixie.Graphics.Backends.OpenGL {
+    public class TextureGL : Texture, IDisposable {
+        private readonly IGLBasedBackend _backend;
         /// <summary>
         /// All the Currently Bound Textures
         /// </summary>
@@ -63,10 +64,6 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         internal TextureUnit BoundAt;
 
         /// <summary>
-        /// OpenGL API, used to not write Global.Gl everytime
-        /// </summary>
-        private GL            gl;
-        /// <summary>
         /// Unique ID which identifies this Texture
         /// </summary>
         internal uint          TextureId;
@@ -88,9 +85,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Creates a Texture from a File
         /// </summary>
         /// <param name="filepath">Path to an Image</param>
-        public unsafe TextureGLES(OpenGLESBackend backend, string filepath) {
+        public unsafe TextureGL(IGLBasedBackend backend, string filepath) {
             this._backend = backend;
-            this.gl       = backend.GetGlApi();
 
             Image<Rgba32> image = (Image<Rgba32>)Image.Load(filepath);
 
@@ -107,9 +103,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Creates a Texture from a byte array which contains Image Data
         /// </summary>
         /// <param name="imageData">Image Data</param>
-        public unsafe TextureGLES(OpenGLESBackend backend, byte[] imageData, bool qoi = false) {
+        public unsafe TextureGL(IGLBasedBackend backend, byte[] imageData, bool qoi = false) {
             this._backend = backend;
-            this.gl       = backend.GetGlApi();
 
             Image<Rgba32> image;
 
@@ -133,26 +128,23 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <summary>
         /// Creates a Texture with a single White Pixel
         /// </summary>
-        public unsafe TextureGLES(OpenGLESBackend backend) {
+        public unsafe TextureGL(IGLBasedBackend backend) {
             this._backend = backend;
-            this._backend.CheckThread();
             
-            this.gl = backend.GetGlApi();
-
-            this.TextureId = this.gl.GenTexture();
+            this.TextureId = this._backend.GenTexture();
             //Bind as we will be working on the Texture
-            this.gl.BindTexture(TextureTarget.Texture2D, this.TextureId);
+            this._backend.BindTexture(TextureTarget.Texture2D, this.TextureId);
             //Apply Linear filtering, and make Image wrap around and repeat
-            this.gl.TexParameter(GLEnum.Texture2D,        TextureParameterName.TextureMinFilter, (int) GLEnum.Linear);
-            this.gl.TexParameter(GLEnum.Texture2D,        TextureParameterName.TextureMagFilter, (int) GLEnum.Linear);
-            this.gl.TexParameter(TextureTarget.Texture2D, GLEnum.TextureWrapS,                   (int) GLEnum.Repeat);
-            this.gl.TexParameter(TextureTarget.Texture2D, GLEnum.TextureWrapT,                   (int) GLEnum.Repeat);
+            this._backend.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int) GLEnum.Linear);
+            this._backend.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int) GLEnum.Linear);
+            this._backend.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS,     (int) GLEnum.Repeat);
+            this._backend.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT,     (int)GLEnum.Repeat);
             //White color
             uint color = 0xffffffff;
             //Upload Image Data
-            this.gl.TexImage2D(GLEnum.Texture2D, 0, InternalFormat.Rgba8, 1, 1, 0, PixelFormat.Rgba, PixelType.UnsignedByte, &color);
+            this._backend.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat.Rgba8, 1, 1, 0, PixelFormat.Rgba, PixelType.UnsignedByte, &color);
             //Unbind as we have finished
-            this.gl.BindTexture(TextureTarget.Texture2D, 0);
+            this._backend.BindTexture(TextureTarget.Texture2D, 0);
             this._backend.CheckError();
 
             this.Size = new Vector2(1, 1);
@@ -162,24 +154,21 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// </summary>
         /// <param name="width">Desired Width</param>
         /// <param name="height">Desired Height</param>
-        public unsafe TextureGLES(OpenGLESBackend backend, uint width, uint height) {
+        public unsafe TextureGL(IGLBasedBackend backend, uint width, uint height) {
             this._backend = backend;
-            this._backend.CheckThread();
             
-            this.gl = backend.GetGlApi();
-
-            this.TextureId = this.gl.GenTexture();
+            this.TextureId = this._backend.GenTexture();
             //Bind as we will be working on the Texture
-            this.gl.BindTexture(TextureTarget.Texture2D, this.TextureId);
+            this._backend.BindTexture(TextureTarget.Texture2D, this.TextureId);
             //Apply Linear filtering, and make Image wrap around and repeat
-            this.gl.TexParameter(GLEnum.Texture2D,        TextureParameterName.TextureMinFilter, (int) GLEnum.Linear);
-            this.gl.TexParameter(GLEnum.Texture2D,        TextureParameterName.TextureMagFilter, (int) GLEnum.Linear);
-            this.gl.TexParameter(TextureTarget.Texture2D, GLEnum.TextureWrapS,                   (int) GLEnum.Repeat);
-            this.gl.TexParameter(TextureTarget.Texture2D, GLEnum.TextureWrapT,                   (int) GLEnum.Repeat);
+            this._backend.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int) GLEnum.Linear);
+            this._backend.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int) GLEnum.Linear);
+            this._backend.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS,     (int) GLEnum.Repeat);
+            this._backend.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT,                   (int) GLEnum.Repeat);
             //Upload Image Data
-            this.gl.TexImage2D(GLEnum.Texture2D, 0, InternalFormat.Rgba8, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, null);
+            this._backend.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat.Rgba8, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, null);
             //Unbind as we have finished
-            this.gl.BindTexture(TextureTarget.Texture2D, 0);
+            this._backend.BindTexture(TextureTarget.Texture2D, 0);
             this._backend.CheckError();
 
             this.Size = new Vector2(width, height);
@@ -188,9 +177,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Creates a Texture from a Stream which Contains Image Data
         /// </summary>
         /// <param name="stream">Image Data Stream</param>
-        public unsafe TextureGLES(OpenGLESBackend backend, Stream stream) {
+        public unsafe TextureGL(IGLBasedBackend backend, Stream stream) {
             this._backend = backend;
-            this.gl       = backend.GetGlApi();
 
             Image<Rgba32> image = Image.Load<Rgba32>(stream);
 
@@ -204,18 +192,18 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
             this.Size = new Vector2(width, height);
         }
 
-        ~TextureGLES() {
+        ~TextureGL() {
             DisposeQueue.Enqueue(this);
         }
 
         private unsafe void Load(Image<Rgba32> image) {
             this.Load(null, image.Width, image.Height);
-            this.Bind();
+            this.Bind(TextureUnit.Texture0);
             image.ProcessPixelRows(accessor =>
             {
                 for (int i = 0; i < accessor.Height; i++) {
                     fixed(void* ptr = &accessor.GetRowSpan(i).GetPinnableReference())
-                        this.gl.TexSubImage2D(TextureTarget.Texture2D, 0, 0, i, (uint)accessor.Width, 1, PixelFormat.Rgba, PixelType.UnsignedByte, ptr);
+                        this._backend.TexSubImage2D(TextureTarget.Texture2D, 0, 0, i, (uint)accessor.Width, 1, PixelFormat.Rgba, PixelType.UnsignedByte, ptr);
                 }
             });
             this.Unbind();
@@ -227,9 +215,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <param name="textureId">OpenGL Texture ID</param>
         /// <param name="width">Width of the Texture</param>
         /// <param name="height">Height of the Texture</param>
-        internal TextureGLES(OpenGLESBackend backend, uint textureId, uint width, uint height) {
-            this.gl = backend.GetGlApi();
-
+        internal TextureGL(IGLBasedBackend backend, uint textureId, uint width, uint height) {
             this._backend  = backend;
             this.TextureId = textureId;
             this.Size      = new Vector2(width, height);
@@ -242,18 +228,18 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <param name="width">Width of Image</param>
         /// <param name="height">Height of Imgae</param>
         private unsafe void Load(void* data, int width, int height) {
-            this.TextureId = this.gl.GenTexture();
+            this.TextureId = this._backend.GenTexture();
             //Bind as we will be working on the Texture
-            this.gl.BindTexture(TextureTarget.Texture2D, this.TextureId);
+            this._backend.BindTexture(TextureTarget.Texture2D, this.TextureId);
             //Apply Linear filtering, and make Image wrap around and repeat
-            this.gl.TexParameter(GLEnum.Texture2D,        TextureParameterName.TextureMinFilter, (int) GLEnum.Linear);
-            this.gl.TexParameter(GLEnum.Texture2D,        TextureParameterName.TextureMagFilter, (int) GLEnum.Linear);
-            this.gl.TexParameter(TextureTarget.Texture2D, GLEnum.TextureWrapS,                   (int) GLEnum.Repeat);
-            this.gl.TexParameter(TextureTarget.Texture2D, GLEnum.TextureWrapT,                   (int) GLEnum.Repeat);
+            this._backend.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int) GLEnum.Linear);
+            this._backend.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int) GLEnum.Linear);
+            this._backend.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS,     (int) GLEnum.Repeat);
+            this._backend.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT,                   (int) GLEnum.Repeat);
             //Upload Image Data
-            this.gl.TexImage2D(GLEnum.Texture2D, 0, InternalFormat.Rgba8, (uint)width, (uint)height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, data);
+            this._backend.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat.Rgba8, (uint)width, (uint)height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, data);
             //Unbind as we have finished
-            this.gl.BindTexture(TextureTarget.Texture2D, 0);
+            this._backend.BindTexture(TextureTarget.Texture2D, 0);
             this._backend.CheckError();
         }
         /// <summary>
@@ -263,13 +249,13 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <param name="data">Data to put there</param>
         /// <typeparam name="pDataType">Type of the Data</typeparam>
         /// <returns>Self, used for chaining methods</returns>
-        public override unsafe TextureGLES SetData<pDataType>(int level, pDataType[] data) {
+        public override unsafe TextureGL SetData<pDataType>(int level, pDataType[] data) {
             this.LockingBind();
 
             fixed(void* d = data)
-                this.gl.TexImage2D(TextureTarget.Texture2D, level, InternalFormat.Rgba, (uint) this.Size.X, (uint) this.Size.Y, 0, PixelFormat.Rgba, PixelType.UnsignedByte, d);
+                this._backend.TexImage2D(TextureTarget.Texture2D, level, InternalFormat.Rgba, (uint) this.Size.X, (uint) this.Size.Y, 0, PixelFormat.Rgba, PixelType.UnsignedByte, d);
 
-            this.gl.Finish();
+            // this._backend.Finish();
             this._backend.CheckError();
 
             this.UnlockingUnbind();
@@ -284,11 +270,11 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// <param name="data">Data to put there</param>
         /// <typeparam name="pDataType">Type of Data to put</typeparam>
         /// <returns>Self, used for chaining methods</returns>
-        public override unsafe TextureGLES SetData<pDataType>(int level, Rectangle rect, pDataType[] data) {
+        public override unsafe Texture SetData<pDataType>(int level, Rectangle rect, pDataType[] data) {
             this.LockingBind();
 
             fixed(void* d = data)
-                this.gl.TexSubImage2D(TextureTarget.Texture2D, level, rect.X, rect.Y, (uint) rect.Width, (uint) rect.Height, PixelFormat.Rgba, PixelType.UnsignedByte, d);
+                this._backend.TexSubImage2D(TextureTarget.Texture2D, level, rect.X, rect.Y, (uint) rect.Width, (uint) rect.Height, PixelFormat.Rgba, PixelType.UnsignedByte, d);
             this._backend.CheckError();
 
             this.UnlockingUnbind();
@@ -296,17 +282,20 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
             return this;
         }
 
+        public TextureGL Bind(Silk.NET.OpenGLES.TextureUnit textureSlot = Silk.NET.OpenGLES.TextureUnit.Texture0) {
+            return this.Bind((TextureUnit)textureSlot);
+        }
         /// <summary>
         /// Binds the Texture to a certain Texture Slot
         /// </summary>
         /// <param name="textureSlot">Desired Texture Slot</param>
         /// <returns>Self, used for chaining methods</returns>
-        public TextureGLES Bind(TextureUnit textureSlot = TextureUnit.Texture0) {
+        public TextureGL Bind(TextureUnit textureSlot = TextureUnit.Texture0) {
             if (this.Locked)
                 return null;
 
-            this.gl.ActiveTexture(textureSlot);
-            this.gl.BindTexture(TextureTarget.Texture2D, this.TextureId);
+            this._backend.ActiveTexture(textureSlot);
+            this._backend.BindTexture(TextureTarget.Texture2D, this.TextureId);
             this._backend.CheckError();
 
             BoundTextures[textureSlot] = this.TextureId;
@@ -326,8 +315,8 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Binds and sets a Lock so that the Texture cannot be unbound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal TextureGLES LockingBind() {
-            this.Bind();
+        internal TextureGL LockingBind() {
+            this.Bind(TextureUnit.Texture0);
             this.Lock();
 
             return this;
@@ -336,7 +325,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Locks the Texture so that other Textures cannot be bound/unbound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal TextureGLES Lock() {
+        internal TextureGL Lock() {
             this.Locked = true;
 
             return this;
@@ -345,7 +334,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Unlocks the Texture, so that other Textures can be bound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal TextureGLES Unlock() {
+        internal TextureGL Unlock() {
             this.Locked = false;
 
             return this;
@@ -354,7 +343,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Uninds and unlocks the Texture so that other Textures can be bound/rebound
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
-        internal TextureGLES UnlockingUnbind() {
+        internal TextureGL UnlockingUnbind() {
             this.Unlock();
             this.Unbind();
 
@@ -365,12 +354,12 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
         /// Unbinds the Texture
         /// </summary>
         /// <returns>Self, used for chaining methods</returns>
-        public TextureGLES Unbind() {
+        public TextureGL Unbind() {
             if (this.Locked)
                 return null;
 
-            this.gl.ActiveTexture(this.BoundAt);
-            this.gl.BindTexture(TextureTarget.Texture2D, 0);
+            this._backend.ActiveTexture(this.BoundAt);
+            this._backend.BindTexture(TextureTarget.Texture2D, 0);
             this._backend.CheckError();
 
             BoundTextures[this.BoundAt] = 0;
@@ -398,7 +387,7 @@ namespace Furball.Vixie.Graphics.Backends.OpenGLES.Abstractions {
             this._isDisposed = true;
 
             try {
-                this.gl.DeleteTexture(this.TextureId);
+                this._backend.DeleteTexture(this.TextureId);
                 this._localBuffer.Dispose();
             }
             catch {

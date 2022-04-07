@@ -1,9 +1,10 @@
 using System;
 using System.Numerics;
-using Furball.Vixie.Graphics.Backends.OpenGL20.Abstractions;
+using Furball.Vixie.Graphics.Backends.OpenGL;
 using Furball.Vixie.Graphics.Renderers;
 using Furball.Vixie.Helpers;
 using Silk.NET.OpenGL.Legacy;
+using ShaderType=Silk.NET.OpenGL.ShaderType;
 
 namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
     public class LineRendererGL20 : ILineRenderer {
@@ -14,9 +15,9 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
         
         private readonly OpenGL20Backend _backend;
 
-        private const int BATCH_MAX = 128; //cut this in two for actual line could, as we use 2 LineData structs per line :^)
+        private const int BATCH_MAX = 128; //cut this in two for actual line count, as we use 2 LineData structs per line :^)
         
-        private readonly ProgramGL20 _program;
+        private readonly ShaderGL _program;
         private readonly uint        _arrayBuf;
 
         private          int        _batchedLines = 0;
@@ -29,7 +30,11 @@ namespace Furball.Vixie.Graphics.Backends.OpenGL20 {
             string vertex   = ResourceHelpers.GetStringResource("ShaderCode/OpenGL20/LineVertexShader.glsl");
             string fragment = ResourceHelpers.GetStringResource("ShaderCode/OpenGL20/LineFragmentShader.glsl");
 
-            this._program = new ProgramGL20(backend, vertex, fragment);
+            this._program = new ShaderGL(backend);
+
+            this._program.AttachShader(ShaderType.VertexShader, vertex)
+                         .AttachShader(ShaderType.FragmentShader, fragment)
+                         .Link();
 
             this._arrayBuf = this._gl.GenBuffer();
             this._gl.BindBuffer(BufferTargetARB.ArrayBuffer, this._arrayBuf);
