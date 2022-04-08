@@ -18,12 +18,12 @@ namespace Furball.Vixie.TestApplication.Tests {
         private float               _scale = 1f;
 
         public override void Initialize() {
-            this._renderTarget = TextureRenderTarget.Create(200, 200);
+            this._renderTarget = TextureRenderTargets.Create(200, 200);
             
             this._lineRenderer = GraphicsBackend.Current.CreateLineRenderer();
             this._quadRenderer = GraphicsBackend.Current.CreateTextureRenderer();
             
-            this._whiteTexture = Texture.Create();
+            this._whiteTexture = Textures.Create();
 
             base.Initialize();
         }

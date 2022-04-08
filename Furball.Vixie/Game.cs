@@ -74,6 +74,7 @@ namespace Furball.Vixie {
         private void RendererInitialize() {
             this._inputContext = this.WindowManager.GameWindow.CreateInput();
 
+            this.WindowManager.InputContext = this._inputContext;
             this.WindowManager.SetupGraphicsApi();
 
             Global.WindowManager = this.WindowManager;

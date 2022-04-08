@@ -3,6 +3,7 @@ using System.Numerics;
 using Furball.Vixie.Graphics.Backends;
 using Furball.Vixie.Graphics.Backends.Veldrid;
 using Silk.NET.GLFW;
+using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
 using Silk.NET.Windowing.Extensions.Veldrid;
@@ -24,18 +25,14 @@ namespace Furball.Vixie {
         /// Current Window State
         /// </summary>
         public WindowState WindowState { get; internal set; }
-        /// <summary>
-        /// The Window's current Projection Matrix
-        /// </summary>
-        // public Matrix4x4 ProjectionMatrix { get; private set; }
-
-        public Vector2 PositionMultiplier = new(1, -1f);
 
         public Vector2 WindowSize { get; private set; }
         public bool Fullscreen {
             get => this.GameWindow.WindowState == WindowState.Fullscreen;
             set => this.GameWindow.WindowState = value ? WindowState.Fullscreen : WindowState.Normal;
         }
+        
+        public IInputContext InputContext;
 
         /// <summary>
         /// Creates a Window Manager
@@ -146,7 +143,7 @@ namespace Furball.Vixie {
         }
         public void SetupGraphicsApi() {
             GraphicsBackend.SetBackend(this._backend);
-            GraphicsBackend.Current.Initialize(this.GameWindow);
+            GraphicsBackend.Current.Initialize(this.GameWindow, this.InputContext);
 
             this.UpdateProjectionAndSize(this._windowOptions.Size.X, this._windowOptions.Size.Y);
         }

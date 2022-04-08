@@ -16,7 +16,7 @@ namespace Furball.Vixie.TestApplication.Tests {
 
         public override void Initialize() {
             this._quadRenderer = GraphicsBackend.Current.CreateTextureRenderer();
-            this._whiteTexture = Texture.Create(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
+            this._whiteTexture = Textures.Create(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
 
             base.Initialize();
         }

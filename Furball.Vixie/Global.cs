@@ -1,5 +1,3 @@
-using Silk.NET.OpenGLES;
-
 namespace Furball.Vixie {
     internal static class Global {
         internal static bool          AlreadyInitialized;
