@@ -1,10 +1,9 @@
 using System.Drawing;
 using System.Numerics;
 using FontStashSharp.Interfaces;
-using Furball.Vixie.Graphics;
-using Furball.Vixie.Graphics.Backends;
+using Furball.Vixie.Backends.Shared.Backends;
 
-namespace Furball.Vixie.FontStashSharp {
+namespace Furball.Vixie.Backends.Shared.FontStashSharp {
     public class VixieTexture2dManager : ITexture2DManager {
         private IGraphicsBackend _backend;
 

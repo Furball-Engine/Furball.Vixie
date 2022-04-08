@@ -1,4 +1,4 @@
-using Furball.Vixie.Graphics;
+using Furball.Vixie.Backends.Shared;
 
 namespace Furball.Vixie {
     public class TextureRenderTargets {

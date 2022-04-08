@@ -1,13 +1,11 @@
 using System;
 using System.Numerics;
-using Furball.Vixie.Graphics.Backends;
-using Furball.Vixie.Graphics.Backends.Veldrid;
-using Silk.NET.GLFW;
+using Furball.Vixie.Backends.Shared.Backends;
+using Furball.Vixie.Backends.Veldrid;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
 using Silk.NET.Windowing.Extensions.Veldrid;
-using Silk.NET.Windowing.Glfw;
 using Silk.NET.Windowing.Sdl;
 
 namespace Furball.Vixie {

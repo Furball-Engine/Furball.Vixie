@@ -6,17 +6,17 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Furball.Vixie.TestApplicati
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Backends", "Backends", "{50CF14F8-1B19-4836-8967-CDC52EC11CE3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Furball.Vixie.OpenGL.Shared", "Furball.Vixie.OpenGL.Shared\Furball.Vixie.OpenGL.Shared.csproj", "{275C3E14-BD80-4287-A9CD-D4F1084162DA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Furball.Vixie.Backends.OpenGL.Shared", "Furball.Vixie.Backends.OpenGL.Shared\Furball.Vixie.Backends.OpenGL.Shared.csproj", "{275C3E14-BD80-4287-A9CD-D4F1084162DA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Furball.Vixie.OpenGL41", "Furball.Vixie.OpenGL41\Furball.Vixie.OpenGL41.csproj", "{746A6578-7F6A-462E-AF39-027E30740CF4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Furball.Vixie.Backends.OpenGL41", "Furball.Vixie.Backends.OpenGL41\Furball.Vixie.Backends.OpenGL41.csproj", "{746A6578-7F6A-462E-AF39-027E30740CF4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Furball.Vixie.OpenGLES", "Furball.Vixie.OpenGLES\Furball.Vixie.OpenGLES.csproj", "{0461502B-F1C3-4742-8EAB-B431968EAF0A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Furball.Vixie.Backends.OpenGLES", "Furball.Vixie.Backends.OpenGLES\Furball.Vixie.Backends.OpenGLES.csproj", "{0461502B-F1C3-4742-8EAB-B431968EAF0A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Furball.Vixie.OpenGL20", "Furball.Vixie.OpenGL20\Furball.Vixie.OpenGL20.csproj", "{74D7F20D-C8F0-4BB4-99E6-1C25917BA9D8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Furball.Vixie.Backends.OpenGL20", "Furball.Vixie.Backends.OpenGL20\Furball.Vixie.Backends.OpenGL20.csproj", "{74D7F20D-C8F0-4BB4-99E6-1C25917BA9D8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Furball.Vixie.Direct3D11", "Furball.Vixie.Direct3D11\Furball.Vixie.Direct3D11.csproj", "{61E80C93-3ACB-4576-8B0C-F7FD016959C9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Furball.Vixie.Backends.Direct3D11", "Furball.Vixie.Backends.Direct3D11\Furball.Vixie.Backends.Direct3D11.csproj", "{61E80C93-3ACB-4576-8B0C-F7FD016959C9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Furball.Vixie.Veldrid", "Furball.Vixie.Veldrid\Furball.Vixie.Veldrid.csproj", "{5B0FC76D-3E27-4699-B72A-B924F1E5345E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Furball.Vixie.Backends.Veldrid", "Furball.Vixie.Backends.Veldrid\Furball.Vixie.Backends.Veldrid.csproj", "{5B0FC76D-3E27-4699-B72A-B924F1E5345E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Furball.Vixie.Helpers", "Furball.Vixie.Helpers\Furball.Vixie.Helpers.csproj", "{FF0CA7D5-5822-43EB-8B9D-4AD55C079C82}"
 EndProject

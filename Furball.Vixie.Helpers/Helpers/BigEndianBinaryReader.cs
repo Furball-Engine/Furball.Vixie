@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Text;
 
-namespace Furball.Vixie.Helpers {
+namespace Furball.Vixie.Helpers.Helpers {
     public class BigEndianBinaryReader : BinaryReader {
         public BigEndianBinaryReader(Stream input) : base(input) {}
         public BigEndianBinaryReader(Stream input, Encoding encoding) : base(input, encoding) {}

@@ -31,12 +31,12 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Furball.Vixie.Backends.Shared\Furball.Vixie.Backends.Shared.csproj" />
-      <ProjectReference Include="..\Furball.Vixie.Direct3D11\Furball.Vixie.Direct3D11.csproj" />
+      <ProjectReference Include="..\Furball.Vixie.Backends.Direct3D11\Furball.Vixie.Backends.Direct3D11.csproj" />
       <ProjectReference Include="..\Furball.Vixie.Helpers\Furball.Vixie.Helpers.csproj" />
-      <ProjectReference Include="..\Furball.Vixie.OpenGL20\Furball.Vixie.OpenGL20.csproj" />
-      <ProjectReference Include="..\Furball.Vixie.OpenGL41\Furball.Vixie.OpenGL41.csproj" />
-      <ProjectReference Include="..\Furball.Vixie.OpenGLES\Furball.Vixie.OpenGLES.csproj" />
-      <ProjectReference Include="..\Furball.Vixie.Veldrid\Furball.Vixie.Veldrid.csproj" />
+      <ProjectReference Include="..\Furball.Vixie.Backends.OpenGL20\Furball.Vixie.Backends.OpenGL20.csproj" />
+      <ProjectReference Include="..\Furball.Vixie.Backends.OpenGL41\Furball.Vixie.Backends.OpenGL41.csproj" />
+      <ProjectReference Include="..\Furball.Vixie.Backends.OpenGLES\Furball.Vixie.Backends.OpenGLES.csproj" />
+      <ProjectReference Include="..\Furball.Vixie.Backends.Veldrid\Furball.Vixie.Backends.Veldrid.csproj" />
     </ItemGroup>
 
 </Project>

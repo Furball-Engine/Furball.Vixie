@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 
-namespace Furball.Vixie {
+namespace Furball.Vixie.Helpers {
     public static class DisposeQueue {
         private static ConcurrentQueue<IDisposable> _disposeQueue = new();
 

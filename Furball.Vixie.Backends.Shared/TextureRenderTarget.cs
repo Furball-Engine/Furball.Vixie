@@ -1,7 +1,6 @@
 using System.Numerics;
-using Furball.Vixie.Graphics.Backends;
 
-namespace Furball.Vixie.Graphics {
+namespace Furball.Vixie.Backends.Shared {
     public abstract class TextureRenderTarget {
         public abstract Vector2 Size { get; protected set; }
 

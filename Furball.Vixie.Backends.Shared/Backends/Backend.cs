@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Furball.Vixie.Graphics.Backends {
+namespace Furball.Vixie.Backends.Shared.Backends {
     [Flags]
     public enum Backend {
         None       = 1 << 0, //Not a real backend

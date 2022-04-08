@@ -1,7 +1,7 @@
 using System;
 using System.Numerics;
 
-namespace Furball.Vixie.Graphics.Renderers {
+namespace Furball.Vixie.Backends.Shared.Renderers {
     public interface ILineRenderer : IDisposable {
         public bool IsBegun { get; set; }
         /// <summary>

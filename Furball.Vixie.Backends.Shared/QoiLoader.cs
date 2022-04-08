@@ -1,10 +1,10 @@
 using System;
 using System.IO;
-using Furball.Vixie.Helpers;
+using Furball.Vixie.Helpers.Helpers;
 using Kettu;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace Furball.Vixie.Graphics {
+namespace Furball.Vixie.Backends.Shared {
     public static class QoiLoader {
         private const byte QOI_OP_INDEX = 0x00; /* 00xxxxxx */
         private const byte QOI_OP_DIFF  = 0x40; /* 01xxxxxx */

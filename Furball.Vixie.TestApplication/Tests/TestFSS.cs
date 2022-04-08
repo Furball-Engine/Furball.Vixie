@@ -3,12 +3,9 @@ using System;
 using System.Globalization;
 using System.Numerics;
 using FontStashSharp;
-using FontStashSharp.Interfaces;
-using Furball.Vixie.FontStashSharp;
-using Furball.Vixie.Graphics;
-using Furball.Vixie.Graphics.Backends;
-using Furball.Vixie.Graphics.Renderers;
-using Furball.Vixie.Helpers;
+using Furball.Vixie.Backends.Shared;
+using Furball.Vixie.Backends.Shared.Renderers;
+using Furball.Vixie.Helpers.Helpers;
 using ImGuiNET;
 
 namespace Furball.Vixie.TestApplication.Tests {

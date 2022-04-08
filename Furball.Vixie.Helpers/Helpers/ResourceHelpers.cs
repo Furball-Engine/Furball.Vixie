@@ -2,7 +2,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 
-namespace Furball.Vixie.Helpers {
+namespace Furball.Vixie.Helpers.Helpers {
     public static class ResourceHelpers {
         /// <summary>
         /// Gets a Embedded Resource Stream

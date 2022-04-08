@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Numerics;
 using FontStashSharp;
 
-namespace Furball.Vixie.Graphics.Renderers {
+namespace Furball.Vixie.Backends.Shared.Renderers {
     public interface IQuadRenderer : IDisposable {
         public bool IsBegun { get; set; }
         /// <summary>

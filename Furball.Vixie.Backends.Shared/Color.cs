@@ -3,7 +3,7 @@ using System.Diagnostics.Contracts;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
-namespace Furball.Vixie.Graphics {
+namespace Furball.Vixie.Backends.Shared {
     [StructLayout(LayoutKind.Sequential)]
     public struct Color {
         public float Rf;

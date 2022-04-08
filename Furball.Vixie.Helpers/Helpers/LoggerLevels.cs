@@ -1,6 +1,6 @@
 using Kettu;
 
-namespace Furball.Vixie.Helpers {
+namespace Furball.Vixie.Helpers.Helpers {
     public class LoggerLevelDebugMessageCallback : LoggerLevel {
         public override string Name => "GLDebugMessageCallback";
 

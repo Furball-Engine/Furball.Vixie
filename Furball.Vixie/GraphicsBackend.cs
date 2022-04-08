@@ -1,11 +1,11 @@
 using System;
-using Furball.Vixie.Graphics.Backends;
-using Furball.Vixie.Graphics.Backends.Direct3D11;
-using Furball.Vixie.Graphics.Backends.OpenGL20;
-using Furball.Vixie.Graphics.Backends.OpenGL41;
-using Furball.Vixie.Graphics.Backends.OpenGLES;
-using Furball.Vixie.Graphics.Backends.Veldrid;
-using Furball.Vixie.Helpers;
+using Furball.Vixie.Backends.Direct3D11;
+using Furball.Vixie.Backends.OpenGL20;
+using Furball.Vixie.Backends.OpenGL41;
+using Furball.Vixie.Backends.OpenGLES;
+using Furball.Vixie.Backends.Shared.Backends;
+using Furball.Vixie.Backends.Veldrid;
+using Furball.Vixie.Helpers.Helpers;
 using Kettu;
 
 namespace Furball.Vixie {
