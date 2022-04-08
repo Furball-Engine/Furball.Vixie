@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Furball.Vixie.Backends.OpenGL.Shared\Furball.Vixie.Backends.OpenGL.Shared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Kettu" Version="1.2.2" />
+      <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.15.0" />
+      <PackageReference Include="Silk.NET.OpenGL" Version="2.15.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Shaders" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="Shaders\QuadRenderer\FragmentShader.glsl" />
+      <EmbeddedResource Include="Shaders\QuadRenderer\VertexShader.glsl" />
+        
+      <EmbeddedResource Include="Shaders\LineRenderer\GeometryShader.glsl" />
+      <EmbeddedResource Include="Shaders\LineRenderer\FragmentShader.glsl" />
+      <EmbeddedResource Include="Shaders\LineRenderer\VertexShader.glsl" />
+    </ItemGroup>
+
+</Project>
