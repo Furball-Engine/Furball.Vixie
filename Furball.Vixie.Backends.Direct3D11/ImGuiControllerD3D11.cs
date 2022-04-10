@@ -21,6 +21,7 @@ using Silk.NET.Maths;
 using Silk.NET.Windowing;
 using Buffer=SharpDX.Direct3D11.Buffer;
 using Device=SharpDX.Direct3D11.Device;
+using MapFlags=SharpDX.Direct3D11.MapFlags;
 
 namespace Furball.Vixie.Backends.Direct3D11 {
     public struct ImGuiFontConfig {
@@ -34,6 +35,32 @@ namespace Furball.Vixie.Backends.Direct3D11 {
     }
 
     public class ImGuiControllerD3D11 : IDisposable {
+        private struct BackupDirect3D11State {
+            public uint               ScissorRectsCount, ViewportsCount;
+            public RawRectangle[]     ScissorRects;
+            public RawViewport[]      Viewports;
+            public RasterizerState    RasterizerState;
+            public BlendState         BlendState;
+            public RawColor4          BlendFactor;
+            public int               SampleMask;
+            public int                StencilRef;
+            public DepthStencilState  DepthStencilState;
+            public ShaderResourceView PixelShaderShaderResource;
+            public SamplerState       PixelShaderSampler;
+            public PixelShader        PixelShader;
+            public VertexShader       VertexShader;
+            public GeometryShader     GeometryShader;
+            public uint               PixelShaderInstancesCount, VertexShaderInstancesCount, GeometryShaderInstancesCount;
+            public ClassInstance[]    PixelShaderInstances;
+            public ClassInstance[]    VertexShaderInstances;
+            public ClassInstance[]    GeometryShaderInstances;
+            public PrimitiveTopology  PrimitiveTopology;
+            public Buffer             VertexBuffer,      IndexBuffer,        ConstantBuffer;
+            public int               IndexBufferOffset, VertexBufferStride, VertexBufferOffset;
+            public Format             IndexBufferFormat;
+            public InputLayout        InputLayout;
+        }
+
         private Direct3D11Backend _backend;
         private Device            _device;
         private DeviceContext     _deviceContext;
@@ -46,14 +73,15 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         private IKeyboard     _keyboard;
         private List<char>    _pressedCharacters;
 
-        private VertexShader      _vertexShader;
-        private PixelShader       _pixelShader;
-        private InputLayout       _inputLayout;
-        private Buffer            _constantBuffer;
-        private BlendState        _blendState;
-        private RasterizerState   _rasterizerState;
-        private DepthStencilState _depthStencilState;
-        private SamplerState      _samplerState;
+        private VertexShader       _vertexShader;
+        private PixelShader        _pixelShader;
+        private InputLayout        _inputLayout;
+        private Buffer             _constantBuffer;
+        private BlendState         _blendState;
+        private RasterizerState    _rasterizerState;
+        private DepthStencilState  _depthStencilState;
+        private SamplerState       _samplerState;
+        private ShaderResourceView _fontTextureShaderView;
 
         private Buffer _vertexBuffer;
         private int    _vertexBufferSize;
@@ -200,7 +228,14 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         }
 
         private unsafe void RenderImDrawData() {
+            BackupDirect3D11State oldState = new BackupDirect3D11State();
+
             ImDrawDataPtr drawData = ImGui.GetDrawData();
+
+            int framebufferWidth = (int) (drawData.DisplaySize.X  * drawData.FramebufferScale.X);
+            int framebufferHeight = (int) (drawData.DisplaySize.Y * drawData.FramebufferScale.Y);
+            if (framebufferWidth <= 0 || framebufferHeight <= 0)
+                return;
 
             if (drawData.DisplaySize.X <= 0.0f || drawData.DisplaySize.Y <= 0.0f)
                 return;
@@ -239,6 +274,83 @@ namespace Furball.Vixie.Backends.Direct3D11 {
                 this._deviceContext.UpdateSubresource(new DataBox(cmdListPtr.VtxBuffer.Data), this._vertexBuffer);
                 this._deviceContext.UpdateSubresource(new DataBox(cmdListPtr.IdxBuffer.Data), this._indexBuffer);
             }
+
+            float l = drawData.DisplayPos.X;
+            float r = drawData.DisplayPos.X + drawData.DisplaySize.X;
+            float t = drawData.DisplayPos.Y;
+            float b = drawData.DisplayPos.Y + drawData.DisplaySize.Y;
+
+            Matrix4x4 modelViewProjectionMatrix =
+                new Matrix4x4(2.0f / (r - l),     0.0f,             0.0f, 0.0f,
+                              0.0f,               2.0f / (t - b),   0.0f, 0.0f,
+                              0.0f,               0.0f,             0.5f, 0.0f,
+                              (r + l) / (l - r), (t + b) / (b - t), 0.5f, 1.0f);
+
+            this._deviceContext.UpdateSubresource(ref modelViewProjectionMatrix, this._constantBuffer);
+
+            oldState.ScissorRectsCount = oldState.ViewportsCount = 16;
+            oldState.ScissorRects      = this._deviceContext.Rasterizer.GetScissorRectangles<RawRectangle>();
+            oldState.Viewports         = this._deviceContext.Rasterizer.GetViewports<RawViewport>();
+            oldState.RasterizerState   = this._deviceContext.Rasterizer.State;
+
+            this._deviceContext.OutputMerger.GetBlendState(out oldState.BlendFactor, out oldState.SampleMask);
+
+            oldState.DepthStencilState         = this._deviceContext.OutputMerger.GetDepthStencilState(out oldState.StencilRef);
+            oldState.PixelShaderShaderResource = this._deviceContext.PixelShader.GetShaderResources(0, 1)[0];
+            oldState.PixelShaderSampler        = this._deviceContext.PixelShader.GetSamplers(0, 1)[0];
+            oldState.PixelShaderInstancesCount = oldState.VertexShaderInstancesCount = oldState.GeometryShaderInstancesCount = 256;
+            oldState.PixelShader               = this._deviceContext.PixelShader.Get(oldState.PixelShaderInstances);
+            oldState.VertexShader              = this._deviceContext.VertexShader.Get(oldState.VertexShaderInstances);
+            oldState.GeometryShader            = this._deviceContext.GeometryShader.Get(oldState.GeometryShaderInstances);
+            oldState.ConstantBuffer            = this._deviceContext.VertexShader.GetConstantBuffers(0, 1)[0];
+
+            oldState.PrimitiveTopology = this._deviceContext.InputAssembler.PrimitiveTopology;
+
+            this._deviceContext.InputAssembler.GetIndexBuffer(out oldState.IndexBuffer, out oldState.IndexBufferFormat, out oldState.IndexBufferOffset);
+
+            Buffer[] vertexBuffers = Array.Empty<Buffer>();
+            int[] strides = Array.Empty<int>();
+            int[] offsets = Array.Empty<int>();
+
+            this._deviceContext.InputAssembler.GetVertexBuffers(0, 1, vertexBuffers, strides, offsets);
+
+            oldState.VertexBuffer       = vertexBuffers[0];
+            oldState.VertexBufferStride = strides[0];
+            oldState.VertexBufferOffset = offsets[0];
+
+            oldState.InputLayout = this._deviceContext.InputAssembler.InputLayout;
+
+            SetupRenderState(drawData, framebufferWidth, framebufferHeight);
+
+            int indexOffset = 0, vertexOffset = 0;
+            Vector2 clipOff = drawData.DisplayPos;
+
+            for (int i = 0; i != drawData.CmdListsCount; i++) {
+                ImDrawListPtr commandList = drawData.CmdListsRange[i];
+
+                for(int cmd_i = 0; cmd_i < commandList.CmdBuffer.Size; cmd_i++) {
+                    ImDrawCmdPtr pcmd = commandList.CmdBuffer[cmd_i];
+
+                    if (pcmd.UserCallback != IntPtr.Zero)
+                        throw new NotImplementedException();
+
+                    Vector2 clipMin = new Vector2(pcmd.ClipRect.X - clipOff.X, pcmd.ClipRect.Y - clipOff.Y);
+                    Vector2 clipMax = new Vector2(pcmd.ClipRect.Z - clipOff.X, pcmd.ClipRect.W - clipOff.Y);
+
+                    if(clipMax.X <= clipMin.X || clipMax.Y <= clipMin.Y)
+                        continue;
+
+                    this._deviceContext.Rasterizer.SetScissorRectangle((int) clipMin.X, (int) clipMin.Y, (int) clipMax.X, (int) clipMax.Y);
+                    //Sideeffect, only one font can be used, i dont wanna bother with this rn leave me alone thank you
+                    this._deviceContext.PixelShader.SetShaderResource(0, this._fontTextureShaderView);
+                    this._deviceContext.DrawIndexed((int) pcmd.ElemCount, (int) pcmd.IdxOffset + indexOffset, (int) pcmd.VtxOffset + vertexOffset);
+                }
+
+                indexOffset  += commandList.IdxBuffer.Size;
+                vertexOffset += commandList.VtxBuffer.Size;
+            }
+
+
         }
 
         public void Render() {
@@ -256,9 +368,6 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this.SetPerFrameImGuiData(delta);
             this.UpdateImGuiInput();
         }
-
-
-
 
         ~ImGuiControllerD3D11() {
             DisposeQueue.Enqueue(this);
@@ -411,6 +520,8 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             shaderResourceViewDescription.Texture2D.MostDetailedMip = 0;
 
             ShaderResourceView shaderResourceView = new ShaderResourceView(this._device, fontTexture, shaderResourceViewDescription);
+
+            this._fontTextureShaderView = shaderResourceView;
 
             io.Fonts.SetTexID(shaderResourceView.NativePointer);
         }
