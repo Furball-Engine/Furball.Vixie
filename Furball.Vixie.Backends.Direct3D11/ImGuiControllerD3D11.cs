@@ -21,7 +21,6 @@ using Silk.NET.Maths;
 using Silk.NET.Windowing;
 using Buffer=SharpDX.Direct3D11.Buffer;
 using Device=SharpDX.Direct3D11.Device;
-using MapFlags=SharpDX.Direct3D11.MapFlags;
 
 namespace Furball.Vixie.Backends.Direct3D11 {
     public struct ImGuiFontConfig {
