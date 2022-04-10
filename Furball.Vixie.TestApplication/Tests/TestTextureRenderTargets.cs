@@ -2,9 +2,8 @@ using System;
 
 using System.Globalization;
 using System.Numerics;
-using Furball.Vixie.Graphics;
-using Furball.Vixie.Graphics.Backends;
-using Furball.Vixie.Graphics.Renderers;
+using Furball.Vixie.Backends.Shared;
+using Furball.Vixie.Backends.Shared.Renderers;
 using ImGuiNET;
 
 
@@ -18,12 +17,12 @@ namespace Furball.Vixie.TestApplication.Tests {
         private float               _scale = 1f;
 
         public override void Initialize() {
-            this._renderTarget = TextureRenderTarget.Create(200, 200);
+            this._renderTarget = Resources.CreateTextureRenderTarget(200, 200);
             
             this._lineRenderer = GraphicsBackend.Current.CreateLineRenderer();
             this._quadRenderer = GraphicsBackend.Current.CreateTextureRenderer();
             
-            this._whiteTexture = Texture.Create();
+            this._whiteTexture = Resources.CreateTexture();
 
             base.Initialize();
         }

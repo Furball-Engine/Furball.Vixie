@@ -1,9 +1,9 @@
 ﻿using System;
-using Furball.Vixie.Graphics.Backends;
+using Furball.Vixie.Backends.Shared.Backends;
+using Furball.Vixie.Helpers;
 using Kettu;
 using Silk.NET.Input;
 using Silk.NET.Maths;
-using Silk.NET.OpenGLES.Extensions.ImGui;
 using Silk.NET.Windowing;
 
 namespace Furball.Vixie {
@@ -74,6 +74,7 @@ namespace Furball.Vixie {
         private void RendererInitialize() {
             this._inputContext = this.WindowManager.GameWindow.CreateInput();
 
+            this.WindowManager.InputContext = this._inputContext;
             this.WindowManager.SetupGraphicsApi();
 
             Global.WindowManager = this.WindowManager;

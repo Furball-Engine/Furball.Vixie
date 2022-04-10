@@ -1,11 +1,9 @@
 using System;
 using System.Globalization;
-using System.IO;
 using System.Numerics;
-using Furball.Vixie.Graphics;
-using Furball.Vixie.Graphics.Backends;
-using Furball.Vixie.Graphics.Renderers;
-using Furball.Vixie.Helpers;
+using Furball.Vixie.Backends.Shared;
+using Furball.Vixie.Backends.Shared.Renderers;
+using Furball.Vixie.Helpers.Helpers;
 using ImGuiNET;
 
 namespace Furball.Vixie.TestApplication.Tests {
@@ -18,8 +16,8 @@ namespace Furball.Vixie.TestApplication.Tests {
         public override void Initialize() {
             for (int i = 0; i != this._textures.Length; i++) {
                 if (i % 2 == 0 && i != 0)
-                    this._textures[i]  = Texture.Create(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
-                else this._textures[i] = Texture.Create(ResourceHelpers.GetByteResource("Resources/test.qoi"), true);
+                    this._textures[i]  = Resources.CreateTexture(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
+                else this._textures[i] = Resources.CreateTexture(ResourceHelpers.GetByteResource("Resources/test.qoi"), true);
             }
 
             this._quadRenderer = GraphicsBackend.Current.CreateTextureRenderer();

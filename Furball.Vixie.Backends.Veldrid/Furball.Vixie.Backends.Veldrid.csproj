@@ -1,0 +1,87 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Kettu" Version="1.2.2" />
+        <PackageReference Include="Silk.NET.Input.Common" Version="2.15.0" />
+        <PackageReference Include="Silk.NET.Input.Extensions" Version="2.15.0" />
+        <PackageReference Include="Silk.NET.Windowing.Extensions.Veldrid" Version="2.15.0" />
+        <PackageReference Include="Veldrid.ImGui" Version="5.72.0" />
+        <PackageReference Include="Veldrid.SPIRV" Version="1.0.14" />
+        <PackageReference Include="Veldrid.Utilities" Version="4.9.0-beta1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Furball.Vixie.Backends.Shared\Furball.Vixie.Backends.Shared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="Shaders\ImGui\GLSL\imgui-frag.glsl">
+          <LogicalName>imgui-frag.glsl</LogicalName>
+      </EmbeddedResource>
+      <EmbeddedResource Include="Shaders\ImGui\GLSL\imgui-vertex.glsl">
+          <LogicalName>imgui-vertex.glsl</LogicalName>
+      </EmbeddedResource>
+      <EmbeddedResource Include="Shaders\ImGui\GLSL\imgui-vertex-legacy.glsl">
+          <LogicalName>imgui-vertex-legacy.glsl</LogicalName>
+      </EmbeddedResource>
+      <EmbeddedResource Include="Shaders\ImGui\GLSLES\imgui-frag.glsles">
+          <LogicalName>imgui-frag.glsles</LogicalName>
+      </EmbeddedResource>
+      <EmbeddedResource Include="Shaders\ImGui\GLSLES\imgui-vertex.glsles">
+          <LogicalName>imgui-vertex.glsles</LogicalName>
+      </EmbeddedResource>
+      <EmbeddedResource Include="Shaders\ImGui\GLSLES\imgui-vertex-legacy.glsles">
+          <LogicalName>imgui-vertex-legacy.glsles</LogicalName>
+      </EmbeddedResource>
+      <EmbeddedResource Include="Shaders\ImGui\HLSL\imgui-frag.hlsl.bytes">
+          <LogicalName>imgui-frag.hlsl.bytes</LogicalName>
+      </EmbeddedResource>
+      <EmbeddedResource Include="Shaders\ImGui\HLSL\imgui-vertex-legacy.hlsl.bytes">
+          <LogicalName>imgui-vertex-legacy.hlsl.bytes</LogicalName>
+      </EmbeddedResource>
+      <EmbeddedResource Include="Shaders\ImGui\HLSL\imgui-vertex.hlsl.bytes">
+          <LogicalName>imgui-vertex.hlsl.bytes</LogicalName>
+      </EmbeddedResource>
+      <EmbeddedResource Include="Shaders\ImGui\Metal\imgui-frag.metal">
+          <LogicalName>imgui-frag.metal</LogicalName>
+      </EmbeddedResource>
+      <EmbeddedResource Include="Shaders\ImGui\Metal\imgui-frag.metallib">
+          <LogicalName>imgui-frag.metallib</LogicalName>
+      </EmbeddedResource>
+      <EmbeddedResource Include="Shaders\ImGui\Metal\imgui-vertex.metal">
+          <LogicalName>imgui-vertex.metal</LogicalName>
+      </EmbeddedResource>
+      <EmbeddedResource Include="Shaders\ImGui\Metal\imgui-vertex.metallib">
+          <LogicalName>imgui-vertex.metallib</LogicalName>
+      </EmbeddedResource>
+      <EmbeddedResource Include="Shaders\ImGui\SPIR-V\imgui-frag.spv">
+          <LogicalName>imgui-frag.spv</LogicalName>
+      </EmbeddedResource>
+      <EmbeddedResource Include="Shaders\ImGui\SPIR-V\imgui-vertex.spv">
+          <LogicalName>imgui-vertex.spv</LogicalName>
+      </EmbeddedResource>
+        
+      <EmbeddedResource Include="Shaders\FullScreenQuad\FragmentShader.glsl" />
+      <EmbeddedResource Include="Shaders\FullScreenQuad\VertexShader.glsl" />
+        
+      <EmbeddedResource Include="Shaders\LineRenderer\FragmentShader.glsl" />
+      <EmbeddedResource Include="Shaders\LineRenderer\VertexShader.glsl" />
+      
+      <EmbeddedResource Include="Shaders\QuadRenderer\FragmentShader.glsl" />
+      <EmbeddedResource Include="Shaders\QuadRenderer\VertexShader.glsl" />
+    </ItemGroup>
+    
+</Project>

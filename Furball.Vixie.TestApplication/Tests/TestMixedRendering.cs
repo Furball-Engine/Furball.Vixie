@@ -1,13 +1,11 @@
 using System;
-using System.Drawing;
 using System.Globalization;
 using System.Numerics;
-using Furball.Vixie.Graphics;
-using Furball.Vixie.Graphics.Backends;
-using Furball.Vixie.Graphics.Renderers;
-using Furball.Vixie.Helpers;
+using Furball.Vixie.Backends.Shared;
+using Furball.Vixie.Backends.Shared.Renderers;
+using Furball.Vixie.Helpers.Helpers;
 using ImGuiNET;
-using Color=Furball.Vixie.Graphics.Color;
+using Color=Furball.Vixie.Backends.Shared.Color;
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestMixedRendering : GameComponent {
@@ -17,7 +15,7 @@ namespace Furball.Vixie.TestApplication.Tests {
 
         public override void Initialize() {
             this._quadRenderer = GraphicsBackend.Current.CreateTextureRenderer();
-            this._testTexture = Texture.Create(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
+            this._testTexture = Resources.CreateTexture(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
 
             this._lineRenderer = GraphicsBackend.Current.CreateLineRenderer();
             

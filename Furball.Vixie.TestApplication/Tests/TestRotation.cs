@@ -1,10 +1,9 @@
 using System;
 using System.Globalization;
 using System.Numerics;
-using Furball.Vixie.Graphics;
-using Furball.Vixie.Graphics.Backends;
-using Furball.Vixie.Graphics.Renderers;
-using Furball.Vixie.Helpers;
+using Furball.Vixie.Backends.Shared;
+using Furball.Vixie.Backends.Shared.Renderers;
+using Furball.Vixie.Helpers.Helpers;
 using ImGuiNET;
 
 
@@ -15,7 +14,7 @@ namespace Furball.Vixie.TestApplication.Tests {
 
         public override void Initialize() {
             this._quadRendererGl = GraphicsBackend.Current.CreateTextureRenderer();
-            this._whiteTextureGl = Texture.Create(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
+            this._whiteTextureGl = Resources.CreateTexture(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
 
             base.Initialize();
         }
