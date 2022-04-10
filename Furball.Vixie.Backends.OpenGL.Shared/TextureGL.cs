@@ -81,7 +81,10 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// <summary>
         /// Used for determening whether or not to Flip it internally because it's a framebuffer
         /// </summary>
-        public bool IsFramebufferTexture;
+        public bool IsFramebufferTexture {
+            get;
+            internal init;
+        }
 
         /// <summary>
         /// Creates a Texture from a File
