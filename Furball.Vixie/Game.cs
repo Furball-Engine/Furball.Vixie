@@ -1,10 +1,16 @@
 ﻿using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Helpers;
 using Kettu;
+using NativeLibraryLoader;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
+using LibraryLoader=NativeLibraryLoader.LibraryLoader;
+using PathResolver=NativeLibraryLoader.PathResolver;
 
 namespace Furball.Vixie {
     public abstract class Game : IDisposable {
@@ -39,6 +45,13 @@ namespace Furball.Vixie {
         /// Runs the Game
         /// </summary>
         public void Run(WindowOptions options, Backend backend = Backend.None) {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && RuntimeInformation.FrameworkDescription.Contains("Mono")) {
+                // Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", Assembly.GetExecutingAssembly().Location);
+                // IntPtr ptr = LibraryLoader.GetPlatformDefaultLoader().LoadNativeLibrary("libcimgui");
+                
+                // Console.WriteLine(ptr);
+            }
+            
             if (backend == Backend.None)
                 backend = GraphicsBackend.GetReccomendedBackend();
             

@@ -2,9 +2,9 @@ using System.Runtime.CompilerServices;
 
 namespace Furball.Vixie.Helpers.Helpers {
     public static class UnsafeHelpers {
-        public static uint SizeInBytes<T>(this T[] array) where T : struct
+        public static unsafe uint SizeInBytes<T>(this T[] array) where T : unmanaged
         {
-            return (uint)(array.Length * Unsafe.SizeOf<T>());
+            return (uint)(array.Length * sizeof(T));
         }
     }
 }

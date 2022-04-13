@@ -1,8 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net5.0</TargetFramework>
+        <TargetFramework>netstandard2.0</TargetFramework>
         <Nullable>enable</Nullable>
+        <LangVersion>9</LangVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -18,7 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Kettu" Version="1.2.2" />
+      <PackageReference Include="Kettu" Version="1.2.4" />
       <PackageReference Include="Silk.NET.OpenGL.Legacy.Extensions.ImGui" Version="2.15.0" />
       <PackageReference Include="Silk.NET.OpenGL.Legacy" Version="2.15.0" />
       <PackageReference Include="Silk.NET.OpenGL.Legacy.Extensions.EXT" Version="2.15.0" />

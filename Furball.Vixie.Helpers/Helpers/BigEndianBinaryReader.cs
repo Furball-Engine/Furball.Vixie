@@ -13,7 +13,7 @@ namespace Furball.Vixie.Helpers.Helpers {
 
             Array.Reverse(data);
 
-            return BitConverter.ToUInt32(data);
+            return BitConverter.ToUInt32(data, 0);
         }
     }
 }

@@ -190,7 +190,7 @@ namespace Furball.Vixie.Backends.Veldrid {
             this._instanceData[this._instances].InstanceSize.X   = (end - begin).Length();
             this._instanceData[this._instances].InstanceSize.Y   = thickness;
             this._instanceData[this._instances].InstanceColor    = color;
-            this._instanceData[this._instances].InstanceRotation = MathF.Atan2(end.Y - begin.Y, end.X - begin.X);
+            this._instanceData[this._instances].InstanceRotation = (float)Math.Atan2(end.Y - begin.Y, end.X - begin.X);
 
             this._instances++;
         }

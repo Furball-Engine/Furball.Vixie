@@ -1,8 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net5.0</TargetFramework>
+        <TargetFramework>netstandard2.0</TargetFramework>
         <Nullable>enable</Nullable>
+        <LangVersion>9</LangVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -14,7 +15,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Kettu" Version="1.2.2" />
+        <PackageReference Include="Kettu" Version="1.2.4" />
         <PackageReference Include="Silk.NET.Input.Common" Version="2.15.0" />
         <PackageReference Include="Silk.NET.Input.Extensions" Version="2.15.0" />
         <PackageReference Include="Silk.NET.Windowing.Extensions.Veldrid" Version="2.15.0" />
