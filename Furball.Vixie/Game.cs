@@ -45,13 +45,6 @@ namespace Furball.Vixie {
         /// Runs the Game
         /// </summary>
         public void Run(WindowOptions options, Backend backend = Backend.None) {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && RuntimeInformation.FrameworkDescription.Contains("Mono")) {
-                // Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", Assembly.GetExecutingAssembly().Location);
-                // IntPtr ptr = LibraryLoader.GetPlatformDefaultLoader().LoadNativeLibrary("libcimgui");
-                
-                // Console.WriteLine(ptr);
-            }
-            
             if (backend == Backend.None)
                 backend = GraphicsBackend.GetReccomendedBackend();
             
