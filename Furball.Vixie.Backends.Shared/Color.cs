@@ -85,6 +85,7 @@ namespace Furball.Vixie.Backends.Shared {
         public static readonly Color DarkCyan             = new(0, 139, 139);
         public static readonly Color DarkGoldenrod        = new(184, 134, 11);
         public static readonly Color DarkGray             = new(169, 169, 169);
+        public static readonly Color DarkGrey             = DarkGray;
         public static readonly Color DarkGreen            = new(0, 100, 0);
         public static readonly Color DarkKhaki            = new(189, 183, 107);
         public static readonly Color DarkMagenta          = new(139, 0, 139);
@@ -96,11 +97,13 @@ namespace Furball.Vixie.Backends.Shared {
         public static readonly Color DarkSeaGreen         = new(143, 188, 139);
         public static readonly Color DarkSlateBlue        = new(72, 61, 139);
         public static readonly Color DarkSlateGray        = new(47, 79, 79);
+        public static readonly Color DarkSlateGrey        = DarkSlateGray;
         public static readonly Color DarkTurquoise        = new(0, 206, 209);
         public static readonly Color DarkViolet           = new(148, 0, 211);
         public static readonly Color DeepPink             = new(255, 20, 147);
         public static readonly Color DeepSkyBlue          = new(0, 191, 255);
         public static readonly Color DimGray              = new(105, 105, 105);
+        public static readonly Color DimGrey              = DimGray;
         public static readonly Color DodgerBlue           = new(30, 144, 255);
         public static readonly Color Firebrick            = new(178, 34, 34);
         public static readonly Color FloralWhite          = new(255, 250, 240);
@@ -111,6 +114,7 @@ namespace Furball.Vixie.Backends.Shared {
         public static readonly Color Gold                 = new(255, 215, 0);
         public static readonly Color Goldenrod            = new(218, 165, 32);
         public static readonly Color Gray                 = new(128, 128, 128);
+        public static readonly Color Grey                 = Gray;
         public static readonly Color Green                = new(0, 128, 0);
         public static readonly Color GreenYellow          = new(173, 255, 47);
         public static readonly Color Honeydew             = new(240, 255, 240);
@@ -128,12 +132,14 @@ namespace Furball.Vixie.Backends.Shared {
         public static readonly Color LightCyan            = new(224, 255, 255);
         public static readonly Color LightGoldenrodYellow = new(250, 250, 210);
         public static readonly Color LightGray            = new(211, 211, 211);
+        public static readonly Color LightGrey            = LightGray;
         public static readonly Color LightGreen           = new(144, 238, 144);
         public static readonly Color LightPink            = new(255, 182, 193);
         public static readonly Color LightSalmon          = new(255, 160, 122);
         public static readonly Color LightSeaGreen        = new(32, 178, 170);
         public static readonly Color LightSkyBlue         = new(135, 206, 250);
         public static readonly Color LightSlateGray       = new(119, 136, 153);
+        public static readonly Color LightSlateGrey       = LightSlateGray;
         public static readonly Color LightSteelBlue       = new(176, 196, 222);
         public static readonly Color LightYellow          = new(255, 255, 224);
         public static readonly Color Lime                 = new(0, 255, 0);
