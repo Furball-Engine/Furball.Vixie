@@ -2,26 +2,26 @@ using System;
 using System.IO;
 using System.Numerics;
 using Furball.Vixie.Backends.Shared;
-using SharpDX;
-using SharpDX.Direct3D11;
-using SharpDX.DXGI;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using Device=SharpDX.Direct3D11.Device;
+using Vortice;
+using Vortice.Direct3D11;
+using Vortice.DXGI;
+using Vortice.Mathematics;
 using Rectangle=System.Drawing.Rectangle;
 
 namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
     public class TextureD3D11 : Texture {
-        private Direct3D11Backend _backend;
-        private Device            _device;
-        private DeviceContext     _deviceContext;
+        private Direct3D11Backend   _backend;
+        private ID3D11Device        _device;
+        private ID3D11DeviceContext _deviceContext;
 
-        private Texture2D          _texture;
-        private ShaderResourceView _textureView;
+        private ID3D11Texture2D          _texture;
+        private ID3D11ShaderResourceView _textureView;
 
         public override Vector2 Size { get; protected set; }
 
-        public TextureD3D11(Direct3D11Backend backend, Texture2D texture, ShaderResourceView shaderResourceView, Vector2 size) {
+        public TextureD3D11(Direct3D11Backend backend, ID3D11Texture2D texture, ID3D11ShaderResourceView shaderResourceView, Vector2 size) {
             this._backend       = backend;
             this._deviceContext = backend.GetDeviceContext();
             this._device        = backend.GetDevice();
@@ -54,14 +54,17 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
                 255, 255, 255, 255
             };
 
-           fixed (byte* ptr = data) {
-               Texture2D texture = new Texture2D(backend.GetDevice(), textureDescription, new DataRectangle((IntPtr) ptr, 4));
-               ShaderResourceView textureView = new ShaderResourceView(backend.GetDevice(), texture);
+            fixed (void* ptr = data) {
+               SubresourceData subresourceData = new SubresourceData(ptr, 4);
+
+               ID3D11Texture2D texture = this._device.CreateTexture2D(textureDescription, new []{ subresourceData} );
+               ID3D11ShaderResourceView textureView = this._device.CreateShaderResourceView(texture);
+
                this._texture     = texture;
                this._textureView = textureView;
-           }
+            }
 
-           this.Size = Vector2.One;
+            this.Size = Vector2.One;
         }
 
         public unsafe TextureD3D11(Direct3D11Backend backend, byte[] imageData, bool qoi = false) {
@@ -94,8 +97,8 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
 
             image.DangerousTryGetSinglePixelMemory(out Memory<Rgba32> pixels);
 
-            Texture2D texture = new Texture2D(backend.GetDevice(), textureDescription, new DataRectangle((IntPtr) pixels.Pin().Pointer, 4 * image.Width));
-            ShaderResourceView textureView = new ShaderResourceView(backend.GetDevice(), texture);
+            ID3D11Texture2D texture = this._device.CreateTexture2D(textureDescription, new [] { new DataRectangle((IntPtr) pixels.Pin().Pointer, 4 * image.Width) } );
+            ID3D11ShaderResourceView textureView = this._device.CreateShaderResourceView(texture);
 
             this._texture     = texture;
             this._textureView = textureView;
@@ -125,8 +128,8 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
 
             image.DangerousTryGetSinglePixelMemory(out Memory<Rgba32> pixels);
 
-            Texture2D texture = new Texture2D(backend.GetDevice(), textureDescription, new DataRectangle((IntPtr) pixels.Pin().Pointer, 4 * image.Width));
-            ShaderResourceView textureView = new ShaderResourceView(backend.GetDevice(), texture);
+            ID3D11Texture2D texture = this._device.CreateTexture2D(textureDescription, new [] { new DataRectangle((IntPtr) pixels.Pin().Pointer, 4 * image.Width) } );
+            ID3D11ShaderResourceView textureView = this._device.CreateShaderResourceView(texture);
 
             this._texture     = texture;
             this._textureView = textureView;
@@ -152,8 +155,8 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
                 },
             };
 
-            Texture2D texture = new Texture2D(backend.GetDevice(), textureDescription);
-            ShaderResourceView textureView = new ShaderResourceView(backend.GetDevice(), texture);
+            ID3D11Texture2D texture = this._device.CreateTexture2D(textureDescription);
+            ID3D11ShaderResourceView textureView = this._device.CreateShaderResourceView(texture);
 
             this._texture     = texture;
             this._textureView = textureView;
@@ -183,8 +186,8 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
 
             image.DangerousTryGetSinglePixelMemory(out Memory<Rgba32> pixels);
 
-            Texture2D texture = new Texture2D(backend.GetDevice(), textureDescription, new DataRectangle((IntPtr) pixels.Pin().Pointer, 4 * image.Width));
-            ShaderResourceView textureView = new ShaderResourceView(backend.GetDevice(), texture);
+            ID3D11Texture2D texture = this._device.CreateTexture2D(textureDescription, new [] { new DataRectangle((IntPtr) pixels.Pin().Pointer, 4 * image.Width) } );
+            ID3D11ShaderResourceView textureView = this._device.CreateShaderResourceView(texture);
 
             this._texture     = texture;
             this._textureView = textureView;
@@ -200,16 +203,16 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
 
         public override unsafe Texture SetData<pDataType>(int level, Rectangle rect, pDataType[] data) {
             fixed (void* dataPtr = data) {
-                this._deviceContext.UpdateSubresource(this._texture, level, new ResourceRegion(rect.X, rect.Y, 0, rect.X + rect.Width, rect.Y + rect.Height, 1), (IntPtr)dataPtr, 4 * rect.Width, (4 * rect.Width) * rect.Height);
+                this._deviceContext.UpdateSubresource(this._texture, level, new Box(rect.X, rect.Y, 0, rect.X + rect.Width, rect.Y + rect.Height, 1), (IntPtr)dataPtr, 4 * rect.Width, (4 * rect.Width) * rect.Height);
             }
 
-            this._deviceContext.PixelShader.SetShaderResource(0, this._textureView);
+            this._deviceContext.PSSetShaderResource(0, this._textureView);
 
             return this;
         }
 
         public Texture BindToPixelShader(int slot) {
-            this._deviceContext.PixelShader.SetShaderResource(slot, this._textureView);
+            this._deviceContext.PSSetShaderResource(slot, this._textureView);
 
             return this;
         }

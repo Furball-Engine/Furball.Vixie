@@ -1,3 +1,4 @@
+using Furball.Vixie.TestApplication.Tests;
 using Silk.NET.Windowing;
 
 namespace Furball.Vixie.TestApplication {
@@ -5,7 +6,7 @@ namespace Furball.Vixie.TestApplication {
         public TestGame(WindowOptions options) {}
 
         protected override unsafe void Initialize() {
-            this.Components.Add(new BaseTestSelector());
+            this.Components.Add(new TestMultipleTextures());
 
             base.Initialize();
         }

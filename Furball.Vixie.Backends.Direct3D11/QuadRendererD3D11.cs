@@ -1,3 +1,4 @@
+using System;
 using System.Drawing;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -7,28 +8,28 @@ using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.FontStashSharp;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers.Helpers;
-using SharpDX.D3DCompiler;
-using SharpDX.Direct3D;
-using SharpDX.Direct3D11;
-using SharpDX.DXGI;
-using Buffer=SharpDX.Direct3D11.Buffer;
+using Vortice.D3DCompiler;
+using Vortice.Direct3D;
+using Vortice.Direct3D11;
+using Vortice.DXGI;
 using Color=Furball.Vixie.Backends.Shared.Color;
 
 namespace Furball.Vixie.Backends.Direct3D11 {
     public unsafe class QuadRendererD3D11 : IQuadRenderer {
         public bool IsBegun { get; set; }
 
-        private Direct3D11Backend _backend;
-        private DeviceContext _deviceContext;
+        private Direct3D11Backend   _backend;
+        private ID3D11DeviceContext _deviceContext;
+        private ID3D11Device        _device;
 
-        private Buffer _vertexBuffer;
-        private Buffer _indexBuffer;
-        private Buffer _constantBuffer;
+        private ID3D11Buffer _vertexBuffer;
+        private ID3D11Buffer _indexBuffer;
+        private ID3D11Buffer _constantBuffer;
 
-        private InputLayout  _inputLayout;
-        private VertexShader _vertexShader;
-        private PixelShader  _pixelShader;
-        private SamplerState _samplerState;
+        private ID3D11InputLayout  _inputLayout;
+        private ID3D11VertexShader _vertexShader;
+        private ID3D11PixelShader  _pixelShader;
+        private ID3D11SamplerState _samplerState;
 
         [StructLayout(LayoutKind.Sequential)]
         struct VertexData {
@@ -56,42 +57,46 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         public unsafe QuadRendererD3D11(Direct3D11Backend backend) {
             this._backend       = backend;
             this._deviceContext = backend.GetDeviceContext();
+            this._device        = backend.GetDevice();
 
             string shaderSourceCode = ResourceHelpers.GetStringResource("Shaders/QuadRenderer/Shaders.hlsl");
 
-            CompilationResult vertexShaderResult = ShaderBytecode.Compile(shaderSourceCode, "VS_Main", "vs_5_0", ShaderFlags.EnableStrictness, EffectFlags.None, System.Array.Empty<ShaderMacro>(), null, "VertexShader.hlsl");
-            CompilationResult pixelShaderResult = ShaderBytecode.Compile(shaderSourceCode, "PS_Main", "ps_5_0", ShaderFlags.EnableStrictness, EffectFlags.None, System.Array.Empty<ShaderMacro>(), null, "PixelShader.hlsl");
+            Compiler.Compile(shaderSourceCode, Array.Empty<ShaderMacro>(), null, "VS_Main", "VertexShader.hlsl", "vs_5_0", ShaderFlags.EnableStrictness, EffectFlags.None, out Blob vertexShaderBlob, out Blob vertexShaderErrorBlob);
+            Compiler.Compile(shaderSourceCode, Array.Empty<ShaderMacro>(), null, "PS_Main", "PixelShader.hlsl", "ps_5_0", ShaderFlags.EnableStrictness, EffectFlags.None, out Blob pixelShaderBlob, out Blob pixelShaderErrorBlob);
 
-            InputElement[] elementDescription = new [] {
-                new InputElement("POSITION",  0, Format.R32G32_Float,       (int) Marshal.OffsetOf<VertexData>("Position"),       0),
-                new InputElement("TEXCOORD",  0, Format.R32G32_Float,       (int) Marshal.OffsetOf<VertexData>("TexCoord"),       0),
-                new InputElement("SCALE",     0, Format.R32G32_Float,       (int) Marshal.OffsetOf<VertexData>("Scale"),          0),
-                new InputElement("ROTATION",  0, Format.R32_Float,          (int) Marshal.OffsetOf<VertexData>("Rotation"),       0),
-                new InputElement("COLOR",     0, Format.R32G32B32A32_Float, (int) Marshal.OffsetOf<VertexData>("Color"),          0),
-                new InputElement("ROTORIGIN", 0, Format.R32G32_Float,       (int) Marshal.OffsetOf<VertexData>("RotationOrigin"), 0),
+            if (vertexShaderBlob == null || pixelShaderBlob == null)
+                throw new Exception("Failed to Compile Shaders.");
+
+            InputElementDescription[] elementDescription = new [] {
+                new InputElementDescription("POSITION",  0, Format.R32G32_Float,       (int) Marshal.OffsetOf<VertexData>("Position"),       0),
+                new InputElementDescription("TEXCOORD",  0, Format.R32G32_Float,       (int) Marshal.OffsetOf<VertexData>("TexCoord"),       0),
+                new InputElementDescription("SCALE",     0, Format.R32G32_Float,       (int) Marshal.OffsetOf<VertexData>("Scale"),          0),
+                new InputElementDescription("ROTATION",  0, Format.R32_Float,          (int) Marshal.OffsetOf<VertexData>("Rotation"),       0),
+                new InputElementDescription("COLOR",     0, Format.R32G32B32A32_Float, (int) Marshal.OffsetOf<VertexData>("Color"),          0),
+                new InputElementDescription("ROTORIGIN", 0, Format.R32G32_Float,       (int) Marshal.OffsetOf<VertexData>("RotationOrigin"), 0),
             };
 
-            InputLayout layout = new InputLayout(backend.GetDevice(), vertexShaderResult.Bytecode.Data, elementDescription);
+            ID3D11InputLayout layout = this._device.CreateInputLayout(elementDescription, vertexShaderBlob);
             this._inputLayout = layout;
 
             int vertexBufferSize = sizeof(VertexData) * 4;
 
             BufferDescription vertexBufferDescription = new BufferDescription {
-                BindFlags   = BindFlags.VertexBuffer,
-                SizeInBytes = vertexBufferSize,
-                Usage       = ResourceUsage.Default
+                BindFlags = BindFlags.VertexBuffer,
+                ByteWidth = vertexBufferSize,
+                Usage     = ResourceUsage.Default,
             };
 
-            Buffer vertexBuffer = new Buffer(backend.GetDevice(), vertexBufferDescription);
+            ID3D11Buffer vertexBuffer = this._device.CreateBuffer(vertexBufferDescription);
             this._vertexBuffer = vertexBuffer;
 
             BufferDescription indexBufferDescription = new BufferDescription {
                 BindFlags = BindFlags.IndexBuffer,
-                SizeInBytes = sizeof(uint) * 6,
-                Usage = ResourceUsage.Default
+                ByteWidth = sizeof(uint) * 6,
+                Usage     = ResourceUsage.Default
             };
 
-            Buffer indexBuffer = new Buffer(backend.GetDevice(), indexBufferDescription);
+            ID3D11Buffer indexBuffer = this._device.CreateBuffer(indexBufferDescription);
             this._indexBuffer = indexBuffer;
 
             uint[] indicies = new uint[] {
@@ -103,31 +108,31 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 
             BufferDescription constantBufferDescription = new BufferDescription {
                 BindFlags = BindFlags.ConstantBuffer,
-                SizeInBytes = sizeof(ConstantBufferData),
-                Usage = ResourceUsage.Default
+                ByteWidth = sizeof(ConstantBufferData),
+                Usage     = ResourceUsage.Default
             };
 
-            Buffer constantBuffer = new Buffer(backend.GetDevice(), constantBufferDescription);
+            ID3D11Buffer constantBuffer = this._device.CreateBuffer(constantBufferDescription);
             this._constantBuffer = constantBuffer;
 
             this._constantBufferData = new ConstantBufferData {
                 ProjectionMatrix = backend.GetProjectionMatrix()
             };
 
-            this._deviceContext.UpdateSubresource(ref this._constantBufferData, constantBuffer);
+            this._deviceContext.UpdateSubresource(this._constantBufferData, constantBuffer);
 
-            this._vertexShader = new VertexShader(backend.GetDevice(), vertexShaderResult.Bytecode.Data);
-            this._pixelShader  = new PixelShader(backend.GetDevice(), pixelShaderResult.Bytecode.Data);
+            this._vertexShader = this._device.CreateVertexShader(vertexShaderBlob);
+            this._pixelShader  = this._device.CreatePixelShader(pixelShaderBlob);
 
-            SamplerStateDescription samplerStateDescription = new SamplerStateDescription {
+            SamplerDescription samplerDescription = new SamplerDescription {
                 Filter             = Filter.MinMagMipLinear,
                 AddressU           = TextureAddressMode.Wrap,
                 AddressV           = TextureAddressMode.Wrap,
                 AddressW           = TextureAddressMode.Wrap,
-                ComparisonFunction = Comparison.Never
+                ComparisonFunction = ComparisonFunction.Never
             };
 
-            this._samplerState = new SamplerState(backend.GetDevice(), samplerStateDescription);
+            this._samplerState = this._device.CreateSamplerState(samplerDescription);
 
             this._textRenderer = new VixieFontStashRenderer(this._backend, this);
         }
@@ -141,11 +146,15 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 
             this._constantBufferData.ProjectionMatrix = this._backend.GetProjectionMatrix();
 
-            this._deviceContext.UpdateSubresource(ref this._constantBufferData, this._constantBuffer);
+            this._deviceContext.UpdateSubresource(this._constantBufferData, this._constantBuffer);
         }
+
         public void Draw(Texture textureGl, Vector2 position, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
             fixed (VertexData* ptr = this._localVertexBuffer)
                 this._vertexBufferPointer = ptr;
+
+            if (textureGl is not TextureD3D11 texture)
+                return;
 
             Vector2 size = textureGl.Size * scale;
 
@@ -201,26 +210,29 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 
             this._deviceContext.UpdateSubresource(this._localVertexBuffer, this._vertexBuffer);
 
-            this._deviceContext.InputAssembler.InputLayout       = this._inputLayout;
-            this._deviceContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
+            this._deviceContext.IASetInputLayout(this._inputLayout);
+            this._deviceContext.IASetPrimitiveTopology(PrimitiveTopology.TriangleList);
 
-            this._deviceContext.InputAssembler.SetVertexBuffers(0, new VertexBufferBinding(this._vertexBuffer, sizeof(VertexData), 0));
-            this._deviceContext.InputAssembler.SetIndexBuffer(this._indexBuffer, Format.R32_UInt, 0);
+            this._deviceContext.IASetVertexBuffer(0, this._vertexBuffer, sizeof(VertexData));
+            this._deviceContext.IASetIndexBuffer(this._indexBuffer, Format.R32_UInt, 0);
 
-            this._deviceContext.VertexShader.Set(this._vertexShader);
-            this._deviceContext.VertexShader.SetConstantBuffer(0, this._constantBuffer);
+            this._deviceContext.VSSetShader(this._vertexShader);
+            this._deviceContext.VSSetConstantBuffer(0, this._constantBuffer);
 
-            this._deviceContext.PixelShader.Set(this._pixelShader);
 
-            this._deviceContext.PixelShader.SetSampler(0, this._samplerState);
+            this._deviceContext.PSSetShader(this._pixelShader);
+            this._deviceContext.PSSetSampler(0, this._samplerState);
 
-            (textureGl as TextureD3D11).BindToPixelShader(0);
+            texture.BindToPixelShader(0);
 
             this._deviceContext.DrawIndexed(6, 0, 0);
         }
         public void Draw(Texture textureGl, Vector2 position, Vector2 scale, float rotation, Color colorOverride, Rectangle sourceRect, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
             fixed (VertexData* ptr = this._localVertexBuffer)
                 this._vertexBufferPointer = ptr;
+
+            if (textureGl is not TextureD3D11 texture)
+                return;
 
             Vector2 size = new Vector2(sourceRect.Width, sourceRect.Height) * scale;
 
@@ -276,20 +288,20 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 
             this._deviceContext.UpdateSubresource(this._localVertexBuffer, this._vertexBuffer);
 
-            this._deviceContext.InputAssembler.InputLayout       = this._inputLayout;
-            this._deviceContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
+            this._deviceContext.IASetInputLayout(this._inputLayout);
+            this._deviceContext.IASetPrimitiveTopology(PrimitiveTopology.TriangleList);
 
-            this._deviceContext.InputAssembler.SetVertexBuffers(0, new VertexBufferBinding(this._vertexBuffer, sizeof(VertexData), 0));
-            this._deviceContext.InputAssembler.SetIndexBuffer(this._indexBuffer, Format.R32_UInt, 0);
+            this._deviceContext.IASetVertexBuffer(0, this._vertexBuffer, sizeof(VertexData));
+            this._deviceContext.IASetIndexBuffer(this._indexBuffer, Format.R32_UInt, 0);
 
-            this._deviceContext.VertexShader.Set(this._vertexShader);
-            this._deviceContext.VertexShader.SetConstantBuffer(0, this._constantBuffer);
+            this._deviceContext.VSSetShader(this._vertexShader);
+            this._deviceContext.VSSetConstantBuffer(0, this._constantBuffer);
 
-            this._deviceContext.PixelShader.Set(this._pixelShader);
 
-            this._deviceContext.PixelShader.SetSampler(0, this._samplerState);
+            this._deviceContext.PSSetShader(this._pixelShader);
+            this._deviceContext.PSSetSampler(0, this._samplerState);
 
-            (textureGl as TextureD3D11).BindToPixelShader(0);
+            texture.BindToPixelShader(0);
 
             this._deviceContext.DrawIndexed(6, 0, 0);
         }

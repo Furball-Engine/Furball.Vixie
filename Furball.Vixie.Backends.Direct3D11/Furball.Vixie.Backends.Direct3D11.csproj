@@ -16,11 +16,11 @@
 
     <ItemGroup>
       <PackageReference Include="Kettu" Version="1.2.4" />
-      <PackageReference Include="SharpDX.D3DCompiler" Version="4.2.0" />
-      <PackageReference Include="SharpDX.Direct3D11" Version="4.2.0" />
       <PackageReference Include="Silk.NET.Input.Common" Version="2.15.0" />
       <PackageReference Include="ImGui.NET" Version="1.86.0" />
       <PackageReference Include="Silk.NET.Input.Extensions" Version="2.15.0" />
+      <PackageReference Include="Vortice.D3DCompiler" Version="2.1.8-beta" />
+      <PackageReference Include="Vortice.Direct3D11" Version="2.1.8-beta" />
     </ItemGroup>
 
     <ItemGroup>
