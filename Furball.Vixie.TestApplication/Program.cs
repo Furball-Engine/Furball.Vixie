@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Furball.Vixie;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Veldrid;
@@ -14,4 +15,6 @@ GraphicsBackend.PrefferedBackends = Backend.Direct3D11;
 
 VeldridBackend.PrefferedBackend = Veldrid.GraphicsBackend.Vulkan;
 
-new TestGame(options).Run(options);
+//Thread.Sleep(7500);
+
+new TestGame(options).Run(options, GraphicsBackend.PrefferedBackends);

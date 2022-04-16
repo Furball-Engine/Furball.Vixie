@@ -15,7 +15,7 @@ struct VS_Input
 
 struct VS_Output
 {
-    float2 Position : SV_POSITION;
+    float4 Position : SV_Position;
     float4 Color    : COLOR;
     float2 TexCoord : TEXCOORD;
 };

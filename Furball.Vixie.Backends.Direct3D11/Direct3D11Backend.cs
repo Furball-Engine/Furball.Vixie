@@ -32,6 +32,9 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         internal ID3D11DeviceContext GetDeviceContext() => this._deviceContext;
         internal Matrix4x4 GetProjectionMatrix() => this._projectionMatrix;
 
+        private ImGuiControllerD3D11 _imGuiController;
+
+
         public override unsafe void Initialize(IWindow window, IInputContext inputContext) {
             FeatureLevel featureLevel = FeatureLevel.Level_11_0;
             DeviceCreationFlags deviceFlags = DeviceCreationFlags.BgraSupport;
@@ -41,6 +44,10 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 #endif
 
             D3D11.D3D11CreateDevice(null, DriverType.Hardware, deviceFlags, new[] { featureLevel }, out this._device, out this._deviceContext);
+
+#if DEBUG
+            this._device.QueryInterface<ID3D11Debug>().ReportLiveDeviceObjects(ReportLiveDeviceObjectFlags.Detail);
+#endif
 
             IDXGIFactory dxgiFactory = this._device.QueryInterface<IDXGIDevice>().GetParent<IDXGIAdapter>().GetParent<IDXGIFactory>();
 
@@ -53,10 +60,12 @@ namespace Furball.Vixie.Backends.Direct3D11 {
                 SampleDescription = new SampleDescription {
                     Count = 1, Quality = 0
                 },
-                BufferUsage = Usage.RenderTargetOutput,
-                BufferCount = 2,
-                SwapEffect  = SwapEffect.FlipDiscard,
-                Flags       = SwapChainFlags.None
+                BufferUsage  = Usage.RenderTargetOutput,
+                BufferCount  = 2,
+                SwapEffect   = SwapEffect.FlipDiscard,
+                Flags        = SwapChainFlags.None,
+                OutputWindow = window.Native.Win32.Value.Hwnd,
+                Windowed     = true
             };
 
             IDXGISwapChain swapChain = dxgiFactory.CreateSwapChain(this._device, swapChainDescription);
@@ -103,6 +112,8 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this._deviceContext.OMSetBlendState(blendState, new Color4(0, 0, 0, 0));
 
             this._defaultBlendState = blendState;
+
+            this._imGuiController = new ImGuiControllerD3D11(this, window, inputContext, null);
         }
 
         private void CreateSwapchainResources() {
@@ -195,11 +206,11 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         }
 
         public override void ImGuiUpdate(double deltaTime) {
-
+            this._imGuiController.Update((float) deltaTime);
         }
 
         public override void ImGuiDraw(double deltaTime) {
-
+            this._imGuiController.Render();
         }
 
         public override void Present() {

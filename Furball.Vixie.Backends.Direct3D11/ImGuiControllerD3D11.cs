@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Text;
 using Furball.Vixie.Helpers.Helpers;
 using ImGuiNET;
-using SharpGen.Runtime;
+using Silk.NET.Core.Native;
 using Silk.NET.Input;
 using Silk.NET.Input.Extensions;
 using Silk.NET.Maths;
@@ -16,6 +17,8 @@ using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
 using Vortice.Mathematics;
+using ComObject=SharpGen.Runtime.ComObject;
+using Rectangle=System.Drawing.Rectangle;
 
 namespace Furball.Vixie.Backends.Direct3D11 {
     public struct ImGuiFontConfig {
@@ -29,7 +32,6 @@ namespace Furball.Vixie.Backends.Direct3D11 {
     }
 
     public class ImGuiControllerD3D11 : IDisposable {
-        private Direct3D11Backend   _backend;
         private ID3D11Device        _device;
         private ID3D11DeviceContext _deviceContext;
 
@@ -63,14 +65,19 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         private bool _frameBegun;
 
         public ImGuiControllerD3D11(Direct3D11Backend backend, IView view, IInputContext context, ImGuiFontConfig? fontConfig, Action onConfigureIo = null) {
-            this._backend       = backend;
             this._device        = backend.GetDevice();
             this._deviceContext = backend.GetDeviceContext();
 
-            this._windowWidth  = view.Size.X;
-            this._windowHeight = view.Size.Y;
-
             this._pressedCharacters = new List<char>();
+
+            this._view         = view;
+            this._inputContext = context;
+            this._windowWidth  = this._view.Size.X;
+            this._windowHeight = this._view.Size.Y;
+
+            IntPtr imGuiContext = ImGui.CreateContext();
+            ImGui.SetCurrentContext(imGuiContext);
+            ImGui.StyleColorsDark();
 
             ImGuiIOPtr io = ImGui.GetIO();
 
@@ -84,15 +91,6 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this.SetKeyMappings();
             this.CreateObjects();
 
-            this._view         = view;
-            this._inputContext = context;
-            this._windowWidth  = this._view.Size.X;
-            this._windowHeight = this._view.Size.Y;
-
-            IntPtr imGuiContext = ImGui.CreateContext();
-            ImGui.SetCurrentContext(imGuiContext);
-            ImGui.StyleColorsDark();
-
             ImGui.NewFrame();
             this._frameBegun = true;
 
@@ -102,7 +100,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this._view.Resize += this.OnViewResized;
         }
 
-        public unsafe void Render() {
+        private unsafe void RenderImDrawData() {
             ImDrawDataPtr drawData = ImGui.GetDrawData();
 
             if (drawData.DisplaySize.X <= 0.0f || drawData.DisplaySize.Y <= 0.0f)
@@ -130,7 +128,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 
                 BufferDescription indexBufferDescription = new BufferDescription {
                     Usage          = ResourceUsage.Dynamic,
-                    ByteWidth      = this._indexBufferSize * sizeof(int),
+                    ByteWidth      = this._indexBufferSize * sizeof(ushort),
                     BindFlags      = BindFlags.IndexBuffer,
                     CPUAccessFlags = CpuAccessFlags.Write
                 };
@@ -139,10 +137,10 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             }
 
             MappedSubresource vertexResource = this._deviceContext.Map(this._vertexBuffer, 0, MapMode.WriteDiscard);
-            MappedSubresource indexResource = this._deviceContext.Map(this._vertexBuffer, 0, MapMode.WriteDiscard);
+            MappedSubresource indexResource = this._deviceContext.Map(this._indexBuffer, 0, MapMode.WriteDiscard);
 
             ImDrawVert* vertexResourcePointer = (ImDrawVert*)vertexResource.DataPointer;
-            int* indexResourcePointer = (int*)indexResource.DataPointer;
+            ushort* indexResourcePointer = (ushort*)indexResource.DataPointer;
 
             for (int i = 0; i != drawData.CmdListsCount; i++) {
                 ImDrawListPtr cmdList = drawData.CmdListsRange[i];
@@ -150,7 +148,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
                 int vertexBytes = cmdList.VtxBuffer.Size * sizeof(ImDrawVert);
                 Buffer.MemoryCopy((void*)cmdList.VtxBuffer.Data, vertexResourcePointer, vertexBytes, vertexBytes);
 
-                int indexBytes = cmdList.IdxBuffer.Size * sizeof(int);
+                int indexBytes = cmdList.IdxBuffer.Size * sizeof(ushort);
                 Buffer.MemoryCopy((void*)cmdList.IdxBuffer.Data, indexResourcePointer, indexBytes, indexBytes);
 
                 vertexResourcePointer += cmdList.VtxBuffer.Size;
@@ -233,14 +231,14 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             for (int i = 0; i != drawData.CmdListsCount; i++) {
                 var cmdList = drawData.CmdListsRange[i];
 
-                for (int n = 0; i < cmdList.CmdBuffer.Size; n++) {
-                    var cmd = cmdList.CmdBuffer[i];
+                for (int n = 0; n < cmdList.CmdBuffer.Size; n++) {
+                    var cmd = cmdList.CmdBuffer[n];
 
                     if (cmd.UserCallback != IntPtr.Zero)
                         throw new NotImplementedException("No!");
                     else {
-                        Rect rect = new Rect((int)(cmd.ClipRect.X - clipOff.X), (int)(cmd.ClipRect.Y - clipOff.Y), (int)(cmd.ClipRect.Z - clipOff.X), (int)(cmd.ClipRect.W - clipOff.Y));
-                        this._deviceContext.RSSetScissorRect(rect);
+                        RawRect rectangle = new RawRect((int)(cmd.ClipRect.X - clipOff.X), (int)(cmd.ClipRect.Y - clipOff.Y), (int)(cmd.ClipRect.Z - clipOff.X), (int)(cmd.ClipRect.W - clipOff.Y));
+                        this._deviceContext.RSSetScissorRect(rectangle);
 
                         this._textureResources.TryGetValue(cmd.TextureId, out ID3D11ShaderResourceView texture);
 
@@ -286,7 +284,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 
             this._deviceContext.IASetInputLayout(this._inputLayout);
             this._deviceContext.IASetVertexBuffers(0, 1, new []{ _vertexBuffer }, new []{ stride }, new []{ offset });
-            this._deviceContext.IASetIndexBuffer(this._indexBuffer, Format.R32_UInt, 0);
+            this._deviceContext.IASetIndexBuffer(this._indexBuffer, Format.R16_UInt, 0);
             this._deviceContext.IASetPrimitiveTopology(PrimitiveTopology.TriangleList);
             this._deviceContext.VSSetShader(this._vertexShader);
             this._deviceContext.VSSetConstantBuffer(0, this._constantBuffer);
@@ -299,6 +297,34 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this._deviceContext.OMSetBlendState(this._blendState);
             this._deviceContext.OMSetDepthStencilState(this._depthStencilState);
             this._deviceContext.RSSetState(this._rasterizerState);
+        }
+
+        public void Update(float delta) {
+            if(this._frameBegun)
+                ImGui.Render();
+
+            ImGuiIOPtr io = ImGui.GetIO();
+
+            io.DisplaySize = new Vector2(this._windowWidth, this._windowHeight);
+
+            if (this._windowHeight > 0 && this._windowHeight > 0)
+                io.DisplayFramebufferScale = new Vector2(this._view.FramebufferSize.X / this._windowWidth, this._view.FramebufferSize.Y / this._windowHeight);
+
+            io.DeltaTime = delta;
+
+            this.UpdateImGuiInput();
+
+            this._frameBegun = true;
+            ImGui.NewFrame();
+        }
+
+        public void Render() {
+            if (this._frameBegun) {
+                this._frameBegun = false;
+
+                ImGui.Render();
+                this.RenderImDrawData();
+            }
         }
 
         #region Windowing and Input thingies
