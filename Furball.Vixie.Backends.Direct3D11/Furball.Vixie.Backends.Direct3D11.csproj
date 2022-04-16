@@ -29,10 +29,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Shaders\LineRenderer" />
-    </ItemGroup>
-
-    <ItemGroup>
       <EmbeddedResource Include="Shaders\ImGui\Shaders.hlsl" />
       <EmbeddedResource Include="Shaders\QuadRenderer\Shaders.hlsl" />
     </ItemGroup>
