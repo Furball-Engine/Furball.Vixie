@@ -54,7 +54,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 
         private VixieFontStashRenderer _textRenderer;
 
-        public unsafe QuadRendererD3D11(Direct3D11Backend backend) {
+        public QuadRendererD3D11(Direct3D11Backend backend) {
             this._backend       = backend;
             this._deviceContext = backend.GetDeviceContext();
             this._device        = backend.GetDevice();

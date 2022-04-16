@@ -30,7 +30,7 @@ namespace Furball.Vixie.Backends.Veldrid.Abstractions {
             return this.ResourceSets[i] ?? (this.ResourceSets[i] = backend.ResourceFactory.CreateResourceSet(new ResourceSetDescription(ResourceLayouts[i], this.Texture)));
         }
         
-        public unsafe TextureVeldrid(VeldridBackend backend, string filepath) {
+        public TextureVeldrid(VeldridBackend backend, string filepath) {
             this._backend = backend;
 
             Image<Rgba32> image = (Image<Rgba32>)Image.Load(filepath);
@@ -45,7 +45,7 @@ namespace Furball.Vixie.Backends.Veldrid.Abstractions {
             this.Size = new Vector2(width, height);
         }
         
-        private unsafe void Load(Image<Rgba32> image) {
+        private void Load(Image<Rgba32> image) {
             TextureDescription textureDescription = TextureDescription.Texture2D((uint)image.Width, (uint)image.Height, 1, 1, PixelFormat.R8_G8_B8_A8_UNorm, TextureUsage.Sampled | TextureUsage.RenderTarget);
 
             this.Texture = this._backend.ResourceFactory.CreateTexture(textureDescription);
@@ -60,7 +60,7 @@ namespace Furball.Vixie.Backends.Veldrid.Abstractions {
         /// Creates a Texture from a byte array which contains Image Data
         /// </summary>
         /// <param name="imageData">Image Data</param>
-        public unsafe TextureVeldrid(VeldridBackend backend, byte[] imageData, bool qoi = false) {
+        public TextureVeldrid(VeldridBackend backend, byte[] imageData, bool qoi = false) {
             this._backend = backend;
 
             Image<Rgba32> image;
@@ -85,7 +85,7 @@ namespace Furball.Vixie.Backends.Veldrid.Abstractions {
         /// <summary>
         /// Creates a Texture with a single White Pixel
         /// </summary>
-        public unsafe TextureVeldrid(VeldridBackend backend) {
+        public TextureVeldrid(VeldridBackend backend) {
             this._backend = backend;
             // 
 
@@ -101,7 +101,7 @@ namespace Furball.Vixie.Backends.Veldrid.Abstractions {
         /// </summary>
         /// <param name="width">Desired Width</param>
         /// <param name="height">Desired Height</param>
-        public unsafe TextureVeldrid(VeldridBackend backend, uint width, uint height) {
+        public TextureVeldrid(VeldridBackend backend, uint width, uint height) {
             this._backend = backend;
             // 
             
@@ -116,7 +116,7 @@ namespace Furball.Vixie.Backends.Veldrid.Abstractions {
         /// Creates a Texture from a Stream which Contains Image Data
         /// </summary>
         /// <param name="stream">Image Data Stream</param>
-        public unsafe TextureVeldrid(VeldridBackend backend, Stream stream) {
+        public TextureVeldrid(VeldridBackend backend, Stream stream) {
             this._backend = backend;
 
             Image<Rgba32> image = Image.Load<Rgba32>(stream);

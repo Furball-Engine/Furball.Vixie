@@ -410,7 +410,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 
         #endregion
 
-        private unsafe void CreateObjects() {
+        private void CreateObjects() {
             string shaderCode = ResourceHelpers.GetStringResource("Shaders/ImGui/Shaders.hlsl");
 
             Compiler.Compile(shaderCode, Array.Empty<ShaderMacro>(), null, "VS_Main", "VertexShader.hlsl", "vs_5_0", ShaderFlags.EnableStrictness, EffectFlags.None, out Blob vertexShaderBlob, out Blob vertexShaderErrorBlob);

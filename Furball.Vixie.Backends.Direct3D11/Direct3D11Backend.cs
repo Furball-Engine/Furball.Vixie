@@ -13,7 +13,7 @@ using Vortice.DXGI;
 using Vortice.Mathematics;
 
 namespace Furball.Vixie.Backends.Direct3D11 {
-    public unsafe class Direct3D11Backend : IGraphicsBackend {
+    public class Direct3D11Backend : IGraphicsBackend {
         private ID3D11Device           _device;
         private ID3D11DeviceContext    _deviceContext;
         private IDXGISwapChain         _swapChain;
@@ -35,7 +35,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         private ImGuiControllerD3D11 _imGuiController;
 
 
-        public override unsafe void Initialize(IWindow window, IInputContext inputContext) {
+        public override void Initialize(IWindow window, IInputContext inputContext) {
             FeatureLevel featureLevel = FeatureLevel.Level_11_0;
             DeviceCreationFlags deviceFlags = DeviceCreationFlags.BgraSupport;
 

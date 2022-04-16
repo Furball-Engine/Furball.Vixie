@@ -31,10 +31,7 @@ namespace Furball.Vixie {
             };
         }
         
-                public static bool IsOnUnsupportedPlatform {
-            get;
-            private set;
-        } = false;
+        public static bool IsOnUnsupportedPlatform { get; private set; } = false;
 
         public static Backend PrefferedBackends = Backend.None;
         public static Backend GetReccomendedBackend() {

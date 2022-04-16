@@ -40,7 +40,7 @@ namespace Furball.Vixie.Backends.OpenGL20 {
             set;
         }
 
-        internal unsafe QuadRendererGL20(OpenGL20Backend backend) {
+        internal QuadRendererGL20(OpenGL20Backend backend) {
             this._backend = backend;
             this._gl      = backend.GetOpenGL();
 
