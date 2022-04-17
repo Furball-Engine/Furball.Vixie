@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -57,24 +58,11 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this._device        = backend.GetDevice();
             this._deviceContext = backend.GetDeviceContext();
 
-            string shaderSource = ResourceHelpers.GetStringResource("Shaders/LineRenderer/Shaders.hlsl");
+            byte[] vertexShaderData = ResourceHelpers.GetByteResource("Shaders/Compiled/LineRenderer/VertexShader.dxc");
+            byte[] pixelShaderData = ResourceHelpers.GetByteResource("Shaders/Compiled/LineRenderer/PixelShader.dxc");
 
-            Compiler.Compile(shaderSource, Array.Empty<ShaderMacro>(), null, "VS_Main", "VertexShader.hlsl", "vs_5_0", ShaderFlags.EnableStrictness, EffectFlags.None, out Blob vertexShaderBlob, out Blob vertexShaderErrorBlob);
-            Compiler.Compile(shaderSource, Array.Empty<ShaderMacro>(), null, "PS_Main", "PixelShader.hlsl", "ps_5_0", ShaderFlags.EnableStrictness, EffectFlags.None, out Blob pixelShaderBlob, out Blob pixelShaderErrorBlob);
-
-            if (vertexShaderBlob == null) {
-                if (vertexShaderErrorBlob != null) {
-                    throw new Exception("Failed to compile LineRendererD3D11 Vertex Shader, Compilation Log:\n" + Encoding.UTF8.GetString(vertexShaderErrorBlob.AsBytes()));
-                }
-                throw new Exception("Failed to compile LineRendererD3D11 Vertex Shader, Compilation Log missing...");
-            }
-
-            if (pixelShaderBlob == null) {
-                if (pixelShaderErrorBlob != null) {
-                    throw new Exception("Failed to compile LineRendererD3D11 Pixel Shader, Compilation Log:\n" + Encoding.UTF8.GetString(pixelShaderErrorBlob.AsBytes()));
-                }
-                throw new Exception("Failed to compile LineRendererD3D11 Pixel Shader, Compilation Log missing...");
-            }
+            ID3D11VertexShader vertexShader = this._device.CreateVertexShader(vertexShaderData);
+            ID3D11PixelShader pixelShader = this._device.CreatePixelShader(pixelShaderData);
 
             InputElementDescription[] inputLayoutDescription = new InputElementDescription[] {
                 new InputElementDescription("POSITION",          0, Format.R32G32_Float,       (int) Marshal.OffsetOf<VertexData>  ("Position"),         VERTEX_BUFFER_SLOT,   InputClassification.PerVertexData,   0),
@@ -84,10 +72,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
                 new InputElementDescription("INSTANCE_ROTATION", 0, Format.R32_Float,          (int) Marshal.OffsetOf<InstanceData>("InstanceRotation"), INSTANCE_BUFFER_SLOT, InputClassification.PerInstanceData, 1),
             };
 
-            ID3D11InputLayout inputLayout = this._device.CreateInputLayout(inputLayoutDescription, vertexShaderBlob);
-
-            ID3D11VertexShader vertexShader = this._device.CreateVertexShader(vertexShaderBlob);
-            ID3D11PixelShader pixelShader = this._device.CreatePixelShader(pixelShaderBlob);
+            ID3D11InputLayout inputLayout = this._device.CreateInputLayout(inputLayoutDescription, vertexShaderData);
 
             BufferDescription vertexBufferDescription = new BufferDescription {
                 BindFlags      = BindFlags.VertexBuffer,
