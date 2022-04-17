@@ -30,8 +30,8 @@ namespace Furball.Vixie {
                 _                  => throw new ArgumentOutOfRangeException(nameof (backend), backend, "Invalid API")
             };
         }
-        
-                public static bool IsOnUnsupportedPlatform {
+
+        public static bool IsOnUnsupportedPlatform {
             get;
             private set;
         } = false;
@@ -47,8 +47,8 @@ namespace Furball.Vixie {
                 if (preferVeldridOverNative) 
                     return Backend.Veldrid;
 
-                if (!preferOpenGl)
-                    return Backend.Direct3D11;
+                // if (!preferOpenGl)
+                    // return Backend.Direct3D11;
                     
                 return preferOpenGlesOverOpenGl ? Backend.OpenGLES : preferOpenGlLegacy ? Backend.OpenGL20 : Backend.OpenGL41;
             }
