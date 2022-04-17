@@ -1,16 +1,10 @@
 ﻿using System;
-using System.IO;
-using System.Reflection;
-using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Helpers;
 using Kettu;
-using NativeLibraryLoader;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
-using LibraryLoader=NativeLibraryLoader.LibraryLoader;
-using PathResolver=NativeLibraryLoader.PathResolver;
 
 namespace Furball.Vixie {
     public abstract class Game : IDisposable {

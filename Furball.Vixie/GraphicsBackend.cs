@@ -43,6 +43,10 @@ namespace Furball.Vixie {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
                 if (preferVeldridOverNative) 
                     return Backend.Veldrid;
+
+                if (!preferOpenGl)
+                    return Backend.Direct3D11;
+                    
                 return preferOpenGlesOverOpenGl ? Backend.OpenGLES : preferOpenGlLegacy ? Backend.OpenGL20 : Backend.OpenGL41;
             }
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("ANDROID"))) {
