@@ -41,7 +41,7 @@ VS_Output VS_Main(VS_Input input)
                                   x, y, 0, 1);
 
     float2 vertexPosition = (input.Position * input.InstanceSize) - input.InstanceRotationOrigin;
-    vertexPosition = mul(float4(vertexPosition.x, vertexPosition.y, 0, 1), rotMatrix).xy;
+    vertexPosition = mul(rotMatrix, float4(vertexPosition.x, vertexPosition.y, 0, 1)).xy;
 
     vertexPosition = vertexPosition + input.InstancePosition;
 
