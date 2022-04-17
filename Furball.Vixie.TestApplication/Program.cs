@@ -1,6 +1,4 @@
-﻿using System;
-using System.Runtime.InteropServices;
-using Furball.Vixie;
+﻿using Furball.Vixie;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Veldrid;
 using Furball.Vixie.TestApplication;
@@ -10,7 +8,7 @@ var options = WindowOptions.Default;
 
 options.VSync = false;
 
-GraphicsBackend.PrefferedBackends = Backend.OpenGL41;
+GraphicsBackend.PrefferedBackends = Backend.OpenGL41 | Backend.OpenGL20;
 
 VeldridBackend.PrefferedBackend = Veldrid.GraphicsBackend.Vulkan;
 
