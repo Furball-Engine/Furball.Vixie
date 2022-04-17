@@ -182,7 +182,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
                 MappedSubresource constantBufferResource = this._deviceContext.Map(this._constantBuffer, MapMode.WriteDiscard);
 
                 fixed (void* constantBufferPointer = constantBufferData) {
-                    long copySize = 4 * sizeof(ushort);
+                    long copySize = sizeof(ConstantBufferData);
                     Buffer.MemoryCopy(constantBufferPointer, (void*)constantBufferResource.DataPointer, copySize, copySize);
                 }
 
