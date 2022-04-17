@@ -148,10 +148,10 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             ID3D11Buffer indexBuffer = this._device.CreateBuffer(indexBufferDescription);
 
             VertexData[] verticies = new [] {
-                new VertexData { Position = new Vector2(0, 1), TexCoord = new Vector2(0, 0) },
-                new VertexData { Position = new Vector2(1, 1), TexCoord = new Vector2(1, 0) },
-                new VertexData { Position = new Vector2(1, 0), TexCoord = new Vector2(1, 1) },
-                new VertexData { Position = new Vector2(0, 0), TexCoord = new Vector2(0, 1) },
+                new VertexData { Position = new Vector2(0, 1), TexCoord = new Vector2(0, 1) },
+                new VertexData { Position = new Vector2(1, 1), TexCoord = new Vector2(1, 1) },
+                new VertexData { Position = new Vector2(1, 0), TexCoord = new Vector2(1, 0) },
+                new VertexData { Position = new Vector2(0, 0), TexCoord = new Vector2(0, 0) },
             };
 
             ushort[] indicies = new ushort[] {
@@ -283,7 +283,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this._instanceData[this._instances].InstanceTextureRectPosition.X = 0;
             this._instanceData[this._instances].InstanceTextureRectPosition.Y = 0;
             this._instanceData[this._instances].InstanceTextureRectSize.X     = texFlip == TextureFlip.FlipHorizontal ? -1 : 1;
-            this._instanceData[this._instances].InstanceTextureRectSize.Y     = texFlip == TextureFlip.FlipVertical ? 1 : -1;
+            this._instanceData[this._instances].InstanceTextureRectSize.Y     = texFlip == TextureFlip.FlipVertical ? -1 : 1;
 
             this._instances++;
         }
@@ -305,8 +305,6 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             //Apply Scale
             size *= scale;
 
-            //sourceRect.Y = texture.Height - sourceRect.Y - sourceRect.Height;
-
             this._instanceData[this._instances].InstancePosition              = position;
             this._instanceData[this._instances].InstanceSize                  = size;
             this._instanceData[this._instances].InstanceColor                 = colorOverride;
@@ -316,7 +314,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this._instanceData[this._instances].InstanceTextureRectPosition.X = (float)sourceRect.X                       / texture.Width;
             this._instanceData[this._instances].InstanceTextureRectPosition.Y = (float)sourceRect.Y                       / texture.Height;
             this._instanceData[this._instances].InstanceTextureRectSize.X     = (float)sourceRect.Width  / texture.Width  * (texFlip == TextureFlip.FlipHorizontal ? -1 : 1);
-            this._instanceData[this._instances].InstanceTextureRectSize.Y     = (float)sourceRect.Height / texture.Height * (texFlip == TextureFlip.FlipVertical ? 1 : -1);
+            this._instanceData[this._instances].InstanceTextureRectSize.Y     = (float)sourceRect.Height / texture.Height * (texFlip == TextureFlip.FlipVertical ? -1 : 1);
 
             this._instances++;
         }

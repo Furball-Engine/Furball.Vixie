@@ -41,9 +41,9 @@ VS_Output VS_Main(VS_Input input)
                                   x, y, 0, 1);
 
     float2 vertexPosition = (input.Position * input.InstanceSize) - input.InstanceRotationOrigin;
-    float4 rotationResult = mul(float4(vertexPosition.x, vertexPosition.y, 0, 1), rotMatrix);
+    vertexPosition = mul(float4(vertexPosition.x, vertexPosition.y, 0, 1), rotMatrix).xy;
 
-    vertexPosition = rotationResult.xy + input.InstancePosition;
+    vertexPosition = vertexPosition + input.InstancePosition;
 
     output.Position = mul(ProjectionMatrix, float4(vertexPosition.x, vertexPosition.y, 0, 1));
     output.Color = input.InstanceColor;
@@ -58,8 +58,6 @@ SamplerState Sampler : register(s0);
 
 float4 PS_Main(VS_Output input) : SV_Target
 {
-    return float4(1, 1, 1, 1);
-
     switch(input.TextureId)
     {
         case 0: return Textures[0].Sample(Sampler, input.TexCoord) * input.Color; break;
