@@ -262,11 +262,11 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this._deviceContext.IASetIndexBuffer(this._indexBuffer, Format.R16_UInt, 0);
         }
 
-        public void Draw(Texture textureGl, Vector2 position, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
+        public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
             if (!IsBegun)
                 throw new Exception("Begin() has not been called in QuadRendererD3D11!");
 
-            if (textureGl == null || textureGl is not TextureD3D11 texture)
+            if (texture == null || texture is not TextureD3D11 textureD3D11)
                 return;
 
             if (this._instances >= INSTANCE_AMOUNT || this._usedTextures == this._backend.QueryMaxTextureUnits()) {
@@ -279,7 +279,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this._instanceData[this._instances].InstanceColor                 = colorOverride;
             this._instanceData[this._instances].InstanceRotation              = rotation;
             this._instanceData[this._instances].InstanceRotationOrigin        = rotOrigin;
-            this._instanceData[this._instances].InstanceTextureId             = this.GetTextureId(texture);
+            this._instanceData[this._instances].InstanceTextureId             = this.GetTextureId(textureD3D11);
             this._instanceData[this._instances].InstanceTextureRectPosition.X = 0;
             this._instanceData[this._instances].InstanceTextureRectPosition.Y = 0;
             this._instanceData[this._instances].InstanceTextureRectSize.X     = texFlip == TextureFlip.FlipHorizontal ? -1 : 1;
@@ -287,8 +287,8 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 
             this._instances++;
         }
-        public void Draw(Texture textureGl, Vector2 position, Vector2 scale, float rotation, Color colorOverride, Rectangle sourceRect, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
-            if (textureGl == null || textureGl is not TextureD3D11 texture)
+        public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, Rectangle sourceRect, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
+            if (texture == null || texture is not TextureD3D11 textureD3D11)
                 return;
 
             if (!IsBegun)
@@ -310,7 +310,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this._instanceData[this._instances].InstanceColor                 = colorOverride;
             this._instanceData[this._instances].InstanceRotation              = rotation;
             this._instanceData[this._instances].InstanceRotationOrigin        = rotOrigin;
-            this._instanceData[this._instances].InstanceTextureId             = this.GetTextureId(texture);
+            this._instanceData[this._instances].InstanceTextureId             = this.GetTextureId(textureD3D11);
             this._instanceData[this._instances].InstanceTextureRectPosition.X = (float)sourceRect.X                       / texture.Width;
             this._instanceData[this._instances].InstanceTextureRectPosition.Y = (float)sourceRect.Y                       / texture.Height;
             this._instanceData[this._instances].InstanceTextureRectSize.X     = (float)sourceRect.Width  / texture.Width  * (texFlip == TextureFlip.FlipHorizontal ? -1 : 1);
@@ -340,16 +340,16 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             return this._usedTextures - 1;
         }
 
-        public void Draw(Texture textureGl, Vector2 position, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {
-            this.Draw(textureGl, position, Vector2.One, rotation, Color.White, flip, rotOrigin);
+        public void Draw(Texture texture, Vector2 position, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {
+            this.Draw(texture, position, Vector2.One, rotation, Color.White, flip, rotOrigin);
         }
 
-        public void Draw(Texture textureGl, Vector2 position, Vector2 scale, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {
-            this.Draw(textureGl, position, scale, rotation, Color.White, flip, rotOrigin);
+        public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {
+            this.Draw(texture, position, scale, rotation, Color.White, flip, rotOrigin);
         }
 
-        public void Draw(Texture textureGl, Vector2 position, Vector2 scale, Color colorOverride, float rotation = 0, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
-            this.Draw(textureGl, position, scale, rotation, colorOverride, texFlip, rotOrigin);
+        public void Draw(Texture texture, Vector2 position, Vector2 scale, Color colorOverride, float rotation = 0, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
+            this.Draw(texture, position, scale, rotation, colorOverride, texFlip, rotOrigin);
         }
 
         public void DrawString(DynamicSpriteFont font, string text, Vector2 position, Color color, float rotation = 0, Vector2? scale = null) {

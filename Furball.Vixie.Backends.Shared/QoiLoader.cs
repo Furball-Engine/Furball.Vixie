@@ -71,8 +71,6 @@ namespace Furball.Vixie.Backends.Shared {
             header.ColorSpace = (ColorSpace)reader.ReadByte();
             p++;
 
-            Logger.Log($"Read header of Qoi file! width:{header.Width} height:{header.Height} channels:{header.Channels} colorspace:{header.ColorSpace}", LoggerLevelImageLoader.Instance);
-
             #endregion
 
             //Since ImageSharp only supports int size images, we error out here

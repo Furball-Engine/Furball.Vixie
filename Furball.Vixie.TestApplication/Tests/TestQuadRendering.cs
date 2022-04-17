@@ -10,13 +10,13 @@ using ImGuiNET;
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestQuadRendering : GameComponent {
         private IQuadRenderer _quadRendererGl;
-        private Texture       _textureGl;
+        private Texture       _texture;
 
         public override void Initialize() {
             this._quadRendererGl = GraphicsBackend.Current.CreateTextureRenderer();
 
             //Load the Texture
-            this._textureGl = Resources.CreateTexture(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
+            this._texture = Resources.CreateTexture(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
 
             base.Initialize();
         }
@@ -32,7 +32,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._quadRendererGl.Begin();
 
             for (int i = 0; i != this._cirnoDons; i++) {
-                this._quadRendererGl.Draw(this._textureGl, new Vector2(i % 1024, i % 2 == 0 ? 0 : 200), new Vector2(0.5f), 0, new Color(1f, 1f, 1f, 0.5f));
+                this._quadRendererGl.Draw(this._texture, new Vector2(i % 1024, i % 2 == 0 ? 0 : 200), new Vector2(0.5f), 0, new Color(1f, 1f, 1f, 0.5f));
             }
 
             this._quadRendererGl.End();

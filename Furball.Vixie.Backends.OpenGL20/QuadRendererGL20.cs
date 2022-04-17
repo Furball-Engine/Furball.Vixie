@@ -165,12 +165,12 @@ namespace Furball.Vixie.Backends.OpenGL20 {
             return this.UsedTextures - 1;
         }
 
-        public void Draw(Texture textureGl, Vector2 position, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
+        public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
             if (!this.IsBegun)
                 throw new Exception("Begin() has not been called!");
 
             //Ignore calls with invalid textures
-            if (textureGl == null || textureGl is not TextureGL textureGl20)
+            if (texture == null || texture is not TextureGL textureGl20)
                 return;
 
             if (scale.X == 0 || scale.Y == 0 || colorOverride.A == 0) return;
@@ -182,10 +182,10 @@ namespace Furball.Vixie.Backends.OpenGL20 {
 
             this.BatchedColors[this.BatchedQuads]               = colorOverride;
             this.BatchedPositions[this.BatchedQuads]            = position;
-            this.BatchedSizes[this.BatchedQuads]                = textureGl.Size * scale;
+            this.BatchedSizes[this.BatchedQuads]                = texture.Size * scale;
             this.BatchedRotationOrigins[this.BatchedQuads]      = rotOrigin;
             this.BatchedRotations[this.BatchedQuads]            = rotation;
-            this.BatchedTextureIds[this.BatchedQuads]           = this.GetTextureId(textureGl);
+            this.BatchedTextureIds[this.BatchedQuads]           = this.GetTextureId(texture);
             this.BatchedTextureCoordinates[this.BatchedQuads].X = 0;
             this.BatchedTextureCoordinates[this.BatchedQuads].Y = 0;
             this.BatchedTextureCoordinates[this.BatchedQuads].Z = texFlip == TextureFlip.FlipHorizontal ? -1 : 1;
@@ -197,12 +197,12 @@ namespace Furball.Vixie.Backends.OpenGL20 {
             this.BatchedQuads++;
         }
 
-        public void Draw(Texture textureGl, Vector2 position, Vector2 scale, float rotation, Color colorOverride, Rectangle sourceRect, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
+        public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, Rectangle sourceRect, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
             if (!this.IsBegun)
                 throw new Exception("Begin() has not been called!");
 
             //Ignore calls with invalid textures
-            if (textureGl == null || textureGl is not TextureGL)
+            if (texture == null || texture is not TextureGL)
                 return;
 
             if (scale.X == 0 || scale.Y == 0 || colorOverride.A == 0) return;
@@ -218,18 +218,18 @@ namespace Furball.Vixie.Backends.OpenGL20 {
             //Apply Scale
             size *= scale;
 
-            sourceRect.Y = textureGl.Height - sourceRect.Y - sourceRect.Height;
+            sourceRect.Y = texture.Height - sourceRect.Y - sourceRect.Height;
 
             this.BatchedColors[this.BatchedQuads]               = colorOverride;
             this.BatchedPositions[this.BatchedQuads]            = position;
             this.BatchedSizes[this.BatchedQuads]                = size;
             this.BatchedRotationOrigins[this.BatchedQuads]      = rotOrigin;
             this.BatchedRotations[this.BatchedQuads]            = rotation;
-            this.BatchedTextureIds[this.BatchedQuads]           = this.GetTextureId(textureGl);
-            this.BatchedTextureCoordinates[this.BatchedQuads].X = (float)sourceRect.X                         / textureGl.Width;
-            this.BatchedTextureCoordinates[this.BatchedQuads].Y = (float)sourceRect.Y                         / textureGl.Height;
-            this.BatchedTextureCoordinates[this.BatchedQuads].Z = (float)sourceRect.Width  / textureGl.Width  * (texFlip == TextureFlip.FlipHorizontal ? -1 : 1);
-            this.BatchedTextureCoordinates[this.BatchedQuads].W = (float)sourceRect.Height / textureGl.Height * (texFlip == TextureFlip.FlipVertical ? -1 : 1);
+            this.BatchedTextureIds[this.BatchedQuads]           = this.GetTextureId(texture);
+            this.BatchedTextureCoordinates[this.BatchedQuads].X = (float)sourceRect.X                         / texture.Width;
+            this.BatchedTextureCoordinates[this.BatchedQuads].Y = (float)sourceRect.Y                         / texture.Height;
+            this.BatchedTextureCoordinates[this.BatchedQuads].Z = (float)sourceRect.Width  / texture.Width  * (texFlip == TextureFlip.FlipHorizontal ? -1 : 1);
+            this.BatchedTextureCoordinates[this.BatchedQuads].W = (float)sourceRect.Height / texture.Height * (texFlip == TextureFlip.FlipVertical ? -1 : 1);
 
             this.BatchedQuads++;
         }
@@ -333,16 +333,16 @@ namespace Furball.Vixie.Backends.OpenGL20 {
 
         #region overloads
 
-        public void Draw(Texture textureGl, Vector2 position, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {
-            this.Draw(textureGl, position, Vector2.One, rotation, Color.White, flip, rotOrigin);
+        public void Draw(Texture texture, Vector2 position, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {
+            this.Draw(texture, position, Vector2.One, rotation, Color.White, flip, rotOrigin);
         }
 
-        public void Draw(Texture textureGl, Vector2 position, Vector2 scale, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {
-            this.Draw(textureGl, position, scale, rotation, Color.White, flip, rotOrigin);
+        public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {
+            this.Draw(texture, position, scale, rotation, Color.White, flip, rotOrigin);
         }
 
-        public void Draw(Texture textureGl, Vector2 position, Vector2 scale, Color colorOverride, float rotation = 0, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
-            this.Draw(textureGl, position, scale, rotation, colorOverride, texFlip, rotOrigin);
+        public void Draw(Texture texture, Vector2 position, Vector2 scale, Color colorOverride, float rotation = 0, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
+            this.Draw(texture, position, scale, rotation, colorOverride, texFlip, rotOrigin);
         }
 
         #endregion

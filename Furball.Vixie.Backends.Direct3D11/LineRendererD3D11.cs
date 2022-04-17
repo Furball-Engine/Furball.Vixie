@@ -62,11 +62,19 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             Compiler.Compile(shaderSource, Array.Empty<ShaderMacro>(), null, "VS_Main", "VertexShader.hlsl", "vs_5_0", ShaderFlags.EnableStrictness, EffectFlags.None, out Blob vertexShaderBlob, out Blob vertexShaderErrorBlob);
             Compiler.Compile(shaderSource, Array.Empty<ShaderMacro>(), null, "PS_Main", "PixelShader.hlsl", "ps_5_0", ShaderFlags.EnableStrictness, EffectFlags.None, out Blob pixelShaderBlob, out Blob pixelShaderErrorBlob);
 
-            //if (vertexShaderErrorBlob != null)
-            //    throw new Exception("LineRendererD3D11 Vertex Shader failed to compile! Error Log:\n" + Encoding.UTF8.GetString(vertexShaderErrorBlob.AsBytes()));
-//
-            //if (pixelShaderErrorBlob != null)
-            //    throw new Exception("LineRendererD3D11 Pixel Shader failed to compile! Error Log:\n" + Encoding.UTF8.GetString(pixelShaderErrorBlob.AsBytes()));
+            if (vertexShaderBlob == null) {
+                if (vertexShaderErrorBlob != null) {
+                    throw new Exception("Failed to compile LineRendererD3D11 Vertex Shader, Compilation Log:\n" + Encoding.UTF8.GetString(vertexShaderErrorBlob.AsBytes()));
+                }
+                throw new Exception("Failed to compile LineRendererD3D11 Vertex Shader, Compilation Log missing...");
+            }
+
+            if (pixelShaderBlob == null) {
+                if (pixelShaderErrorBlob != null) {
+                    throw new Exception("Failed to compile LineRendererD3D11 Pixel Shader, Compilation Log:\n" + Encoding.UTF8.GetString(pixelShaderErrorBlob.AsBytes()));
+                }
+                throw new Exception("Failed to compile LineRendererD3D11 Pixel Shader, Compilation Log missing...");
+            }
 
             InputElementDescription[] inputLayoutDescription = new InputElementDescription[] {
                 new InputElementDescription("POSITION",          0, Format.R32G32_Float,       (int) Marshal.OffsetOf<VertexData>  ("Position"),         VERTEX_BUFFER_SLOT,   InputClassification.PerVertexData,   0),

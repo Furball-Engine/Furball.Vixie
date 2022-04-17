@@ -33,9 +33,9 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._renderTarget.Bind();
             GraphicsBackend.Current.Clear();
 
-            //this._lineRenderer.Begin();
-            //this._lineRenderer.Draw(new Vector2(0, 0), new Vector2(1280, 720), 16f, Color.Red);
-            //this._lineRenderer.End();
+            this._lineRenderer.Begin();
+            this._lineRenderer.Draw(new Vector2(0, 0), new Vector2(1280, 720), 16f, Color.Red);
+            this._lineRenderer.End();
             this._quadRenderer.Begin();
             this._quadRenderer.Draw(this._whiteTexture, new Vector2(5, 5), new Vector2(128, 128), Color.Green);
             this._quadRenderer.End();

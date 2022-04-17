@@ -416,8 +416,19 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             Compiler.Compile(shaderCode, Array.Empty<ShaderMacro>(), null, "VS_Main", "VertexShader.hlsl", "vs_5_0", ShaderFlags.EnableStrictness, EffectFlags.None, out Blob vertexShaderBlob, out Blob vertexShaderErrorBlob);
             Compiler.Compile(shaderCode, Array.Empty<ShaderMacro>(), null, "PS_Main", "PixelShader.hlsl", "ps_5_0", ShaderFlags.EnableStrictness, EffectFlags.None, out Blob pixelShaderBlob, out Blob pixelShaderErrorBlob);
 
-            if (vertexShaderBlob == null || pixelShaderBlob == null)
-                throw new Exception("ImGui Shaders failed to compile.");
+            if (vertexShaderBlob == null) {
+                if (vertexShaderErrorBlob != null) {
+                    throw new Exception("Failed to compile ImGuiControllerD3D11 Vertex Shader, Compilation Log:\n" + Encoding.UTF8.GetString(vertexShaderErrorBlob.AsBytes()));
+                }
+                throw new Exception("Failed to compile ImGuiControllerD3D11 Vertex Shader, Compilation Log missing...");
+            }
+
+            if (pixelShaderBlob == null) {
+                if (pixelShaderErrorBlob != null) {
+                    throw new Exception("Failed to compile ImGuiControllerD3D11 Pixel Shader, Compilation Log:\n" + Encoding.UTF8.GetString(pixelShaderErrorBlob.AsBytes()));
+                }
+                throw new Exception("Failed to compile ImGuiControllerD3D11 Pixel Shader, Compilation Log missing...");
+            }
 
             this._vertexShaderBlob = vertexShaderBlob;
             this._pixelShaderBlob  = pixelShaderBlob;
