@@ -61,6 +61,7 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
             this._renderTarget        = renderTarget;
             this._shaderResourceView  = shaderResourceView;
             this.Size                 = new Vector2(width, height);
+            this._viewports           = new Viewport[16];
         }
 
         public override void Bind() {
