@@ -34,7 +34,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ClCompile Include="Shaders\LineRenderer\Shaders.hlsl" />
+      <EmbeddedResource Include="Shaders\LineRenderer\Shaders.hlsl" />
     </ItemGroup>
 
 </Project>

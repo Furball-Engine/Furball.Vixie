@@ -28,11 +28,13 @@ VS_Output VS_Main(VS_Input input)
     float2 rotationOrigin = float2(0, input.InstanceSize.y / 2.0f);
     float2 vertexPosition = (input.Position * input.InstanceSize) - rotationOrigin;
 
-    vertexPosition = mul(rotationMatrix, vertexPosition);
-    vertexPosition = vertexPosition + input.Position;
+    vertexPosition = mul(vertexPosition, rotationMatrix);
+    vertexPosition = vertexPosition + input.InstancePosition;
 
     output.Position = mul(ProjectionMatrix, float4(vertexPosition.x, vertexPosition.y, 0, 1));
     output.OutColor = input.InstanceColor;
+
+    return output;
 }
 
 float4 PS_Main(VS_Output input) : SV_Target

@@ -62,11 +62,11 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             Compiler.Compile(shaderSource, Array.Empty<ShaderMacro>(), null, "VS_Main", "VertexShader.hlsl", "vs_5_0", ShaderFlags.EnableStrictness, EffectFlags.None, out Blob vertexShaderBlob, out Blob vertexShaderErrorBlob);
             Compiler.Compile(shaderSource, Array.Empty<ShaderMacro>(), null, "PS_Main", "PixelShader.hlsl", "ps_5_0", ShaderFlags.EnableStrictness, EffectFlags.None, out Blob pixelShaderBlob, out Blob pixelShaderErrorBlob);
 
-            if (vertexShaderErrorBlob != null)
-                throw new Exception("LineRendererD3D11 Vertex Shader failed to compile! Error Log:\n" + Encoding.UTF8.GetString(vertexShaderErrorBlob.AsBytes()));
-
-            if (pixelShaderErrorBlob != null)
-                throw new Exception("LineRendererD3D11 Pixel Shader failed to compile! Error Log:\n" + Encoding.UTF8.GetString(pixelShaderErrorBlob.AsBytes()));
+            //if (vertexShaderErrorBlob != null)
+            //    throw new Exception("LineRendererD3D11 Vertex Shader failed to compile! Error Log:\n" + Encoding.UTF8.GetString(vertexShaderErrorBlob.AsBytes()));
+//
+            //if (pixelShaderErrorBlob != null)
+            //    throw new Exception("LineRendererD3D11 Pixel Shader failed to compile! Error Log:\n" + Encoding.UTF8.GetString(pixelShaderErrorBlob.AsBytes()));
 
             InputElementDescription[] inputLayoutDescription = new InputElementDescription[] {
                 new InputElementDescription("POSITION",          0, Format.R32G32_Float,       (int) Marshal.OffsetOf<VertexData>  ("Position"),         VERTEX_BUFFER_SLOT,   InputClassification.PerVertexData,   0),
@@ -82,22 +82,19 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             ID3D11PixelShader pixelShader = this._device.CreatePixelShader(pixelShaderBlob);
 
             BufferDescription vertexBufferDescription = new BufferDescription {
-                BindFlags           = BindFlags.VertexBuffer,
-                ByteWidth           = sizeof(VertexData) * 4,
-                CPUAccessFlags      = CpuAccessFlags.Write,
-                MiscFlags           = ResourceOptionFlags.None,
-                StructureByteStride = sizeof(VertexData),
-                Usage               = ResourceUsage.Default
+                BindFlags      = BindFlags.VertexBuffer,
+                ByteWidth      = sizeof(VertexData) * 4,
+                CPUAccessFlags = CpuAccessFlags.Write,
+                Usage          = ResourceUsage.Dynamic
             };
 
             ID3D11Buffer vertexBuffer = this._device.CreateBuffer(vertexBufferDescription);
 
             BufferDescription instanceBufferDescritpion = new BufferDescription {
-                BindFlags           = BindFlags.VertexBuffer,
-                ByteWidth           = sizeof(InstanceData) * INSTANCE_AMOUNT,
-                CPUAccessFlags      = CpuAccessFlags.Write,
-                StructureByteStride = sizeof(InstanceData),
-                Usage               = ResourceUsage.Dynamic
+                BindFlags      = BindFlags.VertexBuffer,
+                ByteWidth      = sizeof(InstanceData) * INSTANCE_AMOUNT,
+                CPUAccessFlags = CpuAccessFlags.Write,
+                Usage          = ResourceUsage.Dynamic
             };
 
             ID3D11Buffer instanceBuffer = this._device.CreateBuffer(instanceBufferDescritpion);
@@ -106,7 +103,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
                 BindFlags = BindFlags.IndexBuffer,
                 ByteWidth = sizeof(ushort) * 6,
                 CPUAccessFlags = CpuAccessFlags.Write,
-                Usage = ResourceUsage.Default
+                Usage = ResourceUsage.Dynamic
             };
 
             ID3D11Buffer indexBuffer = this._device.CreateBuffer(indexBufferDescription);
@@ -115,7 +112,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
                 BindFlags = BindFlags.ConstantBuffer,
                 ByteWidth = sizeof(ConstantBufferData),
                 CPUAccessFlags = CpuAccessFlags.Write,
-                Usage = ResourceUsage.Default
+                Usage = ResourceUsage.Dynamic
             };
 
             ID3D11Buffer constantBuffer = this._device.CreateBuffer(constantBufferDescription);
@@ -140,13 +137,42 @@ namespace Furball.Vixie.Backends.Direct3D11 {
                 2, 3, 0
             };
 
-            ConstantBufferData constantBufferData = new ConstantBufferData {
-                ProjectionMatrix = backend.GetProjectionMatrix()
+            ConstantBufferData[] constantBufferData = new[] {
+                new ConstantBufferData { ProjectionMatrix = backend.GetProjectionMatrix() }
             };
 
-            this._deviceContext.UpdateSubresource(verticies, vertexBuffer);
-            this._deviceContext.UpdateSubresource(indicies, indexBuffer);
-            this._deviceContext.UpdateSubresource(constantBufferData, constantBuffer);
+            /* Copy Verticies */ {
+                MappedSubresource vertexBufferResource = this._deviceContext.Map(vertexBuffer, MapMode.WriteDiscard);
+
+                fixed (void* vertexPointer = verticies) {
+                    long copySize = 4 * sizeof(VertexData);
+                    Buffer.MemoryCopy(vertexPointer, (void*)vertexBufferResource.DataPointer, copySize, copySize);
+                }
+
+                this._deviceContext.Unmap(vertexBuffer);
+            }
+
+            /* Copy Indicies */ {
+                MappedSubresource indexBufferResource = this._deviceContext.Map(indexBuffer, MapMode.WriteDiscard);
+
+                fixed (void* indexPointer = indicies) {
+                    long copySize = 6 * sizeof(ushort);
+                    Buffer.MemoryCopy(indexPointer, (void*)indexBufferResource.DataPointer, copySize, copySize);
+                }
+
+                this._deviceContext.Unmap(indexBuffer);
+            }
+
+            /* Copy Constant Buffer */ {
+                MappedSubresource constantBufferResource = this._deviceContext.Map(constantBuffer, MapMode.WriteDiscard);
+
+                fixed (void* constantBufferPointer = constantBufferData) {
+                    long copySize = sizeof(ConstantBufferData);
+                    Buffer.MemoryCopy(constantBufferPointer, (void*)constantBufferResource.DataPointer, copySize, copySize);
+                }
+
+                this._deviceContext.Unmap(constantBuffer);
+            }
 
             this._instances    = 0;
             this._instanceData = new InstanceData[INSTANCE_AMOUNT];
@@ -155,18 +181,30 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         public unsafe void Begin() {
             this.IsBegun = true;
 
-            ConstantBufferData constantBufferData = new ConstantBufferData {
-                ProjectionMatrix = _backend.GetProjectionMatrix()
+            ConstantBufferData[] constantBufferData = new[] {
+                new ConstantBufferData { ProjectionMatrix = _backend.GetProjectionMatrix() }
             };
 
-            this._deviceContext.UpdateSubresource(constantBufferData, this._constantBuffer);
+            /* Copy Constant Buffer */ {
+                MappedSubresource constantBufferResource = this._deviceContext.Map(this._constantBuffer, MapMode.WriteDiscard);
+
+                fixed (void* constantBufferPointer = constantBufferData) {
+                    long copySize = 4 * sizeof(ushort);
+                    Buffer.MemoryCopy(constantBufferPointer, (void*)constantBufferResource.DataPointer, copySize, copySize);
+                }
+
+                this._deviceContext.Unmap(_constantBuffer);
+            }
 
             this._deviceContext.IASetInputLayout(this._inputLayout);
             this._deviceContext.IASetIndexBuffer(this._indexBuffer, Format.R16_UInt, 0);
             this._deviceContext.IASetVertexBuffer(VERTEX_BUFFER_SLOT, this._vertexBuffer, sizeof(VertexData));
             this._deviceContext.IASetVertexBuffer(INSTANCE_BUFFER_SLOT, this._instanceBuffer, sizeof(InstanceData));
+            this._deviceContext.IASetPrimitiveTopology(PrimitiveTopology.TriangleList);
 
             this._deviceContext.VSSetShader(this._vertexShader);
+            this._deviceContext.VSSetConstantBuffer(0, this._constantBuffer);
+
             this._deviceContext.PSSetShader(this._pixelShader);
         }
 
@@ -205,6 +243,8 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this._deviceContext.Unmap(this._instanceBuffer, 0);
 
             this._deviceContext.DrawIndexedInstanced(6, this._instances, 0, 0, 0);
+
+            this._instances = 0;
         }
 
         public void Dispose() {
