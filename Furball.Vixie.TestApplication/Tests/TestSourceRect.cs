@@ -35,7 +35,7 @@ namespace Furball.Vixie.TestApplication.Tests {
                        $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
             );
             
-            ImGui.SliderFloat("Rotation", ref this._rotation, 0f, MathF.PI * 2f);
+            ImGui.SliderFloat("Rotation", ref this._rotation, 0f, (float)(Math.PI * 2f));
             
             if (ImGui.Button("Go back to test selector")) {
                 this.BaseGame.Components.Add(new BaseTestSelector());

@@ -83,7 +83,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// </summary>
         public bool IsFramebufferTexture {
             get;
-            internal init;
+            internal set;
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         public unsafe TextureGL(IGLBasedBackend backend, string filepath) {
             this._backend = backend;
 
-            Image<Rgba32> image = (Image<Rgba32>)Image.Load(filepath);
+            Image<Rgba32> image = Image.Load<Rgba32>(filepath);
 
             this._localBuffer = image;
 
@@ -254,7 +254,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// <param name="data">Data to put there</param>
         /// <typeparam name="pDataType">Type of the Data</typeparam>
         /// <returns>Self, used for chaining methods</returns>
-        public override unsafe TextureGL SetData<pDataType>(int level, pDataType[] data) {
+        public override unsafe Texture SetData<pDataType>(int level, pDataType[] data) {
             this.LockingBind();
 
             fixed(void* d = data)

@@ -1,10 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net5.0</TargetFramework>
+        <TargetFramework>netstandard2.0</TargetFramework>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <Configurations>Debug;Release;DebugWithGL</Configurations>
         <Platforms>AnyCPU</Platforms>
+        <LangVersion>9</LangVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'DebugWithGL' ">
@@ -21,7 +22,7 @@
     <ItemGroup>
       <PackageReference Include="FontStashSharp" Version="1.0.4" />
       <PackageReference Include="ImGui.NET" Version="1.86.0" />
-      <PackageReference Include="Kettu" Version="1.2.2" />
+      <PackageReference Include="Kettu" Version="1.2.4" />
       <PackageReference Include="Silk.NET.Input" Version="2.15.0" />
       <PackageReference Include="Silk.NET.Input.Extensions" Version="2.15.0" />
       <PackageReference Include="Silk.NET.Windowing" Version="2.15.0" />
@@ -37,6 +38,12 @@
       <ProjectReference Include="..\Furball.Vixie.Backends.OpenGL41\Furball.Vixie.Backends.OpenGL41.csproj" />
       <ProjectReference Include="..\Furball.Vixie.Backends.OpenGLES\Furball.Vixie.Backends.OpenGLES.csproj" />
       <ProjectReference Include="..\Furball.Vixie.Backends.Veldrid\Furball.Vixie.Backends.Veldrid.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="libcimgui.so" Condition="'$(OS)' == 'Unix' ">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>
