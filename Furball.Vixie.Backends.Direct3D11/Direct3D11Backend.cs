@@ -1,9 +1,12 @@
+using System;
+using System.Globalization;
 using System.IO;
 using System.Numerics;
 using Furball.Vixie.Backends.Direct3D11.Abstractions;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.Renderers;
+using Kettu;
 using Silk.NET.Input;
 using Silk.NET.Windowing;
 using Vortice.Direct3D;
@@ -34,6 +37,9 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 
         private ImGuiControllerD3D11 _imGuiController;
 
+        private TextureD3D11 _privateWhitePixelTexture;
+        internal TextureD3D11 GetPrivateWhitePixelTexture() => this._privateWhitePixelTexture;
+
 
         public override void Initialize(IWindow window, IInputContext inputContext) {
             FeatureLevel featureLevel = FeatureLevel.Level_11_0;
@@ -50,6 +56,33 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 #endif
 
             IDXGIFactory dxgiFactory = this._device.QueryInterface<IDXGIDevice>().GetParent<IDXGIAdapter>().GetParent<IDXGIFactory>();
+
+            int i = 0;
+            try {
+                while (dxgiFactory.GetAdapter(i) != null) {
+                    AdapterDescription description = dxgiFactory.GetAdapter(i).Description;
+
+                    long luid = description.Luid.LowPart | description.Luid.HighPart;
+
+                    string dedicatedSysMemMb = Math.Round((description.DedicatedSystemMemory / 1024.0) / 1024.0, 2).ToString(CultureInfo.InvariantCulture);
+                    string dedicatedVidMemMb = Math.Round((description.DedicatedVideoMemory  / 1024.0) / 1024.0, 2).ToString(CultureInfo.InvariantCulture);
+                    string dedicatedShrMemMb = Math.Round((description.SharedSystemMemory    / 1024.0) / 1024.0, 2).ToString(CultureInfo.InvariantCulture);
+
+                    Logger.Log($"///////////////////Adapter [{i}]////////////////////", LoggerLevelD3D11.InstanceInfo);
+                    Logger.Log($"Adapter Description:       {description.Description}", LoggerLevelD3D11.InstanceInfo);
+                    Logger.Log($"Revision:                  {description.Revision}",    LoggerLevelD3D11.InstanceInfo);
+                    Logger.Log($"PCI Vendor ID:             {description.VendorId}",    LoggerLevelD3D11.InstanceInfo);
+                    Logger.Log($"PCI Device ID:             {description.DeviceId}",    LoggerLevelD3D11.InstanceInfo);
+                    Logger.Log($"PCI Subsystem ID:          {description.SubsystemId}", LoggerLevelD3D11.InstanceInfo);
+                    Logger.Log($"Locally Unique Identifier: {luid}",                    LoggerLevelD3D11.InstanceInfo);
+                    Logger.Log($"Dedicated System Memory:   {dedicatedSysMemMb}mb",     LoggerLevelD3D11.InstanceInfo);
+                    Logger.Log($"Dedicated Video Memory:    {dedicatedVidMemMb}mb",     LoggerLevelD3D11.InstanceInfo);
+                    Logger.Log($"Dedicated Shared Memory:   {dedicatedShrMemMb}mb",     LoggerLevelD3D11.InstanceInfo);
+                    Logger.Log($"//////////////////////////////////////////////////\n", LoggerLevelD3D11.InstanceInfo);
+
+                    i++;
+                }
+            }catch { /* This crashes if you go beyond what adapters it has, instead of sensibly just returning null like it claims to do */ }
 
             SwapChainDescription swapChainDescription = new SwapChainDescription {
                 BufferDescription = new ModeDescription {
@@ -114,6 +147,8 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this._defaultBlendState = blendState;
 
             this._imGuiController = new ImGuiControllerD3D11(this, window, inputContext, null);
+
+            this._privateWhitePixelTexture = (TextureD3D11) this.CreateWhitePixelTexture();
         }
 
         private void CreateSwapchainResources() {
@@ -174,7 +209,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         }
 
         public override int QueryMaxTextureUnits() {
-            return 32;
+            return 128;
         }
 
         public override void Clear() {

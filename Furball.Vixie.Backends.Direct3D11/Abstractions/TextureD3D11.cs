@@ -17,7 +17,9 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
         private ID3D11DeviceContext _deviceContext;
 
         private ID3D11Texture2D          _texture;
-        private ID3D11ShaderResourceView _textureView;
+        internal ID3D11ShaderResourceView TextureView;
+
+        internal int UsedId = -1;
 
         public override Vector2 Size { get; protected set; }
 
@@ -29,7 +31,7 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
             this.Size = size;
 
             this._texture     = texture;
-            this._textureView = shaderResourceView;
+            this.TextureView = shaderResourceView;
         }
 
         public unsafe TextureD3D11(Direct3D11Backend backend) {
@@ -61,7 +63,7 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
                ID3D11ShaderResourceView textureView = this._device.CreateShaderResourceView(texture);
 
                this._texture     = texture;
-               this._textureView = textureView;
+               this.TextureView = textureView;
             }
 
             this.Size = Vector2.One;
@@ -101,7 +103,7 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
             ID3D11ShaderResourceView textureView = this._device.CreateShaderResourceView(texture);
 
             this._texture     = texture;
-            this._textureView = textureView;
+            this.TextureView = textureView;
 
             this.Size = new Vector2(image.Width, image.Height);
         }
@@ -132,7 +134,7 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
             ID3D11ShaderResourceView textureView = this._device.CreateShaderResourceView(texture);
 
             this._texture     = texture;
-            this._textureView = textureView;
+            this.TextureView = textureView;
 
             this.Size = new Vector2(image.Width, image.Height);
         }
@@ -159,7 +161,7 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
             ID3D11ShaderResourceView textureView = this._device.CreateShaderResourceView(texture);
 
             this._texture     = texture;
-            this._textureView = textureView;
+            this.TextureView = textureView;
 
             this.Size = new Vector2(width, height);
         }
@@ -190,7 +192,7 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
             ID3D11ShaderResourceView textureView = this._device.CreateShaderResourceView(texture);
 
             this._texture     = texture;
-            this._textureView = textureView;
+            this.TextureView = textureView;
 
             this.Size = new Vector2(image.Width, image.Height);
         }
@@ -206,13 +208,13 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
                 this._deviceContext.UpdateSubresource(this._texture, level, new Box(rect.X, rect.Y, 0, rect.X + rect.Width, rect.Y + rect.Height, 1), (IntPtr)dataPtr, 4 * rect.Width, (4 * rect.Width) * rect.Height);
             }
 
-            this._deviceContext.PSSetShaderResource(0, this._textureView);
+            this._deviceContext.PSSetShaderResource(0, this.TextureView);
 
             return this;
         }
 
         public Texture BindToPixelShader(int slot) {
-            this._deviceContext.PSSetShaderResource(slot, this._textureView);
+            this._deviceContext.PSSetShaderResource(slot, this.TextureView);
 
             return this;
         }

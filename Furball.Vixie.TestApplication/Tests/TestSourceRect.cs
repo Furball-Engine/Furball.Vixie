@@ -20,7 +20,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             base.Initialize();
         }
 
-        private float _rotation = 1f;
+        private float _rotation = 0f;
 
         public override void Draw(double deltaTime) {
             GraphicsBackend.Current.Clear();
