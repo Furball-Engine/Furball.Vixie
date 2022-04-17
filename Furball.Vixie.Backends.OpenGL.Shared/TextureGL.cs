@@ -382,7 +382,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// <summary>
         /// Disposes the Texture and the Local Image Buffer
         /// </summary>
-        public void Dispose() {
+        public override void Dispose() {
             if (this.Bound)
                 this.UnlockingUnbind();
 

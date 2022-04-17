@@ -62,5 +62,14 @@ namespace Furball.Vixie.TestApplication.Tests {
 
             base.Draw(deltaTime);
         }
+
+        public override void Dispose() {
+            for(int i = 0; i != this._textures.Length; i++)
+                this._textures[i].Dispose();
+
+            this._quadRenderer.Dispose();
+
+            base.Dispose();
+        }
     }
 }

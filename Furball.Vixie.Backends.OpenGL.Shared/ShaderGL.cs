@@ -256,8 +256,6 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// Cleans up the Shader
         /// </summary>
         public void Dispose() {
-            
-            
             if (this.Bound)
                 this.UnlockingUnbind();
 

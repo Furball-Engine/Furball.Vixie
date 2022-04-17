@@ -1,3 +1,4 @@
+using System;
 using System.Numerics;
 using Furball.Vixie.Backends.Shared;
 using Vortice.Direct3D;
@@ -6,7 +7,7 @@ using Vortice.DXGI;
 using Vortice.Mathematics;
 
 namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
-    public class TextureRenderTargetD3D11 : TextureRenderTarget {
+    public class TextureRenderTargetD3D11 : TextureRenderTarget, IDisposable {
         public override Vector2 Size { get; protected set; }
 
         private Direct3D11Backend        _backend;
@@ -79,5 +80,16 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
         }
 
         public override Texture GetTexture() => new TextureD3D11(this._backend, this._renderTargetTexture, this._shaderResourceView, this.Size);
+
+        private bool _isDisposed = false;
+
+        public override void Dispose() {
+            if (this._isDisposed)
+                return;
+
+            this._isDisposed = true;
+
+            this._renderTarget?.Dispose();
+        }
     }
 }

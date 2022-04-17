@@ -1,25 +1,19 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Numerics;
-using System.Runtime.InteropServices;
-using System.Text;
+using Furball.Vixie.Helpers;
 using Furball.Vixie.Helpers.Helpers;
 using ImGuiNET;
-using Silk.NET.Core.Native;
 using Silk.NET.Input;
 using Silk.NET.Input.Extensions;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
-using SixLabors.ImageSharp;
 using Vortice;
-using Vortice.D3DCompiler;
 using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
 using Vortice.Mathematics;
 using ComObject=SharpGen.Runtime.ComObject;
-using Rectangle=System.Drawing.Rectangle;
 
 namespace Furball.Vixie.Backends.Direct3D11 {
     public struct ImGuiFontConfig {
@@ -101,6 +95,10 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this._view.Resize += this.OnViewResized;
         }
 
+        ~ImGuiControllerD3D11() {
+            DisposeQueue.Enqueue(this);
+        }
+
         private unsafe void RenderImDrawData() {
             ImDrawDataPtr drawData = ImGui.GetDrawData();
 
@@ -108,7 +106,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
                 return;
 
             if (this._vertexBuffer == null || this._vertexBufferSize < drawData.TotalVtxCount) {
-                this._vertexBuffer?.Release();
+                this._vertexBuffer?.Dispose();
 
                 this._vertexBufferSize += 5000;
 
@@ -123,7 +121,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             }
 
             if (this._indexBuffer == null || this._indexBufferSize < drawData.TotalIdxCount) {
-                this._indexBuffer?.Release();
+                this._indexBuffer?.Dispose();
 
                 this._indexBufferSize += 5000;
 
@@ -521,7 +519,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 
             this._fontTextureView = this._device.CreateShaderResourceView(fontTexture, shaderResourceViewDescription);
 
-            fontTexture.Release();
+            fontTexture.Dispose();
 
             io.Fonts.TexID = RegisterTexture(this._fontTextureView);
 
@@ -568,7 +566,14 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             ReleaseAndNullify(ref _vertexShaderBlob);
         }
 
+        private bool _isDisposed = false;
+
         public void Dispose() {
+            if (this._isDisposed)
+                return;
+
+            this._isDisposed = true;
+
             if (this._device == null)
                 return;
 

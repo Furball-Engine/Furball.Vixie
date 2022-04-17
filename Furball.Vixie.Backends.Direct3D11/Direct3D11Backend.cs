@@ -7,6 +7,7 @@ using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Kettu;
+using SharpGen.Runtime;
 using Silk.NET.Input;
 using Silk.NET.Windowing;
 using Vortice.Direct3D;
@@ -40,7 +41,6 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         private TextureD3D11 _privateWhitePixelTexture;
         internal TextureD3D11 GetPrivateWhitePixelTexture() => this._privateWhitePixelTexture;
 
-
         public override void Initialize(IWindow window, IInputContext inputContext) {
             FeatureLevel featureLevel = FeatureLevel.Level_11_0;
             DeviceCreationFlags deviceFlags = DeviceCreationFlags.BgraSupport;
@@ -52,7 +52,12 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             D3D11.D3D11CreateDevice(null, DriverType.Hardware, deviceFlags, new[] { featureLevel }, out this._device, out this._deviceContext);
 
 #if DEBUG
-            this._device.QueryInterface<ID3D11Debug>().ReportLiveDeviceObjects(ReportLiveDeviceObjectFlags.Detail);
+            try {
+                this._device.QueryInterface<ID3D11Debug>().ReportLiveDeviceObjects(ReportLiveDeviceObjectFlags.Detail);
+            }
+            catch (SharpGenException) {
+                Logger.Log("Creation of Debug Interface failed! Debug Layer may not work as intended.", LoggerLevelD3D11.InstanceWarning);
+            }
 #endif
 
             IDXGIFactory dxgiFactory = this._device.QueryInterface<IDXGIDevice>().GetParent<IDXGIAdapter>().GetParent<IDXGIFactory>();
@@ -172,12 +177,18 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         }
 
         private void DestroySwapchainResources() {
-            this._renderTarget.Dispose();
-            this._backBuffer.Dispose();
+            this._renderTarget.Release();
+            this._backBuffer.Release();
         }
 
         public override void Cleanup() {
-
+            _device.Release();
+            _deviceContext.Release();
+            _swapChain.Release();
+            _renderTarget.Release();
+            _backBuffer.Release();
+            _debug.Release();
+            _defaultBlendState.Release();
         }
 
         public override void HandleWindowSizeChange(int width, int height) {

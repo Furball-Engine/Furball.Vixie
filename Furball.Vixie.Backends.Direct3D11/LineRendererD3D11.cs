@@ -1,12 +1,10 @@
 using System;
-using System.IO;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using System.Text;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Renderers;
+using Furball.Vixie.Helpers;
 using Furball.Vixie.Helpers.Helpers;
-using Vortice.D3DCompiler;
 using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
@@ -240,14 +238,25 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this._instances = 0;
         }
 
+        ~LineRendererD3D11() {
+            DisposeQueue.Enqueue(this);
+        }
+
+        private bool _isDisposed = false;
+
         public void Dispose() {
-            _inputLayout.Release();
-            _vertexShader.Release();
-            _pixelShader.Release();
-            _vertexBuffer.Release();
-            _indexBuffer.Release();
-            _constantBuffer.Release();
-            _instanceBuffer.Release();
+            if (this._isDisposed)
+                return;
+
+            this._isDisposed = true;
+
+            _inputLayout?.Release();
+            _vertexShader?.Release();
+            _pixelShader?.Release();
+            _vertexBuffer?.Release();
+            _indexBuffer?.Release();
+            _constantBuffer?.Release();
+            _instanceBuffer?.Release();
         }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using Furball.Vixie.TestApplication.Tests;
 using ImGuiNET;
 
@@ -52,6 +53,11 @@ namespace Furball.Vixie.TestApplication {
                 this.BaseGame.Components.Add(new TestMultipleTextures());
                 this.BaseGame.Components.Remove(this);
             }
+
+            ImGui.Separator();
+
+            if(ImGui.Button("Force GC Clear"))
+                GC.Collect();
             
             ImGui.End();
 

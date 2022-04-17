@@ -195,7 +195,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
 
         private bool _isDisposed = false;
 
-        public void Dispose() {
+        public override void Dispose() {
             if (this.Bound)
                 this.UnlockingUnbind();
 

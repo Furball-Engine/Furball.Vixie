@@ -53,7 +53,8 @@ namespace Furball.Vixie.Backends.Veldrid.Abstractions {
         }
 
         private bool _isDisposed = false;
-        public void Dispose() {
+
+        public override void Dispose() {
             if (this._isDisposed) return;
             this._isDisposed = true;
             

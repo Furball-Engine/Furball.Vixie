@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Numerics;
 using Furball.Vixie.Backends.Shared;
+using Furball.Vixie.Helpers;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using Vortice;
@@ -11,7 +12,7 @@ using Vortice.Mathematics;
 using Rectangle=System.Drawing.Rectangle;
 
 namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
-    public class TextureD3D11 : Texture {
+    public class TextureD3D11 : Texture, IDisposable {
         private Direct3D11Backend   _backend;
         private ID3D11Device        _device;
         private ID3D11DeviceContext _deviceContext;
@@ -197,6 +198,10 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
             this.Size = new Vector2(image.Width, image.Height);
         }
 
+        ~TextureD3D11() {
+            DisposeQueue.Enqueue(this);
+        }
+
         public override Texture SetData<pDataType>(int level, pDataType[] data) {
             this._deviceContext.UpdateSubresource(data, this._texture);
 
@@ -217,6 +222,18 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
             this._deviceContext.PSSetShaderResource(slot, this.TextureView);
 
             return this;
+        }
+
+        private bool _isDisposed = false;
+
+        public override void Dispose() {
+            if (this._isDisposed)
+                return;
+
+            this._isDisposed = true;
+
+            this._texture?.Release();
+            this.TextureView?.Release();
         }
     }
 }

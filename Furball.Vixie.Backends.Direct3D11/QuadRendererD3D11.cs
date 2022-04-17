@@ -1,18 +1,14 @@
 using System;
 using System.Drawing;
-using System.IO;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using System.Text;
 using FontStashSharp;
 using Furball.Vixie.Backends.Direct3D11.Abstractions;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.FontStashSharp;
 using Furball.Vixie.Backends.Shared.Renderers;
+using Furball.Vixie.Helpers;
 using Furball.Vixie.Helpers.Helpers;
-using Kettu;
-using Vortice.D3DCompiler;
-using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
 using Color=Furball.Vixie.Backends.Shared.Color;
@@ -81,6 +77,9 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             ID3D11VertexShader vertexShader = this._device.CreateVertexShader(vertexShaderData);
             ID3D11PixelShader pixelShader = this._device.CreatePixelShader(pixelShaderData);
 
+            this._vertexShader = vertexShader;
+            this._pixelShader  = pixelShader;
+
             InputElementDescription[] inputLayoutDescription = new InputElementDescription[] {
                 new InputElementDescription("POSITION",                 0, Format.R32G32_Float,       (int) Marshal.OffsetOf<VertexData>("Position"),                      VERTEX_BUFFER_SLOT,   InputClassification.PerVertexData,   0),
                 new InputElementDescription("TEXCOORD",                 0, Format.R32G32_Float,       (int) Marshal.OffsetOf<VertexData>("TexCoord"),                      VERTEX_BUFFER_SLOT,   InputClassification.PerVertexData,   0),
@@ -95,6 +94,8 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             };
 
             ID3D11InputLayout inputLayout = this._device.CreateInputLayout(inputLayoutDescription, vertexShaderData);
+            this._inputLayout           = inputLayout;
+            this._inputLayout.DebugName = "QuadRendererD3D11 Input Layout";
 
             BufferDescription constantBufferDescription = new BufferDescription {
                 BindFlags = BindFlags.ConstantBuffer,
@@ -104,6 +105,8 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             };
 
             ID3D11Buffer constantBuffer = this._device.CreateBuffer(constantBufferDescription);
+            this._constantBuffer           = constantBuffer;
+            this._constantBuffer.DebugName = "QuadRendererD3D11 Constant Buffer";
 
             BufferDescription vertexBufferDescription = new BufferDescription {
                 BindFlags = BindFlags.VertexBuffer,
@@ -113,6 +116,8 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             };
 
             ID3D11Buffer vertexBuffer = this._device.CreateBuffer(vertexBufferDescription);
+            this._vertexBuffer           = vertexBuffer;
+            this._vertexBuffer.DebugName = "QuadRendererD3D11 Vertex Buffer";
 
             BufferDescription instanceBufferDesription = new BufferDescription {
                 BindFlags      = BindFlags.VertexBuffer,
@@ -122,6 +127,8 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             };
 
             ID3D11Buffer instanceBuffer = this._device.CreateBuffer(instanceBufferDesription);
+            this._instanceBuffer         = instanceBuffer;
+            this._vertexBuffer.DebugName = "QuadRendererD3D11 Instance Buffer";
 
             BufferDescription indexBufferDescription = new BufferDescription {
                 BindFlags = BindFlags.IndexBuffer,
@@ -131,6 +138,8 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             };
 
             ID3D11Buffer indexBuffer = this._device.CreateBuffer(indexBufferDescription);
+            this._indexBuffer            = indexBuffer;
+            this._vertexBuffer.DebugName = "QuadRendererD3D11 Index Buffer";
 
             VertexData[] verticies = new [] {
                 new VertexData { Position = new Vector2(0, 1), TexCoord = new Vector2(0, 1) },
@@ -194,14 +203,6 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 
             this._usedTextures  = 0;
 
-            this._inputLayout    = inputLayout;
-            this._vertexShader   = vertexShader;
-            this._pixelShader    = pixelShader;
-            this._vertexBuffer   = vertexBuffer;
-            this._constantBuffer = constantBuffer;
-            this._instanceBuffer = instanceBuffer;
-            this._indexBuffer    = indexBuffer;
-
             SamplerDescription samplerDescription = new SamplerDescription {
                 Filter             = Filter.MinMagMipLinear,
                 AddressU           = TextureAddressMode.Wrap,
@@ -210,9 +211,14 @@ namespace Furball.Vixie.Backends.Direct3D11 {
                 ComparisonFunction = ComparisonFunction.Never
             };
 
-            this._samplerState = this._device.CreateSamplerState(samplerDescription);
+            this._samplerState           = this._device.CreateSamplerState(samplerDescription);
+            this._samplerState.DebugName = "QuadRendererD3D11 Sampler State";
 
             this._textRenderer = new VixieFontStashRenderer(this._backend, this);
+        }
+
+        ~QuadRendererD3D11() {
+            DisposeQueue.Enqueue(this);
         }
 
         public void Begin() {
@@ -387,15 +393,27 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this._instances    = 0;
         }
 
+        private bool _isDisposed = false;
+
         public void Dispose() {
-            _vertexBuffer.Release();
-            _instanceBuffer.Release();
-            _indexBuffer.Release();
-            _constantBuffer.Release();
-            _inputLayout.Release();
-            _vertexShader.Release();
-            _pixelShader.Release();
-            _samplerState.Release();
+            if (this._isDisposed)
+                return;
+
+            this._isDisposed = true;
+
+            for (int i = 0; i != this._backend.QueryMaxTextureUnits(); i++) {
+                this._boundTextures[i]    = null;
+                this._boundShaderViews[i] = null;
+            }
+
+            _vertexBuffer?.Release();
+            _instanceBuffer?.Release();
+            _indexBuffer?.Release();
+            _constantBuffer?.Release();
+            _inputLayout?.Release();
+            _vertexShader?.Release();
+            _pixelShader?.Release();
+            _samplerState?.Release();
         }
     }
 }

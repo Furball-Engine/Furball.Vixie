@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Furball.Vixie.Helpers.Helpers;
-using Kettu;
 using SixLabors.ImageSharp.PixelFormats;
 
 namespace Furball.Vixie.Backends.Shared {

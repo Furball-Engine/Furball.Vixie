@@ -57,6 +57,7 @@ namespace Furball.Vixie.TestApplication.Tests {
 
         public override void Dispose() {
             this._quadRendererGl.Dispose();
+            this._texture.Dispose();
 
             base.Dispose();
         }
