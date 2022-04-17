@@ -58,6 +58,8 @@ SamplerState Sampler : register(s0);
 
 float4 PS_Main(VS_Output input) : SV_Target
 {
+    return float4(1, 1, 1, 1);
+
     switch(input.TextureId)
     {
         case 0: return Textures[0].Sample(Sampler, input.TexCoord) * input.Color; break;

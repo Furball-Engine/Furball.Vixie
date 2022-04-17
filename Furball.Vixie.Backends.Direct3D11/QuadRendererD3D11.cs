@@ -316,7 +316,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this._instanceData[this._instances].InstanceTextureRectPosition.X = (float)sourceRect.X                       / texture.Width;
             this._instanceData[this._instances].InstanceTextureRectPosition.Y = (float)sourceRect.Y                       / texture.Height;
             this._instanceData[this._instances].InstanceTextureRectSize.X     = (float)sourceRect.Width  / texture.Width  * (texFlip == TextureFlip.FlipHorizontal ? -1 : 1);
-            this._instanceData[this._instances].InstanceTextureRectSize.Y     = (float)sourceRect.Height / texture.Height * (texFlip == TextureFlip.FlipVertical ? -1 : 1);
+            this._instanceData[this._instances].InstanceTextureRectSize.Y     = (float)sourceRect.Height / texture.Height * (texFlip == TextureFlip.FlipVertical ? 1 : -1);
 
             this._instances++;
         }
