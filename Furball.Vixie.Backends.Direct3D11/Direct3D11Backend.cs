@@ -170,7 +170,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         }
 
         public override ILineRenderer CreateLineRenderer() {
-            return null;
+            return new LineRendererD3D11(this);
         }
 
         public override int QueryMaxTextureUnits() {
