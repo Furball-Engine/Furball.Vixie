@@ -90,7 +90,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// Creates a Texture from a File
         /// </summary>
         /// <param name="filepath">Path to an Image</param>
-        public unsafe TextureGL(IGLBasedBackend backend, string filepath) {
+        public TextureGL(IGLBasedBackend backend, string filepath) {
             this._backend = backend;
 
             Image<Rgba32> image = Image.Load<Rgba32>(filepath);
@@ -108,7 +108,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// Creates a Texture from a byte array which contains Image Data
         /// </summary>
         /// <param name="imageData">Image Data</param>
-        public unsafe TextureGL(IGLBasedBackend backend, byte[] imageData, bool qoi = false) {
+        public TextureGL(IGLBasedBackend backend, byte[] imageData, bool qoi = false) {
             this._backend = backend;
 
             Image<Rgba32> image;
@@ -182,7 +182,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// Creates a Texture from a Stream which Contains Image Data
         /// </summary>
         /// <param name="stream">Image Data Stream</param>
-        public unsafe TextureGL(IGLBasedBackend backend, Stream stream) {
+        public TextureGL(IGLBasedBackend backend, Stream stream) {
             this._backend = backend;
 
             Image<Rgba32> image = Image.Load<Rgba32>(stream);

@@ -1,42 +1,47 @@
+using System;
+using System.Globalization;
 using System.IO;
 using System.Numerics;
 using Furball.Vixie.Backends.Direct3D11.Abstractions;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.Renderers;
-using SharpDX.Direct3D;
-using SharpDX.Direct3D11;
-using SharpDX.DXGI;
-using SharpDX.Mathematics.Interop;
+using Kettu;
 using Silk.NET.Input;
 using Silk.NET.Windowing;
-using Device=SharpDX.Direct3D11.Device;
-using Resource=SharpDX.Direct3D11.Resource;
+using Vortice.Direct3D;
+using Vortice.Direct3D11;
+using Vortice.Direct3D11.Debug;
+using Vortice.DXGI;
+using Vortice.Mathematics;
 
 namespace Furball.Vixie.Backends.Direct3D11 {
-    public unsafe class Direct3D11Backend : IGraphicsBackend {
-        private Factory2         _dxgiFactory;
-        private Device           _device;
-        private DeviceContext    _deviceContext;
-        private SwapChain1       _swapChain;
-        private RenderTargetView _renderTarget;
-        private Texture2D        _backBuffer;
-        private DeviceDebug      _debug;
-        private BlendState       _defaultBlendState;
+    public class Direct3D11Backend : IGraphicsBackend {
+        private ID3D11Device           _device;
+        private ID3D11DeviceContext    _deviceContext;
+        private IDXGISwapChain         _swapChain;
+        private ID3D11RenderTargetView _renderTarget;
+        private ID3D11Texture2D        _backBuffer;
+        private ID3D11Debug            _debug;
+        private ID3D11BlendState       _defaultBlendState;
 
-        private RawColor4    _clearColor;
-        private RawViewportF _viewport;
+        private Color4    _clearColor;
+        private Viewport _viewport;
         private Matrix4x4    _projectionMatrix;
 
-        internal RenderTargetView CurrentlyBoundTarget;
+        internal ID3D11RenderTargetView CurrentlyBoundTarget;
 
-        internal Device GetDevice() => this._device;
-        internal DeviceContext GetDeviceContext() => this._deviceContext;
+        internal ID3D11Device GetDevice() => this._device;
+        internal ID3D11DeviceContext GetDeviceContext() => this._deviceContext;
         internal Matrix4x4 GetProjectionMatrix() => this._projectionMatrix;
 
-        public override unsafe void Initialize(IWindow window, IInputContext inputContext) {
-            Factory2 dxgiFactory2 = new Factory2();
+        private ImGuiControllerD3D11 _imGuiController;
 
+        private TextureD3D11 _privateWhitePixelTexture;
+        internal TextureD3D11 GetPrivateWhitePixelTexture() => this._privateWhitePixelTexture;
+
+
+        public override void Initialize(IWindow window, IInputContext inputContext) {
             FeatureLevel featureLevel = FeatureLevel.Level_11_0;
             DeviceCreationFlags deviceFlags = DeviceCreationFlags.BgraSupport;
 
@@ -44,85 +49,126 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             deviceFlags |= DeviceCreationFlags.Debug;
 #endif
 
-            Device device = new Device(DriverType.Hardware, deviceFlags, featureLevel);
-            DeviceContext deviceContext = device.ImmediateContext;
+            D3D11.D3D11CreateDevice(null, DriverType.Hardware, deviceFlags, new[] { featureLevel }, out this._device, out this._deviceContext);
 
-            this._device        = device;
-            this._deviceContext = deviceContext;
+#if DEBUG
+            this._device.QueryInterface<ID3D11Debug>().ReportLiveDeviceObjects(ReportLiveDeviceObjectFlags.Detail);
+#endif
 
-            SwapChainDescription1 swapChainDescription = new SwapChainDescription1 {
-                Width  = window.Size.X,
-                Height = window.Size.Y,
-                Format = Format.R8G8B8A8_UNorm,
+            IDXGIFactory dxgiFactory = this._device.QueryInterface<IDXGIDevice>().GetParent<IDXGIAdapter>().GetParent<IDXGIFactory>();
+
+            int i = 0;
+            try {
+                while (dxgiFactory.GetAdapter(i) != null) {
+                    AdapterDescription description = dxgiFactory.GetAdapter(i).Description;
+
+                    long luid = description.Luid.LowPart | description.Luid.HighPart;
+
+                    string dedicatedSysMemMb = Math.Round((description.DedicatedSystemMemory / 1024.0) / 1024.0, 2).ToString(CultureInfo.InvariantCulture);
+                    string dedicatedVidMemMb = Math.Round((description.DedicatedVideoMemory  / 1024.0) / 1024.0, 2).ToString(CultureInfo.InvariantCulture);
+                    string dedicatedShrMemMb = Math.Round((description.SharedSystemMemory    / 1024.0) / 1024.0, 2).ToString(CultureInfo.InvariantCulture);
+
+                    Logger.Log($"///////////////////Adapter [{i}]////////////////////", LoggerLevelD3D11.InstanceInfo);
+                    Logger.Log($"Adapter Description:       {description.Description}", LoggerLevelD3D11.InstanceInfo);
+                    Logger.Log($"Revision:                  {description.Revision}",    LoggerLevelD3D11.InstanceInfo);
+                    Logger.Log($"PCI Vendor ID:             {description.VendorId}",    LoggerLevelD3D11.InstanceInfo);
+                    Logger.Log($"PCI Device ID:             {description.DeviceId}",    LoggerLevelD3D11.InstanceInfo);
+                    Logger.Log($"PCI Subsystem ID:          {description.SubsystemId}", LoggerLevelD3D11.InstanceInfo);
+                    Logger.Log($"Locally Unique Identifier: {luid}",                    LoggerLevelD3D11.InstanceInfo);
+                    Logger.Log($"Dedicated System Memory:   {dedicatedSysMemMb}mb",     LoggerLevelD3D11.InstanceInfo);
+                    Logger.Log($"Dedicated Video Memory:    {dedicatedVidMemMb}mb",     LoggerLevelD3D11.InstanceInfo);
+                    Logger.Log($"Dedicated Shared Memory:   {dedicatedShrMemMb}mb",     LoggerLevelD3D11.InstanceInfo);
+                    Logger.Log($"//////////////////////////////////////////////////\n", LoggerLevelD3D11.InstanceInfo);
+
+                    i++;
+                }
+            }catch { /* This crashes if you go beyond what adapters it has, instead of sensibly just returning null like it claims to do */ }
+
+            SwapChainDescription swapChainDescription = new SwapChainDescription {
+                BufferDescription = new ModeDescription {
+                    Width  = window.Size.X,
+                    Height = window.Size.Y,
+                    Format = Format.R8G8B8A8_UNorm,
+                },
                 SampleDescription = new SampleDescription {
                     Count = 1, Quality = 0
                 },
-                Usage       = Usage.RenderTargetOutput,
-                BufferCount = 2,
-                SwapEffect  = SwapEffect.FlipDiscard,
-                Flags       = SwapChainFlags.None
+                BufferUsage  = Usage.RenderTargetOutput,
+                BufferCount  = 2,
+                SwapEffect   = SwapEffect.FlipDiscard,
+                Flags        = SwapChainFlags.None,
+                OutputWindow = window.Native.Win32.Value.Hwnd,
+                Windowed     = true
             };
 
-            SwapChainFullScreenDescription fullScreenDescription = new SwapChainFullScreenDescription {
-                Windowed = true
-            };
-
-            SwapChain1 swapChain = new SwapChain1(dxgiFactory2, device, window.Native.Win32.Value.Hwnd, ref swapChainDescription, fullScreenDescription);
-
+            IDXGISwapChain swapChain = dxgiFactory.CreateSwapChain(this._device, swapChainDescription);
             this._swapChain = swapChain;
+
+            dxgiFactory.MakeWindowAssociation(window.Native.Win32.Value.Hwnd, WindowAssociationFlags.IgnoreAll);
 
             this.CreateSwapchainResources();
 
-            this._clearColor = new RawColor4(0.0f, 0.0f, 0.0f, 1.0f);
+            this._clearColor = new Color4(0.0f, 0.0f, 0.0f, 1.0f);
 
-            RasterizerStateDescription rasterizerStateDescription = new RasterizerStateDescription {
-                FillMode                 = FillMode.Solid,
-                CullMode                 = CullMode.None,
-                IsFrontCounterClockwise  = true,
-                IsDepthClipEnabled       = false,
-                IsScissorEnabled         = false,
-                IsMultisampleEnabled     = true,
-                IsAntialiasedLineEnabled = true,
+            RasterizerDescription rasterizerDescription = new RasterizerDescription {
+                FillMode              = FillMode.Solid,
+                CullMode              = CullMode.None,
+                FrontCounterClockwise = true,
+                DepthClipEnable       = false,
+                ScissorEnable         = false,
+                MultisampleEnable     = true,
+                AntialiasedLineEnable = true
             };
 
-            deviceContext.Rasterizer.State = new RasterizerState(device, rasterizerStateDescription);
+            ID3D11RasterizerState rasterizerState = this._device.CreateRasterizerState(rasterizerDescription);
 
-            BlendStateDescription blendStateDescription = BlendStateDescription.Default();
+            this._deviceContext.RSSetState(rasterizerState);
 
-            blendStateDescription.RenderTarget[0].IsBlendEnabled        = true;
-            blendStateDescription.RenderTarget[0].SourceBlend           = BlendOption.SourceAlpha;
-            blendStateDescription.RenderTarget[0].DestinationBlend      = BlendOption.InverseSourceAlpha;
-            blendStateDescription.RenderTarget[0].BlendOperation        = BlendOperation.Add;
-            blendStateDescription.RenderTarget[0].SourceAlphaBlend      = BlendOption.One;
-            blendStateDescription.RenderTarget[0].DestinationAlphaBlend = BlendOption.InverseSourceAlpha;
-            blendStateDescription.RenderTarget[0].AlphaBlendOperation   = BlendOperation.Add;
-            blendStateDescription.RenderTarget[0].RenderTargetWriteMask = ColorWriteMaskFlags.All;
+            BlendDescription blendDescription = new BlendDescription {
+                AlphaToCoverageEnable  = false,
+                IndependentBlendEnable = false,
+                RenderTarget = new RenderTargetBlendDescription[] {
+                    new RenderTargetBlendDescription {
+                        IsBlendEnabled        = true,
+                        SourceBlend           = Blend.SourceAlpha,
+                        DestinationBlend      = Blend.InverseSourceAlpha,
+                        BlendOperation        = BlendOperation.Add,
+                        SourceBlendAlpha      = Blend.One,
+                        DestinationBlendAlpha = Blend.InverseSourceAlpha,
+                        BlendOperationAlpha   = BlendOperation.Add,
+                        RenderTargetWriteMask = ColorWriteEnable.All, }
+                }
+            };
 
-            BlendState blendState = new BlendState(device, blendStateDescription);
+            ID3D11BlendState blendState = this._device.CreateBlendState(blendDescription);
 
-            deviceContext.OutputMerger.SetBlendState(blendState, new RawColor4(0, 0, 0, 0));
+            this._deviceContext.OMSetBlendState(blendState, new Color4(0, 0, 0, 0));
 
             this._defaultBlendState = blendState;
+
+            this._imGuiController = new ImGuiControllerD3D11(this, window, inputContext, null);
+
+            this._privateWhitePixelTexture = (TextureD3D11) this.CreateWhitePixelTexture();
         }
 
         private void CreateSwapchainResources() {
-            Texture2D backBuffer = Resource.FromSwapChain<Texture2D>(this._swapChain, 0);
-            RenderTargetView renderTarget = new RenderTargetView(this._device, backBuffer);
+            ID3D11Texture2D backBuffer = this._swapChain.GetBuffer<ID3D11Texture2D>(0);
+            ID3D11RenderTargetView renderTarget = this._device.CreateRenderTargetView(backBuffer);
 
             this._renderTarget = renderTarget;
             this._backBuffer   = backBuffer;
 
-            this._deviceContext.OutputMerger.SetRenderTargets(this._renderTarget);
+            this._deviceContext.OMSetRenderTargets(this._renderTarget);
             this.CurrentlyBoundTarget = this._renderTarget;
         }
 
         public void SetDefaultRenderTarget() {
-            this._deviceContext.OutputMerger.SetRenderTargets(this._renderTarget);
+            this._deviceContext.OMSetRenderTargets(this._renderTarget);
             this.CurrentlyBoundTarget = this._renderTarget;
         }
 
         public void ResetBlendState() {
-            this._deviceContext.OutputMerger.SetBlendState(this._defaultBlendState, new RawColor4(0, 0, 0, 0));
+            this._deviceContext.OMSetBlendState(this._defaultBlendState, new Color4(0, 0, 0, 0));
         }
 
         private void DestroySwapchainResources() {
@@ -141,16 +187,9 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 
             this._swapChain.ResizeBuffers(2, width, height, Format.B8G8R8A8_UNorm, SwapChainFlags.None);
 
-            this._viewport = new RawViewportF {
-                X        = 0,
-                Y        = 0,
-                Width    = width,
-                Height   = height,
-                MinDepth = 0.0f,
-                MaxDepth = 1.0f
-            };
+            this._viewport = new Viewport(0, 0, width, height, 0, 1);
 
-            this._deviceContext.Rasterizer.SetViewport(this._viewport);
+            this._deviceContext.RSSetViewport(this._viewport);
 
             this.CreateSwapchainResources();
 
@@ -166,11 +205,11 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         }
 
         public override ILineRenderer CreateLineRenderer() {
-            return null;
+            return new LineRendererD3D11(this);
         }
 
         public override int QueryMaxTextureUnits() {
-            return 32;
+            return 128;
         }
 
         public override void Clear() {
@@ -202,11 +241,11 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         }
 
         public override void ImGuiUpdate(double deltaTime) {
-
+            this._imGuiController.Update((float) deltaTime);
         }
 
         public override void ImGuiDraw(double deltaTime) {
-
+            this._imGuiController.Render();
         }
 
         public override void Present() {
@@ -214,9 +253,9 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         }
 
         public override void BeginScene() {
-            this._deviceContext.OutputMerger.SetRenderTargets(this._renderTarget);
+            this._deviceContext.OMSetRenderTargets(this._renderTarget);
             //this._deviceContext.ClearRenderTargetView(this._renderTarget, this._clearColor);
-            this._deviceContext.Rasterizer.SetViewport(this._viewport);
+            this._deviceContext.RSSetViewport(this._viewport);
         }
     }
 }

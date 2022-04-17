@@ -61,7 +61,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// <param name="normalized">Do they need to be Normalized?</param>
         /// <typeparam name="pElementType">Type of Element</typeparam>
         /// <returns></returns>
-        public unsafe VertexBufferLayoutGL AddElement<pElementType>(int count, bool normalized = false) where pElementType : unmanaged {
+        public VertexBufferLayoutGL AddElement<pElementType>(int count, bool normalized = false) where pElementType : unmanaged {
             VertexAttribPointerType type = Type.GetTypeCode(typeof(pElementType)) switch {
                 TypeCode.Single => VertexAttribPointerType.Float,
                 TypeCode.Byte   => VertexAttribPointerType.Byte,

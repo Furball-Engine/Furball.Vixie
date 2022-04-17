@@ -333,16 +333,16 @@ namespace Furball.Vixie.Backends.Veldrid {
             this.Dispose();
         }
         
-        public void Draw(Texture textureGl, Vector2 position, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {
-            this.Draw(textureGl, position, Vector2.One, rotation, Color.White, flip, rotOrigin);
+        public void Draw(Texture texture, Vector2 position, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {
+            this.Draw(texture, position, Vector2.One, rotation, Color.White, flip, rotOrigin);
         }
 
-        public void Draw(Texture textureGl, Vector2 position, Vector2 scale, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {
-            this.Draw(textureGl, position, scale, rotation, Color.White, flip, rotOrigin);
+        public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {
+            this.Draw(texture, position, scale, rotation, Color.White, flip, rotOrigin);
         }
 
-        public void Draw(Texture textureGl, Vector2 position, Vector2 scale, Color colorOverride, float rotation = 0, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
-            this.Draw(textureGl, position, scale, rotation, colorOverride, texFlip, rotOrigin);
+        public void Draw(Texture texture, Vector2 position, Vector2 scale, Color colorOverride, float rotation = 0, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
+            this.Draw(texture, position, scale, rotation, colorOverride, texFlip, rotOrigin);
         }
 
         #region text
