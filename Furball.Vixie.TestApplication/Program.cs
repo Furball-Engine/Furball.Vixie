@@ -8,10 +8,8 @@ var options = WindowOptions.Default;
 
 options.VSync = false;
 
-GraphicsBackend.PrefferedBackends = Backend.Direct3D11;
+GraphicsBackend.PrefferedBackends = Backend.OpenGL41 | Backend.OpenGLES;
 
-VeldridBackend.PrefferedBackend = Veldrid.GraphicsBackend.OpenGL;
-
-//Thread.Sleep(7500);
+VeldridBackend.PrefferedBackend = Veldrid.GraphicsBackend.Vulkan;
 
 new TestGame(options).Run(options);

@@ -97,10 +97,14 @@ namespace Furball.Vixie.Backends.OpenGLES {
 
             this.ImGuiController = new ImGuiController(this.gl, window, inputContext);
 
-            Logger.Log($"OpenGL Version: {this.gl.GetStringS(StringName.Version)}",                LoggerLevelOpenGLES.InstanceInfo);
-            Logger.Log($"GLSL Version:   {this.gl.GetStringS(StringName.ShadingLanguageVersion)}", LoggerLevelOpenGLES.InstanceInfo);
-            Logger.Log($"OpenGL Vendor:  {this.gl.GetStringS(StringName.Vendor)}",                 LoggerLevelOpenGLES.InstanceInfo);
-            Logger.Log($"Renderer:       {this.gl.GetStringS(StringName.Renderer)}",               LoggerLevelOpenGLES.InstanceInfo);
+            BackendInfoSection mainSection = new BackendInfoSection("OpenGL Info");
+            mainSection.Contents.Add(("OpenGL Version", this.gl.GetStringS(StringName.Version)));
+            mainSection.Contents.Add(("GLSL Version", this.gl.GetStringS(StringName.ShadingLanguageVersion)));
+            mainSection.Contents.Add(("OpenGL Vendor", this.gl.GetStringS(StringName.Vendor)));
+            mainSection.Contents.Add(("Renderer", this.gl.GetStringS(StringName.Renderer)));
+            this.InfoSections.Add(mainSection);
+            
+            this.InfoSections.ForEach(x => x.Log(LoggerLevelOpenGLES.InstanceInfo));
         }
         public void CheckError(string message = "") {
             this.CheckErrorInternal();

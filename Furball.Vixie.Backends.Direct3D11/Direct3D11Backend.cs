@@ -73,17 +73,17 @@ namespace Furball.Vixie.Backends.Direct3D11 {
                     string dedicatedVidMemMb = Math.Round((description.DedicatedVideoMemory  / 1024.0) / 1024.0, 2).ToString(CultureInfo.InvariantCulture);
                     string dedicatedShrMemMb = Math.Round((description.SharedSystemMemory    / 1024.0) / 1024.0, 2).ToString(CultureInfo.InvariantCulture);
 
-                    Logger.Log($"///////////////////Adapter [{i}]////////////////////", LoggerLevelD3D11.InstanceInfo);
-                    Logger.Log($"Adapter Description:       {description.Description}", LoggerLevelD3D11.InstanceInfo);
-                    Logger.Log($"Revision:                  {description.Revision}",    LoggerLevelD3D11.InstanceInfo);
-                    Logger.Log($"PCI Vendor ID:             {description.VendorId}",    LoggerLevelD3D11.InstanceInfo);
-                    Logger.Log($"PCI Device ID:             {description.DeviceId}",    LoggerLevelD3D11.InstanceInfo);
-                    Logger.Log($"PCI Subsystem ID:          {description.SubsystemId}", LoggerLevelD3D11.InstanceInfo);
-                    Logger.Log($"Locally Unique Identifier: {luid}",                    LoggerLevelD3D11.InstanceInfo);
-                    Logger.Log($"Dedicated System Memory:   {dedicatedSysMemMb}mb",     LoggerLevelD3D11.InstanceInfo);
-                    Logger.Log($"Dedicated Video Memory:    {dedicatedVidMemMb}mb",     LoggerLevelD3D11.InstanceInfo);
-                    Logger.Log($"Dedicated Shared Memory:   {dedicatedShrMemMb}mb",     LoggerLevelD3D11.InstanceInfo);
-                    Logger.Log($"//////////////////////////////////////////////////\n", LoggerLevelD3D11.InstanceInfo);
+                    BackendInfoSection section = new BackendInfoSection($"Adapter [{i}]");
+                    section.Contents.Add(("Adapter Description", description.Description));
+                    section.Contents.Add(("Revision", description.Revision.ToString()));
+                    section.Contents.Add(("PCI Vendor ID", description.VendorId.ToString()));
+                    section.Contents.Add(("PCI Device ID", description.DeviceId.ToString()));
+                    section.Contents.Add(("PCI Subsystem ID", description.SubsystemId.ToString()));
+                    section.Contents.Add(("Locally Unique Identifier", luid.ToString()));
+                    section.Contents.Add(("Dedicated System Memory", $"{dedicatedSysMemMb}mb"));
+                    section.Contents.Add(("Dedicated Video Memory",  $"{dedicatedVidMemMb}mb"));
+                    section.Contents.Add(("Dedicated Shared Memory", $"{dedicatedShrMemMb}mb"));
+                    this.InfoSections.Add(section);
 
                     i++;
                 }
@@ -154,6 +154,8 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this._imGuiController = new ImGuiControllerD3D11(this, window, inputContext, null);
 
             this._privateWhitePixelTexture = (TextureD3D11) this.CreateWhitePixelTexture();
+
+            this.InfoSections.ForEach(x => x.Log(LoggerLevelD3D11.InstanceInfo));
         }
 
         private void CreateSwapchainResources() {

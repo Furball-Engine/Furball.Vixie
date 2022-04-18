@@ -16,7 +16,7 @@ using Texture=Furball.Vixie.Backends.Shared.Texture;
 
 namespace Furball.Vixie.Backends.Veldrid {
     public class VeldridBackend : IGraphicsBackend {
-        public static global::Veldrid.GraphicsBackend PrefferedBackend = VeldridWindow.GetPlatformDefaultBackend();
+        public static GraphicsBackend PrefferedBackend = VeldridWindow.GetPlatformDefaultBackend();
         
         internal GraphicsDevice  GraphicsDevice;
         internal ResourceFactory ResourceFactory;
@@ -51,63 +51,65 @@ namespace Furball.Vixie.Backends.Veldrid {
             this.CommandList = this.ResourceFactory.CreateCommandList();
 
             //we do a little trolling
-            if(this.GraphicsDevice.BackendType is global::Veldrid.GraphicsBackend.OpenGL or global::Veldrid.GraphicsBackend.OpenGLES && !window.VSync) {
+            if(this.GraphicsDevice.BackendType is GraphicsBackend.OpenGL or GraphicsBackend.OpenGLES && !window.VSync) {
                 this.GraphicsDevice.SyncToVerticalBlank = true;
                 this.GraphicsDevice.SyncToVerticalBlank = false;
             }
 
-            var features = this.GraphicsDevice.Features;
-            Logger.Log(
-            $"Available Features: ComputerShader:{features.ComputeShader} DrawIndirect:{features.DrawIndirect} GeometryShader:{features.GeometryShader} IndependentBlend:{features.IndependentBlend} MultipleViewports:{features.MultipleViewports} SamplerAnisotropy:{features.SamplerAnisotropy} ShaderFloat64:{features.ShaderFloat64} StructuredBuffer:{features.StructuredBuffer} TessellationShaders:{features.TessellationShaders} Texture1D:{features.Texture1D} BufferRangeBinding:{features.BufferRangeBinding} DepthClipDisable:{features.DepthClipDisable} DrawBaseInstance:{features.DrawBaseInstance} DrawBaseVertex:{features.DrawBaseVertex} FillModeWireframe:{features.FillModeWireframe} SamplerLodBias:{features.SamplerLodBias} SubsetTextureView:{features.SubsetTextureView} CommandListDebugMarkers:{features.CommandListDebugMarkers} DrawIndirectBaseInstance:{features.DrawIndirectBaseInstance}",
-            LoggerLevelVeldrid.InstanceInfo);
-            Logger.Log($"Using backend {this.GraphicsDevice.BackendType}", LoggerLevelVeldrid.InstanceInfo);
-            Logger.Log($"Vendor Name: {this.GraphicsDevice.VendorName}",   LoggerLevelVeldrid.InstanceInfo);
+            BackendInfoSection mainSection = new("General Info");
+            mainSection.Contents.Add(("Backend", this.GraphicsDevice.BackendType.ToString()));
+            mainSection.Contents.Add(("Vendor", this.GraphicsDevice.VendorName));
+            this.InfoSections.Add(mainSection);
 
+            BackendInfoSection backendSection = new("Backend Info");
             switch (this.GraphicsDevice.BackendType) {
-                case global::Veldrid.GraphicsBackend.Direct3D11: {
+                case GraphicsBackend.Direct3D11: {
                     //we dont actually get anything useful from this :/
                     BackendInfoD3D11 info = this.GraphicsDevice.GetD3D11Info();
                     
-                    Logger.Log($"D3D11 Device ID: {info.DeviceId}", LoggerLevelVeldrid.InstanceInfo);
+                    backendSection.Contents.Add(("Device ID", info.DeviceId.ToString()));
                     break;
                 }
-                case global::Veldrid.GraphicsBackend.Vulkan: {
+                case GraphicsBackend.Vulkan: {
                     BackendInfoVulkan info = this.GraphicsDevice.GetVulkanInfo();
                     
-                    Logger.Log($"Vulkan Driver Name: {info.DriverName}", LoggerLevelVeldrid.InstanceInfo);
-                    Logger.Log($"Vulkan Driver Info: {info.DriverInfo}",   LoggerLevelVeldrid.InstanceInfo);
-                    
+                    backendSection.Contents.Add(("Driver Name", info.DriverName));
+                    backendSection.Contents.Add(("Driver Info", info.DriverInfo));
+
                     ReadOnlyCollection<BackendInfoVulkan.ExtensionProperties> availableDeviceExtensions = info.AvailableDeviceExtensions;
-                    foreach (BackendInfoVulkan.ExtensionProperties extension in availableDeviceExtensions) 
-                        Logger.Log($"Available Vulkan Extension {extension.Name}, Version:{extension.SpecVersion}", LoggerLevelVeldrid.InstanceInfo);
-                   
+                    foreach (BackendInfoVulkan.ExtensionProperties extension in availableDeviceExtensions) {
+                        backendSection.Contents.Add(($"Available Extension {extension.Name}", $"Version {extension.SpecVersion}"));
+                    }
+
                     ReadOnlyCollection<string> availableLayers = info.AvailableInstanceLayers;
-                    foreach (string layer in availableLayers) 
-                        Logger.Log($"Available Vulkan Layer {layer}", LoggerLevelVeldrid.InstanceInfo);
+                    foreach (string layer in availableLayers) {
+                        backendSection.Contents.Add(("Available Layer", layer));
+                    }
 
                     break;
                 }
-                case global::Veldrid.GraphicsBackend.OpenGLES:
-                case global::Veldrid.GraphicsBackend.OpenGL: {
+                case GraphicsBackend.OpenGLES:
+                case GraphicsBackend.OpenGL: {
                     BackendInfoOpenGL info = this.GraphicsDevice.GetOpenGLInfo();
 
-                    Logger.Log($"OpenGL Version: {info.Version}",              LoggerLevelVeldrid.InstanceInfo);
-                    Logger.Log($"GLSL Version: {info.ShadingLanguageVersion}", LoggerLevelVeldrid.InstanceInfo);
+                    backendSection.Contents.Add(("OpenGL Version", info.Version));
+                    backendSection.Contents.Add(("GLSL Version", info.ShadingLanguageVersion));
 
                     ReadOnlyCollection<string> extensions = info.Extensions;
                     foreach (string extension in extensions) {
-                        Logger.Log($"Available OpenGL Extension: {extension}", LoggerLevelVeldrid.InstanceInfo);
+                        backendSection.Contents.Add(("Available Extension", extension));
                     }
                     
                     break;
                 }
-                case global::Veldrid.GraphicsBackend.Metal: {
+                case GraphicsBackend.Metal: {
                     BackendInfoMetal info = this.GraphicsDevice.GetMetalInfo();
 
                     ReadOnlyCollection<MTLFeatureSet> featureSetList = info.FeatureSet;
 
                     foreach (MTLFeatureSet featureSet in featureSetList) {
-                        Logger.Log($"Metal Feature Set Available {featureSet}", LoggerLevelVeldrid.InstanceInfo);
+                        backendSection.Contents.Add(("Available FeatureSet", featureSet.ToString()));
+                        // Logger.Log($"Metal Feature Set Available {featureSet}", LoggerLevelVeldrid.InstanceInfo);
                     }
 
                     break;
@@ -115,6 +117,33 @@ namespace Furball.Vixie.Backends.Veldrid {
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+            this.InfoSections.Add(backendSection);
+            
+            #region Available features
+            var features = this.GraphicsDevice.Features;
+            
+            BackendInfoSection section = new("Available Features");
+            section.Contents.Add(("Compute Shader", features.ComputeShader.ToString()));
+            section.Contents.Add(("Geometry Shader", features.GeometryShader.ToString()));
+            section.Contents.Add(("DrawIndirect", features.DrawIndirect.ToString()));
+            section.Contents.Add(("DrawBaseInstance", features.DrawBaseInstance.ToString()));
+            section.Contents.Add(("DrawBaseVertex", features.DrawBaseVertex.ToString()));
+            section.Contents.Add(("DrawIndirectBaseInstance", features.DrawIndirectBaseInstance.ToString()));
+            section.Contents.Add(("Independent Blend", features.IndependentBlend.ToString()));
+            section.Contents.Add(("Multiple Viewports", features.MultipleViewports.ToString()));
+            section.Contents.Add(("Sampler Anisotropy", features.SamplerAnisotropy.ToString()));
+            section.Contents.Add(("Shader f64 Support", features.ShaderFloat64.ToString()));
+            section.Contents.Add(("Structured Buffers", features.StructuredBuffer.ToString()));
+            section.Contents.Add(("Tessellation Shaders", features.TessellationShaders.ToString()));
+            section.Contents.Add(("Texture1D", features.Texture1D.ToString()));
+            section.Contents.Add(("BufferRangeBinding", features.BufferRangeBinding.ToString()));
+            section.Contents.Add(("DepthClipDisable", features.DepthClipDisable.ToString()));
+            section.Contents.Add(("FillModeWireframe", features.FillModeWireframe.ToString()));
+            section.Contents.Add(("SamplerLodBias", features.SamplerLodBias.ToString()));
+            section.Contents.Add(("SubsetTextureView", features.SubsetTextureView.ToString()));
+            section.Contents.Add(("CommandListDebugMarkers", features.CommandListDebugMarkers.ToString()));
+            this.InfoSections.Add(section);
+            #endregion
 
             this.CreateFramebuffer(this.GraphicsDevice.SwapchainFramebuffer.Width, this.GraphicsDevice.SwapchainFramebuffer.Height);
 
@@ -144,6 +173,8 @@ namespace Furball.Vixie.Backends.Veldrid {
             this.FullScreenQuad = new FullScreenQuad(this);
             this.CommandList.End();
             this.GraphicsDevice.SubmitCommands(this.CommandList);
+            
+            this.InfoSections.ForEach(x => x.Log(LoggerLevelVeldrid.InstanceInfo));
         }
         
 

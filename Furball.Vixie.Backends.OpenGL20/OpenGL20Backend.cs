@@ -80,13 +80,17 @@ namespace Furball.Vixie.Backends.OpenGL20 {
             this.gl.BlendFunc(GLEnum.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
             this.gl.Enable(EnableCap.Texture2D);
-
-            Logger.Log($"OpenGL Version: {this.gl.GetStringS(StringName.Version)}",                LoggerLevelOpenGL20.InstanceInfo);
-            Logger.Log($"GLSL Version:   {this.gl.GetStringS(StringName.ShadingLanguageVersion)}", LoggerLevelOpenGL20.InstanceInfo);
-            Logger.Log($"OpenGL Vendor:  {this.gl.GetStringS(StringName.Vendor)}",                 LoggerLevelOpenGL20.InstanceInfo);
-            Logger.Log($"Renderer:       {this.gl.GetStringS(StringName.Renderer)}",               LoggerLevelOpenGL20.InstanceInfo);
-
+            
             this._imgui = new ImGuiController(this.gl, window, inputContext);
+            
+            BackendInfoSection mainSection = new BackendInfoSection("OpenGL Info");
+            mainSection.Contents.Add(("OpenGL Version", this.gl.GetStringS(StringName.Version)));
+            mainSection.Contents.Add(("GLSL Version", this.gl.GetStringS(StringName.ShadingLanguageVersion)));
+            mainSection.Contents.Add(("OpenGL Vendor", this.gl.GetStringS(StringName.Vendor)));
+            mainSection.Contents.Add(("Renderer", this.gl.GetStringS(StringName.Renderer)));
+            this.InfoSections.Add(mainSection);
+
+            this.InfoSections.ForEach(x => x.Log(LoggerLevelOpenGL20.InstanceInfo));
         }
 
         /// <summary>

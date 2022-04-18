@@ -86,17 +86,15 @@ namespace Furball.Vixie.Backends.OpenGL41 {
 
             this.ImGuiController = new ImGuiController(this.gl, window, inputContext);
             this.CheckError();
+            
+            BackendInfoSection mainSection = new BackendInfoSection("OpenGL Info");
+            mainSection.Contents.Add(("OpenGL Version", this.gl.GetStringS(StringName.Version)));
+            mainSection.Contents.Add(("GLSL Version", this.gl.GetStringS(StringName.ShadingLanguageVersion)));
+            mainSection.Contents.Add(("OpenGL Vendor", this.gl.GetStringS(StringName.Vendor)));
+            mainSection.Contents.Add(("Renderer", this.gl.GetStringS(StringName.Renderer)));
+            this.InfoSections.Add(mainSection);
 
-            Logger.Log($"OpenGL Version: {this.gl.GetStringS(StringName.Version)}", LoggerLevelOpenGL41.InstanceInfo);
-            this.CheckError();
-            Logger.Log($"GLSL Version:   {this.gl.GetStringS(StringName.ShadingLanguageVersion)}", LoggerLevelOpenGL41.InstanceInfo);
-            this.CheckError();
-            Logger.Log($"OpenGL Vendor:  {this.gl.GetStringS(StringName.Vendor)}", LoggerLevelOpenGL41.InstanceInfo);
-            this.CheckError();
-            Logger.Log($"Renderer:       {this.gl.GetStringS(StringName.Renderer)}", LoggerLevelOpenGL41.InstanceInfo);
-            this.CheckError();
-
-            this.CheckError();
+            this.InfoSections.ForEach(x => x.Log(LoggerLevelOpenGL41.InstanceInfo));
         }
         public void CheckError(string message = "") {
             this.CheckErrorInternal(message);

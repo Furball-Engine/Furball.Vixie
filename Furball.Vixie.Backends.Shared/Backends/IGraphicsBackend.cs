@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Silk.NET.Input;
@@ -120,5 +121,8 @@ namespace Furball.Vixie.Backends.Shared.Backends {
         public virtual void EndScene() {
 
         }
+
+        public List<BackendInfoSection> InfoSections = new();
     }
+
 }

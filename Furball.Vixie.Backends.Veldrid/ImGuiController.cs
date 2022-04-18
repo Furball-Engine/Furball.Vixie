@@ -29,7 +29,7 @@ namespace Furball.Vixie.Backends.Veldrid {
         private DeviceBuffer            _vertexBuffer;
         private DeviceBuffer            _indexBuffer;
         private DeviceBuffer            _projMatrixBuffer;
-        private global::Veldrid.Texture _fontTexture;
+        private Texture _fontTexture;
         private Shader                  _vertexShader;
         private Shader                  _fragmentShader;
         private ResourceLayout          _layout;
@@ -306,26 +306,26 @@ namespace Furball.Vixie.Backends.Veldrid {
 
         private byte[] LoadEmbeddedShaderCode(ResourceFactory factory, string name, ShaderStages stage, ColorSpaceHandling colorSpaceHandling) {
             switch (factory.BackendType) {
-                case global::Veldrid.GraphicsBackend.Direct3D11: {
+                case GraphicsBackend.Direct3D11: {
                     if (stage == ShaderStages.Vertex && colorSpaceHandling == ColorSpaceHandling.Legacy) { name += "-legacy"; }
                     string resourceName = name + ".hlsl.bytes";
                     return this.GetEmbeddedResourceBytes(resourceName);
                 }
-                case global::Veldrid.GraphicsBackend.OpenGL: {
+                case GraphicsBackend.OpenGL: {
                     if (stage == ShaderStages.Vertex && colorSpaceHandling == ColorSpaceHandling.Legacy) { name += "-legacy"; }
                     string resourceName = name + ".glsl";
                     return this.GetEmbeddedResourceBytes(resourceName);
                 }
-                case global::Veldrid.GraphicsBackend.OpenGLES: {
+                case GraphicsBackend.OpenGLES: {
                     if (stage == ShaderStages.Vertex && colorSpaceHandling == ColorSpaceHandling.Legacy) { name += "-legacy"; }
                     string resourceName = name + ".glsles";
                     return this.GetEmbeddedResourceBytes(resourceName);
                 }
-                case global::Veldrid.GraphicsBackend.Vulkan: {
+                case GraphicsBackend.Vulkan: {
                     string resourceName = name + ".spv";
                     return this.GetEmbeddedResourceBytes(resourceName);
                 }
-                case global::Veldrid.GraphicsBackend.Metal: {
+                case GraphicsBackend.Metal: {
                     string resourceName = name + ".metallib";
                     return this.GetEmbeddedResourceBytes(resourceName);
                 }
@@ -348,8 +348,8 @@ namespace Furball.Vixie.Backends.Veldrid {
 
             byte[] vertexShaderBytes   = this.LoadEmbeddedShaderCode(gd.ResourceFactory, "imgui-vertex", ShaderStages.Vertex,   this._colorSpaceHandling);
             byte[] fragmentShaderBytes = this.LoadEmbeddedShaderCode(gd.ResourceFactory, "imgui-frag",   ShaderStages.Fragment, this._colorSpaceHandling);
-            this._vertexShader   = factory.CreateShader(new ShaderDescription(ShaderStages.Vertex,   vertexShaderBytes,   this._gd.BackendType == global::Veldrid.GraphicsBackend.Vulkan ? "main" : "VS"));
-            this._fragmentShader = factory.CreateShader(new ShaderDescription(ShaderStages.Fragment, fragmentShaderBytes, this._gd.BackendType == global::Veldrid.GraphicsBackend.Vulkan ? "main" : "FS"));
+            this._vertexShader   = factory.CreateShader(new ShaderDescription(ShaderStages.Vertex,   vertexShaderBytes,   this._gd.BackendType == GraphicsBackend.Vulkan ? "main" : "VS"));
+            this._fragmentShader = factory.CreateShader(new ShaderDescription(ShaderStages.Fragment, fragmentShaderBytes, this._gd.BackendType == GraphicsBackend.Vulkan ? "main" : "FS"));
 
             VertexLayoutDescription[] vertexLayouts = new VertexLayoutDescription[] {
                 new VertexLayoutDescription(new VertexElementDescription("in_position", VertexElementSemantic.Position, VertexElementFormat.Float2), new VertexElementDescription("in_texCoord", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2), new VertexElementDescription("in_color", VertexElementSemantic.Color, VertexElementFormat.Byte4_Norm))
