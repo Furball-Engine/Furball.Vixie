@@ -257,18 +257,74 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this._deviceContext.RSSetScissorRects(oldNumScissorRects, oldScissorRectangles);
             this._deviceContext.RSSetViewports(oldNumViewports, oldViewports);
             this._deviceContext.RSSetState(oldRasterizerState);
+
+            if (oldRasterizerState?.NativePointer != IntPtr.Zero)
+                oldRasterizerState?.Release();
+
             this._deviceContext.OMSetBlendState(oldBlendState, oldBlendFactor, oldSampleMask);
+
+            if (oldBlendState?.NativePointer != IntPtr.Zero)
+                oldBlendState?.Release();
+
             this._deviceContext.OMSetDepthStencilState(oldDepthStencilState, oldStencilRef);
+
+            if (oldDepthStencilState?.NativePointer != IntPtr.Zero)
+                oldDepthStencilState?.Release();
+
             this._deviceContext.PSSetShaderResources(0, 1, oldShaderResourceViews);
+
+            if (oldShaderResourceViews[0]?.NativePointer != IntPtr.Zero)
+                oldShaderResourceViews[0]?.Release();
+
             this._deviceContext.PSSetSamplers(0, 1, oldSamplerStates);
+
+            if (oldSamplerStates[0]?.NativePointer != IntPtr.Zero)
+                oldSamplerStates[0]?.Release();
+
             this._deviceContext.PSSetShader(oldPixelShader, oldPixelShaderInstances, oldPixelShaderInstancesCount);
+
+            if (oldPixelShader?.NativePointer != IntPtr.Zero)
+                oldPixelShader?.Release();
+
+            for (int i = 0; i < oldPixelShaderInstancesCount; i++)
+                oldPixelShaderInstances[i]?.Release();
+
             this._deviceContext.VSSetShader(oldVertexShader, oldVertexShaderInstances, oldVertexShaderInstancesCount);
+
+            if (oldVertexShader?.NativePointer != IntPtr.Zero)
+                oldVertexShader?.Release();
+
+            for (int i = 0; i < oldVertexShaderInstancesCount; i++)
+                oldVertexShaderInstances[i]?.Release();
+
             this._deviceContext.GSSetShader(oldGeometryShader, oldGeometryShaderInstances, oldGeometryShaderInstancesCount);
+
+            if (oldGeometryShader?.NativePointer != IntPtr.Zero)
+                oldGeometryShader?.Release();
+
+            for (int i = 0; i < oldGeometryShaderInstancesCount; i++)
+                oldGeometryShaderInstances[i]?.Release();
+
             this._deviceContext.VSSetConstantBuffers(0, 1, oldVertexShaderConstantBuffers);
+
+            if (oldVertexShaderConstantBuffers[0]?.NativePointer != IntPtr.Zero)
+                oldVertexShaderConstantBuffers[0]?.Release();
+
             this._deviceContext.IASetPrimitiveTopology(oldPrimitiveTopology);
             this._deviceContext.IASetIndexBuffer(oldIndexBuffer, oldIndexBufferFormat, oldIndexBufferOffset);
+
+            if (oldIndexBuffer?.NativePointer != IntPtr.Zero)
+                oldIndexBuffer?.Release();
+
             this._deviceContext.IASetVertexBuffers(0, 1, oldVertexBuffers, oldVertexBufferStrides, oldVertexBufferOffsets);
+
+            if (oldVertexBuffers[0]?.NativePointer != IntPtr.Zero)
+                oldVertexBuffers[0]?.Release();
+
             this._deviceContext.IASetInputLayout(oldInputLayout);
+
+            if (oldInputLayout?.NativePointer != IntPtr.Zero)
+                oldInputLayout?.Release();
 
             #endregion
         }
@@ -551,19 +607,21 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         }
 
         private void InvalidateDeviceObjects() {
-            ReleaseAndNullify(ref _fontSampler);
-            ReleaseAndNullify(ref _fontTextureView);
-            ReleaseAndNullify(ref _indexBuffer);
-            ReleaseAndNullify(ref _vertexBuffer);
-            ReleaseAndNullify(ref _blendState);
-            ReleaseAndNullify(ref _depthStencilState);
-            ReleaseAndNullify(ref _rasterizerState);
-            ReleaseAndNullify(ref _pixelShader);
-            ReleaseAndNullify(ref _pixelShaderBlob);
-            ReleaseAndNullify(ref _constantBuffer);
-            ReleaseAndNullify(ref _inputLayout);
-            ReleaseAndNullify(ref _vertexShader);
-            ReleaseAndNullify(ref _vertexShaderBlob);
+            try {
+                ReleaseAndNullify(ref _fontSampler);
+                ReleaseAndNullify(ref _fontTextureView);
+                ReleaseAndNullify(ref _indexBuffer);
+                ReleaseAndNullify(ref _vertexBuffer);
+                ReleaseAndNullify(ref _blendState);
+                ReleaseAndNullify(ref _depthStencilState);
+                ReleaseAndNullify(ref _rasterizerState);
+                ReleaseAndNullify(ref _pixelShader);
+                ReleaseAndNullify(ref _pixelShaderBlob);
+                ReleaseAndNullify(ref _constantBuffer);
+                ReleaseAndNullify(ref _inputLayout);
+                ReleaseAndNullify(ref _vertexShader);
+                ReleaseAndNullify(ref _vertexShaderBlob);
+            } catch(NullReferenceException) { /* Apperantly thing?.Release can still throw a NullRefException? */}
         }
 
         private bool _isDisposed = false;

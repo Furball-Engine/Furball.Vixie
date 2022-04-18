@@ -54,10 +54,17 @@ namespace Furball.Vixie.TestApplication {
                 this.BaseGame.Components.Remove(this);
             }
 
+            if (ImGui.Button("Empty Screen")) {
+                this.BaseGame.Components.Add(new TestEmptyScreen());
+                this.BaseGame.Components.Remove(this);
+            }
+
             ImGui.Separator();
 
-            if(ImGui.Button("Force GC Clear"))
+            if(ImGui.Button("Force GC Clear")) {
                 GC.Collect();
+                GC.AddMemoryPressure(1238721387213);
+            }
             
             ImGui.End();
 

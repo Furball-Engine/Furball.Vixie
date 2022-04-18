@@ -1,3 +1,4 @@
+using Furball.Vixie.TestApplication.Tests;
 using Silk.NET.Windowing;
 
 namespace Furball.Vixie.TestApplication {

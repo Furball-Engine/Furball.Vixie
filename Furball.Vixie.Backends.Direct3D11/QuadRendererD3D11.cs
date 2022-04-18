@@ -406,14 +406,16 @@ namespace Furball.Vixie.Backends.Direct3D11 {
                 this._boundShaderViews[i] = null;
             }
 
-            _vertexBuffer?.Release();
-            _instanceBuffer?.Release();
-            _indexBuffer?.Release();
-            _constantBuffer?.Release();
-            _inputLayout?.Release();
-            _vertexShader?.Release();
-            _pixelShader?.Release();
-            _samplerState?.Release();
+            try {
+                _vertexBuffer?.Release();
+                _instanceBuffer?.Release();
+                _indexBuffer?.Release();
+                _constantBuffer?.Release();
+                _inputLayout?.Release();
+                _vertexShader?.Release();
+                _pixelShader?.Release();
+                _samplerState?.Release();
+            } catch(NullReferenceException) { /* Apperantly thing?.Release can still throw a NullRefException? */ }
         }
     }
 }
