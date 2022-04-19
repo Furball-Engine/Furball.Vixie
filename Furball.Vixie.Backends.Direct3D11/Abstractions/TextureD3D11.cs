@@ -98,15 +98,24 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
                 },
             };
 
-            image.DangerousTryGetSinglePixelMemory(out Memory<Rgba32> pixels);
+            ID3D11Texture2D texture = this._device.CreateTexture2D(textureDescription);
 
-            ID3D11Texture2D texture = this._device.CreateTexture2D(textureDescription, new [] { new DataRectangle((IntPtr) pixels.Pin().Pointer, 4 * image.Width) } );
+            image.ProcessPixelRows(accessor => {
+                for (int i = 0; i < accessor.Height; i++) {
+                    fixed (void* ptr = &accessor.GetRowSpan(i).GetPinnableReference()) {
+                        this._deviceContext.UpdateSubresource(texture, 0, new Box(0, i, 0, accessor.Width, i + 1, 1), (IntPtr)ptr, 4 * accessor.Width, (4 * accessor.Width));
+                    }
+                }
+            });
+
             ID3D11ShaderResourceView textureView = this._device.CreateShaderResourceView(texture);
 
             this._texture     = texture;
             this.TextureView = textureView;
 
             this.Size = new Vector2(image.Width, image.Height);
+
+            image.Dispose();
         }
 
         public unsafe TextureD3D11(Direct3D11Backend backend, Stream stream) {
@@ -129,15 +138,24 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
                 },
             };
 
-            image.DangerousTryGetSinglePixelMemory(out Memory<Rgba32> pixels);
+            ID3D11Texture2D texture = this._device.CreateTexture2D(textureDescription);
 
-            ID3D11Texture2D texture = this._device.CreateTexture2D(textureDescription, new [] { new DataRectangle((IntPtr) pixels.Pin().Pointer, 4 * image.Width) } );
+            image.ProcessPixelRows(accessor => {
+                for (int i = 0; i < accessor.Height; i++) {
+                    fixed (void* ptr = &accessor.GetRowSpan(i).GetPinnableReference()) {
+                        this._deviceContext.UpdateSubresource(texture, 0, new Box(0, i, 0, accessor.Width, i + 1, 1), (IntPtr)ptr, 4 * accessor.Width, (4 * accessor.Width));
+                    }
+                }
+            });
+
             ID3D11ShaderResourceView textureView = this._device.CreateShaderResourceView(texture);
 
             this._texture     = texture;
             this.TextureView = textureView;
 
             this.Size = new Vector2(image.Width, image.Height);
+
+            image.Dispose();
         }
 
         public TextureD3D11(Direct3D11Backend backend, uint width, uint height) {
@@ -187,15 +205,24 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
                 },
             };
 
-            image.DangerousTryGetSinglePixelMemory(out Memory<Rgba32> pixels);
+            ID3D11Texture2D texture = this._device.CreateTexture2D(textureDescription);
 
-            ID3D11Texture2D texture = this._device.CreateTexture2D(textureDescription, new [] { new DataRectangle((IntPtr) pixels.Pin().Pointer, 4 * image.Width) } );
+            image.ProcessPixelRows(accessor => {
+                for (int i = 0; i < accessor.Height; i++) {
+                    fixed (void* ptr = &accessor.GetRowSpan(i).GetPinnableReference()) {
+                        this._deviceContext.UpdateSubresource(texture, 0, new Box(0, i, 0, accessor.Width, i + 1, 1), (IntPtr)ptr, 4 * accessor.Width, (4 * accessor.Width));
+                    }
+                }
+            });
+
             ID3D11ShaderResourceView textureView = this._device.CreateShaderResourceView(texture);
 
             this._texture     = texture;
             this.TextureView = textureView;
 
             this.Size = new Vector2(image.Width, image.Height);
+
+            image.Dispose();
         }
 
         ~TextureD3D11() {

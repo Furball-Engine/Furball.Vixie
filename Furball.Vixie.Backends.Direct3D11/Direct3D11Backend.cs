@@ -18,6 +18,7 @@ using Vortice.Mathematics;
 
 namespace Furball.Vixie.Backends.Direct3D11 {
     public class Direct3D11Backend : IGraphicsBackend {
+        private ID3D11Debug            _debugDevice;
         private ID3D11Device           _device;
         private ID3D11DeviceContext    _deviceContext;
         private IDXGISwapChain         _swapChain;
@@ -53,7 +54,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 
 #if DEBUG
             try {
-                this._device.QueryInterface<ID3D11Debug>().ReportLiveDeviceObjects(ReportLiveDeviceObjectFlags.Detail);
+                this._debugDevice = this._device.QueryInterface<ID3D11Debug>();
             }
             catch (SharpGenException) {
                 Logger.Log("Creation of Debug Interface failed! Debug Layer may not work as intended.", LoggerLevelD3D11.InstanceWarning);
@@ -181,6 +182,10 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         private void DestroySwapchainResources() {
             this._renderTarget.Dispose();
             this._backBuffer.Dispose();
+        }
+
+        public void ReportLiveObjects() {
+            this._debugDevice.ReportLiveDeviceObjects(ReportLiveDeviceObjectFlags.Detail);
         }
 
         public override void Cleanup() {

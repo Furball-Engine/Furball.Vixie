@@ -96,7 +96,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 
             ID3D11InputLayout inputLayout = this._device.CreateInputLayout(inputLayoutDescription, vertexShaderData);
             this._inputLayout           = inputLayout;
-            this._inputLayout.DebugName = "QuadRendererD3D11 Input Layout";
+            //this._inputLayout.DebugName = "QuadRendererD3D11 Input Layout";
 
             BufferDescription constantBufferDescription = new BufferDescription {
                 BindFlags = BindFlags.ConstantBuffer,
@@ -107,7 +107,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 
             ID3D11Buffer constantBuffer = this._device.CreateBuffer(constantBufferDescription);
             this._constantBuffer           = constantBuffer;
-            this._constantBuffer.DebugName = "QuadRendererD3D11 Constant Buffer";
+            //this._constantBuffer.DebugName = "QuadRendererD3D11 Constant Buffer";
 
             BufferDescription vertexBufferDescription = new BufferDescription {
                 BindFlags = BindFlags.VertexBuffer,
@@ -118,7 +118,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 
             ID3D11Buffer vertexBuffer = this._device.CreateBuffer(vertexBufferDescription);
             this._vertexBuffer           = vertexBuffer;
-            this._vertexBuffer.DebugName = "QuadRendererD3D11 Vertex Buffer";
+            //this._vertexBuffer.DebugName = "QuadRendererD3D11 Vertex Buffer";
 
             BufferDescription instanceBufferDesription = new BufferDescription {
                 BindFlags      = BindFlags.VertexBuffer,
@@ -129,7 +129,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 
             ID3D11Buffer instanceBuffer = this._device.CreateBuffer(instanceBufferDesription);
             this._instanceBuffer         = instanceBuffer;
-            this._vertexBuffer.DebugName = "QuadRendererD3D11 Instance Buffer";
+            //this._vertexBuffer.DebugName = "QuadRendererD3D11 Instance Buffer";
 
             BufferDescription indexBufferDescription = new BufferDescription {
                 BindFlags = BindFlags.IndexBuffer,
@@ -140,7 +140,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 
             ID3D11Buffer indexBuffer = this._device.CreateBuffer(indexBufferDescription);
             this._indexBuffer            = indexBuffer;
-            this._vertexBuffer.DebugName = "QuadRendererD3D11 Index Buffer";
+            //this._vertexBuffer.DebugName = "QuadRendererD3D11 Index Buffer";
 
             VertexData[] verticies = new [] {
                 new VertexData { Position = new Vector2(0, 1), TexCoord = new Vector2(0, 1) },
@@ -214,7 +214,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             };
 
             this._samplerState           = this._device.CreateSamplerState(samplerDescription);
-            this._samplerState.DebugName = "QuadRendererD3D11 Sampler State";
+            //this._samplerState.DebugName = "QuadRendererD3D11 Sampler State";
 
             this._textRenderer = new VixieFontStashRenderer(this._backend, this);
         }

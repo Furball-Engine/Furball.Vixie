@@ -1,4 +1,5 @@
 using System;
+using Furball.Vixie.Backends.Direct3D11;
 using Furball.Vixie.TestApplication.Tests;
 using ImGuiNET;
 
@@ -64,6 +65,10 @@ namespace Furball.Vixie.TestApplication {
             if(ImGui.Button("Force GC Clear")) {
                 GC.Collect();
                 GC.AddMemoryPressure(1238721387213);
+            }
+
+            if(ImGui.Button("Report Live Objects")) {
+                ((Direct3D11Backend)GraphicsBackend.Current).ReportLiveObjects();
             }
             
             ImGui.End();

@@ -1,4 +1,4 @@
-﻿using Furball.Vixie;
+using Furball.Vixie;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Veldrid;
 using Furball.Vixie.TestApplication;
