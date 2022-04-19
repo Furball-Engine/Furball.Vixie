@@ -1,13 +1,14 @@
 using System;
 using System.Numerics;
 using Furball.Vixie.Backends.Shared;
+using Furball.Vixie.Helpers;
 using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
 using Vortice.Mathematics;
 
 namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
-    public class TextureRenderTargetD3D11 : TextureRenderTarget, IDisposable {
+    public class TextureRenderTargetD3D11 : TextureRenderTarget {
         public override Vector2 Size { get; protected set; }
 
         private Direct3D11Backend        _backend;
@@ -63,6 +64,10 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
             this._shaderResourceView  = shaderResourceView;
             this.Size                 = new Vector2(width, height);
             this._viewports           = new Viewport[16];
+        }
+
+        ~TextureRenderTargetD3D11() {
+            DisposeQueue.Enqueue(this);
         }
 
         public override void Bind() {

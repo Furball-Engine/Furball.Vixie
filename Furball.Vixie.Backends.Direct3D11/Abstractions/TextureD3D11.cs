@@ -12,7 +12,7 @@ using Vortice.Mathematics;
 using Rectangle=System.Drawing.Rectangle;
 
 namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
-    public class TextureD3D11 : Texture, IDisposable {
+    public class TextureD3D11 : Texture {
         private Direct3D11Backend   _backend;
         private ID3D11Device        _device;
         private ID3D11DeviceContext _deviceContext;
