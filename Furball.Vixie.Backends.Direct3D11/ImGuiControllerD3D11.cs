@@ -117,7 +117,8 @@ namespace Furball.Vixie.Backends.Direct3D11 {
                     CPUAccessFlags = CpuAccessFlags.Write
                 };
 
-                this._vertexBuffer = this._device.CreateBuffer(vertexBufferDescription);
+                this._vertexBuffer           = this._device.CreateBuffer(vertexBufferDescription);
+                this._vertexBuffer.DebugName = "ImGui Vertex Buffer";
             }
 
             if (this._indexBuffer == null || this._indexBufferSize < drawData.TotalIdxCount) {
@@ -132,7 +133,8 @@ namespace Furball.Vixie.Backends.Direct3D11 {
                     CPUAccessFlags = CpuAccessFlags.Write
                 };
 
-                this._indexBuffer = this._device.CreateBuffer(indexBufferDescription);
+                this._indexBuffer           = this._device.CreateBuffer(indexBufferDescription);
+                this._indexBuffer.DebugName = "ImGui Index Buffer";
             }
 
             MappedSubresource vertexResource = this._deviceContext.Map(this._vertexBuffer, 0, MapMode.WriteDiscard);
@@ -472,8 +474,11 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             ID3D11VertexShader vertexShader = this._device.CreateVertexShader(vertexShaderData);
             ID3D11PixelShader pixelShader = this._device.CreatePixelShader(pixelShaderData);
 
-            this._vertexShader = vertexShader;
-            this._pixelShader  = pixelShader;
+            this._vertexShader           = vertexShader;
+            this._vertexShader.DebugName = "ImGui Vertex Shader";
+
+            this._pixelShader           = pixelShader;
+            this._pixelShader.DebugName = "ImGui Pixel Shader";
 
             InputElementDescription[] inputElementDescription = new InputElementDescription[] {
                 new InputElementDescription("POSITION", 0, Format.R32G32_Float,   0,  0, InputClassification.PerVertexData, 0),
@@ -481,7 +486,8 @@ namespace Furball.Vixie.Backends.Direct3D11 {
                 new InputElementDescription("COLOR",    0, Format.R8G8B8A8_UNorm, 16, 0, InputClassification.PerVertexData, 0),
             };
 
-            this._inputLayout = this._device.CreateInputLayout(inputElementDescription, vertexShaderData);
+            this._inputLayout           = this._device.CreateInputLayout(inputElementDescription, vertexShaderData);
+            this._inputLayout.DebugName = "ImGui InputLayout";
 
             BufferDescription constantBufferDescription = new BufferDescription {
                 ByteWidth      = 16 * sizeof(float),
@@ -490,7 +496,8 @@ namespace Furball.Vixie.Backends.Direct3D11 {
                 CPUAccessFlags = CpuAccessFlags.Write
             };
 
-            _constantBuffer = this._device.CreateBuffer(constantBufferDescription);
+            this._constantBuffer           = this._device.CreateBuffer(constantBufferDescription);
+            this._constantBuffer.DebugName = "ImGui ConstantBuffer";
 
             BlendDescription blendDescription = new BlendDescription {
                 AlphaToCoverageEnable = false,
@@ -508,7 +515,8 @@ namespace Furball.Vixie.Backends.Direct3D11 {
                 }
             };
 
-            this._blendState = this._device.CreateBlendState(blendDescription);
+            this._blendState           = this._device.CreateBlendState(blendDescription);
+            this._blendState.DebugName = "ImGui BlendState";
 
             RasterizerDescription rasterizerDescription = new RasterizerDescription {
                 FillMode        = FillMode.Solid,
@@ -517,7 +525,8 @@ namespace Furball.Vixie.Backends.Direct3D11 {
                 DepthClipEnable = true
             };
 
-            this._rasterizerState = this._device.CreateRasterizerState(rasterizerDescription);
+            this._rasterizerState           = this._device.CreateRasterizerState(rasterizerDescription);
+            this._rasterizerState.DebugName = "ImGui RasterizerState";
 
             DepthStencilOperationDescription depthStencilOperationDescription = new DepthStencilOperationDescription(StencilOperation.Keep, StencilOperation.Keep, StencilOperation.Keep, ComparisonFunction.Always);
 
@@ -530,7 +539,8 @@ namespace Furball.Vixie.Backends.Direct3D11 {
                 BackFace       = depthStencilOperationDescription
             };
 
-            this._depthStencilState = this._device.CreateDepthStencilState(depthStencilDescription);
+            this._depthStencilState           = this._device.CreateDepthStencilState(depthStencilDescription);
+            this._depthStencilState.DebugName = "ImGui DepthStencilState";
 
             CreateFontsTexture();
         }
@@ -564,6 +574,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             };
 
             ID3D11Texture2D fontTexture = this._device.CreateTexture2D(texture2DDescription, new []{ subresourceData });
+            fontTexture.DebugName = "ImGui Font Texture";
 
             ShaderResourceViewDescription shaderResourceViewDescription = new ShaderResourceViewDescription {
                 Format        = Format.R8G8B8A8_UNorm,
@@ -573,7 +584,8 @@ namespace Furball.Vixie.Backends.Direct3D11 {
                 }
             };
 
-            this._fontTextureView = this._device.CreateShaderResourceView(fontTexture, shaderResourceViewDescription);
+            this._fontTextureView           = this._device.CreateShaderResourceView(fontTexture, shaderResourceViewDescription);
+            this._fontTextureView.DebugName = "ImGui Font Texture Atlas";
 
             fontTexture.Release();
 
@@ -590,7 +602,8 @@ namespace Furball.Vixie.Backends.Direct3D11 {
                 MaxLOD             = 0f
             };
 
-            this._fontSampler = this._device.CreateSamplerState(samplerDescription);
+            this._fontSampler           = this._device.CreateSamplerState(samplerDescription);
+            this._fontSampler.DebugName = "ImGui Font Sampler";
         }
 
         IntPtr RegisterTexture(ID3D11ShaderResourceView texture)
