@@ -233,9 +233,9 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
             this._isDisposed = true;
 
             try {
-                this._texture?.Release();
-                this.TextureView?.Release();
-            } catch(NullReferenceException) { /* Apperantly thing?.Release can still throw a NullRefException? */ }
+                this._texture?.Dispose();
+                this.TextureView?.Dispose();
+            } catch(NullReferenceException) { /* Apperantly thing?.Dispose can still throw a NullRefException? */ }
         }
     }
 }

@@ -90,8 +90,8 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
             this._isDisposed = true;
 
             try {
-                this._renderTarget?.Release();
-            } catch(NullReferenceException) { /* Apperantly thing?.Release can still throw a NullRefException? */ }
+                this._renderTarget?.Dispose();
+            } catch(NullReferenceException) { /* Apperantly thing?.Dispose can still throw a NullRefException? */ }
         }
     }
 }

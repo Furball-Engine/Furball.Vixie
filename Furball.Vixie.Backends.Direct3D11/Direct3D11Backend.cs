@@ -179,18 +179,18 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         }
 
         private void DestroySwapchainResources() {
-            this._renderTarget.Release();
-            this._backBuffer.Release();
+            this._renderTarget.Dispose();
+            this._backBuffer.Dispose();
         }
 
         public override void Cleanup() {
-            _device.Release();
-            _deviceContext.Release();
-            _swapChain.Release();
-            _renderTarget.Release();
-            _backBuffer.Release();
-            _debug.Release();
-            _defaultBlendState.Release();
+            _device.Dispose();
+            _deviceContext.Dispose();
+            _swapChain.Dispose();
+            _renderTarget.Dispose();
+            _backBuffer.Dispose();
+            _debug.Dispose();
+            _defaultBlendState.Dispose();
         }
 
         public override void HandleWindowSizeChange(int width, int height) {

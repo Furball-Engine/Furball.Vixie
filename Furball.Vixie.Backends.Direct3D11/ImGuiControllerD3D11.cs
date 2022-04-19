@@ -106,7 +106,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
                 return;
 
             if (this._vertexBuffer == null || this._vertexBufferSize < drawData.TotalVtxCount) {
-                this._vertexBuffer?.Release();
+                this._vertexBuffer?.Dispose();
 
                 this._vertexBufferSize += 5000;
 
@@ -122,7 +122,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             }
 
             if (this._indexBuffer == null || this._indexBufferSize < drawData.TotalIdxCount) {
-                this._indexBuffer?.Release();
+                this._indexBuffer?.Dispose();
 
                 this._indexBufferSize += 5000;
 
@@ -261,72 +261,72 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this._deviceContext.RSSetState(oldRasterizerState);
 
             if (oldRasterizerState?.NativePointer != IntPtr.Zero)
-                oldRasterizerState?.Release();
+                oldRasterizerState?.Dispose();
 
             this._deviceContext.OMSetBlendState(oldBlendState, oldBlendFactor, oldSampleMask);
 
             if (oldBlendState?.NativePointer != IntPtr.Zero)
-                oldBlendState?.Release();
+                oldBlendState?.Dispose();
 
             this._deviceContext.OMSetDepthStencilState(oldDepthStencilState, oldStencilRef);
 
             if (oldDepthStencilState?.NativePointer != IntPtr.Zero)
-                oldDepthStencilState?.Release();
+                oldDepthStencilState?.Dispose();
 
             this._deviceContext.PSSetShaderResources(0, 1, oldShaderResourceViews);
 
             if (oldShaderResourceViews[0]?.NativePointer != IntPtr.Zero)
-                oldShaderResourceViews[0]?.Release();
+                oldShaderResourceViews[0]?.Dispose();
 
             this._deviceContext.PSSetSamplers(0, 1, oldSamplerStates);
 
             if (oldSamplerStates[0]?.NativePointer != IntPtr.Zero)
-                oldSamplerStates[0]?.Release();
+                oldSamplerStates[0]?.Dispose();
 
             this._deviceContext.PSSetShader(oldPixelShader, oldPixelShaderInstances, oldPixelShaderInstancesCount);
 
             if (oldPixelShader?.NativePointer != IntPtr.Zero)
-                oldPixelShader?.Release();
+                oldPixelShader?.Dispose();
 
             for (int i = 0; i < oldPixelShaderInstancesCount; i++)
-                oldPixelShaderInstances[i]?.Release();
+                oldPixelShaderInstances[i]?.Dispose();
 
             this._deviceContext.VSSetShader(oldVertexShader, oldVertexShaderInstances, oldVertexShaderInstancesCount);
 
             if (oldVertexShader?.NativePointer != IntPtr.Zero)
-                oldVertexShader?.Release();
+                oldVertexShader?.Dispose();
 
             for (int i = 0; i < oldVertexShaderInstancesCount; i++)
-                oldVertexShaderInstances[i]?.Release();
+                oldVertexShaderInstances[i]?.Dispose();
 
             this._deviceContext.GSSetShader(oldGeometryShader, oldGeometryShaderInstances, oldGeometryShaderInstancesCount);
 
             if (oldGeometryShader?.NativePointer != IntPtr.Zero)
-                oldGeometryShader?.Release();
+                oldGeometryShader?.Dispose();
 
             for (int i = 0; i < oldGeometryShaderInstancesCount; i++)
-                oldGeometryShaderInstances[i]?.Release();
+                oldGeometryShaderInstances[i]?.Dispose();
 
             this._deviceContext.VSSetConstantBuffers(0, 1, oldVertexShaderConstantBuffers);
 
             if (oldVertexShaderConstantBuffers[0]?.NativePointer != IntPtr.Zero)
-                oldVertexShaderConstantBuffers[0]?.Release();
+                oldVertexShaderConstantBuffers[0]?.Dispose();
 
             this._deviceContext.IASetPrimitiveTopology(oldPrimitiveTopology);
             this._deviceContext.IASetIndexBuffer(oldIndexBuffer, oldIndexBufferFormat, oldIndexBufferOffset);
 
             if (oldIndexBuffer?.NativePointer != IntPtr.Zero)
-                oldIndexBuffer?.Release();
+                oldIndexBuffer?.Dispose();
 
             this._deviceContext.IASetVertexBuffers(0, 1, oldVertexBuffers, oldVertexBufferStrides, oldVertexBufferOffsets);
 
             if (oldVertexBuffers[0]?.NativePointer != IntPtr.Zero)
-                oldVertexBuffers[0]?.Release();
+                oldVertexBuffers[0]?.Dispose();
 
             this._deviceContext.IASetInputLayout(oldInputLayout);
 
             if (oldInputLayout?.NativePointer != IntPtr.Zero)
-                oldInputLayout?.Release();
+                oldInputLayout?.Dispose();
 
             #endregion
         }
@@ -587,7 +587,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this._fontTextureView           = this._device.CreateShaderResourceView(fontTexture, shaderResourceViewDescription);
             this._fontTextureView.DebugName = "ImGui Font Texture Atlas";
 
-            fontTexture.Release();
+            fontTexture.Dispose();
 
             io.Fonts.TexID = RegisterTexture(this._fontTextureView);
 
@@ -615,7 +615,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         }
 
         private void ReleaseAndNullify<T>(ref T o) where T : ComObject {
-            o.Release();
+            o.Dispose();
             o = null;
         }
 
@@ -634,7 +634,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
                 ReleaseAndNullify(ref _inputLayout);
                 ReleaseAndNullify(ref _vertexShader);
                 ReleaseAndNullify(ref _vertexShaderBlob);
-            } catch(NullReferenceException) { /* Apperantly thing?.Release can still throw a NullRefException? */}
+            } catch(NullReferenceException) { /* Apperantly thing?.Dispose can still throw a NullRefException? */}
         }
 
         private bool _isDisposed = false;

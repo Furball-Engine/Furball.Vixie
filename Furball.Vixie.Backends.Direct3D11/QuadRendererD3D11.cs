@@ -423,15 +423,15 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             }
 
             try {
-                _vertexBuffer?.Release();
-                _instanceBuffer?.Release();
-                _indexBuffer?.Release();
-                _constantBuffer?.Release();
-                _inputLayout?.Release();
-                _vertexShader?.Release();
-                _pixelShader?.Release();
-                _samplerState?.Release();
-            } catch(NullReferenceException) { /* Apperantly thing?.Release can still throw a NullRefException? */ }
+                _vertexBuffer?.Dispose();
+                _instanceBuffer?.Dispose();
+                _indexBuffer?.Dispose();
+                _constantBuffer?.Dispose();
+                _inputLayout?.Dispose();
+                _vertexShader?.Dispose();
+                _pixelShader?.Dispose();
+                _samplerState?.Dispose();
+            } catch(NullReferenceException) { /* Apperantly thing?.Dispose can still throw a NullRefException? */ }
         }
     }
 }
