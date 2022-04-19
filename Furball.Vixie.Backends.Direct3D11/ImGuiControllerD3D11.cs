@@ -106,7 +106,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
                 return;
 
             if (this._vertexBuffer == null || this._vertexBufferSize < drawData.TotalVtxCount) {
-                this._vertexBuffer?.Dispose();
+                this._vertexBuffer?.Release();
 
                 this._vertexBufferSize += 5000;
 
@@ -121,7 +121,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             }
 
             if (this._indexBuffer == null || this._indexBufferSize < drawData.TotalIdxCount) {
-                this._indexBuffer?.Dispose();
+                this._indexBuffer?.Release();
 
                 this._indexBufferSize += 5000;
 
@@ -575,7 +575,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 
             this._fontTextureView = this._device.CreateShaderResourceView(fontTexture, shaderResourceViewDescription);
 
-            fontTexture.Dispose();
+            fontTexture.Release();
 
             io.Fonts.TexID = RegisterTexture(this._fontTextureView);
 

@@ -236,6 +236,16 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this._deviceContext.DrawIndexedInstanced(6, this._instances, 0, 0, 0);
 
             this._instances = 0;
+
+            this._deviceContext.IASetInputLayout(null);
+            this._deviceContext.IASetIndexBuffer(null, Format.R16_UInt, 0);
+            this._deviceContext.IASetVertexBuffer(VERTEX_BUFFER_SLOT,   null, 0);
+            this._deviceContext.IASetVertexBuffer(INSTANCE_BUFFER_SLOT, null, 0);
+
+            this._deviceContext.VSSetShader(null);
+            this._deviceContext.VSSetConstantBuffer(0, null);
+
+            this._deviceContext.PSSetShader(null);
         }
 
         ~LineRendererD3D11() {

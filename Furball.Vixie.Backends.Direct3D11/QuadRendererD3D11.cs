@@ -61,6 +61,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         private int                        _instances;
         private InstanceData[]             _instanceData;
         private ID3D11ShaderResourceView[] _boundShaderViews;
+        private ID3D11ShaderResourceView[] _nullShaderViews;
         private TextureD3D11[]             _boundTextures;
         private int                        _usedTextures;
 
@@ -193,6 +194,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this._instances        = 0;
             this._instanceData     = new InstanceData[INSTANCE_AMOUNT];
             this._boundShaderViews = new ID3D11ShaderResourceView[backend.QueryMaxTextureUnits()];
+            this._nullShaderViews  = new ID3D11ShaderResourceView[128];
             this._boundTextures    = new TextureD3D11[backend.QueryMaxTextureUnits()];
 
             for (int i = 0; i != backend.QueryMaxTextureUnits(); i++) {
@@ -251,6 +253,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this._deviceContext.IASetVertexBuffer(VERTEX_BUFFER_SLOT, this._vertexBuffer, sizeof(VertexData));
             this._deviceContext.IASetVertexBuffer(INSTANCE_BUFFER_SLOT, this._instanceBuffer, sizeof(InstanceData));
             this._deviceContext.IASetIndexBuffer(this._indexBuffer, Format.R16_UInt, 0);
+            this._deviceContext.IASetPrimitiveTopology(Vortice.Direct3D.PrimitiveTopology.TriangleList);
         }
 
         public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
@@ -391,6 +394,19 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 
             this._usedTextures = 0;
             this._instances    = 0;
+
+            this._deviceContext.VSSetShader(null);
+            this._deviceContext.VSSetConstantBuffer(0, null);
+
+            this._deviceContext.PSSetShader(null);
+            this._deviceContext.PSSetSampler(0, null);
+
+            this._deviceContext.PSSetShaderResources(0, 128, this._nullShaderViews);
+
+            this._deviceContext.IASetInputLayout(null);
+            this._deviceContext.IASetVertexBuffer(VERTEX_BUFFER_SLOT,   null, 0);
+            this._deviceContext.IASetVertexBuffer(INSTANCE_BUFFER_SLOT, null, 0);
+            this._deviceContext.IASetIndexBuffer(null, Format.R16_UInt, 0);
         }
 
         private bool _isDisposed = false;
