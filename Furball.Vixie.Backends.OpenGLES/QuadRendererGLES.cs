@@ -88,7 +88,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
 
             this._shaderGles.Bind();
 
-            this._backend.CheckError();
+            this._backend.CheckError("After QuadRenderer shader creation");
 
             for (int i = 0; i < backend.QueryMaxTextureUnits(); i++) {
                 this._shaderGles.BindUniformToTexUnit($"tex_{i}", i);
@@ -105,11 +105,11 @@ namespace Furball.Vixie.Backends.OpenGLES {
             this.gl.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, (uint)sizeof(Vertex), (void*)0);
             //Texture position
             this.gl.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, (uint)sizeof(Vertex), (void*)sizeof(Vector2));
-            this._backend.CheckError();
+            this._backend.CheckError("After attrib ptrs");
 
             this.gl.EnableVertexAttribArray(0);
             this.gl.EnableVertexAttribArray(1);
-            this._backend.CheckError();
+            this._backend.CheckError("Enable vertex attrib arrays");
 
             this._instanceVbo = new BufferObjectGL(backend, BufferTargetARB.ArrayBuffer, BufferUsageARB.DynamicDraw);
             this._instanceVbo.Bind();
@@ -159,7 +159,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
             this.gl.EnableVertexAttribArray(8);
             this.gl.EnableVertexAttribArray(9);
 
-            this._backend.CheckError();
+            this._backend.CheckError("Enable vcertex attrib arrays 2");
 
             this._instanceVbo.Unbind();
             this._vao.Unbind();
@@ -296,10 +296,11 @@ namespace Furball.Vixie.Backends.OpenGLES {
                 TextureGL tex = this._boundTextures[i] as TextureGL;
 
                 tex.Bind(TextureUnit.Texture0 + i);
+                this._backend.CheckError($"Bind tex {i}");
             }
 
             this._vao.Bind();
-            this._backend.CheckError();
+            this._backend.CheckError("Bind vao");
 
             // this._InstanceVBO.SetData<InstanceData>(this._instanceData);
             this._instanceVbo.Bind();

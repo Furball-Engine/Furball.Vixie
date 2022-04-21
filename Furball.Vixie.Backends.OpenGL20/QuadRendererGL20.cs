@@ -55,7 +55,7 @@ namespace Furball.Vixie.Backends.OpenGL20 {
             
             this._program.Bind();
             
-            this._backend.CheckError();
+            this._backend.CheckError("create shaders");
 
             this._quadColorsUniformPosition             = this._program.GetUniformLocation("u_QuadColors");
             this._quadPositionsUniformPosition          = this._program.GetUniformLocation("u_QuadPositions");
@@ -64,11 +64,10 @@ namespace Furball.Vixie.Backends.OpenGL20 {
             this._quadRotationsUniformPosition          = this._program.GetUniformLocation("u_QuadRotations");
             this._quadTextureIdsUniformPosition         = this._program.GetUniformLocation("u_QuadTextureIds");
             this._quadTextureCoordinatesUniformPosition = this._program.GetUniformLocation("u_QuadTextureCoordinates");
-            this._backend.CheckError();
+            this._backend.CheckError("get uniforms");
 
             for (int i = 0; i < backend.QueryMaxTextureUnits(); i++) {
                 this._program.BindUniformToTexUnit($"tex_{i}", i);
-                this._backend.CheckError();
             }
 
             this._textRenderer = new VixieFontStashRenderer(this._backend, this);
@@ -120,12 +119,12 @@ namespace Furball.Vixie.Backends.OpenGL20 {
 
             this._vertexBuffer = this._gl.GenBuffer();
             this._gl.BindBuffer(BufferTargetARB.ArrayBuffer, this._vertexBuffer);
-            this._backend.CheckError();
+            this._backend.CheckError("bind buf 1");
             this._gl.BufferData<BatchedVertex>(BufferTargetARB.ArrayBuffer, this.BatchedVertices, BufferUsageARB.StaticDraw);
-            this._backend.CheckError();
+            this._backend.CheckError("buf data");
 
             this._gl.BindBuffer(GLEnum.ArrayBuffer, 0);
-            this._backend.CheckError();
+            this._backend.CheckError("unbind buf");
         }
 
         public unsafe void Begin() {
@@ -135,7 +134,7 @@ namespace Furball.Vixie.Backends.OpenGL20 {
 
             fixed (void* ptr = &this._backend.ProjectionMatrix)
                 this._gl.UniformMatrix4(this._program.GetUniformLocation("u_ProjectionMatrix"), 1, false, (float*)ptr);
-            this._backend.CheckError();
+            this._backend.CheckError("uniform matrix 4");
 
             this._gl.BindBuffer(GLEnum.ArrayBuffer, this._vertexBuffer);
 
@@ -280,41 +279,41 @@ namespace Furball.Vixie.Backends.OpenGL20 {
                 this._gl.ActiveTexture(TextureUnit.Texture0 + i);
                 this._gl.BindTexture(TextureTarget.Texture2D, tex.TextureId);
             }
-            this._backend.CheckError();
+            this._backend.CheckError("bind texes");
 
             fixed (void* ptr = this.BatchedColors)
                 this._gl.Uniform4(this._quadColorsUniformPosition, (uint)this.BatchedQuads, (float*)ptr);
-            this._backend.CheckError();
+            this._backend.CheckError("uniform colors");
 
             fixed (void* ptr = this.BatchedPositions)
                 this._gl.Uniform2(this._quadPositionsUniformPosition, (uint)this.BatchedQuads, (float*)ptr);
-            this._backend.CheckError();
+            this._backend.CheckError("uniforms pos");
 
             fixed (void* ptr = this.BatchedSizes)
                 this._gl.Uniform2(this._quadSizesUniformPosition, (uint)this.BatchedQuads, (float*)ptr);
-            this._backend.CheckError();
+            this._backend.CheckError("uniform sizes");
 
             fixed (void* ptr = this.BatchedRotationOrigins)
                 this._gl.Uniform2(this._quadRotationOriginsUniformPosition, (uint)this.BatchedQuads, (float*)ptr);
-            this._backend.CheckError();
+            this._backend.CheckError("uniform rotation origins");
 
             fixed (void* ptr = this.BatchedRotations)
                 this._gl.Uniform1(this._quadRotationsUniformPosition, (uint)this.BatchedQuads, (float*)ptr);
-            this._backend.CheckError();
+            this._backend.CheckError("uniform rotations");
 
             fixed (void* ptr = this.BatchedTextureIds)
                 this._gl.Uniform1(this._quadTextureIdsUniformPosition, (uint)this.BatchedQuads, (float*)ptr);
-            this._backend.CheckError();
+            this._backend.CheckError("uniform texids");
 
             fixed (void* ptr = this.BatchedTextureCoordinates)
                 this._gl.Uniform4(this._quadTextureCoordinatesUniformPosition, (uint)this.BatchedQuads, (float*)ptr);
-            this._backend.CheckError();
+            this._backend.CheckError("uniform tex coords");
 
             this._gl.BindBuffer(BufferTargetARB.ArrayBuffer, this._vertexBuffer);
 
             this._gl.DrawElements<ushort>(PrimitiveType.Triangles, (uint)(this.BatchedQuads * 6), DrawElementsType.UnsignedShort, this.BatchedIndicies);
 
-            this._backend.CheckError();
+            this._backend.CheckError("draw elements");
             
             this._gl.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
 

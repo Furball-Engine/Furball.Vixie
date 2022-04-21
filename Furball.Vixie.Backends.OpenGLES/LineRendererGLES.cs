@@ -188,7 +188,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
 
             //Draw
             this.gl.DrawArrays(PrimitiveType.Lines, 0, (uint) (this._processedVerticies));
-            this._backend.CheckError();
+            this._backend.CheckError("draw line rednerer ");
 
             //Reset Counts
             this._processedVerticies = 0;

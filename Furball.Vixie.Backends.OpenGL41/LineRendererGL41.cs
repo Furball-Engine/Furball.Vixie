@@ -67,7 +67,6 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             string vertexSource = ResourceHelpers.GetStringResource("Shaders/LineRenderer/VertexShader.glsl");
             string fragmentSource = ResourceHelpers.GetStringResource("Shaders/LineRenderer/FragmentShader.glsl");
             string geometrySource = ResourceHelpers.GetStringResource("Shaders/LineRenderer/GeometryShader.glsl");
-            this._backend.CheckError();
 
             //Create, Bind, Attach, Compile and Link the Vertex Fragment and Geometry Shaders
             this._lineShaderGl41 = new ShaderGL(backend);
@@ -76,6 +75,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
                 .AttachShader(ShaderType.FragmentShader, fragmentSource)
                 .AttachShader(ShaderType.GeometryShader, geometrySource)
                 .Link();
+            this._backend.CheckError("create shaders");
 
             //Define Layout of the Vertex Buffer
             VertexBufferLayoutGL layoutGl41 =
@@ -189,7 +189,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
 
             //Draw
             this.gl.DrawArrays(PrimitiveType.Lines, 0, (uint) (this._processedVerticies));
-            this._backend.CheckError();
+            this._backend.CheckError("draw arrays line r");
 
             //Reset Counts
             this._processedVerticies = 0;

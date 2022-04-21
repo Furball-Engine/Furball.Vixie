@@ -106,14 +106,16 @@ namespace Furball.Vixie.Backends.OpenGLES {
             
             this.InfoSections.ForEach(x => x.Log(LoggerLevelOpenGLES.InstanceInfo));
         }
-        public void CheckError(string message = "") {
-            this.CheckErrorInternal();
+        public void CheckError(string message) {
+            this.CheckErrorInternal(message);
         }
+
         /// <summary>
         /// Checks for OpenGL errors
         /// </summary>
+        /// <param name="erorr"></param>
         [Conditional("DEBUG")]
-        public void CheckErrorInternal(string message = "") {
+        private void CheckErrorInternal(string erorr = "") {
             GLEnum error = this.gl.GetError();
 
             if (error != GLEnum.NoError) {
@@ -121,7 +123,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
                 throw new Exception($"Got GL Error {error}!");
 #else
                 Debugger.Break();
-                Logger.Log($"OpenGLES Error! Code: {error.ToString()}", LoggerLevelOpenGLES.InstanceError);
+                Logger.Log($"OpenGL Error! Code: {error.ToString()} Extra Info: {erorr}", LoggerLevelOpenGLES.InstanceError);
 #endif
             }
         }

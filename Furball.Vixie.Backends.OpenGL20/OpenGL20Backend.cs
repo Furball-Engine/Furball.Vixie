@@ -38,7 +38,7 @@ namespace Furball.Vixie.Backends.OpenGL20 {
 
         public Matrix4x4 ProjectionMatrix;
 
-        public void CheckError(string message = "") {
+        public void CheckError(string message) {
             this.CheckErrorInternal(message);
         }
 

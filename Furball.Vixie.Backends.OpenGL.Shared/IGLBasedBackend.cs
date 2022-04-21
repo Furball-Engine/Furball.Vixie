@@ -114,6 +114,6 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
 
         public void DeleteVertexArray(uint arrayId);
 
-        public void CheckError(string error = "");
+        public void CheckError(string error);
     }
 }

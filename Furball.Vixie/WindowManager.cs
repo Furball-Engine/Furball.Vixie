@@ -138,6 +138,8 @@ namespace Furball.Vixie {
             this.GameWindow.FramebufferResize += newSize => {
                 this.UpdateProjectionAndSize(newSize.X, newSize.Y);
             };
+            
+            this.GameWindow.Closing += OnWindowClosing;
         }
         public void SetupGraphicsApi() {
             GraphicsBackend.SetBackend(this._backend);
@@ -151,17 +153,16 @@ namespace Furball.Vixie {
         public void RunWindow() {
             this.GameWindow.Run();
         }
+        
+        private void OnWindowClosing() {
+            this.Dispose();
+        }
+        
         /// <summary>
         /// Disposes the Window Manager
         /// </summary>
         public void Dispose() {
-            try {
-                this.GameWindow?.Dispose();
-                GraphicsBackend.Current.Cleanup();
-            }
-            catch {
-
-            }
+            GraphicsBackend.Current.Cleanup();
         }
     }
 }

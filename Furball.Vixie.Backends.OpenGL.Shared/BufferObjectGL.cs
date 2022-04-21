@@ -45,7 +45,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
             this._backend.BindBuffer(this._bufferType, this.BufferId);
             //Allocate Memory
             this._backend.BufferData(this._bufferType, (nuint) size, null, this._bufferUsage);
-            this._backend.CheckError();
+            this._backend.CheckError("create buffer object");
         }
         /// <summary>
         /// Creates an uninitialized buffer
@@ -60,7 +60,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
             this._bufferUsage = usage;
             //Generate Buffer
             this.BufferId = this._backend.GenBuffer();
-            this._backend.CheckError();
+            this._backend.CheckError("create buffer");
         }
 
         public delegate void VoidDelegate();
@@ -77,14 +77,14 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// <returns></returns>
         public unsafe BufferObjectGL SetData(void* data, nuint size) {
             this._backend.BufferData(this._bufferType, size, data, this._bufferUsage);
-            this._backend.CheckError();
+            this._backend.CheckError("set buffer data");
 
             return this;
         }
 
         public unsafe BufferObjectGL SetSubData(void* data, nuint size, nint offset = 0) {
             this._backend.BufferSubData(this._bufferType, offset, size, data);
-            this._backend.CheckError();
+            this._backend.CheckError("set sub buffer data");
 
             return this;
         }
@@ -93,7 +93,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
             fixed (void* d = data) {
                 this.SetSubData(d, (nuint)(data.Length * sizeof(pDataType)));
             }
-            this._backend.CheckError();
+            this._backend.CheckError("set sub buffer data 2");
 
             return this;
         }
@@ -108,7 +108,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
             fixed (void* d = data) {
                 this.SetData(d, (nuint)(data.Length * sizeof(pDataType)));
             }
-            this._backend.CheckError();
+            this._backend.CheckError("set data 2");
 
             return this;
         }
@@ -144,7 +144,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
                 return null;
 
             this._backend.BindBuffer(this._bufferType, this.BufferId);
-            this._backend.CheckError();
+            this._backend.CheckError("bind buffer");
 
             CurrentlyBound = this;
 
@@ -207,7 +207,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
                 return null;
 
             this._backend.BindBuffer(this._bufferType, 0);
-            this._backend.CheckError();
+            this._backend.CheckError("unbind buffer");
 
             CurrentlyBound = null;
 
@@ -236,7 +236,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
             catch {
 
             }
-            this._backend.CheckError();
+            this._backend.CheckError("dispose buffer");
         }
     }
 }

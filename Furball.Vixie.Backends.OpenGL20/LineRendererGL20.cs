@@ -63,7 +63,7 @@ namespace Furball.Vixie.Backends.OpenGL20 {
 
             fixed (void* ptr = &this._backend.ProjectionMatrix)
                 this._gl.UniformMatrix4(this._program.GetUniformLocation("u_ProjectionMatrix"), 1, false, (float*)ptr);
-            this._backend.CheckError();
+            this._backend.CheckError("uniform matrix 4");
             
             this._gl.BindBuffer(GLEnum.ArrayBuffer, this._arrayBuf);
             

@@ -88,7 +88,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
 
             this._shaderGl41.Bind();
 
-            this._backend.CheckError();
+            this._backend.CheckError("bind textures");
 
             for (int i = 0; i < backend.QueryMaxTextureUnits(); i++) {
                 this._shaderGl41.BindUniformToTexUnit($"tex_{i}", i);
@@ -105,11 +105,11 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             this.gl.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, (uint)sizeof(Vertex), (void*)0);
             //Texture position
             this.gl.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, (uint)sizeof(Vertex), (void*)sizeof(Vector2));
-            this._backend.CheckError();
+            this._backend.CheckError("quad renderer vertex attrib ptrs");
 
             this.gl.EnableVertexAttribArray(0);
             this.gl.EnableVertexAttribArray(1);
-            this._backend.CheckError();
+            this._backend.CheckError("quad renderer enable vtx attrib arrays");
 
             this._instanceVbo = new BufferObjectGL(backend, BufferTargetARB.ArrayBuffer, BufferUsageARB.DynamicDraw);
             this._instanceVbo.Bind();
@@ -159,7 +159,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             this.gl.EnableVertexAttribArray(8);
             this.gl.EnableVertexAttribArray(9);
 
-            this._backend.CheckError();
+            this._backend.CheckError("more vtx attrib stuffs");
 
             this._instanceVbo.Unbind();
             this._vao.Unbind();
@@ -299,7 +299,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             }
 
             this._vao.Bind();
-            this._backend.CheckError();
+            this._backend.CheckError("bind vao");
 
             // this._InstanceVBO.SetData<InstanceData>(this._instanceData);
             this._instanceVbo.Bind();
@@ -307,6 +307,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
                 this._instanceVbo.SetSubData(ptr, (nuint)(this._instances * sizeof(InstanceData)));
 
             this.gl.DrawElementsInstanced<ushort>(PrimitiveType.TriangleStrip, 6, DrawElementsType.UnsignedShort, _indicies, this._instances);
+            this._backend.CheckError("quad renderer draw");
 
             this._instances    = 0;
             this._usedTextures = 0;

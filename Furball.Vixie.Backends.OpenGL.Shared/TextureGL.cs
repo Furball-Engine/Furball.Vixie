@@ -150,7 +150,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
             this._backend.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat.Rgba8, 1, 1, 0, PixelFormat.Rgba, PixelType.UnsignedByte, &color);
             //Unbind as we have finished
             this._backend.BindTexture(TextureTarget.Texture2D, 0);
-            this._backend.CheckError();
+            this._backend.CheckError("create white pixel texture");
 
             this.Size = new Vector2(1, 1);
         }
@@ -174,7 +174,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
             this._backend.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat.Rgba8, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, null);
             //Unbind as we have finished
             this._backend.BindTexture(TextureTarget.Texture2D, 0);
-            this._backend.CheckError();
+            this._backend.CheckError("create blank texture with width + height");
 
             this.Size = new Vector2(width, height);
         }
@@ -245,7 +245,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
             this._backend.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat.Rgba8, (uint)width, (uint)height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, data);
             //Unbind as we have finished
             this._backend.BindTexture(TextureTarget.Texture2D, 0);
-            this._backend.CheckError();
+            this._backend.CheckError("create tex width+height with data");
         }
         /// <summary>
         /// Sets the Data of the Texture Directly
@@ -259,9 +259,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
 
             fixed(void* d = data)
                 this._backend.TexImage2D(TextureTarget.Texture2D, level, InternalFormat.Rgba, (uint) this.Size.X, (uint) this.Size.Y, 0, PixelFormat.Rgba, PixelType.UnsignedByte, d);
-
-            // this._backend.Finish();
-            this._backend.CheckError();
+            this._backend.CheckError("set texture data");
 
             this.UnlockingUnbind();
 
@@ -280,7 +278,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
 
             fixed(void* d = data)
                 this._backend.TexSubImage2D(TextureTarget.Texture2D, level, rect.X, rect.Y, (uint) rect.Width, (uint) rect.Height, PixelFormat.Rgba, PixelType.UnsignedByte, d);
-            this._backend.CheckError();
+            this._backend.CheckError("set texture data with rect");
 
             this.UnlockingUnbind();
 
@@ -301,7 +299,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
 
             this._backend.ActiveTexture(textureSlot);
             this._backend.BindTexture(TextureTarget.Texture2D, this.TextureId);
-            this._backend.CheckError();
+            this._backend.CheckError("bind tex with tex slot");
 
             BoundTextures[textureSlot] = this.TextureId;
             this.BoundAt               = textureSlot;
@@ -365,7 +363,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
 
             this._backend.ActiveTexture(this.BoundAt);
             this._backend.BindTexture(TextureTarget.Texture2D, 0);
-            this._backend.CheckError();
+            this._backend.CheckError("unbind texture");
 
             BoundTextures[this.BoundAt] = 0;
 
@@ -398,7 +396,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
             catch {
 
             }
-            this._backend.CheckError();
+            this._backend.CheckError("dispose texture");
         }
     }
 }

@@ -60,41 +60,42 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
 
             //Generate and bind a FrameBuffer
             this._frameBufferId = this._backend.GenFramebuffer();
+            this._backend.CheckError("gen framebuffer");
             this._backend.BindFramebuffer(FramebufferTarget.Framebuffer, this._frameBufferId);
-            this._backend.CheckError();
+            this._backend.CheckError("bind framebuffer");
 
             //Generate a Texture
             this._textureId = this._backend.GenTexture();
-            this._backend.CheckError();
+            this._backend.CheckError("gen fb tex");
             this._backend.BindTexture(TextureTarget.Texture2D, this._textureId);
-            this._backend.CheckError();
+            this._backend.CheckError("bind fb tex");
             //Set it to Empty
             this._backend.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat.Rgb, width, height, 0, PixelFormat.Rgb, PixelType.UnsignedByte, null);
-            this._backend.CheckError();
+            this._backend.CheckError("fill fb tex");
             //Set The Filtering to nearest (apperantly necessary, idk)
             this._backend.TexParameterI(TextureTarget.Texture2D, GLEnum.TextureMagFilter, (int)GLEnum.Nearest);
-            this._backend.CheckError();
+            this._backend.CheckError("set nearest filtering for fb tex");
             this._backend.TexParameterI(TextureTarget.Texture2D, GLEnum.TextureMinFilter, (int)GLEnum.Nearest);
-            this._backend.CheckError();
+            this._backend.CheckError("set nearest filtering for fb tex 2");
 
             //Generate the Depth buffer
             this._depthRenderBufferId = this._backend.GenRenderbuffer();
-            this._backend.CheckError();
+            this._backend.CheckError("gen renderbuffer");
             this._backend.BindRenderbuffer(RenderbufferTarget.Renderbuffer, this._depthRenderBufferId);
-            this._backend.CheckError();
+            this._backend.CheckError("bind renderbuffer");
             this._backend.RenderbufferStorage(RenderbufferTarget.Renderbuffer, InternalFormat.DepthComponent24, width, height);
-            this._backend.CheckError();
+            this._backend.CheckError("set renderbuffer storage");
             this._backend.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, RenderbufferTarget.Renderbuffer, this._depthRenderBufferId);
-            this._backend.CheckError();
+            this._backend.CheckError("set fb to renderbuffer");
             //Connect the bound texture to the FrameBuffer object
             this._backend.FramebufferTexture(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, this._textureId, 0);
-            this._backend.CheckError();
+            this._backend.CheckError("framebuffer texture");
 
             GLEnum[] drawBuffers = new GLEnum[1] {
                 GLEnum.ColorAttachment0
             };
             this._backend.DrawBuffers(1, drawBuffers);
-            this._backend.CheckError();
+            this._backend.CheckError("drawbuffers");
 
             //Check if FrameBuffer created successfully
             if (this._backend.CheckFramebufferStatus(FramebufferTarget.Framebuffer) != GLEnum.FramebufferComplete) {
@@ -123,7 +124,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
             //Store the old viewport for later
             this._backend.GetInteger(GetPName.Viewport, ref this._oldViewPort);
             this._backend.Viewport(0, 0, this.TargetWidth, this.TargetHeight);
-            this._backend.CheckError();
+            this._backend.CheckError("bind render target");
 
             CurrentlyBound = this;
         }
@@ -183,7 +184,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
 
             this._backend.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
             this._backend.Viewport(this._oldViewPort[0], this._oldViewPort[1], (uint) this._oldViewPort[2], (uint) this._oldViewPort[3]);
-            this._backend.CheckError();
+            this._backend.CheckError("unbind rendertarget");
 
             CurrentlyBound = null;
         }
@@ -212,7 +213,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
             catch {
 
             }
-            this._backend.CheckError();
+            this._backend.CheckError("dispose render target");
         }
     }
 }

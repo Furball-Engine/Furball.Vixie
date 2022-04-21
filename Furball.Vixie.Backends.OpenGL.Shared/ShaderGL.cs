@@ -44,7 +44,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
             this._uniformLocationCache = new Dictionary<string, int>();
 
             this.ProgramId = this._backend.CreateProgram();
-            this._backend.CheckError();
+            this._backend.CheckError("create shader program");
         }
 
         ~ShaderGL() {
@@ -62,11 +62,11 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// <exception cref="Exception">Shader Compilation Failure</exception>
         public ShaderGL AttachShader(ShaderType type, string source) {
             uint shaderId = this._backend.CreateShader(type);
-            this._backend.CheckError();
+            this._backend.CheckError($"create shader 2 {type}");
 
             this._backend.ShaderSource(shaderId, source);
             this._backend.CompileShader(shaderId);
-            this._backend.CheckError();
+            this._backend.CheckError($"compile shader type {type}");
 
             string infoLog = this._backend.GetShaderInfoLog(shaderId);
 
@@ -74,7 +74,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
                 throw new Exception($"Failed to Compile shader of type {type}, Error Message: {infoLog}");
 
             this._backend.AttachShader(this.ProgramId, shaderId);
-            this._backend.CheckError();
+            this._backend.CheckError("attach shader");
 
             this._shaders.Add(shaderId);
 
@@ -86,12 +86,10 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// <returns>Self, used for Chaining methods</returns>
         /// <exception cref="Exception"></exception>
         public ShaderGL Link() {
-            
-            
             //Link Program and get Error incase something failed
             this._backend.LinkProgram(this.ProgramId);
             this._backend.GetProgram(this.ProgramId, ProgramPropertyARB.LinkStatus, out int linkStatus);
-            this._backend.CheckError();
+            this._backend.CheckError("link shader");
 
             if (linkStatus == 0)
                 throw new Exception($"Failed to Link Program, Error Message: { this._backend.GetProgramInfoLog(this.ProgramId) }");
@@ -99,7 +97,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
             //Delete Intermediate Shaders
             for(int i = 0; i != this._shaders.Count; i++)
                 this._backend.DeleteShader(this._shaders[i]);
-            this._backend.CheckError();
+            this._backend.CheckError("delete intermediate shaders");
 
             return this;
         }
@@ -111,7 +109,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
                 return null;
 
             this._backend.UseProgram(this.ProgramId);
-            this._backend.CheckError();
+            this._backend.CheckError("bind shader");
 
             CurrentlyBound = this;
 
@@ -176,7 +174,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
             if (!this._uniformLocationCache.TryGetValue(uniformName, out int location)) {
                 //Get the location from the program
                 location = this._backend.GetUniformLocation(this.ProgramId, uniformName);
-                this._backend.CheckError();
+                this._backend.CheckError("get uniform location");
                 
                 if(location != -1)
                     this._uniformLocationCache.Add(uniformName, location);
@@ -194,40 +192,32 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         }
 
         public unsafe ShaderGL SetUniform(string uniformName, Matrix4x4 matrix) {
-            
-            
             this._backend.UniformMatrix4(this.GetUniformLocation(uniformName), 1, false, (float*) &matrix);
-            this._backend.CheckError();
+            this._backend.CheckError("set uniform matrix 4");
             
             //Return this for chaining
             return this;
         }
         
         public ShaderGL SetUniform(string uniformName, float f) {
-            
-            
             this._backend.Uniform1(this.GetUniformLocation(uniformName), f);
-            this._backend.CheckError();
+            this._backend.CheckError("set uniform float");
             
             //Return this for chaining
             return this;
         }
         
         public ShaderGL SetUniform(string uniformName, float f, float f2) {
-            
-            
             this._backend.Uniform2(this.GetUniformLocation(uniformName), f, f2);
-            this._backend.CheckError();
+            this._backend.CheckError("set uniform 2 floats");
             
             //Return this for chaining
             return this;
         }
         
         public ShaderGL SetUniform(string uniformName, int i) {
-            
-            
             this._backend.Uniform1(this.GetUniformLocation(uniformName), i);
-            this._backend.CheckError();
+            this._backend.CheckError("set uniform int");
             
             //Return this for chaining
             return this;
@@ -237,13 +227,11 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         public ShaderGL Unbind() {
-            
-            
             if (this.Locked)
                 return null;
 
             this._backend.UseProgram(0);
-            this._backend.CheckError();
+            this._backend.CheckError("unbind shader");
 
             CurrentlyBound = null;
 
@@ -270,7 +258,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
             catch {
 
             }
-            this._backend.CheckError();
+            this._backend.CheckError("dispose shader");
         }
         
         /// <summary>
@@ -280,10 +268,10 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// <param name="unit"></param>
         public void BindUniformToTexUnit(string uniform, int unit) {
             int location = this.GetUniformLocation(uniform);
-            this._backend.CheckError();
+            this._backend.CheckError("get uniform location");
 
             this._backend.Uniform1(location, unit);
-            this._backend.CheckError();
+            this._backend.CheckError($"bind uniform to tex unit {unit}");
         }
     }
 }

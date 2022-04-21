@@ -80,12 +80,12 @@ namespace Furball.Vixie.Backends.OpenGL41 {
 
             //Enables Blending (Required for Transparent Objects)
             this.gl.Enable(EnableCap.Blend);
-            this.CheckError();
+            this.CheckError("enable blend");
             this.gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
-            this.CheckError();
+            this.CheckError("enable srcalpha");
 
             this.ImGuiController = new ImGuiController(this.gl, window, inputContext);
-            this.CheckError();
+            this.CheckError("create imguicontroller");
             
             BackendInfoSection mainSection = new BackendInfoSection("OpenGL Info");
             mainSection.Contents.Add(("OpenGL Version", this.gl.GetStringS(StringName.Version)));
@@ -96,14 +96,16 @@ namespace Furball.Vixie.Backends.OpenGL41 {
 
             this.InfoSections.ForEach(x => x.Log(LoggerLevelOpenGL41.InstanceInfo));
         }
-        public void CheckError(string message = "") {
+        public void CheckError(string message) {
             this.CheckErrorInternal(message);
         }
+
         /// <summary>
         /// Checks for OpenGL errors
         /// </summary>
+        /// <param name="erorr"></param>
         [Conditional("DEBUG")]
-        public void CheckErrorInternal(string message = "") {
+        private void CheckErrorInternal(string erorr = "") {
             GLEnum error = this.gl.GetError();
 
             if (error != GLEnum.NoError) {
@@ -111,7 +113,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
                 throw new Exception($"Got GL Error {error}!");
 #else
                 Debugger.Break();
-                Logger.Log($"OpenGL Error! Code: {error.ToString()}", LoggerLevelOpenGL41.InstanceError);
+                Logger.Log($"OpenGL Error! Code: {error.ToString()} Extra Info: {erorr}", LoggerLevelOpenGL41.InstanceError);
 #endif
             }
         }
@@ -160,7 +162,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
         public override int QueryMaxTextureUnits() {
             if (this._maxTextureUnits == -1) {
                 this.gl.GetInteger(GetPName.MaxTextureImageUnits, out int maxTexSlots);
-                this.CheckError();
+                this.CheckError("get max tex slots");
                 this._maxTextureUnits = maxTexSlots;
             }
 
