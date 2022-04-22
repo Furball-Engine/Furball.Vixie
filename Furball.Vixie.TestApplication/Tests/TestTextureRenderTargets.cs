@@ -1,6 +1,3 @@
-using System;
-
-using System.Globalization;
 using System.Numerics;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Renderers;
@@ -49,10 +46,6 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._quadRenderer.End();
 
             #region ImGui menu
-
-            ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
-                       $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
-            );
 
             ImGui.SliderFloat("Final Texture Scale", ref this._scale, 0f, 2f);
 

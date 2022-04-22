@@ -1,6 +1,4 @@
 using System;
-
-using System.Globalization;
 using System.Numerics;
 using FontStashSharp;
 using Furball.Vixie.Backends.Shared;
@@ -42,10 +40,6 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._quadRendererGl.End();
 
             #region ImGui menu
-
-            ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
-                       $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
-            );
 
             ImGui.SliderFloat("Scale",    ref this._scale,    0f, 5f);
             ImGui.SliderFloat("Rotation", ref this._rotation, 0f, (float)(Math.PI * 2f));

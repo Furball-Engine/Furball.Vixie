@@ -8,7 +8,7 @@ var options = WindowOptions.Default;
 
 options.VSync = false;
 
-GraphicsBackend.PrefferedBackends = Backend.OpenGL41 | Backend.OpenGL20;
+GraphicsBackend.PrefferedBackends = Backend.Veldrid;
 
 VeldridBackend.PrefferedBackend = Veldrid.GraphicsBackend.Vulkan;
 

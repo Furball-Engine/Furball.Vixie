@@ -1,3 +1,4 @@
+using Furball.Vixie.Helpers;
 using Furball.Vixie.Helpers.Helpers;
 using Veldrid;
 using Veldrid.SPIRV;
@@ -89,9 +90,9 @@ namespace Furball.Vixie.Backends.Veldrid {
             if (this._isDisposed) return;
             this._isDisposed = true;
             
-            this._pipeline.Dispose();
-            this._ib.Dispose();
-            this._vb.Dispose();
+            DisposeQueue.Enqueue(this._pipeline);
+            DisposeQueue.Enqueue(this._ib);
+            DisposeQueue.Enqueue(this._vb);
         }
     }
 }

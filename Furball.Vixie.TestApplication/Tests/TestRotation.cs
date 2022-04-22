@@ -1,5 +1,3 @@
-using System;
-using System.Globalization;
 using System.Numerics;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Renderers;
@@ -33,10 +31,6 @@ namespace Furball.Vixie.TestApplication.Tests {
 
 
             #region ImGui menu
-
-            ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
-                       $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
-            );
 
             ImGui.DragFloat("Rotation", ref this._rotation, 0.01f, 0f, 8f);
 

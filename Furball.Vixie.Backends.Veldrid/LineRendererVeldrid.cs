@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Renderers;
+using Furball.Vixie.Helpers;
 using Furball.Vixie.Helpers.Helpers;
 using Veldrid;
 using Veldrid.SPIRV;
@@ -144,12 +145,12 @@ namespace Furball.Vixie.Backends.Veldrid {
             
             this._isDisposed = true;
             
-            this._pipeline.Dispose();
-            this._indexBuffer.Dispose();
-            this._projectionBuffer.Dispose();
-            this._vertexBuffer.Dispose();
-            this._instanceVertexBuffer.Dispose();
-            this._projectionBufferResourceSet.Dispose();
+            DisposeQueue.Enqueue(this._pipeline);
+            DisposeQueue.Enqueue(this._indexBuffer);
+            DisposeQueue.Enqueue(this._projectionBuffer);
+            DisposeQueue.Enqueue(this._vertexBuffer);
+            DisposeQueue.Enqueue(this._instanceVertexBuffer);
+            DisposeQueue.Enqueue(this._projectionBufferResourceSet);
         }
 
         ~LineRendererVeldrid() {

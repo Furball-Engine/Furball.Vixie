@@ -1,6 +1,7 @@
 using System.IO;
 using System.Numerics;
 using Furball.Vixie.Backends.Shared;
+using Furball.Vixie.Helpers;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using Veldrid;
@@ -152,10 +153,11 @@ namespace Furball.Vixie.Backends.Veldrid.Abstractions {
             if (this.IsDisposed) return;
             this.IsDisposed = true;
             
-            this.Texture.Dispose();
             foreach (ResourceSet resourceSet in this.ResourceSets) {
-                resourceSet?.Dispose();
+                if(resourceSet != null)
+                    DisposeQueue.Enqueue(resourceSet);
             }
+            DisposeQueue.Enqueue(this.Texture); 
             
             this._localBuffer.Dispose();
         }

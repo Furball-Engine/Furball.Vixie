@@ -1,5 +1,6 @@
 using System.Numerics;
 using Furball.Vixie.Backends.Shared;
+using Furball.Vixie.Helpers;
 using Veldrid;
 using Texture=Furball.Vixie.Backends.Shared.Texture;
 
@@ -58,8 +59,8 @@ namespace Furball.Vixie.Backends.Veldrid.Abstractions {
             if (this._isDisposed) return;
             this._isDisposed = true;
             
-            this._fb.Dispose();
-            this._tex.Dispose();
+            DisposeQueue.Enqueue(this._fb);
+            DisposeQueue.Enqueue(this._tex);
         }
 
         ~TextureRenderTargetVeldrid() {

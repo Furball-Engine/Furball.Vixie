@@ -5,7 +5,6 @@ using Furball.Vixie.Backends.Shared.Renderers;
 using Silk.NET.Input;
 using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 
 namespace Furball.Vixie.Backends.Shared.Backends {
     /// <summary>

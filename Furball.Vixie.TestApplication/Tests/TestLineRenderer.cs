@@ -1,6 +1,3 @@
-using System;
-
-using System.Globalization;
 using System.Numerics;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Renderers;
@@ -33,10 +30,6 @@ namespace Furball.Vixie.TestApplication.Tests {
 
             #region ImGui menu
 
-            ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
-                       $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
-            );
-            
             ImGui.SliderFloat("Top Smush Amount", ref this._topSmush, 0f, 1);
             ImGui.SliderFloat("Bottom Smush Amount", ref this._bottomSmush, 0f, 1);
 

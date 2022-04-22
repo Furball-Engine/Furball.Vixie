@@ -1,5 +1,3 @@
-using System;
-using Furball.Vixie.Backends.Direct3D11;
 using Furball.Vixie.TestApplication.Tests;
 using ImGuiNET;
 

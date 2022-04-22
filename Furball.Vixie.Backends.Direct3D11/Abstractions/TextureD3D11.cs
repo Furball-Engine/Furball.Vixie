@@ -5,7 +5,6 @@ using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Helpers;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using Vortice;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
 using Vortice.Mathematics;
