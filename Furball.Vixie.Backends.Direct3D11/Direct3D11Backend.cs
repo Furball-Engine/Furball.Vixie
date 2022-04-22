@@ -233,6 +233,9 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         public override void Clear() {
             this._deviceContext.ClearRenderTargetView(this.CurrentlyBoundTarget, this._clearColor);
         }
+        public override void TakeScreenshot() {
+            throw new NotImplementedException();
+        }
 
         public override TextureRenderTarget CreateRenderTarget(uint width, uint height) {
             return new TextureRenderTargetD3D11(this, width, height);

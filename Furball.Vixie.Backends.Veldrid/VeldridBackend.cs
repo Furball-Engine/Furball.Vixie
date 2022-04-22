@@ -281,6 +281,9 @@ namespace Furball.Vixie.Backends.Veldrid {
         public override void Clear() {
             this.CommandList.ClearColorTarget(0, RgbaFloat.Black);
         }
+        public override void TakeScreenshot() {
+            throw new NotImplementedException();
+        }
 
         public override TextureRenderTarget CreateRenderTarget(uint width, uint height) => new TextureRenderTargetVeldrid(this, width, height);
         

@@ -141,6 +141,9 @@ namespace Furball.Vixie.Backends.OpenGL20 {
             this.gl.Clear(ClearBufferMask.ColorBufferBit);
             this.gl.ClearColor(0f, 0, 0, 0);
         }
+        public override void TakeScreenshot() {
+            throw new NotImplementedException();
+        }
 
         public override TextureRenderTarget CreateRenderTarget(uint width, uint height) => new TextureRenderTargetGL(this, width, height);
 

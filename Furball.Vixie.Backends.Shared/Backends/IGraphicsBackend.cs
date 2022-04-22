@@ -1,8 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Silk.NET.Input;
 using Silk.NET.Windowing;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Furball.Vixie.Backends.Shared.Backends {
     /// <summary>
@@ -50,6 +53,14 @@ namespace Furball.Vixie.Backends.Shared.Backends {
         /// Clears the Screen
         /// </summary>
         public abstract void Clear();
+        /// <summary>
+        /// Takes a screenshot
+        /// </summary>
+        public abstract void TakeScreenshot();
+        /// <summary>
+        /// Called when a screenshot is completed
+        /// </summary>
+        public event EventHandler<Image> ScreenshotTaken;
 
         //Render Targets
 

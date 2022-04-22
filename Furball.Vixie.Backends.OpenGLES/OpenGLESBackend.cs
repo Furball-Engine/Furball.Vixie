@@ -183,6 +183,9 @@ namespace Furball.Vixie.Backends.OpenGLES {
         public override void Clear() {
             this.gl.Clear(ClearBufferMask.ColorBufferBit);
         }
+        public override void TakeScreenshot() {
+            throw new NotImplementedException();
+        }
         /// <summary>
         /// Used to Create a TextureRenderTarget
         /// </summary>
