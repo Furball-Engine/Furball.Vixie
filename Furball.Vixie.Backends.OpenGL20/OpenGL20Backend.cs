@@ -15,6 +15,9 @@ using Silk.NET.OpenGL.Legacy;
 using Silk.NET.OpenGL.Legacy.Extensions.EXT;
 using Silk.NET.OpenGL.Legacy.Extensions.ImGui;
 using Silk.NET.Windowing;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using BufferTargetARB=Silk.NET.OpenGL.BufferTargetARB;
 using BufferUsageARB=Silk.NET.OpenGL.BufferUsageARB;
 using FramebufferAttachment=Silk.NET.OpenGL.FramebufferAttachment;
@@ -131,6 +134,7 @@ namespace Furball.Vixie.Backends.OpenGL20 {
 
         private int                  _maxTexUnits = -1;
         private ExtFramebufferObject framebufferObjectEXT;
+        private bool                 _screenshotQueued;
         public override int QueryMaxTextureUnits() {
             if (this._maxTexUnits == -1)
                 this._maxTexUnits = this.gl.GetInteger((GLEnum)GetPName.MaxTextureImageUnits);
@@ -142,7 +146,28 @@ namespace Furball.Vixie.Backends.OpenGL20 {
             this.gl.ClearColor(0f, 0, 0, 0);
         }
         public override void TakeScreenshot() {
-            throw new NotImplementedException();
+            this._screenshotQueued = true;
+        }
+        public override unsafe void Present() {
+            if (this._screenshotQueued) {
+                this._screenshotQueued = false;
+
+                int[] viewport = new int[4];
+
+                this.gl.GetInteger(GetPName.Viewport, viewport);
+                
+                Rgba32[] colorArr = new Rgba32[viewport[2] * viewport[3]];
+
+                fixed (void* ptr = colorArr)
+                    this.gl.ReadPixels(viewport[0], viewport[1], (uint)viewport[2], (uint)viewport[3], Silk.NET.OpenGL.Legacy.PixelFormat.Rgba, Silk.NET.OpenGL.Legacy.PixelType.UnsignedByte, ptr);
+                
+                Image img = Image.LoadPixelData(colorArr, viewport[2], viewport[3]);
+
+                img = img.CloneAs<Rgb24>();
+                img.Mutate(x => x.Flip(FlipMode.Vertical));
+                
+                this.InvokeScreenshotTaken(img);
+            }
         }
 
         public override TextureRenderTarget CreateRenderTarget(uint width, uint height) => new TextureRenderTargetGL(this, width, height);

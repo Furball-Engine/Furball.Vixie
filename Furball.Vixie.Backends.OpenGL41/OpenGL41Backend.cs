@@ -11,9 +11,13 @@ using Furball.Vixie.Helpers.Helpers;
 using Kettu;
 using Silk.NET.Core.Native;
 using Silk.NET.Input;
+using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.OpenGL.Extensions.ImGui;
 using Silk.NET.Windowing;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using Texture=Furball.Vixie.Backends.Shared.Texture;
 
 namespace Furball.Vixie.Backends.OpenGL41 {
@@ -56,7 +60,10 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             if (Thread.CurrentThread != _mainThread)
                 throw new ThreadStateException("You are calling GL on the wrong thread!");
         }
-        internal IWindow Window;
+        internal IWindow       Window;
+        private  bool          _screenshotQueued;
+        private  Vector2D<int> _Viewport;
+
         /// <summary>
         /// Used to Initialize the Backend
         /// </summary>
@@ -130,6 +137,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
         /// <param name="height">New height</param>
         public override void HandleWindowSizeChange(int width, int height) {
             this.gl.Viewport(0, 0, (uint)width, (uint)height);
+            this._Viewport = new Vector2D<int>(width, height);
 
             this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, height, 0, 1f, 0f);
         }
@@ -140,6 +148,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
         /// <param name="height">New height</param>
         public override void HandleFramebufferResize(int width, int height) {
             this.gl.Viewport(0, 0, (uint)width, (uint)height);
+            this._Viewport = new Vector2D<int>(width, height);
         }
         /// <summary>
         /// Used to Create a Texture Renderer
@@ -175,7 +184,28 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             this.gl.Clear(ClearBufferMask.ColorBufferBit);
         }
         public override void TakeScreenshot() {
-            throw new NotImplementedException();
+            this._screenshotQueued = true;
+        }
+        public override unsafe void Present() {
+            if (this._screenshotQueued) {
+                this._screenshotQueued = false;
+
+                int[] viewport = new int[4];
+
+                this.gl.GetInteger(GetPName.Viewport, viewport);
+                
+                Rgba32[] colorArr = new Rgba32[viewport[2] * viewport[3]];
+
+                fixed (void* ptr = colorArr)
+                    this.gl.ReadPixels(viewport[0], viewport[1], (uint)viewport[2], (uint)viewport[3], PixelFormat.Rgba, PixelType.UnsignedByte, ptr);
+                
+                Image img = Image.LoadPixelData(colorArr, viewport[2], viewport[3]);
+
+                img = img.CloneAs<Rgb24>();
+                img.Mutate(x => x.Flip(FlipMode.Vertical));
+                
+                this.InvokeScreenshotTaken(img);
+            }
         }
         /// <summary>
         /// Used to Create a TextureRenderTarget

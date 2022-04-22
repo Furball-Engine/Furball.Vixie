@@ -14,6 +14,9 @@ using Silk.NET.Input;
 using Silk.NET.OpenGLES;
 using Silk.NET.OpenGLES.Extensions.ImGui;
 using Silk.NET.Windowing;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using BufferTargetARB=Silk.NET.OpenGL.BufferTargetARB;
 using BufferUsageARB=Silk.NET.OpenGL.BufferUsageARB;
 using FramebufferAttachment=Silk.NET.OpenGL.FramebufferAttachment;
@@ -70,6 +73,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
                 throw new ThreadStateException("You are calling GL on the wrong thread!");
         }
         internal IWindow Window;
+        private  bool    _screenshotQueued;
         /// <summary>
         /// Used to Initialize the Backend
         /// </summary>
@@ -184,7 +188,28 @@ namespace Furball.Vixie.Backends.OpenGLES {
             this.gl.Clear(ClearBufferMask.ColorBufferBit);
         }
         public override void TakeScreenshot() {
-            throw new NotImplementedException();
+            this._screenshotQueued = true;
+        }
+        public override unsafe void Present() {
+            if (this._screenshotQueued) {
+                this._screenshotQueued = false;
+
+                int[] viewport = new int[4];
+
+                this.gl.GetInteger(GetPName.Viewport, viewport);
+                
+                Rgba32[] colorArr = new Rgba32[viewport[2] * viewport[3]];
+
+                fixed (void* ptr = colorArr)
+                    this.gl.ReadPixels(viewport[0], viewport[1], (uint)viewport[2], (uint)viewport[3], Silk.NET.OpenGLES.PixelFormat.Rgba, Silk.NET.OpenGLES.PixelType.UnsignedByte, ptr);
+                
+                Image img = Image.LoadPixelData(colorArr, viewport[2], viewport[3]);
+
+                img = img.CloneAs<Rgb24>();
+                img.Mutate(x => x.Flip(FlipMode.Vertical));
+                
+                this.InvokeScreenshotTaken(img);
+            }
         }
         /// <summary>
         /// Used to Create a TextureRenderTarget
