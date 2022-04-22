@@ -2,6 +2,8 @@ using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Numerics;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.Renderers;
@@ -10,6 +12,10 @@ using Kettu;
 using Silk.NET.Input;
 using Silk.NET.Windowing;
 using Silk.NET.Windowing.Extensions.Veldrid;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using Veldrid;
 using Veldrid.MetalBindings;
 using Texture=Furball.Vixie.Backends.Shared.Texture;
@@ -31,11 +37,13 @@ namespace Furball.Vixie.Backends.Veldrid {
         public   TextureVeldrid WhitePixel;
         public   ResourceSet    WhitePixelResourceSet;
 
-        public Framebuffer             RenderFramebuffer;
-        public global::Veldrid.Texture MainFramebufferTexture;
-        public ResourceSet             MainFramebufferTextureSet;
-        public ResourceLayout          MainFramebufferTextureLayout;
-        public FullScreenQuad          FullScreenQuad;
+        public  Framebuffer             RenderFramebuffer;
+        public  global::Veldrid.Texture MainFramebufferTexture;
+        public  ResourceSet             MainFramebufferTextureSet;
+        public  ResourceLayout          MainFramebufferTextureLayout;
+        public  FullScreenQuad          FullScreenQuad;
+        private bool                    _screenshotQueued;
+        
         public override void Initialize(IWindow window, IInputContext inputContext) {
             this._window = window;
             
@@ -276,13 +284,52 @@ namespace Furball.Vixie.Backends.Veldrid {
             this.GraphicsDevice.SubmitCommands(this.CommandList);
             
             this.GraphicsDevice.SwapBuffers();
+
+            if (this._screenshotQueued) {
+                this._screenshotQueued = false;
+                
+                TextureDescription desc = TextureDescription.Texture2D(
+                    this.MainFramebufferTexture.Width, 
+                    this.MainFramebufferTexture.Height, 
+                    this.MainFramebufferTexture.MipLevels, 
+                    this.MainFramebufferTexture.ArrayLayers, 
+                    this.MainFramebufferTexture.Format, 
+                    TextureUsage.Staging
+                );
+
+                global::Veldrid.Texture? tex = this.ResourceFactory.CreateTexture(desc);
+                
+                this.CommandList.Begin();
+                this.CommandList.CopyTexture(this.MainFramebufferTexture, tex);
+                this.CommandList.End();
+                this.GraphicsDevice.SubmitCommands(this.CommandList);
+
+                MappedResource mapped = this.GraphicsDevice.Map(tex, MapMode.Read);
+                
+                byte[] bytes = new byte[mapped.SizeInBytes];
+                Marshal.Copy(mapped.Data, bytes, 0, (int)mapped.SizeInBytes);
+
+                Image img = Image.LoadPixelData<Rgba32>(bytes, (int)tex.Width, (int)tex.Height);
+                this.GraphicsDevice.Unmap(tex);
+
+                img = img.CloneAs<Rgb24>();
+
+                if (!GraphicsDevice.IsUvOriginTopLeft) {
+                    img.Mutate(x => x.Flip(FlipMode.Vertical));
+                }
+                
+                this.InvokeScreenshotTaken(img);
+                
+                tex.Dispose();
+            }
         }
 
         public override void Clear() {
             this.CommandList.ClearColorTarget(0, RgbaFloat.Black);
         }
         public override void TakeScreenshot() {
-            throw new NotImplementedException();
+            this._screenshotQueued = true;
+            
         }
 
         public override TextureRenderTarget CreateRenderTarget(uint width, uint height) => new TextureRenderTargetVeldrid(this, width, height);

@@ -61,6 +61,9 @@ namespace Furball.Vixie.Backends.Shared.Backends {
         /// Called when a screenshot is completed
         /// </summary>
         public event EventHandler<Image> ScreenshotTaken;
+        protected void InvokeScreenshotTaken(Image image) {
+            this.ScreenshotTaken?.Invoke(this, image);
+        }
 
         //Render Targets
 
