@@ -72,8 +72,14 @@ namespace Furball.Vixie.Backends.OpenGLES {
             if (Thread.CurrentThread != _mainThread)
                 throw new ThreadStateException("You are calling GL on the wrong thread!");
         }
-        internal IWindow Window;
-        private  bool    _screenshotQueued;
+        internal         IWindow Window;
+        private          bool    _screenshotQueued;
+        private readonly bool    Is32;
+
+        public OpenGLESBackend(bool is32) {
+            this.Is32 = is32;
+        }
+        
         /// <summary>
         /// Used to Initialize the Backend
         /// </summary>
@@ -167,7 +173,9 @@ namespace Furball.Vixie.Backends.OpenGLES {
         /// </summary>
         /// <returns></returns>
         public override ILineRenderer CreateLineRenderer() {
-            return new LineRendererGLES(this);
+            return this.Is32 ? 
+                       new LineRendererGLES32(this) : 
+                       new LineRendererGLES30(this);
         }
         /// <summary>
         /// Gets the Amount of Texture Units available for use

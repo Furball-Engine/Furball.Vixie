@@ -22,7 +22,8 @@ namespace Furball.Vixie {
         /// <exception cref="ArgumentOutOfRangeException">Throws if a Invalid API was chosen</exception>
         public static void SetBackend(Backend backend) {
             Current = backend switch {
-                Backend.OpenGLES   => new OpenGLESBackend(),
+                Backend.OpenGLES30 => new OpenGLESBackend(false),
+                Backend.OpenGLES32 => new OpenGLESBackend(true),
                 Backend.Direct3D11 => new Direct3D11Backend(),
                 Backend.OpenGL20   => new OpenGL20Backend(),
                 Backend.OpenGL41   => new OpenGL41Backend(),
@@ -38,7 +39,8 @@ namespace Furball.Vixie {
             bool preferVeldridOverNative  = PrefferedBackends.HasFlag(Backend.Veldrid);
             bool preferOpenGl             = PrefferedBackends.HasFlag(Backend.OpenGL41);
             bool preferOpenGlLegacy       = PrefferedBackends.HasFlag(Backend.OpenGL20);
-            bool preferOpenGlesOverOpenGl = PrefferedBackends.HasFlag(Backend.OpenGLES);
+            bool preferOpenGlesOverOpenGl = PrefferedBackends.HasFlag(Backend.OpenGLES32);
+            bool preferOpenGlesOldOverOpenGles = PrefferedBackends.HasFlag(Backend.OpenGLES30);
             
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
                 if (preferVeldridOverNative) 
@@ -47,32 +49,32 @@ namespace Furball.Vixie {
                 if (!preferOpenGl)
                     return Backend.Direct3D11;
                     
-                return preferOpenGlesOverOpenGl ? Backend.OpenGLES : preferOpenGlLegacy ? Backend.OpenGL20 : Backend.OpenGL41;
+                return preferOpenGlesOverOpenGl ? (preferOpenGlesOldOverOpenGles ? Backend.OpenGLES30 : Backend.OpenGLES32) : preferOpenGlLegacy ? Backend.OpenGL20 : Backend.OpenGL41;
             }
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("ANDROID"))) {
-                return preferVeldridOverNative ? Backend.Veldrid : Backend.OpenGLES;
+                return preferVeldridOverNative ? Backend.Veldrid : Backend.OpenGLES32;
             }
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
                 if (preferVeldridOverNative) 
                     return Backend.Veldrid;
-                return preferOpenGlesOverOpenGl ? Backend.OpenGLES : preferOpenGlLegacy ? Backend.OpenGL20 : Backend.OpenGL41;
+                return preferOpenGlesOverOpenGl ? (preferOpenGlesOldOverOpenGles ? Backend.OpenGLES30 : Backend.OpenGLES32) : preferOpenGlLegacy ? Backend.OpenGL20 : Backend.OpenGL41;
             }
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) {
                 if (preferOpenGl) {
                     if(preferOpenGlesOverOpenGl)
                         Logger.Log("OpenGLES is considered unsupported on MacOS!", LoggerLevelDebugMessageCallback.InstanceNotification);
 
-                    return preferOpenGlesOverOpenGl ? Backend.OpenGLES : preferOpenGlLegacy ? Backend.OpenGL20 : Backend.OpenGL41;
+                    return preferOpenGlesOverOpenGl ? (preferOpenGlesOldOverOpenGles ? Backend.OpenGLES30 : Backend.OpenGLES32) : preferOpenGlLegacy ? Backend.OpenGL20 : Backend.OpenGL41;
                 }
                 return Backend.Veldrid;
             }
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("FREEBSD"))) {
-                return preferOpenGlesOverOpenGl ? Backend.OpenGLES : preferOpenGlLegacy ? Backend.OpenGL20 : Backend.OpenGL41;
+                return preferOpenGlesOverOpenGl ? (preferOpenGlesOldOverOpenGles ? Backend.OpenGLES30 : Backend.OpenGLES32) : preferOpenGlLegacy ? Backend.OpenGL20 : Backend.OpenGL41;
             }
 
             Logger.Log("You are running on an untested, unsupported platform!", LoggerLevelDebugMessageCallback.InstanceNotification);
             IsOnUnsupportedPlatform = true;
-            return Backend.OpenGL20; //return the most supported backend
+            return Backend.OpenGL20; //return the most likely supported backend
         }
     }
 }
