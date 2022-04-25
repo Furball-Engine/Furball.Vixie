@@ -8,7 +8,7 @@ var options = WindowOptions.Default;
 
 options.VSync = false;
 
-GraphicsBackend.PrefferedBackends = Backend.Veldrid;
+GraphicsBackend.PrefferedBackends = Backend.OpenGLES;
 
 VeldridBackend.PrefferedBackend = Veldrid.GraphicsBackend.Vulkan;
 

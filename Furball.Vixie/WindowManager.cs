@@ -113,7 +113,7 @@ namespace Furball.Vixie {
             };
 
             APIVersion version = this._backend switch {
-                Backend.OpenGLES   => new APIVersion(3,  0),
+                Backend.OpenGLES   => new APIVersion(3,  2),
                 Backend.OpenGL20   => new APIVersion(2,  0),
                 Backend.OpenGL41   => new APIVersion(4,  1),
                 Backend.Veldrid    => new APIVersion(0,  0),
