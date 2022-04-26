@@ -35,26 +35,30 @@ namespace Furball.Vixie {
 
             Global.AlreadyInitialized = true;
         }
-        /// <summary>
-        /// Runs the Game
-        /// </summary>
-        public void Run(WindowOptions options, Backend backend = Backend.None) {
+        
+        private void RunInternal(WindowOptions? winOptions, ViewOptions? viewOptions, Backend backend) {
             if (backend == Backend.None)
                 backend = GraphicsBackend.GetReccomendedBackend();
+
+            this.WindowManager = winOptions.HasValue 
+                                     ? new WindowManager(winOptions.Value, backend) 
+                                     : new WindowManager(viewOptions.Value, backend);
             
-            this.WindowManager = new WindowManager(options, backend);
             this.WindowManager.Create();
 
-            this.WindowManager.GameWindow.Update            += this.Update;
-            this.WindowManager.GameWindow.Render            += this.VixieDraw;
-            this.WindowManager.GameWindow.Load              += this.RendererInitialize;
-            this.WindowManager.GameWindow.Closing           += this.RendererOnClosing;
-            this.WindowManager.GameWindow.FileDrop          += this.OnFileDrop;
-            this.WindowManager.GameWindow.Move              += this.OnWindowMove;
-            this.WindowManager.GameWindow.FocusChanged      += this.EngineOnFocusChanged;
-            this.WindowManager.GameWindow.StateChanged      += this.EngineOnWindowStateChange;
-            this.WindowManager.GameWindow.FramebufferResize += this.EngineFrameBufferResize;
-            this.WindowManager.GameWindow.Resize            += this.EngineWindowResize;
+            this.WindowManager.GameView.Update            += this.Update;
+            this.WindowManager.GameView.Render            += this.VixieDraw;
+            this.WindowManager.GameView.Load              += this.RendererInitialize;
+            this.WindowManager.GameView.Closing           += this.RendererOnClosing;
+            this.WindowManager.GameView.FocusChanged      += this.EngineOnFocusChanged;
+            this.WindowManager.GameView.FramebufferResize += this.EngineFrameBufferResize;
+            this.WindowManager.GameView.Resize            += this.EngineWindowResize;
+            
+            if(!WindowManager.IsAndroid) {
+                this.WindowManager.GameWindow.FileDrop     += this.OnFileDrop;
+                this.WindowManager.GameWindow.Move         += this.OnWindowMove;
+                this.WindowManager.GameWindow.StateChanged += this.EngineOnWindowStateChange;
+            }
             
             Global.GameInstance = this;
 
@@ -66,13 +70,24 @@ namespace Furball.Vixie {
             
             this.WindowManager.RunWindow();
         }
+        
+        public void RunAndroid(ViewOptions options, Backend backend = Backend.None) {
+            this.RunInternal(null, options, backend);
+        }
+        
+        /// <summary>
+        /// Runs the Game
+        /// </summary>
+        public void Run(WindowOptions options, Backend backend = Backend.None) {
+            this.RunInternal(options, null, backend);
+        }
 
         #region Renderer Actions
         /// <summary>
         /// Used to Initialize the Renderer and stuff,
         /// </summary>
         private void RendererInitialize() {
-            this._inputContext = this.WindowManager.GameWindow.CreateInput();
+            this._inputContext = this.WindowManager.GameView.CreateInput();
 
             this.WindowManager.InputContext = this._inputContext;
             this.WindowManager.SetupGraphicsApi();

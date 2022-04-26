@@ -26,7 +26,7 @@ namespace Furball.Vixie.Backends.Veldrid {
         internal CommandList     CommandList;
         
         internal Matrix4x4       ProjectionMatrix;
-        private  IWindow         _window;
+        private  IView         _window;
         private  ImGuiController _imgui;
 
         internal ResourceLayout SamplerResourceLayout;
@@ -41,7 +41,7 @@ namespace Furball.Vixie.Backends.Veldrid {
         public  FullScreenQuad          FullScreenQuad;
         private bool                    _screenshotQueued;
         
-        public override void Initialize(IWindow window, IInputContext inputContext) {
+        public override void Initialize(IView window, IInputContext inputContext) {
             this._window = window;
             
             GraphicsDeviceOptions options = new() {

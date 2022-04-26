@@ -72,21 +72,21 @@ namespace Furball.Vixie.Backends.OpenGLES {
             if (Thread.CurrentThread != _mainThread)
                 throw new ThreadStateException("You are calling GL on the wrong thread!");
         }
-        internal         IWindow Window;
+        internal         IView Window;
         private          bool    _screenshotQueued;
         private readonly bool    Is32;
 
         public OpenGLESBackend(bool is32) {
             this.Is32 = is32;
         }
-        
+
         /// <summary>
         /// Used to Initialize the Backend
         /// </summary>
         /// <param name="window"></param>
         /// <param name="inputContext"></param>
         /// <param name="game"></param>
-        public override void Initialize(IWindow window, IInputContext inputContext) {
+        public override void Initialize(IView window, IInputContext inputContext) {
             this.GetMainThread();
 
             this.gl     = window.CreateOpenGLES();
@@ -105,7 +105,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
             this.gl.Enable(EnableCap.Blend);
             this.gl.BlendFunc(GLEnum.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
-            this.ImGuiController = new ImGuiController(this.gl, window, inputContext);
+            // this.ImGuiController = new ImGuiController(this.gl, window, inputContext);
 
             BackendInfoSection mainSection = new BackendInfoSection("OpenGL Info");
             mainSection.Contents.Add(("OpenGL Version", this.gl.GetStringS(StringName.Version)));
@@ -274,14 +274,14 @@ namespace Furball.Vixie.Backends.OpenGLES {
         /// </summary>
         /// <param name="deltaTime">Delta Time</param>
         public override void ImGuiUpdate(double deltaTime) {
-            this.ImGuiController.Update((float)deltaTime);
+            // this.ImGuiController.Update((float)deltaTime);
         }
         /// <summary>
         /// Used to Draw the ImGuiController in charge of rendering ImGui on this backend
         /// </summary>
         /// <param name="deltaTime">Delta Time</param>
         public override void ImGuiDraw(double deltaTime) {
-            this.ImGuiController.Render();
+            // this.ImGuiController.Render();
         }
         /// <summary>
         /// Returns the OpenGLES API

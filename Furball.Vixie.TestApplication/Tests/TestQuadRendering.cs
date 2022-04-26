@@ -34,16 +34,16 @@ namespace Furball.Vixie.TestApplication.Tests {
 
             this._quadRendererGl.End();
 
-            #region ImGui menu
-
-            if (ImGui.Button("Go back to test selector")) {
-                this.BaseGame.Components.Add(new BaseTestSelector());
-                this.BaseGame.Components.Remove(this);
-            }
-
-            ImGui.SliderInt("Draws", ref this._cirnoDons, 0, 2048);
-
-            #endregion
+            // #region ImGui menu
+            //
+            // if (ImGui.Button("Go back to test selector")) {
+            //     this.BaseGame.Components.Add(new BaseTestSelector());
+            //     this.BaseGame.Components.Remove(this);
+            // }
+            //
+            // ImGui.SliderInt("Draws", ref this._cirnoDons, 0, 2048);
+            //
+            // #endregion
 
             base.Draw(deltaTime);
         }

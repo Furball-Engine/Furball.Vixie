@@ -60,7 +60,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             if (Thread.CurrentThread != _mainThread)
                 throw new ThreadStateException("You are calling GL on the wrong thread!");
         }
-        internal IWindow       Window;
+        internal IView       Window;
         private  bool          _screenshotQueued;
         private  Vector2D<int> _Viewport;
 
@@ -70,7 +70,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
         /// <param name="window"></param>
         /// <param name="inputContext"></param>
         /// <param name="game"></param>
-        public override void Initialize(IWindow window, IInputContext inputContext) {
+        public override void Initialize(IView window, IInputContext inputContext) {
             this.GetMainThread();
 
             this.gl     = window.CreateOpenGL();

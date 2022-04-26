@@ -37,16 +37,16 @@ namespace Furball.Vixie.TestApplication.Tests {
             this._quadRenderer.Draw(this._testTexture, new Vector2(1280 / 2 + 100, 720 / 2 + 100), new(0.5f), 0, Color.Green);
             this._quadRenderer.End();
             
-            #region ImGui menu
-
-            ImGui.SliderFloat("Line Width", ref this._lineWidth, 0f, 20f);
-
-            if (ImGui.Button("Go back to test selector")) {
-                this.BaseGame.Components.Add(new BaseTestSelector());
-                this.BaseGame.Components.Remove(this);
-            }
-
-            #endregion
+            // #region ImGui menu
+            //
+            // ImGui.SliderFloat("Line Width", ref this._lineWidth, 0f, 20f);
+            //
+            // if (ImGui.Button("Go back to test selector")) {
+            //     this.BaseGame.Components.Add(new BaseTestSelector());
+            //     this.BaseGame.Components.Remove(this);
+            // }
+            //
+            // #endregion
 
             base.Draw(deltaTime);
         }

@@ -43,16 +43,16 @@ namespace Furball.Vixie.TestApplication.Tests {
 
             this._quadRenderer.End();
 
-            #region ImGui menu
-
-            ImGui.SliderFloat("Texture Scale", ref this._scale, 0f, 20f);
-
-            if (ImGui.Button("Go back to test selector")) {
-                this.BaseGame.Components.Add(new BaseTestSelector());
-                this.BaseGame.Components.Remove(this);
-            }
-
-            #endregion
+            // #region ImGui menu
+            //
+            // ImGui.SliderFloat("Texture Scale", ref this._scale, 0f, 20f);
+            //
+            // if (ImGui.Button("Go back to test selector")) {
+            //     this.BaseGame.Components.Add(new BaseTestSelector());
+            //     this.BaseGame.Components.Remove(this);
+            // }
+            //
+            // #endregion
 
             base.Draw(deltaTime);
         }
