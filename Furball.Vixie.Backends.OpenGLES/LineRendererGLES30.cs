@@ -25,6 +25,8 @@ namespace Furball.Vixie.Backends.OpenGLES {
         private          int        _batchedLines = 0;
         private readonly LineData[] _lineData     = new LineData[BATCH_MAX];
         
+        public bool IsBegun { get; set; }
+        
         internal unsafe LineRendererGLES30(OpenGLESBackend backend) {
             this._backend = backend;
             this._gl      = backend.GetGLES();
@@ -52,10 +54,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
         ~LineRendererGLES30() {
             DisposeQueue.Enqueue(this._program);
         }
-        public bool IsBegun {
-            get;
-            set;
-        }
+        
         public unsafe void Begin() {
             this.IsBegun = true;
             
