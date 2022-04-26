@@ -78,7 +78,8 @@ namespace Furball.Vixie {
             SdlWindowing.Use(); //dont tell perskey and kai that i do this! shhhhhhhhhhhhhhh
 
             ContextAPI api = this._backend switch {
-                Backend.OpenGLES   => ContextAPI.OpenGLES,
+                Backend.OpenGLES32 => ContextAPI.OpenGLES,
+                Backend.OpenGLES30 => ContextAPI.OpenGLES,
                 Backend.OpenGL20   => ContextAPI.OpenGL,
                 Backend.OpenGL41   => ContextAPI.OpenGL,
                 Backend.Veldrid    => ContextAPI.None,
@@ -87,7 +88,8 @@ namespace Furball.Vixie {
             };
 
             ContextProfile profile = this._backend switch {
-                Backend.OpenGLES   => ContextProfile.Core,
+                Backend.OpenGLES30 => ContextProfile.Core,
+                Backend.OpenGLES32 => ContextProfile.Core,
                 Backend.OpenGL20   => ContextProfile.Core,
                 Backend.OpenGL41   => ContextProfile.Core,
                 Backend.Veldrid    => ContextProfile.Core,
@@ -97,13 +99,15 @@ namespace Furball.Vixie {
 
             ContextFlags flags = this._backend switch {
 #if DEBUG
-                Backend.OpenGLES   => ContextFlags.Debug,
+                Backend.OpenGLES30 => ContextFlags.Debug,
+                Backend.OpenGLES32 => ContextFlags.Debug,
                 Backend.OpenGL41   => ContextFlags.Debug,
                 Backend.OpenGL20   => ContextFlags.Debug,
                 Backend.Veldrid    => ContextFlags.ForwardCompatible,
                 Backend.Direct3D11 => ContextFlags.Debug,
 #else
-                Backend.OpenGLES => ContextFlags.Default,
+                Backend.OpenGLES30 => ContextFlags.Default,
+                Backend.OpenGLES32 => ContextFlags.Default,
                 Backend.OpenGL41 => ContextFlags.Default,
                 Backend.OpenGL20 => ContextFlags.Default,
                 Backend.Direct3D11 => ContextFlags.Default,
@@ -113,7 +117,8 @@ namespace Furball.Vixie {
             };
 
             APIVersion version = this._backend switch {
-                Backend.OpenGLES   => new APIVersion(3,  0),
+                Backend.OpenGLES30 => new APIVersion(3,  0),
+                Backend.OpenGLES32 => new APIVersion(3,  2),
                 Backend.OpenGL20   => new APIVersion(2,  0),
                 Backend.OpenGL41   => new APIVersion(4,  1),
                 Backend.Veldrid    => new APIVersion(0,  0),

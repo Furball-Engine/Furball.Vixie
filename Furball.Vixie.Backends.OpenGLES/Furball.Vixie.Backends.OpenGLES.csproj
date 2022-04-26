@@ -31,6 +31,8 @@
     </ItemGroup>
 
     <ItemGroup>
+      <EmbeddedResource Include="Shaders\LineRenderer\FragmentShader30.glsl" />
+      <EmbeddedResource Include="Shaders\LineRenderer\VertexShader30.glsl" />
       <EmbeddedResource Include="Shaders\QuadRenderer\FragmentShader.glsl" />
       <EmbeddedResource Include="Shaders\QuadRenderer\VertexShader.glsl" />
         

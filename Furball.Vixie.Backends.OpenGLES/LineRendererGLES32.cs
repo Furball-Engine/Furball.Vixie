@@ -14,7 +14,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
         public fixed float Color[4];
     }
 
-    public class LineRendererGLES : IDisposable, ILineRenderer {
+    public class LineRendererGLES32 : IDisposable, ILineRenderer {
         private readonly OpenGLESBackend _backend;
         /// <summary>
         /// Max Lines allowed in 1 Batch
@@ -55,7 +55,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
         /// </summary>
         /// <param name="backend">OpenGLES API</param>
         /// <param name="capacity">How many Lines to allow in 1 Batch</param>
-        public unsafe LineRendererGLES(OpenGLESBackend backend, int capacity = 8192) {
+        public unsafe LineRendererGLES32(OpenGLESBackend backend, int capacity = 8192) {
             this._backend = backend;
             this.gl       = backend.GetGlApi();
 

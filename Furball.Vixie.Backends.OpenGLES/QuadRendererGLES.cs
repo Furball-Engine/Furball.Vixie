@@ -100,6 +100,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
             this._vbo = new BufferObjectGL(backend, BufferTargetARB.ArrayBuffer, BufferUsageARB.StaticDraw);
             this._vbo.Bind();
             this._vbo.SetData<Vertex>(_vertices);
+            this._backend.CheckError("fill vert buff");
 
             //Vertex Position
             this.gl.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, (uint)sizeof(Vertex), (void*)0);
@@ -184,6 +185,17 @@ namespace Furball.Vixie.Backends.OpenGLES {
 
             this._shaderGles.SetUniform("vx_WindowProjectionMatrix", this._backend.ProjectionMatrix);
 
+            this.gl.EnableVertexAttribArray(0);
+            this.gl.EnableVertexAttribArray(1);
+            this.gl.EnableVertexAttribArray(2);
+            this.gl.EnableVertexAttribArray(3);
+            this.gl.EnableVertexAttribArray(4);
+            this.gl.EnableVertexAttribArray(5);
+            this.gl.EnableVertexAttribArray(6);
+            this.gl.EnableVertexAttribArray(7);
+            this.gl.EnableVertexAttribArray(8);
+            this.gl.EnableVertexAttribArray(9);
+            
             this._instances = 0;
             this._usedTextures = 0;
 
@@ -303,11 +315,15 @@ namespace Furball.Vixie.Backends.OpenGLES {
             this._backend.CheckError("Bind vao");
 
             // this._InstanceVBO.SetData<InstanceData>(this._instanceData);
+            this._vbo.Bind();
             this._instanceVbo.Bind();
             fixed (void* ptr = this._instanceData)
                 this._instanceVbo.SetSubData(ptr, (nuint)(this._instances * sizeof(InstanceData)));
 
             this.gl.DrawElementsInstanced<ushort>(PrimitiveType.TriangleStrip, 6, DrawElementsType.UnsignedShort, _indicies, this._instances);
+
+            this._vao.Unbind();
+            this._vbo.Unbind();
 
             this._instances    = 0;
             this._usedTextures = 0;
@@ -316,6 +332,17 @@ namespace Furball.Vixie.Backends.OpenGLES {
         public void End() {
             this.Flush();
             this.IsBegun = false;
+            
+            this.gl.DisableVertexAttribArray(0);
+            this.gl.DisableVertexAttribArray(1);
+            this.gl.DisableVertexAttribArray(2);
+            this.gl.DisableVertexAttribArray(3);
+            this.gl.DisableVertexAttribArray(4);
+            this.gl.DisableVertexAttribArray(5);
+            this.gl.DisableVertexAttribArray(6);
+            this.gl.DisableVertexAttribArray(7);
+            this.gl.DisableVertexAttribArray(8);
+            this.gl.DisableVertexAttribArray(9);
         }
 
         #region text
