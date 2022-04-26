@@ -185,7 +185,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             int oldPixelShaderInstancesCount, oldVertexShaderInstancesCount, oldGeometryShaderInstancesCount;
 
             RawRect[] oldScissorRectangles = new RawRect[16];
-            Viewport[] oldViewports = new Viewport[16];
+            Viewport oldViewport = new Viewport();
             ID3D11ShaderResourceView[] oldShaderResourceViews = new ID3D11ShaderResourceView[1];
             ID3D11SamplerState[] oldSamplerStates = new ID3D11SamplerState[1];
             ID3D11ClassInstance[] oldPixelShaderInstances = new ID3D11ClassInstance[256];
@@ -197,7 +197,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             int[] oldVertexBufferOffsets = new int[1];
 
             this._deviceContext.RSGetScissorRects(ref oldNumScissorRects, oldScissorRectangles);
-            this._deviceContext.RSGetViewports(ref oldNumViewports, oldViewports);
+            this._deviceContext.RSGetViewport(ref oldViewport);
             ID3D11RasterizerState oldRasterizerState = this._deviceContext.RSGetState();
 
             ID3D11BlendState oldBlendState = this._deviceContext.OMGetBlendState(out Color4 oldBlendFactor, out int oldSampleMask);
@@ -257,7 +257,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             #region Restore Render State
 
             this._deviceContext.RSSetScissorRects(oldNumScissorRects, oldScissorRectangles);
-            this._deviceContext.RSSetViewports(oldNumViewports, oldViewports);
+            this._deviceContext.RSSetViewport(oldViewport);
             this._deviceContext.RSSetState(oldRasterizerState);
 
             if (oldRasterizerState?.NativePointer != IntPtr.Zero)
