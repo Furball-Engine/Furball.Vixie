@@ -99,6 +99,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             mainSection.Contents.Add(("GLSL Version", this.gl.GetStringS(StringName.ShadingLanguageVersion)));
             mainSection.Contents.Add(("OpenGL Vendor", this.gl.GetStringS(StringName.Vendor)));
             mainSection.Contents.Add(("Renderer", this.gl.GetStringS(StringName.Renderer)));
+            mainSection.Contents.Add(("Supported Extensions", this.gl.GetStringS(StringName.Extensions)));
             this.InfoSections.Add(mainSection);
 
             this.InfoSections.ForEach(x => x.Log(LoggerLevelOpenGL41.InstanceInfo));
