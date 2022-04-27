@@ -38,6 +38,7 @@
       <ProjectReference Include="..\Furball.Vixie.Backends.OpenGL41\Furball.Vixie.Backends.OpenGL41.csproj" />
       <ProjectReference Include="..\Furball.Vixie.Backends.OpenGLES\Furball.Vixie.Backends.OpenGLES.csproj" />
       <ProjectReference Include="..\Furball.Vixie.Backends.Veldrid\Furball.Vixie.Backends.Veldrid.csproj" />
+      <ProjectReference Include="..\Furball.Vixie.OpenGLDetector\Furball.Vixie.OpenGLDetector.csproj" />
     </ItemGroup>
 
     <ItemGroup>
