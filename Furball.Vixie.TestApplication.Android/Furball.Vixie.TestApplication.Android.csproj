@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net6.0-android</TargetFramework>
+        <SupportedOSPlatformVersion>21</SupportedOSPlatformVersion>
+        <OutputType>Exe</OutputType>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <AssemblyVersion>1.0.0</AssemblyVersion>
+        <FileVersion>1.0.0</FileVersion>
+        <TargetFrameworkVersion>v9.0</TargetFrameworkVersion>
+<!--        <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>-->
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Silk.NET" Version="2.15.0" />
+        <PackageReference Include="SixLabors.ImageSharp" Version="2.1.0" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Furball.Vixie.TestApplication\Furball.Vixie.TestApplication.csproj" />
+        <ProjectReference Include="..\Furball.Vixie\Furball.Vixie.csproj" />
+    </ItemGroup>
+</Project>

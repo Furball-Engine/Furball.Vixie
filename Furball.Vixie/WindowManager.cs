@@ -19,6 +19,7 @@ namespace Furball.Vixie {
         /// Actual Game Window
         /// </summary>
         internal IWindow GameWindow;
+        internal IView GameView;
         /// <summary>
         /// Current Window State
         /// </summary>
@@ -30,8 +31,12 @@ namespace Furball.Vixie {
             set => this.GameWindow.WindowState = value ? WindowState.Fullscreen : WindowState.Normal;
         }
         
-        public IInputContext InputContext;
-
+        public  IInputContext InputContext;
+        private ViewOptions   _viewOptions;
+        public bool IsAndroid {
+            get;
+        } = false;
+        
         /// <summary>
         /// Creates a Window Manager
         /// </summary>
@@ -40,29 +45,41 @@ namespace Furball.Vixie {
             this._backend       = backend;
             this._windowOptions = windowOptions;
         }
+        
+        /// <summary>
+        /// Creates a Window Manager
+        /// </summary>
+        /// <param name="windowOptions">Window Creation Options</param>
+        public WindowManager(ViewOptions windowOptions, Backend backend) {
+            this._backend     = backend;
+            this._viewOptions = windowOptions;
+            this.IsAndroid    = true;
+        }
 
-        public nint GetWindowHandle() => this.GameWindow.Handle;
+        public nint GetWindowHandle() => this.GameView.Handle;
 
         public void SetWindowSize(int width, int height) {
-            this.GameWindow.Size = new Vector2D<int>(width, height);
+            if(!IsAndroid)
+                this.GameWindow.Size = new Vector2D<int>(width, height);
             
             this.UpdateProjectionAndSize(width, height);
         }
 
         public void SetTargetFramerate(int framerate) {
-            this.GameWindow.FramesPerSecond = framerate;
+            this.GameView.FramesPerSecond = framerate;
         }
 
         public int GetTargetFramerate() {
-            return (int)this.GameWindow.FramesPerSecond;
+            return (int)this.GameView.FramesPerSecond;
         }
         
         public void SetWindowTitle(string title) {
-            this.GameWindow.Title = title;
+            if(!IsAndroid)
+                this.GameWindow.Title = title;
         }
 
         public void Close() {
-            this.GameWindow.Close();
+            this.GameView.Close();
         }
 
         private void UpdateProjectionAndSize(int width, int height) {
@@ -75,7 +92,8 @@ namespace Furball.Vixie {
         /// Creates the Window and grabs the OpenGL API of Window
         /// </summary>
         public void Create() {
-            SdlWindowing.Use(); //dont tell perskey and kai that i do this! shhhhhhhhhhhhhhh
+            if(!IsAndroid)
+                SdlWindowing.Use(); //dont tell perskey and kai that i do this! shhhhhhhhhhhhhhh
 
             ContextAPI api = this._backend switch {
                 Backend.OpenGLES32 => ContextAPI.OpenGLES,
@@ -88,7 +106,7 @@ namespace Furball.Vixie {
             };
 
             ContextProfile profile = this._backend switch {
-                Backend.OpenGLES30 => ContextProfile.Core,
+                Backend.OpenGLES30 => ContextProfile.Compatability,
                 Backend.OpenGLES32 => ContextProfile.Core,
                 Backend.OpenGL20   => ContextProfile.Core,
                 Backend.OpenGL41   => ContextProfile.Core,
@@ -99,7 +117,7 @@ namespace Furball.Vixie {
 
             ContextFlags flags = this._backend switch {
 #if DEBUG
-                Backend.OpenGLES30 => ContextFlags.Debug,
+                Backend.OpenGLES30 => ContextFlags.Default,
                 Backend.OpenGLES32 => ContextFlags.Debug,
                 Backend.OpenGL41   => ContextFlags.Debug,
                 Backend.OpenGL20   => ContextFlags.Debug,
@@ -127,36 +145,45 @@ namespace Furball.Vixie {
             };
 
             this._windowOptions.API = new GraphicsAPI(api, profile, flags, version);
+            this._viewOptions.API = new GraphicsAPI(api, profile, flags, version);
 
             if (this._backend == Backend.Veldrid) {
                 this._windowOptions.API = VeldridBackend.PrefferedBackend.ToGraphicsAPI();
+                this._viewOptions.API   = VeldridBackend.PrefferedBackend.ToGraphicsAPI();
 
                 this._windowOptions.ShouldSwapAutomatically = false;
+                this._viewOptions.ShouldSwapAutomatically   = false;
             }
-            
-            this.GameWindow = Window.Create(this._windowOptions);
+
+            if (IsAndroid) {
+                this.GameView = Window.GetView(this._viewOptions);
+            }
+            else {
+                this.GameWindow = Window.Create(this._windowOptions);
+                this.GameView   = this.GameWindow;
+            }
 
             if (this._backend == Backend.Veldrid) {
-                this.GameWindow.IsContextControlDisabled = true;
+                this.GameView.IsContextControlDisabled = true;
             }
             
-            this.GameWindow.FramebufferResize += newSize => {
+            this.GameView.FramebufferResize += newSize => {
                 this.UpdateProjectionAndSize(newSize.X, newSize.Y);
             };
             
-            this.GameWindow.Closing += OnWindowClosing;
+            this.GameView.Closing += OnWindowClosing;
         }
         public void SetupGraphicsApi() {
             GraphicsBackend.SetBackend(this._backend);
-            GraphicsBackend.Current.Initialize(this.GameWindow, this.InputContext);
+            GraphicsBackend.Current.Initialize(this.GameView, this.InputContext);
 
-            this.UpdateProjectionAndSize(this._windowOptions.Size.X, this._windowOptions.Size.Y);
+            this.UpdateProjectionAndSize(this.GameView.Size.X, this.GameView.Size.Y);
         }
         /// <summary>
         /// Runs the Window
         /// </summary>
         public void RunWindow() {
-            this.GameWindow.Run();
+            this.GameView.Run();
         }
         
         private void OnWindowClosing() {

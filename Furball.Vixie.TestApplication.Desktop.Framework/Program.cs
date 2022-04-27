@@ -1,4 +1,4 @@
-using Furball.Vixie;
+﻿using Furball.Vixie;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Veldrid;
 using Furball.Vixie.TestApplication;
@@ -12,4 +12,4 @@ GraphicsBackend.PrefferedBackends = Backend.OpenGL41 | Backend.OpenGLES32;
 
 VeldridBackend.PrefferedBackend = Veldrid.GraphicsBackend.Vulkan;
 
-new TestGame(options).Run(options);
+new TestGame().Run(options);

@@ -63,7 +63,7 @@ namespace Furball.Vixie.Backends.OpenGL20 {
             }
         }
 
-        public override void Initialize(IWindow window, IInputContext inputContext) {
+        public override void Initialize(IView window, IInputContext inputContext) {
             this.gl = window.CreateLegacyOpenGL();
 
             //TODO: Lets just assume they have it for now :^)
