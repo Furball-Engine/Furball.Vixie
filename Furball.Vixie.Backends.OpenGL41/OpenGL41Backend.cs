@@ -51,6 +51,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
         private void GetMainThread() {
             _mainThread = Thread.CurrentThread;
         }
+        public bool RunImGui = true;
         /// <summary>
         /// Ensures that OpenGL commands don't run on the wrong thread
         /// </summary>
@@ -99,11 +100,16 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             mainSection.Contents.Add(("GLSL Version", this.gl.GetStringS(StringName.ShadingLanguageVersion)));
             mainSection.Contents.Add(("OpenGL Vendor", this.gl.GetStringS(StringName.Vendor)));
             mainSection.Contents.Add(("Renderer", this.gl.GetStringS(StringName.Renderer)));
-            mainSection.Contents.Add(("Supported Extensions", this.gl.GetStringS(StringName.Extensions)));
+            // mainSection.Contents.Add(("Supported Extensions", this.gl.GetStringS(StringName.Extensions)));
             this.InfoSections.Add(mainSection);
 
             this.InfoSections.ForEach(x => x.Log(LoggerLevelOpenGL41.InstanceInfo));
+            
+            window.Closing += delegate {
+                this.RunImGui = false;
+            };
         }
+
         public void CheckError(string message) {
             this.CheckErrorInternal(message);
         }
@@ -130,6 +136,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
         /// </summary>
         public override void Cleanup() {
             this.gl.Dispose();
+            this.ImGuiController.Dispose();
         }
         /// <summary>
         /// Used to Handle the Window size Changing
@@ -263,14 +270,16 @@ namespace Furball.Vixie.Backends.OpenGL41 {
         /// </summary>
         /// <param name="deltaTime">Delta Time</param>
         public override void ImGuiUpdate(double deltaTime) {
-            this.ImGuiController.Update((float)deltaTime);
+            if(this.RunImGui)
+                this.ImGuiController.Update((float)deltaTime);
         }
         /// <summary>
         /// Used to Draw the ImGuiController in charge of rendering ImGui on this backend
         /// </summary>
         /// <param name="deltaTime">Delta Time</param>
         public override void ImGuiDraw(double deltaTime) {
-            this.ImGuiController.Render();
+            if(this.RunImGui)
+                this.ImGuiController.Render();
         }
         /// <summary>
         /// Returns the OpenGL API

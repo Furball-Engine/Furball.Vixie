@@ -75,6 +75,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
         internal         IWindow Window;
         private          bool    _screenshotQueued;
         private readonly bool    Is32;
+        private          bool    RunImGui = true;
 
         public OpenGLESBackend(bool is32) {
             this.Is32 = is32;
@@ -116,6 +117,10 @@ namespace Furball.Vixie.Backends.OpenGLES {
             this.InfoSections.Add(mainSection);
             
             this.InfoSections.ForEach(x => x.Log(LoggerLevelOpenGLES.InstanceInfo));
+            
+            window.Closing += delegate {
+                this.RunImGui = false;
+            };
         }
         public void CheckError(string message) {
             this.CheckErrorInternal(message);
@@ -143,6 +148,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
         /// </summary>
         public override void Cleanup() {
             this.gl.Dispose();
+            this.ImGuiController.Dispose();
         }
         /// <summary>
         /// Used to Handle the Window size Changing
@@ -275,7 +281,8 @@ namespace Furball.Vixie.Backends.OpenGLES {
         /// </summary>
         /// <param name="deltaTime">Delta Time</param>
         public override void ImGuiUpdate(double deltaTime) {
-            this.ImGuiController.Update((float)deltaTime);
+            if(this.RunImGui)
+                this.ImGuiController.Update((float)deltaTime);
         }
         /// <summary>
         /// Used to Draw the ImGuiController in charge of rendering ImGui on this backend

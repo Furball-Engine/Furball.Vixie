@@ -135,19 +135,27 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// </summary>
         public unsafe TextureGL(IGLBasedBackend backend) {
             this._backend = backend;
+            this._backend.CheckError("before gen white pixel texture");
             
             this.TextureId = this._backend.GenTexture();
+            this._backend.CheckError("gen white pixel texture");
             //Bind as we will be working on the Texture
             this._backend.BindTexture(TextureTarget.Texture2D, this.TextureId);
+            this._backend.CheckError("bind genned texture");
             //Apply Linear filtering, and make Image wrap around and repeat
             this._backend.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int) GLEnum.Linear);
+            this._backend.CheckError("set texminfilter");
             this._backend.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int) GLEnum.Linear);
+            this._backend.CheckError("set texmagfilter");
             this._backend.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS,     (int) GLEnum.Repeat);
+            this._backend.CheckError("set texture wrap s");
             this._backend.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT,     (int)GLEnum.Repeat);
+            this._backend.CheckError("set texture wrap t");
             //White color
             uint color = 0xffffffff;
             //Upload Image Data
             this._backend.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat.Rgba8, 1, 1, 0, PixelFormat.Rgba, PixelType.UnsignedByte, &color);
+            this._backend.CheckError("fill white pixel with a single uint colour");
             //Unbind as we have finished
             this._backend.BindTexture(TextureTarget.Texture2D, 0);
             this._backend.CheckError("create white pixel texture");
