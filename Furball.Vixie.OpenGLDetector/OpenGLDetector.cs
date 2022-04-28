@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using Silk.NET.GLFW;
 using Silk.NET.SDL;
 using Silk.NET.Windowing;
 using Window=Silk.NET.SDL.Window;
@@ -60,11 +61,11 @@ namespace Furball.Vixie.OpenGLDetector {
         public static unsafe (APIVersion gl, APIVersion gles) GetLatestSupported(bool testgl = true, bool testgles = true) {
             var sdl = Sdl.GetApi();
 
-            _Window = CreateWindow(sdl);
-
             if (sdl.Init(Sdl.InitVideo) < 0)
                 throw new Exception();
-
+            
+            _Window = CreateWindow(sdl);
+            
             if(testgl)
                 GetLatestGLSupported(sdl);
             if(testgles)
@@ -81,7 +82,7 @@ namespace Furball.Vixie.OpenGLDetector {
         private static void GetLatestGLSupported(Sdl sdl) {
             // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (APIVersion openGlVersion in OPEN_GL_VERSIONS) {
-                if (!TestApiVersion(sdl, openGlVersion, ContextAPI.OpenGL))
+                if (!TestApiVersion(sdl, openGlVersion, ContextAPI.OpenGL) && _LastTested.MajorVersion != 0)
                     return;
             }
 
@@ -90,13 +91,15 @@ namespace Furball.Vixie.OpenGLDetector {
         private static void GetLatestGLESSupported(Sdl sdl) {
             // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (APIVersion openGlesVersion in OPEN_GLES_VERSIONS) {
-                if (!TestApiVersion(sdl, openGlesVersion, ContextAPI.OpenGLES))
+                if (!TestApiVersion(sdl, openGlesVersion, ContextAPI.OpenGLES) && _LastTestedES.MajorVersion != 0)
                     return;
             }
 
         }
         
         private static unsafe bool TestApiVersion(Sdl sdl, APIVersion version, ContextAPI contextApi) {
+            Console.WriteLine($"Testing {contextApi} version {version.MajorVersion}.{version.MinorVersion}");
+            
             sdl.GLSetAttribute(GLattr.GLContextMajorVersion, version.MajorVersion);
             sdl.GLSetAttribute(GLattr.GLContextMinorVersion, version.MinorVersion);
             if (contextApi == ContextAPI.OpenGLES)
@@ -108,7 +111,15 @@ namespace Furball.Vixie.OpenGLDetector {
             
             string err = sdl.GetErrorS();
             if (err.Length != 0) {
+                sdl.ClearError();
+                Console.WriteLine($"error :( {err}");
                 sdl.DestroyWindow(_Window);
+                if (err.Contains("GLXBadFBConfig")) {
+                    sdl.Quit();
+                    sdl.Init(Sdl.InitVideo);
+                }
+                _Window = CreateWindow(sdl);
+
                 return false;
             }
             if (contextApi == ContextAPI.OpenGLES)
