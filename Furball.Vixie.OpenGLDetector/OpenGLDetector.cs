@@ -98,8 +98,6 @@ namespace Furball.Vixie.OpenGLDetector {
         }
         
         private static unsafe bool TestApiVersion(Sdl sdl, APIVersion version, ContextAPI contextApi) {
-            Console.WriteLine($"Testing {contextApi} version {version.MajorVersion}.{version.MinorVersion}");
-            
             sdl.GLSetAttribute(GLattr.GLContextMajorVersion, version.MajorVersion);
             sdl.GLSetAttribute(GLattr.GLContextMinorVersion, version.MinorVersion);
             if (contextApi == ContextAPI.OpenGLES)
@@ -112,7 +110,6 @@ namespace Furball.Vixie.OpenGLDetector {
             string err = sdl.GetErrorS();
             if (err.Length != 0) {
                 sdl.ClearError();
-                Console.WriteLine($"error :( {err}");
                 sdl.DestroyWindow(_Window);
                 if (err.Contains("GLXBadFBConfig")) {
                     sdl.Quit();
