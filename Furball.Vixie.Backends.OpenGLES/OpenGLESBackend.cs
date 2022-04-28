@@ -148,7 +148,6 @@ namespace Furball.Vixie.Backends.OpenGLES {
         /// </summary>
         public override void Cleanup() {
             this.gl.Dispose();
-            this.ImGuiController.Dispose();
         }
         /// <summary>
         /// Used to Handle the Window size Changing
