@@ -95,6 +95,10 @@ namespace Furball.Vixie.Backends.OpenGL20 {
             this.InfoSections.Add(mainSection);
 
             this.InfoSections.ForEach(x => x.Log(LoggerLevelOpenGL20.InstanceInfo));
+            
+            window.Closing += delegate {
+                this.RunImGui = false;
+            };
         }
 
         /// <summary>
@@ -136,6 +140,7 @@ namespace Furball.Vixie.Backends.OpenGL20 {
         private int                  _maxTexUnits = -1;
         private ExtFramebufferObject framebufferObjectEXT;
         private bool                 _screenshotQueued;
+        private bool                 RunImGui;
         public override int QueryMaxTextureUnits() {
             if (this._maxTexUnits == -1)
                 this._maxTexUnits = this.gl.GetInteger((GLEnum)GetPName.MaxTextureImageUnits);
@@ -189,10 +194,12 @@ namespace Furball.Vixie.Backends.OpenGL20 {
         public ExtFramebufferObject GetOpenGLFramebufferEXT() => this.framebufferObjectEXT;
 
         public override void ImGuiUpdate(double deltaTime) {
-            this._imgui.Update((float)deltaTime);
+            if(this.RunImGui)
+                this._imgui.Update((float)deltaTime);
         }
         public override void ImGuiDraw(double deltaTime) {
-            this._imgui.Render();
+            if(this.RunImGui)
+                this._imgui.Render();
         }
 
         public new GLBackendType        GetType()     => GLBackendType.Legacy;
