@@ -71,7 +71,6 @@ namespace Furball.Vixie.Backends.OpenGL41 {
 
         public unsafe QuadRendererGL41(OpenGL41Backend backend) {
             this._backend = backend;
-            this._backend.CheckError("aaa");
             
             this.gl       = this._backend.GetGlApi();
 
