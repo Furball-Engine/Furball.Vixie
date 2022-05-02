@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Security;
 using FontStashSharp;
 using Furball.Vixie.Backends.OpenGL.Shared;
 using Furball.Vixie.Backends.Shared;
@@ -9,6 +10,7 @@ using Furball.Vixie.Backends.Shared.FontStashSharp;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers.Helpers;
 using Silk.NET.OpenGL;
+using Silk.NET.OpenGL.Extensions.ARB;
 using Color=Furball.Vixie.Backends.Shared.Color;
 using Texture=Furball.Vixie.Backends.Shared.Texture;
 
@@ -56,6 +58,18 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             public float   Rotation;
             public int     TextureId;
         }
+        
+        [StructLayout(LayoutKind.Sequential)]
+        private struct BindlessInstanceData {
+            public Vector2 Position;
+            public Vector2 Size;
+            public Color   Color;
+            public Vector2 TextureRectPosition;
+            public Vector2 TextureRectSize;
+            public Vector2 RotationOrigin;
+            public float   Rotation;
+            public ulong   TextureHandle;
+        }
 
         private BufferObjectGL      _vbo;
         private BufferObjectGL      _instanceVbo;
@@ -71,13 +85,21 @@ namespace Furball.Vixie.Backends.OpenGL41 {
 
         public unsafe QuadRendererGL41(OpenGL41Backend backend) {
             this._backend = backend;
-            
-            this.gl       = this._backend.GetGlApi();
+
+            this.gl = this._backend.GetGlApi();
 
             this._boundTextures = new TextureGL[this._backend.QueryMaxTextureUnits()];
 
-            string vertSource = ResourceHelpers.GetStringResource("Shaders/QuadRenderer/VertexShader.glsl");
-            string fragSource = QuadShaderGeneratorGL41.GetFragment(backend);
+            string vertSource;
+            string fragSource;
+            
+            if (SupportedFeatures.SupportsBindlessTexturing) {
+                vertSource = ResourceHelpers.GetStringResource("Shaders/QuadRenderer/Bindless/VertexShader.glsl");
+                fragSource = ResourceHelpers.GetStringResource("Shaders/QuadRenderer/Bindless/FragmentShader.glsl");
+            } else {
+                vertSource = ResourceHelpers.GetStringResource("Shaders/QuadRenderer/VertexShader.glsl");
+                fragSource = QuadShaderGeneratorGL41.GetFragment(backend);
+            }
 
             this._shaderGl41 = new ShaderGL(backend);
 
@@ -87,11 +109,12 @@ namespace Furball.Vixie.Backends.OpenGL41 {
 
             this._shaderGl41.Bind();
 
-            this._backend.CheckError("bind textures");
+            this._backend.CheckError("create shaders");
 
-            for (int i = 0; i < backend.QueryMaxTextureUnits(); i++) {
-                this._shaderGl41.BindUniformToTexUnit($"tex_{i}", i);
-            }
+            if(!SupportedFeatures.SupportsBindlessTexturing)
+                for (int i = 0; i < backend.QueryMaxTextureUnits(); i++) {
+                    this._shaderGl41.BindUniformToTexUnit($"tex_{i}", i);
+                }
 
             this._vao = new VertexArrayObjectGL(backend);
             this._vao.Bind();
@@ -113,41 +136,50 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             this._instanceVbo = new BufferObjectGL(backend, BufferTargetARB.ArrayBuffer, BufferUsageARB.DynamicDraw);
             this._instanceVbo.Bind();
 
-            this._instanceVbo.SetData(null, (nuint)(sizeof(InstanceData) * NUM_INSTANCES));
+            this._instanceSize = SupportedFeatures.SupportsBindlessTexturing ? sizeof(BindlessInstanceData) : sizeof(InstanceData);
+            
+            this._instanceVbo.SetData(null, (nuint)(this._instanceSize * NUM_INSTANCES));
 
             int ptrPos = 0;
             //Position
-            this.gl.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
+            this.gl.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, (uint)this._instanceSize, (void*)ptrPos);
             this.gl.VertexAttribDivisor(2, 1);
             ptrPos += sizeof(Vector2);
             //Size
-            this.gl.VertexAttribPointer(3, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
+            this.gl.VertexAttribPointer(3, 2, VertexAttribPointerType.Float, false, (uint)this._instanceSize, (void*)ptrPos);
             this.gl.VertexAttribDivisor(3, 1);
             ptrPos += sizeof(Vector2);
             //Color
-            this.gl.VertexAttribPointer(4, 4, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
+            this.gl.VertexAttribPointer(4, 4, VertexAttribPointerType.Float, false, (uint)this._instanceSize, (void*)ptrPos);
             this.gl.VertexAttribDivisor(4, 1);
             ptrPos += sizeof(Color);
             //Texture position
-            this.gl.VertexAttribPointer(5, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
+            this.gl.VertexAttribPointer(5, 2, VertexAttribPointerType.Float, false, (uint)this._instanceSize, (void*)ptrPos);
             this.gl.VertexAttribDivisor(5, 1);
             ptrPos += sizeof(Vector2);
             //Texture size
-            this.gl.VertexAttribPointer(6, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
+            this.gl.VertexAttribPointer(6, 2, VertexAttribPointerType.Float, false, (uint)this._instanceSize, (void*)ptrPos);
             this.gl.VertexAttribDivisor(6, 1);
             ptrPos += sizeof(Vector2);
             //Rotation origin
-            this.gl.VertexAttribPointer(7, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
+            this.gl.VertexAttribPointer(7, 2, VertexAttribPointerType.Float, false, (uint)this._instanceSize, (void*)ptrPos);
             this.gl.VertexAttribDivisor(7, 1);
             ptrPos += sizeof(Vector2);
             //Rotation
-            this.gl.VertexAttribPointer(8, 1, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
+            this.gl.VertexAttribPointer(8, 1, VertexAttribPointerType.Float, false, (uint)this._instanceSize, (void*)ptrPos);
             this.gl.VertexAttribDivisor(8, 1);
             ptrPos += sizeof(float);
-            //Texture id
-            this.gl.VertexAttribIPointer(9, 1, VertexAttribIType.Int, (uint)sizeof(InstanceData), (void*)ptrPos);
-            this.gl.VertexAttribDivisor(9, 1);
-            ptrPos += sizeof(int);
+            if (SupportedFeatures.SupportsBindlessTexturing) {
+                //Texture id
+                this.gl.VertexAttribLPointer(9, 1, (GLEnum)ARB.UnsignedInt64Arb, (uint)this._instanceSize, (void*)ptrPos);
+                this.gl.VertexAttribDivisor(9, 1);
+                ptrPos += sizeof(int);
+            } else {
+                //Texture id
+                this.gl.VertexAttribIPointer(9, 1, VertexAttribIType.Int, (uint)this._instanceSize, (void*)ptrPos);
+                this.gl.VertexAttribDivisor(9, 1);
+                ptrPos += sizeof(int);
+            }
 
             this.gl.EnableVertexAttribArray(2);
             this.gl.EnableVertexAttribArray(3);
@@ -200,20 +232,36 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             if (this._instances >= NUM_INSTANCES || this._usedTextures == this._backend.QueryMaxTextureUnits()) {
                 this.Flush();
             }
-            
-            this._instanceData[this._instances].Position              = position;
-            this._instanceData[this._instances].Size                  = texture.Size * scale;
-            this._instanceData[this._instances].Color                 = colorOverride;
-            this._instanceData[this._instances].Rotation              = rotation;
-            this._instanceData[this._instances].RotationOrigin        = rotOrigin;
-            this._instanceData[this._instances].TextureId             = this.GetTextureId(texture);
-            this._instanceData[this._instances].TextureRectPosition.X = 0;
-            this._instanceData[this._instances].TextureRectPosition.Y = 0;
-            this._instanceData[this._instances].TextureRectSize.X     = texFlip == TextureFlip.FlipHorizontal ? -1 : 1;
-            this._instanceData[this._instances].TextureRectSize.Y     = texFlip == TextureFlip.FlipVertical ? -1 : 1;
 
-            if(textureGl41.IsFramebufferTexture)
-                this._instanceData[this._instances].TextureRectSize.Y *= -1;
+            if (SupportedFeatures.SupportsBindlessTexturing) {
+                this._bindlessInstanceData[this._instances].Position              = position;
+                this._bindlessInstanceData[this._instances].Size                  = texture.Size * scale;
+                this._bindlessInstanceData[this._instances].Color                 = colorOverride;
+                this._bindlessInstanceData[this._instances].Rotation              = rotation;
+                this._bindlessInstanceData[this._instances].RotationOrigin        = rotOrigin;
+                this._bindlessInstanceData[this._instances].TextureHandle         = this.GetTextureHandle(textureGl41);
+                this._bindlessInstanceData[this._instances].TextureRectPosition.X = 0;
+                this._bindlessInstanceData[this._instances].TextureRectPosition.Y = 0;
+                this._bindlessInstanceData[this._instances].TextureRectSize.X     = texFlip == TextureFlip.FlipHorizontal ? -1 : 1;
+                this._bindlessInstanceData[this._instances].TextureRectSize.Y     = texFlip == TextureFlip.FlipVertical ? -1 : 1;
+                
+                if(textureGl41.IsFramebufferTexture)
+                    this._bindlessInstanceData[this._instances].TextureRectSize.Y *= -1;
+            } else {
+                this._instanceData[this._instances].Position              = position;
+                this._instanceData[this._instances].Size                  = texture.Size * scale;
+                this._instanceData[this._instances].Color                 = colorOverride;
+                this._instanceData[this._instances].Rotation              = rotation;
+                this._instanceData[this._instances].RotationOrigin        = rotOrigin;
+                this._instanceData[this._instances].TextureId             = this.GetTextureId(texture);
+                this._instanceData[this._instances].TextureRectPosition.X = 0;
+                this._instanceData[this._instances].TextureRectPosition.Y = 0;
+                this._instanceData[this._instances].TextureRectSize.X     = texFlip == TextureFlip.FlipHorizontal ? -1 : 1;
+                this._instanceData[this._instances].TextureRectSize.Y     = texFlip == TextureFlip.FlipVertical ? -1 : 1;
+                
+                if(textureGl41.IsFramebufferTexture)
+                    this._instanceData[this._instances].TextureRectSize.Y *= -1;
+            }
 
             this._instances++;
         }
@@ -223,7 +271,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
                 throw new Exception("Begin() has not been called!");
 
             //Ignore calls with invalid textures
-            if (texture == null || texture is not TextureGL)
+            if (texture == null || texture is not TextureGL texGl)
                 return;
 
             if (this._instances >= NUM_INSTANCES || this._usedTextures == this._backend.QueryMaxTextureUnits()) {
@@ -238,18 +286,39 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             
             sourceRect.Y = texture.Height - sourceRect.Y - sourceRect.Height;
 
-            this._instanceData[this._instances].Position              = position;
-            this._instanceData[this._instances].Size                  = size;
-            this._instanceData[this._instances].Color                 = colorOverride;
-            this._instanceData[this._instances].Rotation              = rotation;
-            this._instanceData[this._instances].RotationOrigin        = rotOrigin;
-            this._instanceData[this._instances].TextureId             = this.GetTextureId(texture);
-            this._instanceData[this._instances].TextureRectPosition.X = (float)sourceRect.X      / texture.Width;
-            this._instanceData[this._instances].TextureRectPosition.Y = (float)sourceRect.Y      / texture.Height;
-            this._instanceData[this._instances].TextureRectSize.X     = (float)sourceRect.Width  / texture.Width * (texFlip == TextureFlip.FlipHorizontal ? -1 : 1);
-            this._instanceData[this._instances].TextureRectSize.Y     = (float)sourceRect.Height / texture.Height * (texFlip == TextureFlip.FlipVertical ? -1 : 1);
+            if (SupportedFeatures.SupportsBindlessTexturing) {
+                this._bindlessInstanceData[this._instances].Position              = position;
+                this._bindlessInstanceData[this._instances].Size                  = size;
+                this._bindlessInstanceData[this._instances].Color                 = colorOverride;
+                this._bindlessInstanceData[this._instances].Rotation              = rotation;
+                this._bindlessInstanceData[this._instances].RotationOrigin        = rotOrigin;
+                this._bindlessInstanceData[this._instances].TextureHandle         = this.GetTextureHandle(texGl);
+                this._bindlessInstanceData[this._instances].TextureRectPosition.X = (float)sourceRect.X                       / texture.Width;
+                this._bindlessInstanceData[this._instances].TextureRectPosition.Y = (float)sourceRect.Y                       / texture.Height;
+                this._bindlessInstanceData[this._instances].TextureRectSize.X     = (float)sourceRect.Width  / texture.Width  * (texFlip == TextureFlip.FlipHorizontal ? -1 : 1);
+                this._bindlessInstanceData[this._instances].TextureRectSize.Y     = (float)sourceRect.Height / texture.Height * (texFlip == TextureFlip.FlipVertical ? -1 : 1);
+            } else {
+                this._instanceData[this._instances].Position              = position;
+                this._instanceData[this._instances].Size                  = size;
+                this._instanceData[this._instances].Color                 = colorOverride;
+                this._instanceData[this._instances].Rotation              = rotation;
+                this._instanceData[this._instances].RotationOrigin        = rotOrigin;
+                this._instanceData[this._instances].TextureId             = this.GetTextureId(texture);
+                this._instanceData[this._instances].TextureRectPosition.X = (float)sourceRect.X                       / texture.Width;
+                this._instanceData[this._instances].TextureRectPosition.Y = (float)sourceRect.Y                       / texture.Height;
+                this._instanceData[this._instances].TextureRectSize.X     = (float)sourceRect.Width  / texture.Width  * (texFlip == TextureFlip.FlipHorizontal ? -1 : 1);
+                this._instanceData[this._instances].TextureRectSize.Y     = (float)sourceRect.Height / texture.Height * (texFlip == TextureFlip.FlipVertical ? -1 : 1);
+            }
 
             this._instances++;
+        }
+        private ulong GetTextureHandle(TextureGL texture) {
+            if (texture.BindlessHandle == 0) {
+                texture.BindlessHandle = this._backend.GetTextureHandle(texture);
+                this._backend.MakeTextureHandleResident(texture.BindlessHandle);
+            }
+
+            return texture.BindlessHandle;
         }
 
         public void Draw(Texture texture, Vector2 position, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {
@@ -285,16 +354,20 @@ namespace Furball.Vixie.Backends.OpenGL41 {
 
         public const int NUM_INSTANCES = 1024;
 
-        private          uint           _instances    = 0;
-        private readonly InstanceData[] _instanceData = new InstanceData[NUM_INSTANCES];
+        private          uint                   _instances    = 0;
+        private readonly InstanceData[]         _instanceData = new InstanceData[NUM_INSTANCES];
+        private readonly BindlessInstanceData[] _bindlessInstanceData = new BindlessInstanceData[NUM_INSTANCES];
+        private          int                    _instanceSize;
 
         private unsafe void Flush() {
             if (this._instances == 0) return;
 
-            for (int i = 0; i < this._usedTextures; i++) {
-                TextureGL tex = this._boundTextures[i] as TextureGL;
+            if(!SupportedFeatures.SupportsBindlessTexturing) {
+                for (int i = 0; i < this._usedTextures; i++) {
+                    TextureGL tex = this._boundTextures[i] as TextureGL;
 
-                tex.Bind(TextureUnit.Texture0 + i);
+                    tex.Bind(TextureUnit.Texture0 + i);
+                }
             }
 
             this._vao.Bind();
@@ -302,8 +375,12 @@ namespace Furball.Vixie.Backends.OpenGL41 {
 
             // this._InstanceVBO.SetData<InstanceData>(this._instanceData);
             this._instanceVbo.Bind();
-            fixed (void* ptr = this._instanceData)
-                this._instanceVbo.SetSubData(ptr, (nuint)(this._instances * sizeof(InstanceData)));
+            if(SupportedFeatures.SupportsBindlessTexturing)
+                fixed (void* ptr = this._bindlessInstanceData)
+                    this._instanceVbo.SetSubData(ptr, (nuint)(this._instances * this._instanceSize));
+            else
+                fixed (void* ptr = this._instanceData)
+                    this._instanceVbo.SetSubData(ptr, (nuint)(this._instances * this._instanceSize));
 
             this.gl.DrawElementsInstanced<ushort>(PrimitiveType.TriangleStrip, 6, DrawElementsType.UnsignedShort, _indicies, this._instances);
             this._backend.CheckError("quad renderer draw");

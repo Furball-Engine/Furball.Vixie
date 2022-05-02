@@ -117,10 +117,10 @@ namespace Furball.Vixie {
             };
 
             APIVersion version = this._backend switch {
-                Backend.OpenGLES30 => new APIVersion(3,  0),
-                Backend.OpenGLES32 => new APIVersion(3,  2),
-                Backend.OpenGL20   => new APIVersion(2,  0),
-                Backend.OpenGL41   => new APIVersion(4,  1),
+                Backend.OpenGLES30 => new APIVersion(3, 0),
+                Backend.OpenGLES32 => new APIVersion(3, 2),
+                Backend.OpenGL20   => new APIVersion(2, 0),
+                Backend.OpenGL41   => new APIVersion(4, Global.SupportedVersions.OpenGL.MinorVersion),
                 Backend.Veldrid    => new APIVersion(0,  0),
                 Backend.Direct3D11 => new APIVersion(11, 0),
                 _                  => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")

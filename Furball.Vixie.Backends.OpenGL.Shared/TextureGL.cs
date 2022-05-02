@@ -51,6 +51,8 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
             { TextureUnit.Texture31, 0 },
         };
 
+        public ulong BindlessHandle = 0;
+
         public bool Bound {
             get {
                 uint texFound;

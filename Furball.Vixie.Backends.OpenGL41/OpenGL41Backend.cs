@@ -13,7 +13,9 @@ using Silk.NET.Core.Native;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
+using Silk.NET.OpenGL.Extensions.ARB;
 using Silk.NET.OpenGL.Extensions.ImGui;
+using Silk.NET.OpenGL.Extensions.NV;
 using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -28,6 +30,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
         /// </summary>
         // ReSharper disable once InconsistentNaming
         private GL gl;
+
         /// <summary>
         /// Projection Matrix used to go from Window Coordinates to OpenGL Coordinates
         /// </summary>
@@ -115,9 +118,28 @@ namespace Furball.Vixie.Backends.OpenGL41 {
                 
                 SupportedFeatures.Extensions.Add(extension);
 
-                if (extension.Contains("ARB_bindless_texture") || extension.Contains("NV_bindless_texture")) {
-                    Logger.Log("Enabling bindless texture support!", LoggerLevelOpenGL41.InstanceInfo);
+                if (!SupportedFeatures.SupportsBindlessTexturing && extension.Contains("NV_bindless_texture")) {
+                    Logger.Log("Enabling ARB bindless texture support!", LoggerLevelOpenGL41.InstanceInfo);
                     SupportedFeatures.SupportsBindlessTexturing = true;
+
+                    if (this.gl.TryGetExtension(out Extensions.ArbBindlessTexture)) {
+                        SupportedFeatures.IsArbBindlessTexturing = true;
+                    } else {
+                        Logger.Log("Aquiring ARB_bindless_texture extension failed! Dislabling bindless texture support!", LoggerLevelOpenGL41.InstanceError);
+                        SupportedFeatures.SupportsBindlessTexturing = false;
+                    }
+                }
+                
+                if (!SupportedFeatures.SupportsBindlessTexturing && extension.Contains("NV_bindless_texture")) {
+                    Logger.Log("Enabling vendor bindless texture support!", LoggerLevelOpenGL41.InstanceInfo);
+                    SupportedFeatures.SupportsBindlessTexturing = true;
+
+                    if (this.gl.TryGetExtension(out Extensions.NVBindlessTexture)) {
+                        SupportedFeatures.IsArbBindlessTexturing = false;
+                    } else {
+                        Logger.Log("Aquiring NV_bindless_texture extension failed! Dislabling bindless texture support!", LoggerLevelOpenGL41.InstanceError);
+                        SupportedFeatures.SupportsBindlessTexturing = false;
+                    }
                 }
             }
             this.CheckError("check extensions");
@@ -326,6 +348,35 @@ namespace Furball.Vixie.Backends.OpenGL41 {
         public Silk.NET.OpenGL.Legacy.GL GetLegacyGL() => throw new WrongGLBackendException();
         public Silk.NET.OpenGLES.GL      GetGLES()     => throw new WrongGLBackendException();
 
+        public ulong GetTextureHandle(TextureGL tex) {
+            if (!SupportedFeatures.SupportsBindlessTexturing)
+                throw new Exception("Bindless texture support is not available!");
+
+            return SupportedFeatures.IsArbBindlessTexturing 
+                       ? Extensions.ArbBindlessTexture.GetTextureHandle(tex.TextureId) 
+                       : Extensions.NVBindlessTexture.GetTextureHandle(tex.TextureId);
+        }
+
+        public void MakeTextureHandleResident(ulong handle) {
+            if (!SupportedFeatures.SupportsBindlessTexturing)
+                throw new Exception("Bindless texture support is not available!");
+            
+            if(SupportedFeatures.IsArbBindlessTexturing)
+                Extensions.ArbBindlessTexture.MakeTextureHandleResident(handle);
+            else
+                Extensions.NVBindlessTexture.MakeTextureHandleResident(handle);
+        }
+        
+        public void MakeTextureHandleNonResident(ulong handle) {
+            if (!SupportedFeatures.SupportsBindlessTexturing)
+                throw new Exception("Bindless texture support is not available!");
+            
+            if(SupportedFeatures.IsArbBindlessTexturing)
+                Extensions.ArbBindlessTexture.MakeTextureHandleNonResident(handle);
+            else
+                Extensions.NVBindlessTexture.MakeTextureHandleNonResident(handle);
+        }
+        
         public uint GenBuffer() => this.gl.GenBuffer();
 
         public void BindBuffer(BufferTargetARB usage, uint buf) {
