@@ -41,7 +41,7 @@ namespace Furball.Vixie.Backends.Veldrid {
         public  FullScreenQuad          FullScreenQuad;
         private bool                    _screenshotQueued;
         
-        public override void Initialize(IWindow window, IInputContext inputContext) {
+        public override void Initialize(IWindow window, IInputContext inputContext, SysetmSupportedVersions supportedVersions) {
             this._window = window;
             
             GraphicsDeviceOptions options = new() {

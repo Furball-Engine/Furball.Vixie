@@ -70,8 +70,9 @@ namespace Furball.Vixie.Backends.OpenGL41 {
         /// </summary>
         /// <param name="window"></param>
         /// <param name="inputContext"></param>
+        /// <param name="supportedVersions"></param>
         /// <param name="game"></param>
-        public override void Initialize(IWindow window, IInputContext inputContext) {
+        public override void Initialize(IWindow window, IInputContext inputContext, SysetmSupportedVersions supportedVersions) {
             this.GetMainThread();
 
             this.gl     = window.CreateOpenGL();
@@ -108,7 +109,16 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             this.CheckError("check check renderer");
             this.gl.GetInteger(GetPName.NumExtensions, out int numExtensions);
             for (uint i = 0; i < numExtensions; i++) {
-                mainSection.Contents.Add(("Supported Extension", this.gl.GetStringS(GLEnum.Extensions, i)));
+                string extension = this.gl.GetStringS(GLEnum.Extensions, i);
+                
+                mainSection.Contents.Add(("Supported Extension", extension));
+                
+                SupportedFeatures.Extensions.Add(extension);
+
+                if (extension.Contains("ARB_bindless_texture") || extension.Contains("NV_bindless_texture")) {
+                    Logger.Log("Enabling bindless texture support!", LoggerLevelOpenGL41.InstanceInfo);
+                    SupportedFeatures.SupportsBindlessTexturing = true;
+                }
             }
             this.CheckError("check extensions");
             this.InfoSections.Add(mainSection);

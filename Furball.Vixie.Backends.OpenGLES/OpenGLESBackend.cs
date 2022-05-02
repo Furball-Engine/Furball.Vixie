@@ -80,14 +80,15 @@ namespace Furball.Vixie.Backends.OpenGLES {
         public OpenGLESBackend(bool is32) {
             this.Is32 = is32;
         }
-        
+
         /// <summary>
         /// Used to Initialize the Backend
         /// </summary>
         /// <param name="window"></param>
         /// <param name="inputContext"></param>
+        /// <param name="supportedVersions"></param>
         /// <param name="game"></param>
-        public override void Initialize(IWindow window, IInputContext inputContext) {
+        public override void Initialize(IWindow window, IInputContext inputContext, SysetmSupportedVersions supportedVersions) {
             this.GetMainThread();
 
             this.gl     = window.CreateOpenGLES();

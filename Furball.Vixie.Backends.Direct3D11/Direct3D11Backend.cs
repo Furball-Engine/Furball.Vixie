@@ -42,7 +42,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         private TextureD3D11 _privateWhitePixelTexture;
         internal TextureD3D11 GetPrivateWhitePixelTexture() => this._privateWhitePixelTexture;
 
-        public override void Initialize(IWindow window, IInputContext inputContext) {
+        public override void Initialize(IWindow window, IInputContext inputContext, SysetmSupportedVersions supportedVersions) {
             FeatureLevel featureLevel = FeatureLevel.Level_11_0;
             DeviceCreationFlags deviceFlags = DeviceCreationFlags.BgraSupport;
 

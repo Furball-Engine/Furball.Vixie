@@ -25,6 +25,7 @@
       <PackageReference Include="Kettu" Version="1.2.4" />
       <PackageReference Include="Silk.NET.Input" Version="2.15.0" />
       <PackageReference Include="Silk.NET.Input.Extensions" Version="2.15.0" />
+      <PackageReference Include="Silk.NET.SDL" Version="2.15.0" />
       <PackageReference Include="Silk.NET.Windowing" Version="2.15.0" />
       <PackageReference Include="Silk.NET.Windowing.Extensions.Veldrid" Version="2.15.0" />
       <PackageReference Include="SixLabors.ImageSharp" Version="2.1.0" />

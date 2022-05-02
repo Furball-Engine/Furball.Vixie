@@ -1,6 +1,7 @@
 // ReSharper disable InconsistentNaming
 
 using System;
+using Silk.NET.Windowing;
 
 namespace Furball.Vixie.Backends.Shared.Backends {
     [Flags]
@@ -12,5 +13,12 @@ namespace Furball.Vixie.Backends.Shared.Backends {
         OpenGLES30 = 1 << 4,
         OpenGLES32 = 1 << 5,
         Veldrid    = 1 << 6,
+    }
+
+    public struct SysetmSupportedVersions {
+        public APIVersion OpenGL;
+        public APIVersion OpenGLES;
+        public APIVersion Vulkan; //TODO
+        public APIVersion DirectX; //TODO
     }
 }

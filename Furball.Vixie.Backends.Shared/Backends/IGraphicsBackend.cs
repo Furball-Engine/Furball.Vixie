@@ -16,7 +16,8 @@ namespace Furball.Vixie.Backends.Shared.Backends {
         /// </summary>
         /// <param name="window"></param>
         /// <param name="inputContext"></param>
-        public abstract void Initialize(IWindow window, IInputContext inputContext);
+        /// <param name="supportedVersions"></param>
+        public abstract void Initialize(IWindow window, IInputContext inputContext, SysetmSupportedVersions supportedVersions);
         /// <summary>
         /// Used to Cleanup the Backend
         /// </summary>

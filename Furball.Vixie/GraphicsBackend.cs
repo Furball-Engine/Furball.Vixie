@@ -45,6 +45,12 @@ namespace Furball.Vixie {
 
             (APIVersion gl, APIVersion gles) = OpenGLDetector.OpenGLDetector.GetLatestSupported();
 
+            Global.SupportedVersions = new SysetmSupportedVersions() {
+                OpenGL = gl,
+                OpenGLES = gles
+                //TODO: Vulkan and DirectX
+            };
+            
             bool supportsGl   = gl.MajorVersion   != 0;
             bool supportsGles = gles.MajorVersion != 0;
 
