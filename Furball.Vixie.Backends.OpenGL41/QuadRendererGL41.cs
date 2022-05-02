@@ -72,7 +72,6 @@ namespace Furball.Vixie.Backends.OpenGL41 {
         public unsafe QuadRendererGL41(OpenGL41Backend backend) {
             this._backend = backend;
             
-
             this.gl       = this._backend.GetGlApi();
 
             this._boundTextures = new TextureGL[this._backend.QueryMaxTextureUnits()];

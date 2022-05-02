@@ -75,6 +75,8 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             this.GetMainThread();
 
             this.gl     = window.CreateOpenGL();
+            this.CheckError("create opengl");
+
             this.Window = window;
             
 #if DEBUGWITHGL
@@ -97,10 +99,18 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             
             BackendInfoSection mainSection = new BackendInfoSection("OpenGL Info");
             mainSection.Contents.Add(("OpenGL Version", this.gl.GetStringS(StringName.Version)));
+            this.CheckError("check verison");
             mainSection.Contents.Add(("GLSL Version", this.gl.GetStringS(StringName.ShadingLanguageVersion)));
+            this.CheckError("check glsl version");
             mainSection.Contents.Add(("OpenGL Vendor", this.gl.GetStringS(StringName.Vendor)));
+            this.CheckError("check check vendor");
             mainSection.Contents.Add(("Renderer", this.gl.GetStringS(StringName.Renderer)));
-            // mainSection.Contents.Add(("Supported Extensions", this.gl.GetStringS(StringName.Extensions)));
+            this.CheckError("check check renderer");
+            this.gl.GetInteger(GetPName.NumExtensions, out int numExtensions);
+            for (uint i = 0; i < numExtensions; i++) {
+                mainSection.Contents.Add(("Supported Extension", this.gl.GetStringS(GLEnum.Extensions, i)));
+            }
+            this.CheckError("check extensions");
             this.InfoSections.Add(mainSection);
 
             this.InfoSections.ForEach(x => x.Log(LoggerLevelOpenGL41.InstanceInfo));
