@@ -301,14 +301,6 @@ namespace Furball.Vixie.Backends.OpenGL41 {
         private void Callback(GLEnum source, GLEnum type, int id, GLEnum severity, int length, nint message, nint userparam) {
             string stringMessage = SilkMarshal.PtrToString(message);
 
-            LoggerLevel level = severity switch {
-                GLEnum.DebugSeverityHigh         => LoggerLevelDebugMessageCallback.InstanceHigh,
-                GLEnum.DebugSeverityMedium       => LoggerLevelDebugMessageCallback.InstanceMedium,
-                GLEnum.DebugSeverityLow          => LoggerLevelDebugMessageCallback.InstanceLow,
-                GLEnum.DebugSeverityNotification => LoggerLevelDebugMessageCallback.InstanceNotification,
-                _                                => null
-            };
-
             Console.WriteLine(stringMessage);
         }
         public GLBackendType             GetType()     => GLBackendType.Modern;
