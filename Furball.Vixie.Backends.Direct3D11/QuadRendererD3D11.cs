@@ -346,29 +346,29 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this.Draw(texture, position, scale, rotation, colorOverride, texFlip, rotOrigin);
         }
 
-        public void DrawString(DynamicSpriteFont font, string text, Vector2 position, Color color, float rotation = 0, Vector2? scale = null) {
+        public void DrawString(DynamicSpriteFont font, string text, Vector2 position, Color color, float rotation = 0, Vector2? scale = null, Vector2 origin = default) {
             //Default Scale
             if(scale == null || scale == Vector2.Zero)
                 scale = Vector2.One;
 
             //Draw
-            font.DrawText(this._textRenderer, text, position, System.Drawing.Color.FromArgb(color.A, color.R, color.G, color.B), scale.Value, rotation, default);
+            font.DrawText(this._textRenderer, text, position, System.Drawing.Color.FromArgb(color.A, color.R, color.G, color.B), scale.Value, rotation, origin);
         }
 
-        public void DrawString(DynamicSpriteFont font, string text, Vector2 position, System.Drawing.Color color, float rotation = 0, Vector2? scale = null) {
+        public void DrawString(DynamicSpriteFont font, string text, Vector2 position, System.Drawing.Color color, float rotation = 0, Vector2? scale = null, Vector2 origin = default) {
             if(scale == null || scale == Vector2.Zero)
                 scale = Vector2.One;
 
-            font.DrawText(this._textRenderer, text, position, color, scale.Value, rotation);
+            font.DrawText(this._textRenderer, text, position, color, scale.Value, rotation, origin);
         }
 
-        public void DrawString(DynamicSpriteFont font, string text, Vector2 position, System.Drawing.Color[] colors, float rotation = 0, Vector2? scale = null) {
+        public void DrawString(DynamicSpriteFont font, string text, Vector2 position, System.Drawing.Color[] colors, float rotation = 0, Vector2? scale = null, Vector2 origin = default) {
             //Default Scale
             if(scale == null || scale == Vector2.Zero)
                 scale = Vector2.One;
 
             //Draw
-            font.DrawText(this._textRenderer, text, position, colors, scale.Value, rotation);
+            font.DrawText(this._textRenderer, text, position, colors, scale.Value, rotation, origin);
         }
 
         public void End() {

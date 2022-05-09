@@ -348,27 +348,8 @@ namespace Furball.Vixie.Backends.OpenGL20 {
 
         #region text
 
-        public void DrawString(DynamicSpriteFont font, string text, Vector2 position, Color color, float rotation = 0, Vector2? scale = null) {
-            this.DrawString(font, text, position, color, rotation, scale, default);
-        }
-
-        /// <summary>
-        /// Batches Text to the Screen
-        /// </summary>
-        /// <param name="font">Font to Use</param>
-        /// <param name="text">Text to Write</param>
-        /// <param name="position">Where to Draw</param>
-        /// <param name="color">What color to draw</param>
-        /// <param name="rotation">Rotation of the text</param>
-        /// <param name="origin">The rotation origin of the text</param>
-        /// <param name="scale">Scale of the text, leave null to draw at standard scale</param>
-        public void DrawString(DynamicSpriteFont font, string text, Vector2 position, Color color, float rotation = 0f, Vector2? scale = null, Vector2 origin = default) {
-            //Default Scale
-            if (scale == null || scale == Vector2.Zero)
-                scale = Vector2.One;
-
-            //Draw
-            font.DrawText(this._textRenderer, text, position, System.Drawing.Color.FromArgb(color.A, color.R, color.G, color.B), scale.Value, rotation, origin);
+        public void DrawString(DynamicSpriteFont font, string text, Vector2 position, Color color, float rotation = 0, Vector2? scale = null, Vector2 origin = default) {
+            this.DrawString(font, text, position, color, rotation, scale, origin);
         }
         /// <summary>
         /// Batches Text to the Screen
@@ -379,13 +360,13 @@ namespace Furball.Vixie.Backends.OpenGL20 {
         /// <param name="color">What color to draw</param>
         /// <param name="rotation">Rotation of the text</param>
         /// <param name="scale">Scale of the text, leave null to draw at standard scale</param>
-        public void DrawString(DynamicSpriteFont font, string text, Vector2 position, System.Drawing.Color color, float rotation = 0f, Vector2? scale = null) {
+        public void DrawString(DynamicSpriteFont font, string text, Vector2 position, System.Drawing.Color color, float rotation = 0f, Vector2? scale = null, Vector2 origin = default) {
             //Default Scale
             if (scale == null || scale == Vector2.Zero)
                 scale = Vector2.One;
 
             //Draw
-            font.DrawText(this._textRenderer, text, position, color, scale.Value, rotation);
+            font.DrawText(this._textRenderer, text, position, color, scale.Value, rotation, origin);
         }
         /// <summary>
         /// Batches Colorful text to the Screen
@@ -396,13 +377,13 @@ namespace Furball.Vixie.Backends.OpenGL20 {
         /// <param name="colors">What colors to use</param>
         /// <param name="rotation">Rotation of the text</param>
         /// <param name="scale">Scale of the text, leave null to draw at standard scale</param>
-        public void DrawString(DynamicSpriteFont font, string text, Vector2 position, System.Drawing.Color[] colors, float rotation = 0f, Vector2? scale = null) {
+        public void DrawString(DynamicSpriteFont font, string text, Vector2 position, System.Drawing.Color[] colors, float rotation = 0f, Vector2? scale = null, Vector2 origin = default) {
             //Default Scale
             if (scale == null || scale == Vector2.Zero)
                 scale = Vector2.One;
 
             //Draw
-            font.DrawText(this._textRenderer, text, position, colors, scale.Value, rotation);
+            font.DrawText(this._textRenderer, text, position, colors, scale.Value, rotation, origin);
         }
 
         #endregion
