@@ -14,7 +14,7 @@ namespace Furball.Vixie {
         /// The Window's Creation Options
         /// </summary>
         private WindowOptions _windowOptions;
-        private Backend _backend;
+        public Backend Backend { get; internal set; }
         /// <summary>
         /// Actual Game Window
         /// </summary>
@@ -37,7 +37,7 @@ namespace Furball.Vixie {
         /// </summary>
         /// <param name="windowOptions">Window Creation Options</param>
         public WindowManager(WindowOptions windowOptions, Backend backend) {
-            this._backend       = backend;
+            this.Backend       = backend;
             this._windowOptions = windowOptions;
         }
 
@@ -78,7 +78,7 @@ namespace Furball.Vixie {
         public void Create() {
             SdlWindowing.Use(); //dont tell perskey and kai that i do this! shhhhhhhhhhhhhhh
 
-            ContextAPI api = this._backend switch {
+            ContextAPI api = this.Backend switch {
                 Backend.OpenGLES32 => ContextAPI.OpenGLES,
                 Backend.OpenGLES30 => ContextAPI.OpenGLES,
                 Backend.OpenGL20   => ContextAPI.OpenGL,
@@ -88,7 +88,7 @@ namespace Furball.Vixie {
                 _                  => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
             };
 
-            ContextProfile profile = this._backend switch {
+            ContextProfile profile = this.Backend switch {
                 Backend.OpenGLES30 => ContextProfile.Core,
                 Backend.OpenGLES32 => ContextProfile.Core,
                 Backend.OpenGL20   => ContextProfile.Core,
@@ -98,7 +98,7 @@ namespace Furball.Vixie {
                 _                  => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
             };
 
-            ContextFlags flags = this._backend switch {
+            ContextFlags flags = this.Backend switch {
 #if DEBUG
                 Backend.OpenGLES30 => ContextFlags.Debug,
                 Backend.OpenGLES32 => ContextFlags.Debug,
@@ -117,7 +117,7 @@ namespace Furball.Vixie {
                 _ => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
             };
 
-            APIVersion version = this._backend switch {
+            APIVersion version = this.Backend switch {
                 Backend.OpenGLES30 => new APIVersion(3,  0),
                 Backend.OpenGLES32 => new APIVersion(3,  2),
                 Backend.OpenGL20   => new APIVersion(2,  0),
@@ -129,7 +129,7 @@ namespace Furball.Vixie {
 
             this._windowOptions.API = new GraphicsAPI(api, profile, flags, version);
 
-            if (this._backend == Backend.Veldrid) {
+            if (this.Backend == Backend.Veldrid) {
                 this._windowOptions.API = VeldridBackend.PrefferedBackend.ToGraphicsAPI();
 
                 this._windowOptions.ShouldSwapAutomatically = false;
@@ -137,7 +137,7 @@ namespace Furball.Vixie {
             
             this.GameWindow = Window.Create(this._windowOptions);
 
-            if (this._backend == Backend.Veldrid) {
+            if (this.Backend == Backend.Veldrid) {
                 this.GameWindow.IsContextControlDisabled = true;
             }
             
@@ -148,7 +148,7 @@ namespace Furball.Vixie {
             this.GameWindow.Closing += OnWindowClosing;
         }
         public void SetupGraphicsApi() {
-            GraphicsBackend.SetBackend(this._backend);
+            GraphicsBackend.SetBackend(this.Backend);
             GraphicsBackend.Current.Initialize(this.GameWindow, this.InputContext);
 
             this.UpdateProjectionAndSize(this._windowOptions.Size.X, this._windowOptions.Size.Y);

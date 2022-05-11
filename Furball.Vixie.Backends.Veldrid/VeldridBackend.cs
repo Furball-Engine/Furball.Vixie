@@ -24,6 +24,8 @@ namespace Furball.Vixie.Backends.Veldrid {
         internal GraphicsDevice  GraphicsDevice;
         internal ResourceFactory ResourceFactory;
         internal CommandList     CommandList;
+
+        public GraphicsBackend ChosenBackend;
         
         internal Matrix4x4       ProjectionMatrix;
         private  IWindow         _window;
@@ -66,6 +68,8 @@ namespace Furball.Vixie.Backends.Veldrid {
             mainSection.Contents.Add(("Vendor", this.GraphicsDevice.VendorName));
             this.InfoSections.Add(mainSection);
 
+            this.ChosenBackend = this.GraphicsDevice.BackendType;
+            
             BackendInfoSection backendSection = new("Backend Info");
             switch (this.GraphicsDevice.BackendType) {
                 case GraphicsBackend.Direct3D11: {
