@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="FontStashSharp" Version="1.0.4" />
+        <PackageReference Include="FontStashSharp" Version="1.0.7" />
         <PackageReference Include="Silk.NET.Input.Common" Version="2.15.0" />
         <PackageReference Include="Silk.NET.Windowing.Common" Version="2.15.0" />
         <PackageReference Include="SixLabors.ImageSharp" Version="2.1.0" />
