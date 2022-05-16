@@ -22,6 +22,7 @@ using BufferTargetARB=Silk.NET.OpenGL.BufferTargetARB;
 using BufferUsageARB=Silk.NET.OpenGL.BufferUsageARB;
 using FramebufferAttachment=Silk.NET.OpenGL.FramebufferAttachment;
 using FramebufferTarget=Silk.NET.OpenGL.FramebufferTarget;
+using GetPName=Silk.NET.OpenGL.GetPName;
 using InternalFormat=Silk.NET.OpenGL.InternalFormat;
 using PixelFormat=Silk.NET.OpenGL.PixelFormat;
 using PixelType=Silk.NET.OpenGL.PixelType;
@@ -32,6 +33,8 @@ using Texture=Furball.Vixie.Backends.Shared.Texture;
 using TextureParameterName=Silk.NET.OpenGL.TextureParameterName;
 using TextureTarget=Silk.NET.OpenGL.TextureTarget;
 using TextureUnit=Silk.NET.OpenGL.TextureUnit;
+using VertexAttribIType=Silk.NET.OpenGL.VertexAttribIType;
+using VertexAttribPointerType=Silk.NET.OpenGL.VertexAttribPointerType;
 
 namespace Furball.Vixie.Backends.OpenGL20 {
     public class OpenGL20Backend : IGraphicsBackend, IGLBasedBackend {
@@ -140,10 +143,10 @@ namespace Furball.Vixie.Backends.OpenGL20 {
         private int                  _maxTexUnits = -1;
         private ExtFramebufferObject framebufferObjectEXT;
         private bool                 _screenshotQueued;
-        private bool                 RunImGui;
+        private bool                 RunImGui = true;
         public override int QueryMaxTextureUnits() {
             if (this._maxTexUnits == -1)
-                this._maxTexUnits = this.gl.GetInteger((GLEnum)GetPName.MaxTextureImageUnits);
+                this._maxTexUnits = this.gl.GetInteger((GLEnum)Silk.NET.OpenGL.Legacy.GetPName.MaxTextureImageUnits);
 
             return this._maxTexUnits;
         }
@@ -160,7 +163,7 @@ namespace Furball.Vixie.Backends.OpenGL20 {
 
                 int[] viewport = new int[4];
 
-                this.gl.GetInteger(GetPName.Viewport, viewport);
+                this.gl.GetInteger(Silk.NET.OpenGL.Legacy.GetPName.Viewport, viewport);
                 
                 Rgba32[] colorArr = new Rgba32[viewport[2] * viewport[3]];
 
@@ -287,7 +290,7 @@ namespace Furball.Vixie.Backends.OpenGL20 {
 
         public Silk.NET.OpenGL.GLEnum CheckFramebufferStatus(FramebufferTarget target) => (Silk.NET.OpenGL.GLEnum)this.framebufferObjectEXT.CheckFramebufferStatus((EXT)target);
 
-        public void GetInteger(Silk.NET.OpenGL.GetPName viewport, ref int[] oldViewPort) {
+        public void GetInteger(GetPName viewport, ref int[] oldViewPort) {
             this.gl.GetInteger((GLEnum)viewport, oldViewPort);
         }
 
@@ -375,11 +378,11 @@ namespace Furball.Vixie.Backends.OpenGL20 {
             this.gl.EnableVertexAttribArray(u);
         }
 
-        public unsafe void VertexAttribPointer(uint u, int currentElementCount, Silk.NET.OpenGL.VertexAttribPointerType currentElementType, bool currentElementNormalized, uint getStride, void* offset) {
+        public unsafe void VertexAttribPointer(uint u, int currentElementCount, VertexAttribPointerType currentElementType, bool currentElementNormalized, uint getStride, void* offset) {
             this.gl.VertexAttribPointer(u, currentElementCount, (GLEnum)currentElementType, currentElementNormalized, getStride, offset);
         }
 
-        public unsafe void VertexAttribIPointer(uint u, int currentElementCount, Silk.NET.OpenGL.VertexAttribIType vertexAttribIType, uint getStride, void* offset) {
+        public unsafe void VertexAttribIPointer(uint u, int currentElementCount, VertexAttribIType vertexAttribIType, uint getStride, void* offset) {
             this.gl.VertexAttribIPointer(u, currentElementCount, (GLEnum)vertexAttribIType, getStride, offset);
         }
 
