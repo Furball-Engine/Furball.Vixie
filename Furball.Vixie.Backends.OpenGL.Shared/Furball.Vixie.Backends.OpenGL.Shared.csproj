@@ -15,7 +15,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Kettu" Version="1.2.4" />
+      <PackageReference Include="Kettu" Version="1.4.0" />
       <PackageReference Include="Silk.NET.OpenGL" Version="2.15.0" />
       <PackageReference Include="Silk.NET.OpenGL.Legacy" Version="2.15.0" />
       <PackageReference Include="Silk.NET.OpenGLES" Version="2.15.0" />

@@ -19,7 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Kettu" Version="1.2.4" />
+      <PackageReference Include="Kettu" Version="1.4.0" />
       <PackageReference Include="Silk.NET.OpenGL.Legacy.Extensions.ImGui" Version="2.15.0" />
       <PackageReference Include="Silk.NET.OpenGL.Legacy" Version="2.15.0" />
       <PackageReference Include="Silk.NET.OpenGL.Legacy.Extensions.EXT" Version="2.15.0" />
