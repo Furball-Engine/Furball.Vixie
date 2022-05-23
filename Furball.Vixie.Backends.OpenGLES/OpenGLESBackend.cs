@@ -11,6 +11,7 @@ using Furball.Vixie.Helpers.Helpers;
 using Kettu;
 using Silk.NET.Core.Native;
 using Silk.NET.Input;
+using Silk.NET.Maths;
 using Silk.NET.OpenGLES;
 using Silk.NET.OpenGLES.Extensions.ImGui;
 using Silk.NET.Windowing;
@@ -21,10 +22,14 @@ using BufferTargetARB=Silk.NET.OpenGL.BufferTargetARB;
 using BufferUsageARB=Silk.NET.OpenGL.BufferUsageARB;
 using FramebufferAttachment=Silk.NET.OpenGL.FramebufferAttachment;
 using FramebufferTarget=Silk.NET.OpenGL.FramebufferTarget;
+using GetPName=Silk.NET.OpenGL.GetPName;
 using InternalFormat=Silk.NET.OpenGL.InternalFormat;
 using PixelFormat=Silk.NET.OpenGL.PixelFormat;
 using PixelType=Silk.NET.OpenGL.PixelType;
+using ProgramPropertyARB=Silk.NET.OpenGL.ProgramPropertyARB;
+using Rectangle=SixLabors.ImageSharp.Rectangle;
 using RenderbufferTarget=Silk.NET.OpenGL.RenderbufferTarget;
+using ShaderType=Silk.NET.OpenGL.ShaderType;
 using Texture=Furball.Vixie.Backends.Shared.Texture;
 using TextureParameterName=Silk.NET.OpenGL.TextureParameterName;
 using TextureTarget=Silk.NET.OpenGL.TextureTarget;
@@ -72,10 +77,12 @@ namespace Furball.Vixie.Backends.OpenGLES {
             if (Thread.CurrentThread != _mainThread)
                 throw new ThreadStateException("You are calling GL on the wrong thread!");
         }
-        internal         IWindow Window;
-        private          bool    _screenshotQueued;
-        private readonly bool    Is32;
-        private          bool    RunImGui = true;
+        internal         IWindow       Window;
+        private          bool          _screenshotQueued;
+        private readonly bool          Is32;
+        private          bool          RunImGui = true;
+        private          Rectangle     _lastScissor;
+        private          Vector2D<int> _fbSize;
 
         public OpenGLESBackend(bool is32) {
             this.Is32 = is32;
@@ -106,6 +113,8 @@ namespace Furball.Vixie.Backends.OpenGLES {
             this.gl.Enable(EnableCap.Blend);
             this.gl.BlendFunc(GLEnum.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
+            this.gl.Enable(EnableCap.ScissorTest);
+
             this.ImGuiController = new ImGuiController(this.gl, window, inputContext);
 
             BackendInfoSection mainSection = new BackendInfoSection("OpenGL Info");
@@ -121,6 +130,8 @@ namespace Furball.Vixie.Backends.OpenGLES {
             window.Closing += delegate {
                 this.RunImGui = false;
             };
+
+            this._fbSize = new Vector2D<int>(window.Size.X, window.Size.Y);
         }
         public void CheckError(string message) {
             this.CheckErrorInternal(message);
@@ -166,6 +177,8 @@ namespace Furball.Vixie.Backends.OpenGLES {
         /// <param name="height">New height</param>
         public override void HandleFramebufferResize(int width, int height) {
             this.gl.Viewport(0, 0, (uint)width, (uint)height);
+
+            this._fbSize = new Vector2D<int>(width, height);
         }
         /// <summary>
         /// Used to Create a Texture Renderer
@@ -189,7 +202,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
         /// <returns>Amount of Texture Units supported</returns>
         public override int QueryMaxTextureUnits() {
             if (this._maxTextureUnits == -1) {
-                this.gl.GetInteger(GetPName.MaxTextureImageUnits, out int maxTexSlots);
+                this.gl.GetInteger(Silk.NET.OpenGLES.GetPName.MaxTextureImageUnits, out int maxTexSlots);
                 this._maxTextureUnits = maxTexSlots;
             }
 
@@ -210,7 +223,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
 
                 int[] viewport = new int[4];
 
-                this.gl.GetInteger(GetPName.Viewport, viewport);
+                this.gl.GetInteger(Silk.NET.OpenGLES.GetPName.Viewport, viewport);
                 
                 Rgba32[] colorArr = new Rgba32[viewport[2] * viewport[3]];
 
@@ -224,6 +237,13 @@ namespace Furball.Vixie.Backends.OpenGLES {
                 
                 this.InvokeScreenshotTaken(img);
             }
+        }
+        public override Rectangle ScissorRect {
+            get => this._lastScissor;
+            set => this.gl.Scissor(value.X, this._fbSize.Y - value.Height - value.Y, (uint)value.Width, (uint)value.Height);
+        }
+        public override void SetFullScissorRect() {
+            this.ScissorRect = new(0, 0, this._fbSize.X, this._fbSize.Y);
         }
         /// <summary>
         /// Used to Create a TextureRenderTarget
@@ -396,7 +416,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
 
         public Silk.NET.OpenGL.GLEnum CheckFramebufferStatus(FramebufferTarget target) => (Silk.NET.OpenGL.GLEnum)this.gl.CheckFramebufferStatus((GLEnum)target);
 
-        public void GetInteger(Silk.NET.OpenGL.GetPName viewport, ref int[] oldViewPort) {
+        public void GetInteger(GetPName viewport, ref int[] oldViewPort) {
             this.gl.GetInteger((GLEnum)viewport, oldViewPort);
         }
 
@@ -410,7 +430,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
 
         public uint CreateProgram() => this.gl.CreateProgram();
 
-        public uint CreateShader(Silk.NET.OpenGL.ShaderType type) => this.gl.CreateShader((GLEnum)type);
+        public uint CreateShader(ShaderType type) => this.gl.CreateShader((GLEnum)type);
 
         public void ShaderSource(uint shaderId, string source) {
             this.gl.ShaderSource(shaderId, source);
@@ -430,7 +450,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
             this.gl.LinkProgram(programId);
         }
 
-        public void GetProgram(uint programId, Silk.NET.OpenGL.ProgramPropertyARB linkStatus, out int i) {
+        public void GetProgram(uint programId, ProgramPropertyARB linkStatus, out int i) {
             this.gl.GetProgram(programId, (GLEnum)linkStatus, out i);
         }
 
