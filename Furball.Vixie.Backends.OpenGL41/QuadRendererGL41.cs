@@ -186,6 +186,12 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             this._instances = 0;
             this._usedTextures = 0;
 
+            this._vao.Bind();
+            this._backend.CheckError("bind vao");
+
+            // this._InstanceVBO.SetData<InstanceData>(this._instanceData);
+            this._instanceVbo.Bind();
+
             this.IsBegun = true;
         }
 
@@ -297,11 +303,6 @@ namespace Furball.Vixie.Backends.OpenGL41 {
                 tex.Bind(TextureUnit.Texture0 + i);
             }
 
-            this._vao.Bind();
-            this._backend.CheckError("bind vao");
-
-            // this._InstanceVBO.SetData<InstanceData>(this._instanceData);
-            this._instanceVbo.Bind();
             fixed (void* ptr = this._instanceData)
                 this._instanceVbo.SetSubData(ptr, (nuint)(this._instances * sizeof(InstanceData)));
 
