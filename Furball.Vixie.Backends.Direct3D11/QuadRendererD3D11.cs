@@ -224,36 +224,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         }
 
         public void Begin() {
-            this.IsBegun  = true;
-            
-            ConstantBufferData[] constantBufferData = new[] {
-                new ConstantBufferData { ProjectionMatrix = this._backend.GetProjectionMatrix() }
-            };
-
-            /* Copy Constant Buffer */ {
-                MappedSubresource constantBufferResource = this._deviceContext.Map(this._constantBuffer, MapMode.WriteDiscard);
-
-                fixed (void* constantBufferPointer = constantBufferData) {
-                    long copySize = sizeof(ConstantBufferData);
-                    Buffer.MemoryCopy(constantBufferPointer, (void*)constantBufferResource.DataPointer, copySize, copySize);
-                }
-
-                this._deviceContext.Unmap(_constantBuffer);
-            }
-
-            this._deviceContext.VSSetShader(this._vertexShader);
-            this._deviceContext.VSSetConstantBuffer(0, this._constantBuffer);
-
-            this._deviceContext.PSSetShader(this._pixelShader);
-            this._deviceContext.PSSetSampler(0, this._samplerState);
-
-            this._deviceContext.PSSetShaderResources(0, 128, this._boundShaderViews);
-
-            this._deviceContext.IASetInputLayout(this._inputLayout);
-            this._deviceContext.IASetVertexBuffer(VERTEX_BUFFER_SLOT, this._vertexBuffer, sizeof(VertexData));
-            this._deviceContext.IASetVertexBuffer(INSTANCE_BUFFER_SLOT, this._instanceBuffer, sizeof(InstanceData));
-            this._deviceContext.IASetIndexBuffer(this._indexBuffer, Format.R16_UInt, 0);
-            this._deviceContext.IASetPrimitiveTopology(Vortice.Direct3D.PrimitiveTopology.TriangleList);
+            this.IsBegun = true;
         }
 
         public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
@@ -390,10 +361,46 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 
             this._deviceContext.Unmap(this._instanceBuffer, 0);
 
+            #region Setup Render State
+
+            ConstantBufferData[] constantBufferData = new[] {
+                new ConstantBufferData { ProjectionMatrix = this._backend.GetProjectionMatrix() }
+            };
+
+            /* Copy Constant Buffer */
+            {
+                MappedSubresource constantBufferResource = this._deviceContext.Map(this._constantBuffer, MapMode.WriteDiscard);
+
+                fixed (void* constantBufferPointer = constantBufferData) {
+                    long copySize = sizeof(ConstantBufferData);
+                    Buffer.MemoryCopy(constantBufferPointer, (void*)constantBufferResource.DataPointer, copySize, copySize);
+                }
+
+                this._deviceContext.Unmap(_constantBuffer);
+            }
+
+            this._deviceContext.VSSetShader(this._vertexShader);
+            this._deviceContext.VSSetConstantBuffer(0, this._constantBuffer);
+
+            this._deviceContext.PSSetShader(this._pixelShader);
+            this._deviceContext.PSSetSampler(0, this._samplerState);
+
+            this._deviceContext.PSSetShaderResources(0, 128, this._boundShaderViews);
+
+            this._deviceContext.IASetInputLayout(this._inputLayout);
+            this._deviceContext.IASetVertexBuffer(VERTEX_BUFFER_SLOT, this._vertexBuffer, sizeof(VertexData));
+            this._deviceContext.IASetVertexBuffer(INSTANCE_BUFFER_SLOT, this._instanceBuffer, sizeof(InstanceData));
+            this._deviceContext.IASetIndexBuffer(this._indexBuffer, Format.R16_UInt, 0);
+            this._deviceContext.IASetPrimitiveTopology(Vortice.Direct3D.PrimitiveTopology.TriangleList);
+
+            #endregion
+
             this._deviceContext.DrawIndexedInstanced(6, this._instances, 0, 0, 0);
 
             this._usedTextures = 0;
             this._instances    = 0;
+
+            #region Undo Render State
 
             this._deviceContext.VSSetShader(null);
             this._deviceContext.VSSetConstantBuffer(0, null);
@@ -407,6 +414,8 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this._deviceContext.IASetVertexBuffer(VERTEX_BUFFER_SLOT,   null, 0);
             this._deviceContext.IASetVertexBuffer(INSTANCE_BUFFER_SLOT, null, 0);
             this._deviceContext.IASetIndexBuffer(null, Format.R16_UInt, 0);
+
+            #endregion
         }
 
         private bool _isDisposed = false;

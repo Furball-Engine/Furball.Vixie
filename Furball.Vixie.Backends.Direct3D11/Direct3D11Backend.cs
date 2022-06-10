@@ -198,12 +198,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 
             _defaultBlendState.Dispose();
 
-            try {
-                _debug.Dispose();
-            }
-            catch {
-
-            }
+            _debug?.Dispose();
         }
 
         public override void HandleWindowSizeChange(int width, int height) {
