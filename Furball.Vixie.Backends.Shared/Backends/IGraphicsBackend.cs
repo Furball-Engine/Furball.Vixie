@@ -63,6 +63,14 @@ namespace Furball.Vixie.Backends.Shared.Backends {
         protected void InvokeScreenshotTaken(Image image) {
             this.ScreenshotTaken?.Invoke(this, image);
         }
+        /// <summary>
+        ///     Sets the scissor rectangle, top left origin going down
+        /// </summary>
+        public abstract Rectangle ScissorRect { get; set; }
+        /// <summary>
+        ///     Resets the scissor rect to the full window
+        /// </summary>
+        public abstract void SetFullScissorRect();
 
         //Render Targets
 

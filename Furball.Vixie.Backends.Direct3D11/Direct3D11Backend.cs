@@ -10,6 +10,7 @@ using Kettu;
 using SharpGen.Runtime;
 using Silk.NET.Input;
 using Silk.NET.Windowing;
+using SixLabors.ImageSharp;
 using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.Direct3D11.Debug;
@@ -121,7 +122,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
                 CullMode              = CullMode.None,
                 FrontCounterClockwise = true,
                 DepthClipEnable       = false,
-                ScissorEnable         = false,
+                ScissorEnable         = true,
                 MultisampleEnable     = true,
                 AntialiasedLineEnable = true
             };
@@ -194,8 +195,15 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             _swapChain.Dispose();
             _renderTarget.Dispose();
             _backBuffer.Dispose();
-            _debug.Dispose();
+
             _defaultBlendState.Dispose();
+
+            try {
+                _debug.Dispose();
+            }
+            catch {
+
+            }
         }
 
         public override void HandleWindowSizeChange(int width, int height) {
@@ -233,6 +241,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         public override void Clear() {
             this._deviceContext.ClearRenderTargetView(this.CurrentlyBoundTarget, this._clearColor);
         }
+
         public override void TakeScreenshot() {
             throw new NotImplementedException();
         }
@@ -277,6 +286,22 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this._deviceContext.OMSetRenderTargets(this._renderTarget);
             //this._deviceContext.ClearRenderTargetView(this._renderTarget, this._clearColor);
             this._deviceContext.RSSetViewport(this._viewport);
+            this._deviceContext.RSSetScissorRect(0, 0, (int) this._viewport.Width, (int) this._viewport.Height);
+        }
+
+        private Rectangle _currentScissorRect;
+
+        public override Rectangle ScissorRect {
+            get => this._currentScissorRect;
+            set {
+                this._currentScissorRect = value;
+
+                this._deviceContext.RSSetScissorRect(value.X, value.Y, value.Width, value.Height);
+            }
+        }
+
+        public override void SetFullScissorRect() {
+            this._deviceContext.RSSetScissorRect(0, 0, (int) this._viewport.Width, (int) this._viewport.Height);
         }
     }
 }

@@ -15,7 +15,8 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using Veldrid;
 using Veldrid.MetalBindings;
-using Texture=Furball.Vixie.Backends.Shared.Texture;
+using Rectangle=SixLabors.ImageSharp.Rectangle;
+using Texture=Veldrid.Texture;
 
 namespace Furball.Vixie.Backends.Veldrid {
     public class VeldridBackend : IGraphicsBackend {
@@ -37,12 +38,13 @@ namespace Furball.Vixie.Backends.Veldrid {
         public   ResourceSet    WhitePixelResourceSet;
 
         public  Framebuffer             RenderFramebuffer;
-        public  global::Veldrid.Texture MainFramebufferTexture;
+        public  Texture MainFramebufferTexture;
         public  ResourceSet             MainFramebufferTextureSet;
         public  ResourceLayout          MainFramebufferTextureLayout;
         public  FullScreenQuad          FullScreenQuad;
         private bool                    _screenshotQueued;
-        
+        private Rectangle               _lastScissor;
+
         public override void Initialize(IWindow window, IInputContext inputContext) {
             this._window = window;
             
@@ -184,6 +186,8 @@ namespace Furball.Vixie.Backends.Veldrid {
             this.GraphicsDevice.SubmitCommands(this.CommandList);
             
             this.InfoSections.ForEach(x => x.Log(LoggerLevelVeldrid.InstanceInfo));
+
+            this._lastScissor = new Rectangle(0, 0, window.Size.X, window.Size.Y);
         }
         
 
@@ -246,6 +250,7 @@ namespace Furball.Vixie.Backends.Veldrid {
             this.GraphicsDevice.ResizeMainWindow((uint)width, (uint)height);
             
             this.CreateFramebuffer(this.GraphicsDevice.SwapchainFramebuffer.Width, this.GraphicsDevice.SwapchainFramebuffer.Height);
+            this.ScissorRect = new Rectangle(0, 0, width, height);
         }
         public override IQuadRenderer CreateTextureRenderer() => new QuadRendererVeldrid(this);
         public override ILineRenderer CreateLineRenderer()    => new LineRendererVeldrid(this);
@@ -298,7 +303,7 @@ namespace Furball.Vixie.Backends.Veldrid {
                     TextureUsage.Staging
                 );
 
-                global::Veldrid.Texture? tex = this.ResourceFactory.CreateTexture(desc);
+                Texture? tex = this.ResourceFactory.CreateTexture(desc);
                 
                 this.CommandList.Begin();
                 this.CommandList.CopyTexture(this.MainFramebufferTexture, tex);
@@ -333,17 +338,28 @@ namespace Furball.Vixie.Backends.Veldrid {
             
         }
 
+        public override Rectangle ScissorRect {
+            get => this._lastScissor;
+            set {
+                this.CommandList.SetScissorRect(0, (uint)value.X, (uint)value.Y, (uint)value.Width, (uint)value.Height);
+                this._lastScissor = value;
+            }
+        }
+        public override void SetFullScissorRect() {
+            this._lastScissor = new Rectangle(0, 0, this._window.Size.X, this._window.Size.Y);
+            this.CommandList.SetFullScissorRect(0);
+        }
         public override TextureRenderTarget CreateRenderTarget(uint width, uint height) => new TextureRenderTargetVeldrid(this, width, height);
         
-        public override Texture CreateTexture(byte[] imageData, bool qoi = false) => new TextureVeldrid(this, imageData, qoi);
+        public override Shared.Texture CreateTexture(byte[] imageData, bool qoi = false) => new TextureVeldrid(this, imageData, qoi);
 
-        public override Texture CreateTexture(Stream stream) => new TextureVeldrid(this, stream);
+        public override Shared.Texture CreateTexture(Stream stream) => new TextureVeldrid(this, stream);
 
-        public override Texture CreateTexture(uint width, uint height) => new TextureVeldrid(this, width, height);
+        public override Shared.Texture CreateTexture(uint width, uint height) => new TextureVeldrid(this, width, height);
 
-        public override Texture CreateTexture(string filepath) => new TextureVeldrid(this, filepath);
+        public override Shared.Texture CreateTexture(string filepath) => new TextureVeldrid(this, filepath);
 
-        public override Texture CreateWhitePixelTexture() => new TextureVeldrid(this);
+        public override Shared.Texture CreateWhitePixelTexture() => new TextureVeldrid(this);
         
         public override void ImGuiUpdate(double deltaTime) {
             this._imgui.Update((float)deltaTime);

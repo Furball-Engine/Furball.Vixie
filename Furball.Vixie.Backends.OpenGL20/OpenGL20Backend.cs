@@ -11,6 +11,7 @@ using Furball.Vixie.Helpers.Helpers;
 using Kettu;
 using Silk.NET.Core.Native;
 using Silk.NET.Input;
+using Silk.NET.Maths;
 using Silk.NET.OpenGL.Legacy;
 using Silk.NET.OpenGL.Legacy.Extensions.EXT;
 using Silk.NET.OpenGL.Legacy.Extensions.ImGui;
@@ -27,6 +28,7 @@ using InternalFormat=Silk.NET.OpenGL.InternalFormat;
 using PixelFormat=Silk.NET.OpenGL.PixelFormat;
 using PixelType=Silk.NET.OpenGL.PixelType;
 using ProgramPropertyARB=Silk.NET.OpenGL.ProgramPropertyARB;
+using Rectangle=SixLabors.ImageSharp.Rectangle;
 using RenderbufferTarget=Silk.NET.OpenGL.RenderbufferTarget;
 using ShaderType=Silk.NET.OpenGL.ShaderType;
 using Texture=Furball.Vixie.Backends.Shared.Texture;
@@ -86,7 +88,8 @@ namespace Furball.Vixie.Backends.OpenGL20 {
             this.gl.BlendFunc(GLEnum.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
             this.gl.Enable(EnableCap.Texture2D);
-            
+            this.gl.Enable(EnableCap.ScissorTest);
+
             this._imgui = new ImGuiController(this.gl, window, inputContext);
             
             BackendInfoSection mainSection = new BackendInfoSection("OpenGL Info");
@@ -102,6 +105,7 @@ namespace Furball.Vixie.Backends.OpenGL20 {
             window.Closing += delegate {
                 this.RunImGui = false;
             };
+            this._fbSize = new Vector2D<int>(window.Size.X, window.Size.Y);
         }
 
         /// <summary>
@@ -135,8 +139,16 @@ namespace Furball.Vixie.Backends.OpenGL20 {
             this.gl.Viewport(0, 0, (uint)width, (uint)height);
 
             this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, height, 0, 0, 1);
+            this._fbSize          = new Vector2D<int>(width, height);
         }
 
+        public override Rectangle ScissorRect {
+            get => this._lastScissor;
+            set => this.gl.Scissor(value.X, this._fbSize.Y - value.Height - value.Y, (uint)value.Width, (uint)value.Height);
+        }
+        public override void SetFullScissorRect() {
+            this.ScissorRect = new(0, 0, this._fbSize.X, this._fbSize.Y);
+        }
         public override IQuadRenderer CreateTextureRenderer() => new QuadRendererGL20(this);
         public override ILineRenderer CreateLineRenderer()    => new LineRendererGL20(this);
 
@@ -144,6 +156,8 @@ namespace Furball.Vixie.Backends.OpenGL20 {
         private ExtFramebufferObject framebufferObjectEXT;
         private bool                 _screenshotQueued;
         private bool                 RunImGui = true;
+        private Vector2D<int>        _fbSize;
+        private Rectangle            _lastScissor;
         public override int QueryMaxTextureUnits() {
             if (this._maxTexUnits == -1)
                 this._maxTexUnits = this.gl.GetInteger((GLEnum)Silk.NET.OpenGL.Legacy.GetPName.MaxTextureImageUnits);

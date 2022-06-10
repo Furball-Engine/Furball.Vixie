@@ -1,8 +1,11 @@
 using System.Numerics;
-using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers.Helpers;
 using ImGuiNET;
+using Silk.NET.OpenGL;
+using SixLabors.ImageSharp;
+using Color=Furball.Vixie.Backends.Shared.Color;
+using Texture=Furball.Vixie.Backends.Shared.Texture;
 
 namespace Furball.Vixie.TestApplication.Tests {
     public class TestQuadRendering : GameComponent {
@@ -22,10 +25,14 @@ namespace Furball.Vixie.TestApplication.Tests {
         /// Amount of Dons to draw on screen each frame
         /// </summary>
         private int _cirnoDons = 1024;
+        private bool _scissorEnable = false;
 
         public override void Draw(double deltaTime) {
             GraphicsBackend.Current.Clear();
 
+            if (this._scissorEnable)
+                GraphicsBackend.Current.ScissorRect = new Rectangle(100, 100, 400, 200);
+            
             this._quadRendererGl.Begin();
 
             for (int i = 0; i != this._cirnoDons; i++) {
@@ -33,6 +40,8 @@ namespace Furball.Vixie.TestApplication.Tests {
             }
 
             this._quadRendererGl.End();
+            
+            GraphicsBackend.Current.SetFullScissorRect();
 
             #region ImGui menu
 
@@ -42,6 +51,7 @@ namespace Furball.Vixie.TestApplication.Tests {
             }
 
             ImGui.SliderInt("Draws", ref this._cirnoDons, 0, 2048);
+            ImGui.Checkbox("Scissor", ref this._scissorEnable);
 
             #endregion
 

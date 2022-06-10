@@ -7,7 +7,6 @@ using Furball.Vixie.Backends.OpenGL.Shared;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.Renderers;
-using Furball.Vixie.Helpers.Helpers;
 using Kettu;
 using Silk.NET.Core.Native;
 using Silk.NET.Input;
@@ -18,6 +17,7 @@ using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using Rectangle=SixLabors.ImageSharp.Rectangle;
 using Texture=Furball.Vixie.Backends.Shared.Texture;
 
 namespace Furball.Vixie.Backends.OpenGL41 {
@@ -64,6 +64,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
         internal IWindow       Window;
         private  bool          _screenshotQueued;
         private  Vector2D<int> _Viewport;
+        private  Rectangle     _lastScissor;
 
         /// <summary>
         /// Used to Initialize the Backend
@@ -94,6 +95,8 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             this.gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
             this.CheckError("enable srcalpha");
 
+            this.gl.Enable(EnableCap.ScissorTest);
+
             this.ImGuiController = new ImGuiController(this.gl, window, inputContext);
             this.CheckError("create imguicontroller");
             
@@ -118,6 +121,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             window.Closing += delegate {
                 this.RunImGui = false;
             };
+            this._Viewport = new Vector2D<int>(window.Size.X, window.Size.Y);
         }
 
         public void CheckError(string message) {
@@ -166,6 +170,13 @@ namespace Furball.Vixie.Backends.OpenGL41 {
         public override void HandleFramebufferResize(int width, int height) {
             this.gl.Viewport(0, 0, (uint)width, (uint)height);
             this._Viewport = new Vector2D<int>(width, height);
+        }
+        public override Rectangle ScissorRect {
+            get => this._lastScissor;
+            set => this.gl.Scissor(value.X, this._Viewport.Y - value.Height - value.Y, (uint)value.Width, (uint)value.Height);
+        }
+        public override void SetFullScissorRect() {
+            this.ScissorRect = new(0, 0, this._Viewport.X, this._Viewport.Y);
         }
         /// <summary>
         /// Used to Create a Texture Renderer
@@ -474,11 +485,11 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             this.gl.EnableVertexAttribArray(u);
         }
 
-        public unsafe void VertexAttribPointer(uint u, int currentElementCount, Silk.NET.OpenGL.VertexAttribPointerType currentElementType, bool currentElementNormalized, uint getStride, void* offset) {
+        public unsafe void VertexAttribPointer(uint u, int currentElementCount, VertexAttribPointerType currentElementType, bool currentElementNormalized, uint getStride, void* offset) {
             this.gl.VertexAttribPointer(u, currentElementCount, (GLEnum)currentElementType, currentElementNormalized, getStride, offset);
         }
 
-        public unsafe void VertexAttribIPointer(uint u, int currentElementCount, Silk.NET.OpenGL.VertexAttribIType vertexAttribIType, uint getStride, void* offset) {
+        public unsafe void VertexAttribIPointer(uint u, int currentElementCount, VertexAttribIType vertexAttribIType, uint getStride, void* offset) {
             this.gl.VertexAttribIPointer(u, currentElementCount, (GLEnum)vertexAttribIType, getStride, offset);
         }
 
