@@ -393,6 +393,8 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this._deviceContext.IASetIndexBuffer(this._indexBuffer, Format.R16_UInt, 0);
             this._deviceContext.IASetPrimitiveTopology(Vortice.Direct3D.PrimitiveTopology.TriangleList);
 
+            this._backend.ResetScissorRect();
+
             #endregion
 
             this._deviceContext.DrawIndexedInstanced(6, this._instances, 0, 0, 0);

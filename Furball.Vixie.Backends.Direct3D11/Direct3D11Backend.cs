@@ -158,6 +158,8 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this._privateWhitePixelTexture = (TextureD3D11) this.CreateWhitePixelTexture();
 
             this.InfoSections.ForEach(x => x.Log(LoggerLevelD3D11.InstanceInfo));
+
+            this.ScissorRect = new Rectangle(0, 0, window.Size.X, window.Size.Y);
         }
 
         private void CreateSwapchainResources() {
@@ -195,7 +197,6 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             _swapChain.Dispose();
             _renderTarget.Dispose();
             _backBuffer.Dispose();
-
             _defaultBlendState.Dispose();
 
             _debug?.Dispose();
@@ -211,6 +212,8 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this._viewport = new Viewport(0, 0, width, height, 0, 1);
 
             this._deviceContext.RSSetViewport(this._viewport);
+
+            this.ScissorRect = new Rectangle(0, 0, width, height);
 
             this.CreateSwapchainResources();
 
@@ -279,7 +282,6 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 
         public override void BeginScene() {
             this._deviceContext.OMSetRenderTargets(this._renderTarget);
-            //this._deviceContext.ClearRenderTargetView(this._renderTarget, this._clearColor);
             this._deviceContext.RSSetViewport(this._viewport);
             this._deviceContext.RSSetScissorRect(0, 0, (int) this._viewport.Width, (int) this._viewport.Height);
         }
@@ -293,6 +295,10 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 
                 this._deviceContext.RSSetScissorRect(value.X, value.Y, value.Width, value.Height);
             }
+        }
+
+        internal void ResetScissorRect() {
+            ScissorRect = ScissorRect;
         }
 
         public override void SetFullScissorRect() {
