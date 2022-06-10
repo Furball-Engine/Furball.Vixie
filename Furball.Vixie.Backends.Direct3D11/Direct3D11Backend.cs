@@ -10,6 +10,7 @@ using Kettu;
 using SharpGen.Runtime;
 using Silk.NET.Input;
 using Silk.NET.Windowing;
+using SixLabors.ImageSharp;
 using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.Direct3D11.Debug;
@@ -237,6 +238,10 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             throw new NotImplementedException();
         }
 
+        public override Rectangle ScissorRect { get; set; }
+        public override void SetFullScissorRect() {
+            throw new NotImplementedException();
+        }
         public override TextureRenderTarget CreateRenderTarget(uint width, uint height) {
             return new TextureRenderTargetD3D11(this, width, height);
         }
