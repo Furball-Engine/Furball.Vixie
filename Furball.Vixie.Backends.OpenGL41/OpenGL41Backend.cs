@@ -121,7 +121,8 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             window.Closing += delegate {
                 this.RunImGui = false;
             };
-            this._Viewport = new Vector2D<int>(window.Size.X, window.Size.Y);
+            this._Viewport    = new Vector2D<int>(window.Size.X, window.Size.Y);
+            this._lastScissor = new(0, 0, window.FramebufferSize.X, window.FramebufferSize.Y);
         }
 
         public void CheckError(string message) {
@@ -173,7 +174,10 @@ namespace Furball.Vixie.Backends.OpenGL41 {
         }
         public override Rectangle ScissorRect {
             get => this._lastScissor;
-            set => this.gl.Scissor(value.X, this._Viewport.Y - value.Height - value.Y, (uint)value.Width, (uint)value.Height);
+            set {
+                this.gl.Scissor(value.X, this._Viewport.Y - value.Height - value.Y, (uint) value.Width, (uint) value.Height);
+                this._lastScissor = value;
+            }
         }
         public override void SetFullScissorRect() {
             this.ScissorRect = new(0, 0, this._Viewport.X, this._Viewport.Y);
