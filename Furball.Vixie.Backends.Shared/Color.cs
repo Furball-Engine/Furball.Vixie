@@ -2,13 +2,19 @@ using System;
 using System.Diagnostics.Contracts;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using Newtonsoft.Json;
 
 namespace Furball.Vixie.Backends.Shared {
+    [JsonObject(MemberSerialization.OptIn)]
     [StructLayout(LayoutKind.Sequential)]
     public struct Color {
+        [JsonProperty]
         public float Rf;
+        [JsonProperty]
         public float Gf;
+        [JsonProperty]
         public float Bf;
+        [JsonProperty]
         public float Af;
         
         public byte R {
