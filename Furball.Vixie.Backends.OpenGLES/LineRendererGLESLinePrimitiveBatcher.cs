@@ -9,7 +9,7 @@ using Silk.NET.OpenGLES;
 using GL=Silk.NET.OpenGLES.GL;
 
 namespace Furball.Vixie.Backends.OpenGLES {
-    public class LineRendererGLES30 : ILineRenderer {
+    public class LineRendererGLESLinePrimitiveBatcher : ILineRenderer {
         private struct LineData {
             public Vector2 Position;
             public Color   Color;
@@ -27,7 +27,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
         
         public bool IsBegun { get; set; }
         
-        internal unsafe LineRendererGLES30(OpenGLESBackend backend) {
+        internal unsafe LineRendererGLESLinePrimitiveBatcher(OpenGLESBackend backend) {
             this._backend = backend;
             this._backend.CheckThread();
             this._gl      = backend.GetGLES();
@@ -54,7 +54,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
 
             this._program.Dispose();
         }
-        ~LineRendererGLES30() {
+        ~LineRendererGLESLinePrimitiveBatcher() {
             DisposeQueue.Enqueue(this._program);
         }
         

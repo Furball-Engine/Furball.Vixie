@@ -185,7 +185,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
         /// </summary>
         /// <returns></returns>
         public override ILineRenderer CreateLineRenderer() {
-            return FeatureLevels["geometry_shader_lines"].Boolean ? new LineRendererGLES32(this) : new LineRendererGLES30(this);
+            return FeatureLevels["geometry_shader_lines"].Boolean ? new LineRendererGLESGeometryShaders(this) : new LineRendererGLESLinePrimitiveBatcher(this);
         }
         /// <summary>
         /// Gets the Amount of Texture Units available for use

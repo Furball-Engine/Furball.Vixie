@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Furball.Vixie.Backends.OpenGLES;
 using Furball.Vixie.Backends.Shared.Backends;
-using Silk.NET.Windowing;
 
 namespace Furball.Vixie {
     internal static class Global {
