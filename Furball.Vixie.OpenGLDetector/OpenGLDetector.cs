@@ -58,7 +58,7 @@ namespace Furball.Vixie.OpenGLDetector {
         };
         private static unsafe Window* _Window;
 
-        public static unsafe (APIVersion gl, APIVersion gles) GetLatestSupported(bool testgl = true, bool testgles = true) {
+        public static unsafe (APIVersion GL, APIVersion GLES) GetLatestSupported(bool testgl = true, bool testgles = true) {
             var sdl = Sdl.GetApi();
 
             if (sdl.Init(Sdl.InitVideo) < 0)

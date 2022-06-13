@@ -38,6 +38,8 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
 
         public void BindTexture(TextureTarget target, uint textureId);
 
+        public void BindTextures(uint[] textures, uint count);
+        
         public unsafe void TexImage2D(TextureTarget target, int level, InternalFormat format, uint width, uint height, int border, PixelFormat pxFormat, PixelType type, void* data);
 
         public void TexParameterI(TextureTarget target, GLEnum param, int paramData);
