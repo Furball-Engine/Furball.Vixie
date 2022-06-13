@@ -27,6 +27,7 @@ namespace Furball.Vixie.Backends.OpenGL20 {
         
         internal unsafe LineRendererGL20(OpenGL20Backend backend) {
             this._backend = backend;
+            this._backend.CheckThread();
             this._gl      = backend.GetOpenGL();
             
             string vertex   = ResourceHelpers.GetStringResource("Shaders/LineRenderer/VertexShader.glsl");
@@ -47,7 +48,9 @@ namespace Furball.Vixie.Backends.OpenGL20 {
         }
 
         public void Dispose() {
-            
+            this._backend.CheckThread();
+
+            this._program.Dispose();
         }
         ~LineRendererGL20() {
             DisposeQueue.Enqueue(this._program);
@@ -57,6 +60,7 @@ namespace Furball.Vixie.Backends.OpenGL20 {
             set;
         }
         public unsafe void Begin() {
+            this._backend.CheckThread();
             this.IsBegun = true;
             
             this._program.Bind();
@@ -79,6 +83,7 @@ namespace Furball.Vixie.Backends.OpenGL20 {
         private          float       lastThickness = 0;
         private readonly GL          _gl;
         public void Draw(Vector2 begin, Vector2 end, float thickness, Color color) {
+            this._backend.CheckThread();
             if (!this.IsBegun) throw new Exception("LineRenderer is not begun!!");
 
             if (thickness == 0 || color.A == 0) return;
@@ -98,6 +103,7 @@ namespace Furball.Vixie.Backends.OpenGL20 {
         }
 
         private void Flush() {
+            this._backend.CheckThread();
             if (this._batchedLines == 0 || this.lastThickness == 0) return;
 
             this._program.Bind();
@@ -119,6 +125,7 @@ namespace Furball.Vixie.Backends.OpenGL20 {
         }
         
         public void End() {
+            this._backend.CheckThread();
             this.IsBegun = false;
             this.Flush();
 

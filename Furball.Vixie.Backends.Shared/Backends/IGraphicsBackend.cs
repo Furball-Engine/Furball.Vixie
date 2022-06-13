@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Silk.NET.Input;
 using Silk.NET.Windowing;
@@ -62,6 +64,19 @@ namespace Furball.Vixie.Backends.Shared.Backends {
         public event EventHandler<Image> ScreenshotTaken;
         protected void InvokeScreenshotTaken(Image image) {
             this.ScreenshotTaken?.Invoke(this, image);
+        }
+
+        public Thread? MainThread {
+            get;
+            protected set;
+        }
+        public void SetMainThread() {
+            this.MainThread = Thread.CurrentThread;
+        }
+        [Conditional("DEBUG")]
+        public void CheckThread() {
+            if (MainThread != Thread.CurrentThread)
+                throw new ThreadStateException("You can only run this function on the main thread!");
         }
         /// <summary>
         ///     Sets the scissor rectangle, top left origin going down

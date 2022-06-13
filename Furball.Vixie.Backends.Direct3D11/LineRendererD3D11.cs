@@ -53,6 +53,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 
         public unsafe LineRendererD3D11(Direct3D11Backend backend) {
             this._backend       = backend;
+            this._backend.CheckThread();
             this._device        = backend.GetDevice();
             this._deviceContext = backend.GetDeviceContext();
 
@@ -170,6 +171,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         }
 
         public unsafe void Begin() {
+            this._backend.CheckThread();
             this.IsBegun = true;
 
             ConstantBufferData[] constantBufferData = new[] {
@@ -200,6 +202,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         }
 
         public void Draw(Vector2 begin, Vector2 end, float thickness, Color color) {
+            this._backend.CheckThread();
             if (!this.IsBegun)
                 throw new Exception("Begin() has not been called in LineRenderer!");
 
@@ -218,6 +221,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         }
 
         public unsafe void End() {
+            this._backend.CheckThread();
             this.IsBegun = false;
 
             if (this._instances == 0)
@@ -255,6 +259,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         private bool _isDisposed = false;
 
         public void Dispose() {
+            this._backend.CheckThread();
             if (this._isDisposed)
                 return;
 

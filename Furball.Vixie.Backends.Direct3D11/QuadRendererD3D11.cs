@@ -69,6 +69,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 
         public QuadRendererD3D11(Direct3D11Backend backend) {
             this._backend       = backend;
+            this._backend.CheckThread();
             this._deviceContext = backend.GetDeviceContext();
             this._device        = backend.GetDevice();
 
@@ -224,10 +225,12 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         }
 
         public void Begin() {
+            this._backend.CheckThread();
             this.IsBegun = true;
         }
 
         public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
+            this._backend.CheckThread();
             if (!IsBegun)
                 throw new Exception("Begin() has not been called in QuadRendererD3D11!");
 
@@ -253,6 +256,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this._instances++;
         }
         public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, Rectangle sourceRect, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
+            this._backend.CheckThread();
             if (texture == null || texture is not TextureD3D11 textureD3D11)
                 return;
 
@@ -285,6 +289,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         }
 
         private int GetTextureId(TextureD3D11 tex) {
+            this._backend.CheckThread();
             if(tex.UsedId != -1) return tex.UsedId;
 
             if(this._usedTextures != 0)
@@ -343,6 +348,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         }
 
         public void End() {
+            this._backend.CheckThread();
             if (this._instances == 0)
                 return;
 
@@ -423,6 +429,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         private bool _isDisposed = false;
 
         public void Dispose() {
+            this._backend.CheckThread();
             if (this._isDisposed)
                 return;
 

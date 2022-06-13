@@ -85,6 +85,7 @@ namespace Furball.Vixie.Backends.Veldrid {
         
         public unsafe QuadRendererVeldrid(VeldridBackend backend) {
             this._backend = backend;
+            this._backend.CheckThread();
 
             string vertexSource = ResourceHelpers.GetStringResource("Shaders/QuadRenderer/VertexShader.glsl");
             string fragmentSource = ResourceHelpers.GetStringResource("Shaders/QuadRenderer/FragmentShader.glsl");
@@ -174,6 +175,7 @@ namespace Furball.Vixie.Backends.Veldrid {
         }
         
         public void Begin() {
+            this._backend.CheckThread();
             this.IsBegun = true;
             
             this._backend.CommandList.SetPipeline(this._pipeline);
@@ -198,6 +200,7 @@ namespace Furball.Vixie.Backends.Veldrid {
         }
 
         public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
+            this._backend.CheckThread();
             if (!this.IsBegun)
                 throw new Exception("Begin() has not been called!");
 
@@ -227,6 +230,7 @@ namespace Furball.Vixie.Backends.Veldrid {
         }
         
         private int GetTextureId(TextureVeldrid tex) {
+            this._backend.CheckThread();
             if(tex.UsedId != -1) return tex.UsedId;
             
             if(this._usedTextures != 0)
@@ -252,6 +256,7 @@ namespace Furball.Vixie.Backends.Veldrid {
         private          int            _usedTextures = 0;
 
         public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, Rectangle sourceRect, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
+            this._backend.CheckThread();
             if (!this.IsBegun)
                 throw new Exception("Begin() has not been called!");
 
@@ -291,6 +296,7 @@ namespace Furball.Vixie.Backends.Veldrid {
         private const int NUM_INSTANCES = 1024;
 
         private unsafe void Flush() {
+            this._backend.CheckThread();
             if (this._instances == 0) return;
 
             //Iterate through all used textures and bind them
@@ -313,12 +319,14 @@ namespace Furball.Vixie.Backends.Veldrid {
         }
 
         public void End() {
+            this._backend.CheckThread();
             this.Flush();
             this.IsBegun = false;
         }
 
         private bool _isDisposed = false;
         public void Dispose() {
+            this._backend.CheckThread();
             if (this._isDisposed) return;
             this._isDisposed = true;
             

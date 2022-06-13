@@ -23,6 +23,7 @@ namespace Furball.Vixie.Backends.OpenGL20 {
 
         private bool disposed = true;
         public void Dispose() {
+            this._backend.CheckThread();
             if (this.disposed) return;
             
             this._program.Dispose();
@@ -42,6 +43,7 @@ namespace Furball.Vixie.Backends.OpenGL20 {
 
         internal QuadRendererGL20(OpenGL20Backend backend) {
             this._backend = backend;
+            this._backend.CheckThread();
             this._gl      = backend.GetOpenGL();
 
             string vertex   = ResourceHelpers.GetStringResource("Shaders/QuadRenderer/VertexShader.glsl");
@@ -128,6 +130,7 @@ namespace Furball.Vixie.Backends.OpenGL20 {
         }
 
         public unsafe void Begin() {
+            this._backend.CheckThread();
             this.IsBegun = true;
 
             this._program.Bind();
@@ -150,6 +153,7 @@ namespace Furball.Vixie.Backends.OpenGL20 {
         }
 
         private int GetTextureId(Texture tex) {
+            this._backend.CheckThread();
             if (this.UsedTextures != 0)
                 for (int i = 0; i < this.UsedTextures; i++) {
                     TextureGL tex2 = this.TextureArray[i];
@@ -165,6 +169,7 @@ namespace Furball.Vixie.Backends.OpenGL20 {
         }
 
         public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
+            this._backend.CheckThread();
             if (!this.IsBegun)
                 throw new Exception("Begin() has not been called!");
 
@@ -197,6 +202,7 @@ namespace Furball.Vixie.Backends.OpenGL20 {
         }
 
         public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, Rectangle sourceRect, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
+            this._backend.CheckThread();
             if (!this.IsBegun)
                 throw new Exception("Begin() has not been called!");
 
@@ -266,6 +272,7 @@ namespace Furball.Vixie.Backends.OpenGL20 {
         private readonly VixieFontStashRenderer _textRenderer;
 
         private unsafe void Flush() {
+            this._backend.CheckThread();
             if (this.BatchedQuads == 0) return;
 
             this._program.Bind();
@@ -322,6 +329,7 @@ namespace Furball.Vixie.Backends.OpenGL20 {
         }
 
         public void End() {
+            this._backend.CheckThread();
             this.IsBegun = false;
             this.Flush();
 

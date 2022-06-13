@@ -49,6 +49,9 @@ namespace Furball.Vixie.Backends.OpenGL20 {
         public void CheckError(string message) {
             this.CheckErrorInternal(message);
         }
+        public void GlCheckThread() {
+            this.CheckThread();
+        }
 
         /// <summary>
         /// Checks for OpenGL errors

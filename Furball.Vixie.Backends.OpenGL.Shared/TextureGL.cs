@@ -53,6 +53,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
 
         public bool Bound {
             get {
+                this._backend.GlCheckThread();
                 uint texFound;
 
                 if (BoundTextures.TryGetValue(this.BoundAt, out texFound)) {
@@ -92,6 +93,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// <param name="filepath">Path to an Image</param>
         public TextureGL(IGLBasedBackend backend, string filepath) {
             this._backend = backend;
+            this._backend.GlCheckThread();
 
             Image<Rgba32> image = Image.Load<Rgba32>(filepath);
 
@@ -110,6 +112,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// <param name="imageData">Image Data</param>
         public TextureGL(IGLBasedBackend backend, byte[] imageData, bool qoi = false) {
             this._backend = backend;
+            this._backend.GlCheckThread();
 
             Image<Rgba32> image;
 
@@ -135,7 +138,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// </summary>
         public unsafe TextureGL(IGLBasedBackend backend) {
             this._backend = backend;
-            this._backend.CheckError("before gen white pixel texture");
+            this._backend.GlCheckThread();
             
             this.TextureId = this._backend.GenTexture();
             this._backend.CheckError("gen white pixel texture");
@@ -169,7 +172,8 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// <param name="height">Desired Height</param>
         public unsafe TextureGL(IGLBasedBackend backend, uint width, uint height) {
             this._backend = backend;
-            
+            this._backend.GlCheckThread();
+
             this.TextureId = this._backend.GenTexture();
             //Bind as we will be working on the Texture
             this._backend.BindTexture(TextureTarget.Texture2D, this.TextureId);
@@ -192,6 +196,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// <param name="stream">Image Data Stream</param>
         public TextureGL(IGLBasedBackend backend, Stream stream) {
             this._backend = backend;
+            this._backend.GlCheckThread();
 
             Image<Rgba32> image = Image.Load<Rgba32>(stream);
 
@@ -210,6 +215,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         }
 
         private unsafe void Load(Image<Rgba32> image) {
+            this._backend.GlCheckThread();
             this.Load(null, image.Width, image.Height);
             this.Bind(TextureUnit.Texture0);
             image.ProcessPixelRows(accessor =>
@@ -230,6 +236,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// <param name="height">Height of the Texture</param>
         internal TextureGL(IGLBasedBackend backend, uint textureId, uint width, uint height) {
             this._backend  = backend;
+            this._backend.GlCheckThread();
             this.TextureId = textureId;
             this.Size      = new Vector2(width, height);
         }
@@ -241,6 +248,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// <param name="width">Width of Image</param>
         /// <param name="height">Height of Imgae</param>
         private unsafe void Load(void* data, int width, int height) {
+            this._backend.GlCheckThread();
             this.TextureId = this._backend.GenTexture();
             //Bind as we will be working on the Texture
             this._backend.BindTexture(TextureTarget.Texture2D, this.TextureId);
@@ -263,6 +271,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// <typeparam name="pDataType">Type of the Data</typeparam>
         /// <returns>Self, used for chaining methods</returns>
         public override unsafe Texture SetData<pDataType>(int level, pDataType[] data) {
+            this._backend.GlCheckThread();
             this.LockingBind();
 
             fixed(void* d = data)
@@ -282,6 +291,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// <typeparam name="pDataType">Type of Data to put</typeparam>
         /// <returns>Self, used for chaining methods</returns>
         public override unsafe Texture SetData<pDataType>(int level, Rectangle rect, pDataType[] data) {
+            this._backend.GlCheckThread();
             this.LockingBind();
 
             fixed(void* d = data)
@@ -294,6 +304,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         }
 
         public TextureGL Bind(Silk.NET.OpenGLES.TextureUnit textureSlot = Silk.NET.OpenGLES.TextureUnit.Texture0) {
+            this._backend.GlCheckThread();
             return this.Bind((TextureUnit)textureSlot);
         }
         /// <summary>
@@ -302,6 +313,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// <param name="textureSlot">Desired Texture Slot</param>
         /// <returns>Self, used for chaining methods</returns>
         public TextureGL Bind(TextureUnit textureSlot = TextureUnit.Texture0) {
+            this._backend.GlCheckThread();
             if (this.Locked)
                 return null;
 
@@ -327,6 +339,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         internal TextureGL LockingBind() {
+            this._backend.GlCheckThread();
             this.Bind(TextureUnit.Texture0);
             this.Lock();
 
@@ -337,6 +350,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         internal TextureGL Lock() {
+            this._backend.GlCheckThread();
             this.Locked = true;
 
             return this;
@@ -346,6 +360,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         internal TextureGL Unlock() {
+            this._backend.GlCheckThread();
             this.Locked = false;
 
             return this;
@@ -355,6 +370,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         internal TextureGL UnlockingUnbind() {
+            this._backend.GlCheckThread();
             this.Unlock();
             this.Unbind();
 
@@ -366,6 +382,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// </summary>
         /// <returns>Self, used for chaining methods</returns>
         public TextureGL Unbind() {
+            this._backend.GlCheckThread();
             if (this.Locked)
                 return null;
 
@@ -377,18 +394,14 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
 
             return this;
         }
-        /// <summary>
-        /// Gets the OpenGL texture ID
-        /// </summary>
-        /// <returns>Texture ID</returns>
-        internal uint GetTextureId() => this.TextureId;
-
+        
         private bool _isDisposed = false;
 
         /// <summary>
         /// Disposes the Texture and the Local Image Buffer
         /// </summary>
         public override void Dispose() {
+            this._backend.GlCheckThread();
             if (this.Bound)
                 this.UnlockingUnbind();
 

@@ -36,7 +36,8 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// <param name="usage">How is this buffer going to be used?</param>
         public unsafe BufferObjectGL(IGLBasedBackend backend, int size, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StreamDraw) {
             this._backend     = backend;
-            
+            this._backend.GlCheckThread();
+
             this._bufferType  = bufferType;
             this._bufferUsage = usage;
             //Generate Buffer
@@ -55,7 +56,8 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// <param name="usage">How is this buffer going to be used?</param>
         public BufferObjectGL(IGLBasedBackend backend, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StreamDraw) {
             this._backend     = backend;
-            
+            this._backend.GlCheckThread();
+
             this._bufferType  = bufferType;
             this._bufferUsage = usage;
             //Generate Buffer
@@ -76,6 +78,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// <param name="size">Size of the Data</param>
         /// <returns></returns>
         public unsafe BufferObjectGL SetData(void* data, nuint size) {
+            this._backend.GlCheckThread();
             this._backend.BufferData(this._bufferType, size, data, this._bufferUsage);
             this._backend.CheckError("set buffer data");
 
@@ -83,6 +86,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         }
 
         public unsafe BufferObjectGL SetSubData(void* data, nuint size, nint offset = 0) {
+            this._backend.GlCheckThread();
             this._backend.BufferSubData(this._bufferType, offset, size, data);
             this._backend.CheckError("set sub buffer data");
 
@@ -90,6 +94,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         }
 
         public unsafe BufferObjectGL SetSubData<pDataType>(Span<pDataType> data) where pDataType : unmanaged {
+            this._backend.GlCheckThread();
             fixed (void* d = data) {
                 this.SetSubData(d, (nuint)(data.Length * sizeof(pDataType)));
             }
@@ -105,6 +110,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// <typeparam name="pDataType">Type of data to put</typeparam>
         /// <returns>Self, used for chaining Methods</returns>
         public unsafe BufferObjectGL SetData<pDataType>(Span<pDataType> data) where pDataType : unmanaged {
+            this._backend.GlCheckThread();
             fixed (void* d = data) {
                 this.SetData(d, (nuint)(data.Length * sizeof(pDataType)));
             }
@@ -123,6 +129,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         public static unsafe BufferObjectGL CreateNew<pDataType>(IGLBasedBackend backend, Span<pDataType> data, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StreamDraw)
             where pDataType : unmanaged
         {
+            backend.GlCheckThread();
             BufferObjectGL BufferObjectGL = new BufferObjectGL(backend, bufferType, usage);
             BufferObjectGL.Bind();
 
@@ -140,6 +147,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         public BufferObjectGL Bind() {
+            this._backend.GlCheckThread();
             if (this.Locked)
                 return null;
 
@@ -163,6 +171,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         public BufferObjectGL LockingBind() {
+            this._backend.GlCheckThread();
             this.Bind();
             this.Lock();
 
@@ -174,6 +183,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         internal BufferObjectGL Lock() {
+            this._backend.GlCheckThread();
             this.Locked = true;
 
             return this;
@@ -184,6 +194,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         public BufferObjectGL Unlock() {
+            this._backend.GlCheckThread();
             this.Locked = false;
 
             return this;
@@ -193,6 +204,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         internal BufferObjectGL UnlockingUnbind() {
+            this._backend.GlCheckThread();
             this.Unlock();
             this.Unbind();
 
@@ -203,6 +215,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         public BufferObjectGL Unbind() {
+            this._backend.GlCheckThread();
             if (this.Locked)
                 return null;
 
@@ -222,6 +235,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// Disposes the Buffer
         /// </summary>
         public void Dispose() {
+            this._backend.GlCheckThread();
             if (this.Bound)
                 this.UnlockingUnbind();
 

@@ -57,26 +57,6 @@ namespace Furball.Vixie.Backends.OpenGLES {
         /// ImGui Controller
         /// </summary>
         internal ImGuiController ImGuiController;
-        /// <summary>
-        /// Stores the Main Thread that OpenGLES commands run on, used to ensure that OpenGLES commands don't run on different threads
-        /// </summary>
-        private static Thread _mainThread;
-        /// <summary>
-        /// Gets the Thread of Operation
-        /// </summary>
-        [Conditional("DEBUG")]
-        private void GetMainThread() {
-            _mainThread = Thread.CurrentThread;
-        }
-        /// <summary>
-        /// Ensures that OpenGLES commands don't run on the wrong thread
-        /// </summary>
-        /// <exception cref="ThreadStateException">Throws if a cross-thread operation has occured</exception>
-        [Conditional("DEBUG")]
-        internal void CheckThread() {
-            if (Thread.CurrentThread != _mainThread)
-                throw new ThreadStateException("You are calling GL on the wrong thread!");
-        }
         internal         IWindow       Window;
         private          bool          _screenshotQueued;
         private readonly bool          Is32;
@@ -95,8 +75,6 @@ namespace Furball.Vixie.Backends.OpenGLES {
         /// <param name="inputContext"></param>
         /// <param name="game"></param>
         public override void Initialize(IWindow window, IInputContext inputContext) {
-            this.GetMainThread();
-
             this.gl     = window.CreateOpenGLES();
             this.Window = window;
             
@@ -135,6 +113,9 @@ namespace Furball.Vixie.Backends.OpenGLES {
         }
         public void CheckError(string message) {
             this.CheckErrorInternal(message);
+        }
+        public void GlCheckThread() {
+            this.CheckThread();
         }
 
         /// <summary>

@@ -22,6 +22,7 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
 
         public TextureRenderTargetD3D11(Direct3D11Backend backend, uint width, uint height) {
             this._backend       = backend;
+            this._backend.CheckThread();
             this._deviceContext = backend.GetDeviceContext();
             this._device = backend.GetDevice();
 
@@ -71,6 +72,7 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
         }
 
         public override void Bind() {
+            this._backend.CheckThread();
             this._deviceContext.OMSetRenderTargets(this._renderTarget);
             this._backend.CurrentlyBoundTarget = this._renderTarget;
             this._backend.ResetBlendState();
@@ -80,6 +82,7 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
         }
 
         public override void Unbind() {
+            this._backend.CheckThread();
             this._backend.SetDefaultRenderTarget();
             this._deviceContext.RSSetViewports(this._viewports);
         }
@@ -89,6 +92,7 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
         private bool _isDisposed = false;
 
         public override void Dispose() {
+            this._backend.CheckThread();
             if (this._isDisposed)
                 return;
 

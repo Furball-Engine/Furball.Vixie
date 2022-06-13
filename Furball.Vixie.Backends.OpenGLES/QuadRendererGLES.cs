@@ -71,7 +71,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
 
         public unsafe QuadRendererGLES(OpenGLESBackend backend) {
             this._backend = backend;
-            
+            this._backend.CheckThread();
 
             this.gl       = this._backend.GetGlApi();
 
@@ -169,6 +169,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
         }
 
         public void Dispose() {
+            this._backend.CheckThread();
             this._shaderGles.Dispose();
             this._vao.Dispose();
             this._vbo.Dispose();
@@ -181,6 +182,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
         }
 
         public void Begin() {
+            this._backend.CheckThread();
             this._shaderGles.Bind();
 
             this._shaderGles.SetUniform("vx_WindowProjectionMatrix", this._backend.ProjectionMatrix);
@@ -203,6 +205,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
         }
 
         public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
+            this._backend.CheckThread();
             if (!this.IsBegun)
                 throw new Exception("Begin() has not been called!");
 
@@ -232,6 +235,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
         }
 
         public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, Rectangle sourceRect, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
+            this._backend.CheckThread();
             if (!this.IsBegun)
                 throw new Exception("Begin() has not been called!");
 
@@ -282,6 +286,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
 
 
         private int GetTextureId(Texture tex) {
+            this._backend.CheckThread();
             if(this._usedTextures != 0)
                 for (int i = 0; i < this._usedTextures; i++) {
                     Texture tex2 = this._boundTextures[i];
@@ -302,6 +307,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
         private readonly InstanceData[] _instanceData = new InstanceData[NUM_INSTANCES];
 
         private unsafe void Flush() {
+            this._backend.CheckThread();
             if (this._instances == 0) return;
 
             for (int i = 0; i < this._usedTextures; i++) {
@@ -330,6 +336,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
         }
 
         public void End() {
+            this._backend.CheckThread();
             this.Flush();
             this.IsBegun = false;
             

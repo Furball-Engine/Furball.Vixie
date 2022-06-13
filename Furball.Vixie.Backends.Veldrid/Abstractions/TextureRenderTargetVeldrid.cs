@@ -17,6 +17,7 @@ namespace Furball.Vixie.Backends.Veldrid.Abstractions {
         
         public TextureRenderTargetVeldrid(VeldridBackend backend, uint width, uint height) {
             this._backend = backend;
+            this._backend.CheckThread();
 
             this.Size = new(width, height);
 
@@ -35,6 +36,7 @@ namespace Furball.Vixie.Backends.Veldrid.Abstractions {
         }
         
         public override void Bind() {
+            this._backend.CheckThread();
             this._backend.Flush();
             
             this._backend.CommandList.SetFramebuffer(this._fb);
@@ -44,6 +46,7 @@ namespace Furball.Vixie.Backends.Veldrid.Abstractions {
         }
         
         public override void Unbind() {
+            this._backend.CheckThread();
             this._backend.Flush();
             
             this._backend.CommandList.SetFramebuffer(this._backend.RenderFramebuffer);
@@ -56,6 +59,7 @@ namespace Furball.Vixie.Backends.Veldrid.Abstractions {
         private bool _isDisposed = false;
 
         public override void Dispose() {
+            this._backend.CheckThread();
             if (this._isDisposed) return;
             this._isDisposed = true;
             

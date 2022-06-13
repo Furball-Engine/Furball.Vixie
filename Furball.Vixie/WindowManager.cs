@@ -146,8 +146,9 @@ namespace Furball.Vixie {
         }
         public void SetupGraphicsApi() {
             GraphicsBackend.SetBackend(this.Backend);
+            GraphicsBackend.Current.SetMainThread();
             GraphicsBackend.Current.Initialize(this.GameWindow, this.InputContext);
-
+            
             this.UpdateProjectionAndSize(this._windowOptions.Size.X, this._windowOptions.Size.Y);
         }
         /// <summary>

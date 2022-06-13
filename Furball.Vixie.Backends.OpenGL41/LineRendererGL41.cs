@@ -57,6 +57,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
         /// <param name="capacity">How many Lines to allow in 1 Batch</param>
         public unsafe LineRendererGL41(OpenGL41Backend backend, int capacity = 8192) {
             this._backend = backend;
+            this._backend.CheckThread();
             this.gl       = backend.GetGlApi();
 
             //Calculate Constants

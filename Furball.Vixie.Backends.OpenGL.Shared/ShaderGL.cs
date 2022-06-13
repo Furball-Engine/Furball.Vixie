@@ -39,6 +39,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// </summary>
         public ShaderGL(IGLBasedBackend backend) {
             this._backend = backend;
+            this._backend.GlCheckThread();
 
             this._shaders              = new List<uint>();
             this._uniformLocationCache = new Dictionary<string, int>();
@@ -51,8 +52,11 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
             DisposeQueue.Enqueue(this);
         }
 
-        public ShaderGL AttachShader(Silk.NET.OpenGLES.ShaderType type, string source) => this.AttachShader((ShaderType)type, source); 
-        
+        public ShaderGL AttachShader(Silk.NET.OpenGLES.ShaderType type, string source) {
+            this._backend.GlCheckThread();
+            return this.AttachShader((ShaderType) type, source);
+        }
+
         /// <summary>
         /// Attaches and Compiles a Shader Source
         /// </summary>
@@ -61,6 +65,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// <returns>Self, used for Chaining methods</returns>
         /// <exception cref="Exception">Shader Compilation Failure</exception>
         public ShaderGL AttachShader(ShaderType type, string source) {
+            this._backend.GlCheckThread();
             uint shaderId = this._backend.CreateShader(type);
             this._backend.CheckError($"create shader 2 {type}");
 
@@ -86,6 +91,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// <returns>Self, used for Chaining methods</returns>
         /// <exception cref="Exception"></exception>
         public ShaderGL Link() {
+            this._backend.GlCheckThread();
             //Link Program and get Error incase something failed
             this._backend.LinkProgram(this.ProgramId);
             this._backend.GetProgram(this.ProgramId, ProgramPropertyARB.LinkStatus, out int linkStatus);
@@ -105,6 +111,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// Selects this Shader
         /// </summary>
         public ShaderGL Bind() {
+            this._backend.GlCheckThread();
             if (this.Locked)
                 return null;
 
@@ -128,6 +135,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         public ShaderGL LockingBind() {
+            this._backend.GlCheckThread();
             this.Bind();
             this.Lock();
 
@@ -139,6 +147,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         internal ShaderGL Lock() {
+            this._backend.GlCheckThread();
             this.Locked = true;
 
             return this;
@@ -149,6 +158,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         public ShaderGL Unlock() {
+            this._backend.GlCheckThread();
             this.Locked = false;
 
             return this;
@@ -158,6 +168,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         internal ShaderGL UnlockingUnbind() {
+            this._backend.GlCheckThread();
             this.Unlock();
             this.Unbind();
 
@@ -170,6 +181,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// <param name="uniformName">The name of the uniform</param>
         /// <returns>The location</returns>
         public int GetUniformLocation(string uniformName) {
+            this._backend.GlCheckThread();
             //If cache missed, get from OpenGL and store in cache
             if (!this._uniformLocationCache.TryGetValue(uniformName, out int location)) {
                 //Get the location from the program
@@ -192,6 +204,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         }
 
         public unsafe ShaderGL SetUniform(string uniformName, Matrix4x4 matrix) {
+            this._backend.GlCheckThread();
             this._backend.UniformMatrix4(this.GetUniformLocation(uniformName), 1, false, (float*) &matrix);
             this._backend.CheckError("set uniform matrix 4");
             
@@ -200,6 +213,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         }
         
         public ShaderGL SetUniform(string uniformName, float f) {
+            this._backend.GlCheckThread();
             this._backend.Uniform1(this.GetUniformLocation(uniformName), f);
             this._backend.CheckError("set uniform float");
             
@@ -208,6 +222,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         }
         
         public ShaderGL SetUniform(string uniformName, float f, float f2) {
+            this._backend.GlCheckThread();
             this._backend.Uniform2(this.GetUniformLocation(uniformName), f, f2);
             this._backend.CheckError("set uniform 2 floats");
             
@@ -216,6 +231,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         }
         
         public ShaderGL SetUniform(string uniformName, int i) {
+            this._backend.GlCheckThread();
             this._backend.Uniform1(this.GetUniformLocation(uniformName), i);
             this._backend.CheckError("set uniform int");
             
@@ -227,6 +243,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         public ShaderGL Unbind() {
+            this._backend.GlCheckThread();
             if (this.Locked)
                 return null;
 
@@ -244,6 +261,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// Cleans up the Shader
         /// </summary>
         public void Dispose() {
+            this._backend.GlCheckThread();
             if (this.Bound)
                 this.UnlockingUnbind();
 
@@ -267,6 +285,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// <param name="uniform"></param>
         /// <param name="unit"></param>
         public void BindUniformToTexUnit(string uniform, int unit) {
+            this._backend.GlCheckThread();
             int location = this.GetUniformLocation(uniform);
             this._backend.CheckError("get uniform location");
 

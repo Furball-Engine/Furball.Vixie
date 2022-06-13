@@ -33,6 +33,7 @@ namespace Furball.Vixie.Backends.Veldrid.Abstractions {
         
         public TextureVeldrid(VeldridBackend backend, string filepath) {
             this._backend = backend;
+            this._backend.CheckThread();
 
             Image<Rgba32> image = (Image<Rgba32>)Image.Load(filepath);
 
@@ -47,6 +48,7 @@ namespace Furball.Vixie.Backends.Veldrid.Abstractions {
         }
         
         private void Load(Image<Rgba32> image) {
+            this._backend.CheckThread();
             TextureDescription textureDescription = TextureDescription.Texture2D((uint)image.Width, (uint)image.Height, 1, 1, PixelFormat.R8_G8_B8_A8_UNorm, TextureUsage.Sampled | TextureUsage.RenderTarget);
 
             this.Texture = this._backend.ResourceFactory.CreateTexture(textureDescription);
@@ -63,6 +65,7 @@ namespace Furball.Vixie.Backends.Veldrid.Abstractions {
         /// <param name="imageData">Image Data</param>
         public TextureVeldrid(VeldridBackend backend, byte[] imageData, bool qoi = false) {
             this._backend = backend;
+            this._backend.CheckThread();
 
             Image<Rgba32> image;
 
@@ -88,7 +91,7 @@ namespace Furball.Vixie.Backends.Veldrid.Abstractions {
         /// </summary>
         public TextureVeldrid(VeldridBackend backend) {
             this._backend = backend;
-            // 
+            this._backend.CheckThread();
 
             Image<Rgba32> px = new(1, 1, new Rgba32(255, 255, 255, 255));
 
@@ -104,8 +107,8 @@ namespace Furball.Vixie.Backends.Veldrid.Abstractions {
         /// <param name="height">Desired Height</param>
         public TextureVeldrid(VeldridBackend backend, uint width, uint height) {
             this._backend = backend;
-            // 
-            
+            this._backend.CheckThread();
+
             Image<Rgba32> px = new((int)width, (int)height, new Rgba32(0, 0, 0, 0));
 
             this._localBuffer = px;
@@ -119,6 +122,7 @@ namespace Furball.Vixie.Backends.Veldrid.Abstractions {
         /// <param name="stream">Image Data Stream</param>
         public TextureVeldrid(VeldridBackend backend, Stream stream) {
             this._backend = backend;
+            this._backend.CheckThread();
 
             Image<Rgba32> image = Image.Load<Rgba32>(stream);
 
@@ -133,11 +137,13 @@ namespace Furball.Vixie.Backends.Veldrid.Abstractions {
         }
 
         public override Texture SetData <pDataType>(int level, pDataType[] data) {
+            this._backend.CheckThread();
             this._backend.GraphicsDevice.UpdateTexture(this.Texture, data, 0, 0, 0, this.Texture.Width, this.Texture.Height, 1, 0, (uint)level);
-            
+
             return this;
         }
         public override Texture SetData <pDataType>(int level, Rectangle rect, pDataType[] data) {
+            this._backend.CheckThread();
             this._backend.GraphicsDevice.UpdateTexture(this.Texture, data, (uint)rect.X, (uint)rect.Y, 0, (uint)rect.Width, (uint)rect.Height, 1, 0, (uint)level);
             
             return this;
@@ -150,6 +156,7 @@ namespace Furball.Vixie.Backends.Veldrid.Abstractions {
         private bool IsDisposed = false;
 
         public override void Dispose() {
+            this._backend.CheckThread();
             if (this.IsDisposed) return;
             this.IsDisposed = true;
             

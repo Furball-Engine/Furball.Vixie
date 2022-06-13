@@ -24,6 +24,7 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
         public override Vector2 Size { get; protected set; }
 
         public TextureD3D11(Direct3D11Backend backend, ID3D11Texture2D texture, ID3D11ShaderResourceView shaderResourceView, Vector2 size) {
+            backend.CheckThread();
             this._backend       = backend;
             this._deviceContext = backend.GetDeviceContext();
             this._device        = backend.GetDevice();
@@ -35,6 +36,7 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
         }
 
         public unsafe TextureD3D11(Direct3D11Backend backend) {
+            backend.CheckThread();
             this._backend       = backend;
             this._device        = backend.GetDevice();
             this._deviceContext = backend.GetDeviceContext();
@@ -70,6 +72,7 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
         }
 
         public unsafe TextureD3D11(Direct3D11Backend backend, byte[] imageData, bool qoi = false) {
+            backend.CheckThread();
             this._backend       = backend;
             this._device        = backend.GetDevice();
             this._deviceContext = backend.GetDeviceContext();
@@ -118,6 +121,7 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
         }
 
         public unsafe TextureD3D11(Direct3D11Backend backend, Stream stream) {
+            backend.CheckThread();
             this._backend       = backend;
             this._device        = backend.GetDevice();
             this._deviceContext = backend.GetDeviceContext();
@@ -158,6 +162,7 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
         }
 
         public TextureD3D11(Direct3D11Backend backend, uint width, uint height) {
+            backend.CheckThread();
             this._backend       = backend;
             this._device        = backend.GetDevice();
             this._deviceContext = backend.GetDeviceContext();
@@ -185,6 +190,7 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
         }
 
         public unsafe TextureD3D11(Direct3D11Backend backend, string filepath) {
+            backend.CheckThread();
             this._backend       = backend;
             this._device        = backend.GetDevice();
             this._deviceContext = backend.GetDeviceContext();
@@ -229,12 +235,14 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
         }
 
         public override Texture SetData<pDataType>(int level, pDataType[] data) {
+            this._backend.CheckThread();
             this._deviceContext.UpdateSubresource(data, this._texture);
 
             return this;
         }
 
         public override unsafe Texture SetData<pDataType>(int level, Rectangle rect, pDataType[] data) {
+            this._backend.CheckThread();
             fixed (void* dataPtr = data) {
                 this._deviceContext.UpdateSubresource(this._texture, level, new Box(rect.X, rect.Y, 0, rect.X + rect.Width, rect.Y + rect.Height, 1), (IntPtr)dataPtr, 4 * rect.Width, (4 * rect.Width) * rect.Height);
             }
@@ -245,6 +253,7 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
         }
 
         public Texture BindToPixelShader(int slot) {
+            this._backend.CheckThread();
             this._deviceContext.PSSetShaderResource(slot, this.TextureView);
 
             return this;
@@ -253,6 +262,8 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions {
         private bool _isDisposed = false;
 
         public override void Dispose() {
+            this._backend.CheckThread();
+            
             if (this._isDisposed)
                 return;
 

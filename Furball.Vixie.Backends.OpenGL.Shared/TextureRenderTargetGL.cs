@@ -57,7 +57,8 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// <exception cref="Exception">Throws Exception if the Target didn't create properly</exception>
         public unsafe TextureRenderTargetGL(IGLBasedBackend backend, uint width, uint height) {
             this._backend = backend;
-
+            this._backend.GlCheckThread();
+            
             //Generate and bind a FrameBuffer
             this._frameBufferId = this._backend.GenFramebuffer();
             this._backend.CheckError("gen framebuffer");
@@ -117,6 +118,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// Binds the Target, from now on drawing will draw to this RenderTarget,
         /// </summary>
         public override void Bind() {
+            this._backend.GlCheckThread();
             if (this.Locked)
                 return;
 
@@ -141,6 +143,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         internal TextureRenderTargetGL LockingBind() {
+            this._backend.GlCheckThread();
             this.Bind();
             this.Lock();
 
@@ -151,6 +154,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         internal TextureRenderTargetGL Lock() {
+            this._backend.GlCheckThread();
             this.Locked = true;
 
             return this;
@@ -160,6 +164,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         internal TextureRenderTargetGL Unlock() {
+            this._backend.GlCheckThread();
             this.Locked = false;
 
             return this;
@@ -169,6 +174,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         internal TextureRenderTargetGL UnlockingUnbind() {
+            this._backend.GlCheckThread();
             this.Unlock();
             this.Unbind();
 
@@ -179,6 +185,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// Unbinds the Target and resets the Viewport, drawing is now back to normal
         /// </summary>
         public override void Unbind() {
+            this._backend.GlCheckThread();
             if (this.Locked)
                 return;
 
@@ -197,6 +204,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         private bool _isDisposed = false;
 
         public override void Dispose() {
+            this._backend.GlCheckThread();
             if (this.Bound)
                 this.UnlockingUnbind();
 

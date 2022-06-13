@@ -40,27 +40,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
         /// ImGui Controller
         /// </summary>
         internal ImGuiController ImGuiController;
-        /// <summary>
-        /// Stores the Main Thread that OpenGL commands run on, used to ensure that OpenGL commands don't run on different threads
-        /// </summary>
-        private static Thread _mainThread;
-        /// <summary>
-        /// Gets the Thread of Operation
-        /// </summary>
-        [Conditional("DEBUG")]
-        private void GetMainThread() {
-            _mainThread = Thread.CurrentThread;
-        }
-        public bool RunImGui = true;
-        /// <summary>
-        /// Ensures that OpenGL commands don't run on the wrong thread
-        /// </summary>
-        /// <exception cref="ThreadStateException">Throws if a cross-thread operation has occured</exception>
-        [Conditional("DEBUG")]
-        internal void CheckThread() {
-            if (Thread.CurrentThread != _mainThread)
-                throw new ThreadStateException("You are calling GL on the wrong thread!");
-        }
+        public   bool          RunImGui = true;
         internal IWindow       Window;
         private  bool          _screenshotQueued;
         private  Vector2D<int> _Viewport;
@@ -73,8 +53,6 @@ namespace Furball.Vixie.Backends.OpenGL41 {
         /// <param name="inputContext"></param>
         /// <param name="game"></param>
         public override void Initialize(IWindow window, IInputContext inputContext) {
-            this.GetMainThread();
-
             this.gl     = window.CreateOpenGL();
             this.CheckError("create opengl");
 
@@ -127,6 +105,9 @@ namespace Furball.Vixie.Backends.OpenGL41 {
 
         public void CheckError(string message) {
             this.CheckErrorInternal(message);
+        }
+        public void GlCheckThread() {
+            this.CheckThread();
         }
 
         /// <summary>

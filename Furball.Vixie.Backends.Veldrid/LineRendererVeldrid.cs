@@ -65,6 +65,7 @@ namespace Furball.Vixie.Backends.Veldrid {
         
         public unsafe LineRendererVeldrid(VeldridBackend backend) {
             this._backend = backend;
+            this._backend.CheckThread();
 
             string vertexSource   = ResourceHelpers.GetStringResource("Shaders/LineRenderer/VertexShader.glsl");
             string fragmentSource = ResourceHelpers.GetStringResource("Shaders/LineRenderer/FragmentShader.glsl");
@@ -141,6 +142,7 @@ namespace Furball.Vixie.Backends.Veldrid {
 
         private bool _isDisposed = false;
         public void Dispose() {
+            this._backend.CheckThread();
             if (this._isDisposed) return;
             
             this._isDisposed = true;
@@ -163,6 +165,7 @@ namespace Furball.Vixie.Backends.Veldrid {
         }
         
         public void Begin() {
+            this._backend.CheckThread();
             this.IsBegun = true;
             
             this._backend.CommandList.SetPipeline(this._pipeline);
@@ -180,6 +183,7 @@ namespace Furball.Vixie.Backends.Veldrid {
         }
         
         public void Draw(Vector2 begin, Vector2 end, float thickness, Color color) {
+            this._backend.CheckThread();
             if (!this.IsBegun)
                 throw new Exception("Begin() has not been called!");
 
@@ -202,6 +206,7 @@ namespace Furball.Vixie.Backends.Veldrid {
         private const int NUM_INSTANCES = 1024;
 
         private unsafe void Flush() {
+            this._backend.CheckThread();
             if (this._instances == 0) return;
 
             //Update the vertex buffer with just the data we use
@@ -215,6 +220,7 @@ namespace Furball.Vixie.Backends.Veldrid {
         }
         
         public void End() {
+            this._backend.CheckThread();
             this.Flush();
             this.IsBegun = false;
         }

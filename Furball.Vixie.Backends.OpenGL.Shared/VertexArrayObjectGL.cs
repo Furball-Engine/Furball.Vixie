@@ -20,7 +20,8 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
 
         public VertexArrayObjectGL(IGLBasedBackend backend) {
             this._backend = backend;
-            
+            this._backend.GlCheckThread();
+
             //Generate Vertex Array
             this.ArrayId = this._backend.GenVertexArray();
             this._backend.CheckError("gen vertex arr");
@@ -36,6 +37,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// <param name="vertexBuffer">Vertex Buffer to add</param>
         /// <param name="layoutGl41">Layout of said Vertex Buffer</param>
         public unsafe VertexArrayObjectGL AddBuffer(BufferObjectGL vertexBuffer, VertexBufferLayoutGL layoutGl41) {
+            this._backend.GlCheckThread();
             //Bind both this and the Vertex Buffer
             this.Bind();
             vertexBuffer.Bind();
@@ -64,6 +66,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// Binds or Selects this current Vertex Array
         /// </summary>
         public VertexArrayObjectGL Bind() {
+            this._backend.GlCheckThread();
             if (this.Locked)
                 return null;
 
@@ -87,6 +90,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         public VertexArrayObjectGL LockingBind() {
+            this._backend.GlCheckThread();
             this.Bind();
             this.Lock();
 
@@ -97,6 +101,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         internal VertexArrayObjectGL Lock() {
+            this._backend.GlCheckThread();
             this.Locked = true;
 
             return this;
@@ -106,6 +111,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         public VertexArrayObjectGL Unlock() {
+            this._backend.GlCheckThread();
             this.Locked = false;
 
             return this;
@@ -115,6 +121,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// </summary>
         /// <returns>Self, used for chaining Methods</returns>
         internal VertexArrayObjectGL UnlockingUnbind() {
+            this._backend.GlCheckThread();
             this.Unlock();
             this.Unbind();
 
@@ -125,6 +132,7 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// Unbinds all Vertex Arrays
         /// </summary>
         public VertexArrayObjectGL Unbind() {
+            this._backend.GlCheckThread();
             if (this.Locked)
                 return null;
 
@@ -142,8 +150,8 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
         /// Disposes this Vertex Array
         /// </summary>
         public void Dispose() {
-            
-            
+            this._backend.GlCheckThread();
+
             if (this.Bound)
                 this.UnlockingUnbind();
 

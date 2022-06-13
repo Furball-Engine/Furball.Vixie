@@ -57,6 +57,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
         /// <param name="capacity">How many Lines to allow in 1 Batch</param>
         public unsafe LineRendererGLES32(OpenGLESBackend backend, int capacity = 8192) {
             this._backend = backend;
+            this._backend.CheckThread();
             this.gl       = backend.GetGlApi();
 
             //Calculate Constants
@@ -114,6 +115,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
         /// Begins the Batch
         /// </summary>
         public unsafe void Begin() {
+            this._backend.CheckThread();
             fixed (BatchedLineVertex* data = this._localVertexBuffer)
                 this._vertexPointer = data;
 
@@ -139,6 +141,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
         /// <param name="thickness">Thickness of the Line</param>
         /// <param name="color">Color of the Line</param>
         public unsafe void Draw(Vector2 begin, Vector2 end, float thickness, Color color) {
+            this._backend.CheckThread();
             if (!this.IsBegun)
                 throw new Exception("Cannot call Draw before Calling Begin in BatchedLineRenderer!");
 
@@ -177,6 +180,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
         /// Ends the Batch and draws everything to the Screen
         /// </summary>
         public unsafe void End() {
+            this._backend.CheckThread();
             //Calculate how much to upload
             nuint size = (nuint)this._vertexBufferIndex * 4;
 
@@ -205,6 +209,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
         /// Cleans up after itself
         /// </summary>
         public void Dispose() {
+            this._backend.CheckThread();
             try {
                 //Unlock Shaders and other things
                 if (this._lineShaderGles.Locked)
