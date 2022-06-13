@@ -307,7 +307,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             this._backend.CheckThread();
             if (this._instances == 0) return;
 
-            this._backend.BindTextures(this._boundTextures);
+            this._backend.BindTextures(this._boundTextures, (uint) this._usedTextures);
             this._backend.CheckError("bind textures");
             for (var i = 0; i < this._boundTextures.Length; i++) {
                 this._boundTextures[i] = uint.MaxValue;

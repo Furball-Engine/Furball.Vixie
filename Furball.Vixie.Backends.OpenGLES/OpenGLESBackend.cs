@@ -372,8 +372,8 @@ namespace Furball.Vixie.Backends.OpenGLES {
         public void BindTexture(TextureTarget target, uint textureId) {
             this.gl.BindTexture((Silk.NET.OpenGLES.TextureTarget)target, textureId);
         }
-        public void BindTextures(uint[] textures) {
-            for (int i = 0; i < textures.Length; i++) {
+        public void BindTextures(uint[] textures, uint count) {
+            for (int i = 0; i < count; i++) {
                 uint texture = textures[i];
                 
                 this.ActiveTexture(TextureUnit.Texture0 + i);

@@ -1,8 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Numerics;
-using System.Threading;
 using Furball.Vixie.Backends.OpenGL.Shared;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
@@ -46,6 +46,23 @@ namespace Furball.Vixie.Backends.OpenGL41 {
         private  Vector2D<int> _Viewport;
         private  Rectangle     _lastScissor;
 
+        public static Dictionary<string, FeatureLevel> FeatureLevels = new() {
+            {
+                "glBindTextures", new FeatureLevel {
+                    Name        = "Use glBindTextures", 
+                    Description = "Whether to use the glBindTextures function or to emulate it with multiple calls", 
+                    Value       = false
+                }
+            }
+        };
+
+        public OpenGL41Backend() {
+            if (Global.LatestSupportedGL.GL.MajorVersion >= 4 && Global.LatestSupportedGL.GL.MinorVersion >= 4) {
+                FeatureLevels["glBindTextures"].Value = true;
+                Logger.Log($"Enabling multi-texture bind!", LoggerLevelOpenGL41.InstanceInfo);
+            }
+        }
+        
         /// <summary>
         /// Used to Initialize the Backend
         /// </summary>
@@ -351,8 +368,16 @@ namespace Furball.Vixie.Backends.OpenGL41 {
         public void BindTexture(TextureTarget target, uint textureId) {
             this.gl.BindTexture(target, textureId);
         }
-        public void BindTextures(uint[] textures) {
-            this.gl.BindTextures(0, textures);
+        public void BindTextures(uint[] textures, uint count) {
+            if(FeatureLevels["glBindTextures"].Boolean)
+                this.gl.BindTextures(0, count, textures);
+            else {
+                for (int i = 0; i < count; i++) {
+                    uint texture = textures[i];
+                    this.gl.ActiveTexture(TextureUnit.Texture0 + i);
+                    this.gl.BindTexture(TextureTarget.Texture2D, texture);
+                }
+            }
         }
 
         public unsafe void TexImage2D(TextureTarget target, int level, InternalFormat format, uint width, uint height, int border, PixelFormat pxFormat, PixelType type, void* data) {
