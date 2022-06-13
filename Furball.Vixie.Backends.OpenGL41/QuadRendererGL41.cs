@@ -75,8 +75,11 @@ namespace Furball.Vixie.Backends.OpenGL41 {
 
             this.gl       = this._backend.GetGlApi();
 
-            this._boundTextures = new TextureGL[this._backend.QueryMaxTextureUnits()];
-
+            this._boundTextures = new uint[this._backend.QueryMaxTextureUnits()];
+            for (var i = 0; i < this._boundTextures.Length; i++) {
+                this._boundTextures[i] = uint.MaxValue;
+            }
+            
             string vertSource = ResourceHelpers.GetStringResource("Shaders/QuadRenderer/VertexShader.glsl");
             string fragSource = QuadShaderGeneratorGL41.GetFragment(backend);
 
@@ -216,7 +219,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             this._instanceData[this._instances].Color                 = colorOverride;
             this._instanceData[this._instances].Rotation              = rotation;
             this._instanceData[this._instances].RotationOrigin        = rotOrigin;
-            this._instanceData[this._instances].TextureId             = this.GetTextureId(texture);
+            this._instanceData[this._instances].TextureId             = this.GetTextureId(textureGl41);
             this._instanceData[this._instances].TextureRectPosition.X = 0;
             this._instanceData[this._instances].TextureRectPosition.Y = 0;
             this._instanceData[this._instances].TextureRectSize.X     = texFlip == TextureFlip.FlipHorizontal ? -1 : 1;
@@ -234,7 +237,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
                 throw new Exception("Begin() has not been called!");
 
             //Ignore calls with invalid textures
-            if (texture == null || texture is not TextureGL)
+            if (texture == null || texture is not TextureGL texGl)
                 return;
 
             if (this._instances >= NUM_INSTANCES || this._usedTextures == this._backend.QueryMaxTextureUnits()) {
@@ -254,7 +257,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             this._instanceData[this._instances].Color                 = colorOverride;
             this._instanceData[this._instances].Rotation              = rotation;
             this._instanceData[this._instances].RotationOrigin        = rotOrigin;
-            this._instanceData[this._instances].TextureId             = this.GetTextureId(texture);
+            this._instanceData[this._instances].TextureId             = this.GetTextureId(texGl);
             this._instanceData[this._instances].TextureRectPosition.X = (float)sourceRect.X      / texture.Width;
             this._instanceData[this._instances].TextureRectPosition.Y = (float)sourceRect.Y      / texture.Height;
             this._instanceData[this._instances].TextureRectSize.X     = (float)sourceRect.Width  / texture.Width * (texFlip == TextureFlip.FlipHorizontal ? -1 : 1);
@@ -275,21 +278,21 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             this.Draw(texture, position, scale, rotation, colorOverride, texFlip, rotOrigin);
         }
 
-        private readonly Texture[] _boundTextures;
+        private readonly uint[] _boundTextures;
         private          int       _usedTextures  = 0;
 
 
-        private int GetTextureId(Texture tex) {
+        private int GetTextureId(TextureGL tex) {
             this._backend.CheckThread();
             if(this._usedTextures != 0)
                 for (int i = 0; i < this._usedTextures; i++) {
-                    Texture tex2 = this._boundTextures[i];
+                    uint tex2 = this._boundTextures[i];
 
-                    if (tex2 == null) break;
-                    if (tex  == tex2) return i;
+                    if (tex2 == uint.MaxValue) break;
+                    if (tex.TextureId == tex2) return i;
                 }
 
-            this._boundTextures[this._usedTextures] = tex;
+            this._boundTextures[this._usedTextures] = tex.TextureId;
             this._usedTextures++;
 
             return this._usedTextures - 1;
@@ -304,12 +307,12 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             this._backend.CheckThread();
             if (this._instances == 0) return;
 
-            for (int i = 0; i < this._usedTextures; i++) {
-                TextureGL tex = this._boundTextures[i] as TextureGL;
-
-                tex.Bind(TextureUnit.Texture0 + i);
+            this._backend.BindTextures(this._boundTextures);
+            this._backend.CheckError("bind textures");
+            for (var i = 0; i < this._boundTextures.Length; i++) {
+                this._boundTextures[i] = uint.MaxValue;
             }
-
+            
             fixed (void* ptr = this._instanceData)
                 this._instanceVbo.SetSubData(ptr, (nuint)(this._instances * sizeof(InstanceData)));
 

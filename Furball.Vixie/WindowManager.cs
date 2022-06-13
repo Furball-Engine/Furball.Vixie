@@ -76,52 +76,47 @@ namespace Furball.Vixie {
         /// </summary>
         public void Create() {
             ContextAPI api = this.Backend switch {
-                Backend.OpenGLES32 => ContextAPI.OpenGLES,
-                Backend.OpenGLES30 => ContextAPI.OpenGLES,
-                Backend.OpenGL20   => ContextAPI.OpenGL,
-                Backend.OpenGL41   => ContextAPI.OpenGL,
-                Backend.Veldrid    => ContextAPI.None,
-                Backend.Direct3D11 => ContextAPI.None,
-                _                  => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
+                Backend.OpenGLES     => ContextAPI.OpenGLES,
+                Backend.LegacyOpenGL => ContextAPI.OpenGL,
+                Backend.ModernOpenGL => ContextAPI.OpenGL,
+                Backend.Veldrid      => ContextAPI.None,
+                Backend.Direct3D11   => ContextAPI.None,
+                _                    => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
             };
 
             ContextProfile profile = this.Backend switch {
-                Backend.OpenGLES30 => ContextProfile.Core,
-                Backend.OpenGLES32 => ContextProfile.Core,
-                Backend.OpenGL20   => ContextProfile.Core,
-                Backend.OpenGL41   => ContextProfile.Core,
-                Backend.Veldrid    => ContextProfile.Core,
-                Backend.Direct3D11 => ContextProfile.Core,
-                _                  => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
+                Backend.OpenGLES     => ContextProfile.Core,
+                Backend.LegacyOpenGL => ContextProfile.Core,
+                Backend.ModernOpenGL => ContextProfile.Core,
+                Backend.Veldrid      => ContextProfile.Core,
+                Backend.Direct3D11   => ContextProfile.Core,
+                _                    => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
             };
 
             ContextFlags flags = this.Backend switch {
 #if DEBUG
-                Backend.OpenGLES30 => ContextFlags.Debug,
-                Backend.OpenGLES32 => ContextFlags.Debug,
-                Backend.OpenGL41   => ContextFlags.Debug,
-                Backend.OpenGL20   => ContextFlags.Debug,
+                Backend.OpenGLES => ContextFlags.Debug,
+                Backend.ModernOpenGL   => ContextFlags.Debug,
+                Backend.LegacyOpenGL   => ContextFlags.Debug,
                 Backend.Veldrid    => ContextFlags.ForwardCompatible,
                 Backend.Direct3D11 => ContextFlags.Debug,
 #else
-                Backend.OpenGLES30 => ContextFlags.Default,
-                Backend.OpenGLES32 => ContextFlags.Default,
+                Backend.OpenGLES => ContextFlags.Default,
                 Backend.OpenGL41 => ContextFlags.Default,
                 Backend.OpenGL20 => ContextFlags.Default,
                 Backend.Direct3D11 => ContextFlags.Default,
-                Backend.Veldrid  => ContextFlags.ForwardCompatible | ContextFlags.Debug,
+                Backend.Veldrid  => ContextFlags.ForwardCompatible,
 #endif
                 _ => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
             };
 
             APIVersion version = this.Backend switch {
-                Backend.OpenGLES30 => new APIVersion(3,  0),
-                Backend.OpenGLES32 => new APIVersion(3,  2),
-                Backend.OpenGL20   => new APIVersion(2,  0),
-                Backend.OpenGL41   => new APIVersion(4,  1),
-                Backend.Veldrid    => new APIVersion(0,  0),
-                Backend.Direct3D11 => new APIVersion(11, 0),
-                _                  => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
+                Backend.OpenGLES     => Backends.Shared.Global.LatestSupportedGL.GLES, //TODO: prevent contexts <3.0 being created
+                Backend.LegacyOpenGL => Backends.Shared.Global.LatestSupportedGL.GL, //TODO: should we have more advanced logic here? we should never create a >3.0 context for legacy
+                Backend.ModernOpenGL => Backends.Shared.Global.LatestSupportedGL.GL, //TODO: prevent contexts <3.1 from being created
+                Backend.Veldrid      => new APIVersion(0,  0),
+                Backend.Direct3D11   => new APIVersion(11, 0),
+                _                    => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
             };
 
             this._windowOptions.API = new GraphicsAPI(api, profile, flags, version);
@@ -146,6 +141,7 @@ namespace Furball.Vixie {
         }
         public void SetupGraphicsApi() {
             GraphicsBackend.SetBackend(this.Backend);
+            Global.GameInstance.SetApiFeatureLevels();
             GraphicsBackend.Current.SetMainThread();
             GraphicsBackend.Current.Initialize(this.GameWindow, this.InputContext);
             

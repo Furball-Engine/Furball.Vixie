@@ -272,6 +272,14 @@ namespace Furball.Vixie.Backends.OpenGL20 {
         public void BindTexture(TextureTarget target, uint textureId) {
             this.gl.BindTexture((Silk.NET.OpenGL.Legacy.TextureTarget)target, textureId);
         }
+        public void BindTextures(uint[] textures) {
+            for (int i = 0; i < textures.Length; i++) {
+                uint texture = textures[i];
+                
+                this.ActiveTexture(TextureUnit.Texture0 + i);
+                this.BindTexture(TextureTarget.Texture2D, texture);
+            }
+        }
 
         public unsafe void TexImage2D(TextureTarget target, int level, InternalFormat format, uint width, uint height, int border, PixelFormat pxFormat, PixelType type, void* data) {
             this.gl.TexImage2D((Silk.NET.OpenGL.Legacy.TextureTarget)target, level, (Silk.NET.OpenGL.Legacy.InternalFormat)format, width, height, border, (Silk.NET.OpenGL.Legacy.PixelFormat)pxFormat, (Silk.NET.OpenGL.Legacy.PixelType)type, data);

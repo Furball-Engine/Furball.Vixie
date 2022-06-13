@@ -23,30 +23,26 @@ namespace Furball.Vixie {
         /// <exception cref="ArgumentOutOfRangeException">Throws if a Invalid API was chosen</exception>
         public static void SetBackend(Backend backend) {
             Current = backend switch {
-                Backend.OpenGLES30 => new OpenGLESBackend(false),
-                Backend.OpenGLES32 => new OpenGLESBackend(true),
+                Backend.OpenGLES => new OpenGLESBackend(),
                 Backend.Direct3D11 => new Direct3D11Backend(),
-                Backend.OpenGL20   => new OpenGL20Backend(),
-                Backend.OpenGL41   => new OpenGL41Backend(),
+                Backend.LegacyOpenGL   => new OpenGL20Backend(),
+                Backend.ModernOpenGL   => new OpenGL41Backend(),
                 Backend.Veldrid    => new VeldridBackend(),
                 _                  => throw new ArgumentOutOfRangeException(nameof (backend), backend, "Invalid API")
             };
         }
-
+        
         public static bool IsOnUnsupportedPlatform { get; private set; } = false;
 
         public static Backend PrefferedBackends = Backend.None;
         public static Backend GetReccomendedBackend() {
             bool preferVeldridOverNative       = PrefferedBackends.HasFlag(Backend.Veldrid);
-            bool preferOpenGl                  = PrefferedBackends.HasFlag(Backend.OpenGL41);
-            bool preferOpenGlLegacy            = PrefferedBackends.HasFlag(Backend.OpenGL20);
-            bool preferOpenGlesOverOpenGl      = PrefferedBackends.HasFlag(Backend.OpenGLES32);
-            bool preferOpenGlesOldOverOpenGles = PrefferedBackends.HasFlag(Backend.OpenGLES30);
-
-            (APIVersion gl, APIVersion gles) = OpenGLDetector.OpenGLDetector.GetLatestSupported();
-
-            bool supportsGl   = gl.MajorVersion   != 0;
-            bool supportsGles = gles.MajorVersion != 0;
+            bool preferOpenGl                  = PrefferedBackends.HasFlag(Backend.ModernOpenGL);
+            bool preferOpenGlLegacy            = PrefferedBackends.HasFlag(Backend.LegacyOpenGL);
+            bool preferOpenGlesOverOpenGl      = PrefferedBackends.HasFlag(Backend.OpenGLES);
+            
+            bool supportsGl   = Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion   != 0;
+            bool supportsGles = Backends.Shared.Global.LatestSupportedGL.GLES.MajorVersion != 0;
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
                 if (preferVeldridOverNative)
@@ -57,29 +53,23 @@ namespace Furball.Vixie {
 
                 if ((!supportsGl && supportsGles) || (supportsGles))
                     if (preferOpenGlesOverOpenGl) {
-                        if (gles.MajorVersion < 3)
+                        if (Backends.Shared.Global.LatestSupportedGL.GLES.MajorVersion < 3)
                             throw new NotSupportedException("Your GPU does not support OpenGLES version 3.0 or above!");
-
-                        if (preferOpenGlesOldOverOpenGles)
-                            return Backend.OpenGLES30;
-
-                        if (gles.MinorVersion >= 2)
-                            return Backend.OpenGLES32;
-
-                        return Backend.OpenGLES30;
+                        
+                        return Backend.OpenGLES;
                     }
 
                 if (supportsGl) {
                     //if we are asking for legacy, or our GPU doesnt support OpenGL 4.x
-                    if (preferOpenGlLegacy || gl.MajorVersion < 4 || (gl.MajorVersion == 4 && gl.MinorVersion == 0)) {
-                        if (gl.MajorVersion < 2)
+                    if (preferOpenGlLegacy || Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 4 || (Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion == 4 && Backends.Shared.Global.LatestSupportedGL.GL.MinorVersion == 0)) {
+                        if (Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 2)
                             throw new NotSupportedException("Your GPU does not support OpenGL version 2.0 or above!");
 
-                        return Backend.OpenGL20;
+                        return Backend.LegacyOpenGL;
                     }
 
-                    if (gl.MinorVersion >= 1)
-                        return Backend.OpenGL41;
+                    if (Backends.Shared.Global.LatestSupportedGL.GL.MinorVersion >= 1)
+                        return Backend.ModernOpenGL;
                 }
 
                 throw new NotSupportedException("Your GPU does not support OpenGL!");
@@ -89,16 +79,10 @@ namespace Furball.Vixie {
 
                 if (supportsGles)
                     if (preferOpenGlesOverOpenGl) {
-                        if (gles.MajorVersion < 3)
+                        if (Backends.Shared.Global.LatestSupportedGL.GLES.MajorVersion < 3)
                             throw new NotSupportedException("Your GPU does not support OpenGLES version 3.0 or above!");
 
-                        if (preferOpenGlesOldOverOpenGles)
-                            return Backend.OpenGLES30;
-
-                        if (gles.MinorVersion >= 2)
-                            return Backend.OpenGLES32;
-
-                        return Backend.OpenGLES30;
+                        return Backend.OpenGLES;
                     }
 
                 throw new NotSupportedException("Your phone does not support GLES?");
@@ -109,29 +93,23 @@ namespace Furball.Vixie {
 
                 if ((!supportsGl && supportsGles) || (supportsGles))
                     if (preferOpenGlesOverOpenGl) {
-                        if (gles.MajorVersion < 3)
+                        if (Backends.Shared.Global.LatestSupportedGL.GLES.MajorVersion < 3)
                             throw new NotSupportedException("Your GPU does not support OpenGLES version 3.0 or above!");
 
-                        if (preferOpenGlesOldOverOpenGles)
-                            return Backend.OpenGLES30;
-
-                        if (gles.MinorVersion >= 2)
-                            return Backend.OpenGLES32;
-
-                        return Backend.OpenGLES30;
+                        return Backend.OpenGLES;
                     }
 
                 if (supportsGl) {
                     //if we are asking for legacy, or our GPU doesnt support OpenGL 4.x
-                    if (preferOpenGlLegacy || gl.MajorVersion < 4 || (gl.MajorVersion == 4 && gl.MinorVersion == 0)) {
-                        if (gl.MajorVersion < 2)
+                    if (preferOpenGlLegacy || Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 4 || (Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion == 4 && Backends.Shared.Global.LatestSupportedGL.GL.MinorVersion == 0)) {
+                        if (Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 2)
                             throw new NotSupportedException("Your GPU does not support OpenGL version 2.0 or above!");
 
-                        return Backend.OpenGL20;
+                        return Backend.LegacyOpenGL;
                     }
 
-                    if (gl.MinorVersion >= 1)
-                        return Backend.OpenGL41;
+                    if (Backends.Shared.Global.LatestSupportedGL.GL.MinorVersion >= 1)
+                        return Backend.ModernOpenGL;
                 }
 
                 throw new NotSupportedException("Your GPU does not support OpenGL!");
@@ -143,29 +121,23 @@ namespace Furball.Vixie {
 
                     if ((!supportsGl && supportsGles) || (supportsGles))
                         if (preferOpenGlesOverOpenGl) {
-                            if (gles.MajorVersion < 3)
+                            if (Backends.Shared.Global.LatestSupportedGL.GLES.MajorVersion < 3)
                                 throw new NotSupportedException("Your GPU does not support OpenGLES version 3.0 or above!");
 
-                            if (preferOpenGlesOldOverOpenGles)
-                                return Backend.OpenGLES30;
-
-                            if (gles.MinorVersion >= 2)
-                                return Backend.OpenGLES32;
-
-                            return Backend.OpenGLES30;
+                            return Backend.OpenGLES;
                         }
 
                     if (supportsGl) {
                         //if we are asking for legacy, or our GPU doesnt support OpenGL 4.x
-                        if (preferOpenGlLegacy || gl.MajorVersion < 4 || (gl.MajorVersion == 4 && gl.MinorVersion == 0)) {
-                            if (gl.MajorVersion < 2)
+                        if (preferOpenGlLegacy || Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 4 || (Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion == 4 && Backends.Shared.Global.LatestSupportedGL.GL.MinorVersion == 0)) {
+                            if (Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 2)
                                 throw new NotSupportedException("Your GPU does not support OpenGL version 2.0 or above!");
 
-                            return Backend.OpenGL20;
+                            return Backend.LegacyOpenGL;
                         }
 
-                        if (gl.MinorVersion >= 1)
-                            return Backend.OpenGL41;
+                        if (Backends.Shared.Global.LatestSupportedGL.GL.MinorVersion >= 1)
+                            return Backend.ModernOpenGL;
                     }
 
                     throw new NotSupportedException("Your GPU does not support OpenGL!");
@@ -176,29 +148,23 @@ namespace Furball.Vixie {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("FREEBSD"))) {
                 if ((!supportsGl && supportsGles) || (supportsGles))
                     if (preferOpenGlesOverOpenGl) {
-                        if (gles.MajorVersion < 3)
+                        if (Backends.Shared.Global.LatestSupportedGL.GLES.MajorVersion < 3)
                             throw new NotSupportedException("Your GPU does not support OpenGLES version 3.0 or above!");
 
-                        if (preferOpenGlesOldOverOpenGles)
-                            return Backend.OpenGLES30;
-
-                        if (gles.MinorVersion >= 2)
-                            return Backend.OpenGLES32;
-
-                        return Backend.OpenGLES30;
+                        return Backend.OpenGLES;
                     }
 
                 if (supportsGl) {
                     //if we are asking for legacy, or our GPU doesnt support OpenGL 4.x
-                    if (preferOpenGlLegacy || gl.MajorVersion < 4) {
-                        if (gl.MajorVersion < 2)
+                    if (preferOpenGlLegacy || Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 4) {
+                        if (Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 2)
                             throw new NotSupportedException("Your GPU does not support OpenGL version 2.0 or above!");
 
-                        return Backend.OpenGL20;
+                        return Backend.LegacyOpenGL;
                     }
 
-                    if (gl.MinorVersion >= 1)
-                        return Backend.OpenGL41;
+                    if (Backends.Shared.Global.LatestSupportedGL.GL.MinorVersion >= 1)
+                        return Backend.ModernOpenGL;
                 }
 
                 throw new NotSupportedException("Your GPU does not support OpenGL!");
@@ -206,7 +172,7 @@ namespace Furball.Vixie {
 
             Logger.Log("You are running on an untested, unsupported platform!", LoggerLevelDebugMessageCallback.InstanceNotification);
             IsOnUnsupportedPlatform = true;
-            return Backend.OpenGL20;//return the most likely supported backend
+            return Backend.LegacyOpenGL;//return the most likely supported backend
         }
     }
 }

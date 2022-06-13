@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Numerics;
@@ -57,15 +58,26 @@ namespace Furball.Vixie.Backends.OpenGLES {
         /// ImGui Controller
         /// </summary>
         internal ImGuiController ImGuiController;
-        internal         IWindow       Window;
-        private          bool          _screenshotQueued;
-        private readonly bool          Is32;
-        private          bool          RunImGui = true;
-        private          Rectangle     _lastScissor;
-        private          Vector2D<int> _fbSize;
+        internal IWindow       Window;
+        private  bool          _screenshotQueued;
+        private  bool          RunImGui = true;
+        private  Rectangle     _lastScissor;
+        private  Vector2D<int> _fbSize;
 
-        public OpenGLESBackend(bool is32) {
-            this.Is32 = is32;
+        public static Dictionary<string, FeatureLevel> FeatureLevels = new() {
+            {
+                "geometry_shader_lines", new FeatureLevel {
+                    Name        = "Geometry Shader Lines", 
+                    Description = "Whether to use Geometry Shaders to draw lines", 
+                    Value       = false
+                }
+            }
+        };
+
+        public OpenGLESBackend() {
+            if (Global.LatestSupportedGL.GLES.MajorVersion >= 3 && Global.LatestSupportedGL.GLES.MinorVersion >= 2) {
+                FeatureLevels["geometry_shader_lines"].Value = true;
+            }
         }
         
         /// <summary>
@@ -173,9 +185,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
         /// </summary>
         /// <returns></returns>
         public override ILineRenderer CreateLineRenderer() {
-            return this.Is32 ? 
-                       new LineRendererGLES32(this) : 
-                       new LineRendererGLES30(this);
+            return FeatureLevels["geometry_shader_lines"].Boolean ? new LineRendererGLES32(this) : new LineRendererGLES30(this);
         }
         /// <summary>
         /// Gets the Amount of Texture Units available for use
@@ -361,6 +371,14 @@ namespace Furball.Vixie.Backends.OpenGLES {
 
         public void BindTexture(TextureTarget target, uint textureId) {
             this.gl.BindTexture((Silk.NET.OpenGLES.TextureTarget)target, textureId);
+        }
+        public void BindTextures(uint[] textures) {
+            for (int i = 0; i < textures.Length; i++) {
+                uint texture = textures[i];
+                
+                this.ActiveTexture(TextureUnit.Texture0 + i);
+                this.BindTexture(TextureTarget.Texture2D, texture);
+            }
         }
 
         public unsafe void TexImage2D(TextureTarget target, int level, InternalFormat format, uint width, uint height, int border, PixelFormat pxFormat, PixelType type, void* data) {

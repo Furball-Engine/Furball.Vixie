@@ -351,6 +351,9 @@ namespace Furball.Vixie.Backends.OpenGL41 {
         public void BindTexture(TextureTarget target, uint textureId) {
             this.gl.BindTexture(target, textureId);
         }
+        public void BindTextures(uint[] textures) {
+            this.gl.BindTextures(0, textures);
+        }
 
         public unsafe void TexImage2D(TextureTarget target, int level, InternalFormat format, uint width, uint height, int border, PixelFormat pxFormat, PixelType type, void* data) {
             this.gl.TexImage2D(target, level, format, width, height, border, pxFormat, type, data);

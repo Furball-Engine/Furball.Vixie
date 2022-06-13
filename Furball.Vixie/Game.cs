@@ -39,6 +39,8 @@ namespace Furball.Vixie {
         /// Runs the Game
         /// </summary>
         public void Run(WindowOptions options, Backend backend = Backend.None) {
+            Backends.Shared.Global.LatestSupportedGL = OpenGLDetector.OpenGLDetector.GetLatestSupported();
+
             if (backend == Backend.None)
                 backend = GraphicsBackend.GetReccomendedBackend();
             
@@ -137,6 +139,10 @@ namespace Furball.Vixie {
         /// Used to Preload content
         /// </summary>
         protected virtual void LoadContent() {}
+        /// <summary>
+        /// Used to set the feature levels of all the APIs you are using
+        /// </summary>
+        public virtual void SetApiFeatureLevels() {}
         /// <summary>
         /// Update Method, Do your Updating work in here
         /// </summary>

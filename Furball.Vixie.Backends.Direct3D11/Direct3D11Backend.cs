@@ -16,6 +16,7 @@ using Vortice.Direct3D11;
 using Vortice.Direct3D11.Debug;
 using Vortice.DXGI;
 using Vortice.Mathematics;
+using FeatureLevel=Vortice.Direct3D.FeatureLevel;
 
 namespace Furball.Vixie.Backends.Direct3D11 {
     public class Direct3D11Backend : IGraphicsBackend {
