@@ -38,6 +38,14 @@ namespace Furball.Vixie {
 
         public static Backend PrefferedBackends = Backend.None;
         public static Backend GetReccomendedBackend() {
+            string backendForce = Environment.GetEnvironmentVariable("VIXIE_BACKEND_FORCE", EnvironmentVariableTarget.Process);
+            if (backendForce != null) {
+                if (!Enum.TryParse(backendForce, out Backend backend))
+                    throw new NotSupportedException($"{backendForce} is not a valid option for VIXIE_BACKEND_FORCE!");
+
+                return backend;
+            }
+            
             bool preferVeldridOverNative       = PrefferedBackends.HasFlag(Backend.Veldrid);
             bool preferOpenGl                  = PrefferedBackends.HasFlag(Backend.ModernOpenGL);
             bool preferOpenGlLegacy            = PrefferedBackends.HasFlag(Backend.LegacyOpenGL);
