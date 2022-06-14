@@ -30,8 +30,11 @@ namespace Furball.Vixie {
                 _                  => throw new ArgumentOutOfRangeException(nameof (backend), backend, "Invalid API")
             };
         }
-        
-        public static bool IsOnUnsupportedPlatform { get; private set; } = false;
+
+        public static bool IsOnUnsupportedPlatform {
+            get;
+            internal set;
+        } = false;//TODO: notify the user somehow about *why* its unsupported
 
         public static Backend PrefferedBackends = Backend.None;
         public static Backend GetReccomendedBackend() {

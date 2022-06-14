@@ -110,14 +110,41 @@ namespace Furball.Vixie {
                 _ => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
             };
 
-            APIVersion version = this.Backend switch {
-                Backend.OpenGLES     => Backends.Shared.Global.LatestSupportedGL.GLES, //TODO: prevent contexts <3.0 being created
-                Backend.LegacyOpenGL => Backends.Shared.Global.LatestSupportedGL.GL, //TODO: should we have more advanced logic here? we should never create a >3.0 context for legacy
-                Backend.ModernOpenGL => Backends.Shared.Global.LatestSupportedGL.GL, //TODO: prevent contexts <3.1 from being created
-                Backend.Veldrid      => new APIVersion(0,  0),
-                Backend.Direct3D11   => new APIVersion(11, 0),
-                _                    => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
-            };
+            APIVersion version;
+            switch (this.Backend) {
+                case Backend.OpenGLES:
+                    if (Backends.Shared.Global.LatestSupportedGL.GLES.MajorVersion < 3) {
+                        Backends.Shared.Global.LatestSupportedGL.GLES = new APIVersion(3, 0);
+                        GraphicsBackend.IsOnUnsupportedPlatform       = true;//mark us as running on an unsupported configuration
+                    }
+
+                    version = Backends.Shared.Global.LatestSupportedGL.GLES;
+                    break;
+                case Backend.LegacyOpenGL:
+                    if (Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion > 3 || Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion == 3 && Backends.Shared.Global.LatestSupportedGL.GL.MinorVersion > 0) {
+                        Backends.Shared.Global.LatestSupportedGL.GL = new APIVersion(3, 0);
+                        GraphicsBackend.IsOnUnsupportedPlatform     = true;//mark us as running on an unsupported configuration
+                    }
+
+                    version = Backends.Shared.Global.LatestSupportedGL.GL;
+                    break;
+                case Backend.ModernOpenGL:
+                    if (Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 3 || Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion == 3 && Backends.Shared.Global.LatestSupportedGL.GL.MinorVersion < 2) {
+                        Backends.Shared.Global.LatestSupportedGL.GL = new APIVersion(3, 2);
+                        GraphicsBackend.IsOnUnsupportedPlatform     = true;//mark us as running on an unsupported configuration
+                    }
+
+                    version = Backends.Shared.Global.LatestSupportedGL.GL;
+                    break;
+                case Backend.Veldrid:
+                    version = new APIVersion(0, 0);
+                    break;
+                case Backend.Direct3D11:
+                    version = new APIVersion(11, 0);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...");
+            }
 
             this._windowOptions.API = new GraphicsAPI(api, profile, flags, version);
 
