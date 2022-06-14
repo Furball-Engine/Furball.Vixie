@@ -150,7 +150,7 @@ namespace Furball.Vixie.Backends.Veldrid.Abstractions {
         }
 
         ~TextureVeldrid() {
-            this.Dispose();
+            DisposeQueue.Enqueue(this);
         }
         
         private bool IsDisposed = false;
@@ -162,9 +162,9 @@ namespace Furball.Vixie.Backends.Veldrid.Abstractions {
             
             foreach (ResourceSet resourceSet in this.ResourceSets) {
                 if(resourceSet != null)
-                    DisposeQueue.Enqueue(resourceSet);
+                    resourceSet.Dispose();
             }
-            DisposeQueue.Enqueue(this.Texture); 
+            this.Texture.Dispose(); 
             
             this._localBuffer.Dispose();
         }

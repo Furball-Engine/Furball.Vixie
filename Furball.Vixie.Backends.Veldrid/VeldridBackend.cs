@@ -250,7 +250,11 @@ namespace Furball.Vixie.Backends.Veldrid {
             this.GraphicsDevice.ResizeMainWindow((uint)width, (uint)height);
             
             this.CreateFramebuffer(this.GraphicsDevice.SwapchainFramebuffer.Width, this.GraphicsDevice.SwapchainFramebuffer.Height);
+            this.CommandList.Begin();
             this.ScissorRect = new Rectangle(0, 0, width, height);
+            this.CommandList.End();
+            this.GraphicsDevice.SubmitCommands(this.CommandList);
+            this.GraphicsDevice.WaitForIdle();
         }
         public override IQuadRenderer CreateTextureRenderer() => new QuadRendererVeldrid(this);
         public override ILineRenderer CreateLineRenderer()    => new LineRendererVeldrid(this);
@@ -341,6 +345,7 @@ namespace Furball.Vixie.Backends.Veldrid {
         public override Rectangle ScissorRect {
             get => this._lastScissor;
             set {
+                this.CommandList.SetFramebuffer(this.RenderFramebuffer);
                 this.CommandList.SetScissorRect(0, (uint)value.X, (uint)value.Y, (uint)value.Width, (uint)value.Height);
                 this._lastScissor = value;
             }
