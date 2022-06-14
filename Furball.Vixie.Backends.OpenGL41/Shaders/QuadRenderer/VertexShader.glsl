@@ -1,18 +1,18 @@
-#version 410
+#version 150
 
 //Vertex data
-layout (location = 0) in vec2 VertexPosition;
-layout (location = 1) in vec2 VertexTextureCoordinate;
+/* layout (location = 0) */ in vec2 VertexPosition;
+/* layout (location = 1) */ in vec2 VertexTextureCoordinate;
 
 //Instance data
-layout (location = 2) in vec2  InstancePos;
-layout (location = 3) in vec2  InstanceSize;
-layout (location = 4) in vec4  InstanceColor;
-layout (location = 5) in vec2  InstanceTexturePosition;
-layout (location = 6) in vec2  InstanceTextureSize;
-layout (location = 7) in vec2  InstanceRotationOrigin;
-layout (location = 8) in float InstanceRotation;
-layout (location = 9) in int   InstanceTextureId;
+/* layout (location = 2) */ in vec2   InstancePos;
+/* layout (location = 3) */ in vec2   InstanceSize;
+/* layout (location = 4) */ in vec4   InstanceColor;
+/* layout (location = 5) */ in vec2   InstanceTexturePosition;
+/* layout (location = 6) */ in vec2   InstanceTextureSize;
+/* layout (location = 7) */ in vec2   InstanceRotationOrigin;
+/* layout (location = 8) */ in float  InstanceRotation;
+/* layout (location = 9) */ in int    InstanceTextureId;
 
 
 out      vec4 fs_in_col;

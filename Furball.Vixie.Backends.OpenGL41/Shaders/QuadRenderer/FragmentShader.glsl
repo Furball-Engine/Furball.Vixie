@@ -1,4 +1,4 @@
-#version 410
+#version 150
 precision mediump float;
 
 in      vec4 fs_in_col;

@@ -1,7 +1,7 @@
-#version 410
+#version 150
 
-layout(location = 0) in vec4 pos_width;
-layout(location = 1) in vec4 col;
+/* layout(location = 0) */ in vec4 pos_width;
+/* layout(location = 1) */ in vec4 col;
 
 uniform mat4 u_mvp;
 

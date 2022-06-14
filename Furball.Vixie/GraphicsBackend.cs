@@ -8,7 +8,6 @@ using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Veldrid;
 using Furball.Vixie.Helpers.Helpers;
 using Kettu;
-using Silk.NET.Windowing;
 
 namespace Furball.Vixie {
     public class GraphicsBackend {
@@ -61,7 +60,7 @@ namespace Furball.Vixie {
 
                 if (supportsGl) {
                     //if we are asking for legacy, or our GPU doesnt support OpenGL 4.x
-                    if (preferOpenGlLegacy || Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 4 || (Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion == 4 && Backends.Shared.Global.LatestSupportedGL.GL.MinorVersion == 0)) {
+                    if (preferOpenGlLegacy || Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 3 || Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion == 3 && Backends.Shared.Global.LatestSupportedGL.GL.MinorVersion < 2) {
                         if (Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 2)
                             throw new NotSupportedException("Your GPU does not support OpenGL version 2.0 or above!");
 
@@ -101,7 +100,7 @@ namespace Furball.Vixie {
 
                 if (supportsGl) {
                     //if we are asking for legacy, or our GPU doesnt support OpenGL 4.x
-                    if (preferOpenGlLegacy || Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 4 || (Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion == 4 && Backends.Shared.Global.LatestSupportedGL.GL.MinorVersion == 0)) {
+                    if (preferOpenGlLegacy || Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 3 || Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion == 3 && Backends.Shared.Global.LatestSupportedGL.GL.MinorVersion < 2) {
                         if (Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 2)
                             throw new NotSupportedException("Your GPU does not support OpenGL version 2.0 or above!");
 
@@ -129,7 +128,7 @@ namespace Furball.Vixie {
 
                     if (supportsGl) {
                         //if we are asking for legacy, or our GPU doesnt support OpenGL 4.x
-                        if (preferOpenGlLegacy || Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 4 || (Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion == 4 && Backends.Shared.Global.LatestSupportedGL.GL.MinorVersion == 0)) {
+                        if (preferOpenGlLegacy || Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 3 || Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion == 3 && Backends.Shared.Global.LatestSupportedGL.GL.MinorVersion < 2) {
                             if (Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 2)
                                 throw new NotSupportedException("Your GPU does not support OpenGL version 2.0 or above!");
 
@@ -156,7 +155,7 @@ namespace Furball.Vixie {
 
                 if (supportsGl) {
                     //if we are asking for legacy, or our GPU doesnt support OpenGL 4.x
-                    if (preferOpenGlLegacy || Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 4) {
+                    if (preferOpenGlLegacy || Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 3 || Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion == 3 && Backends.Shared.Global.LatestSupportedGL.GL.MinorVersion < 2) {
                         if (Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 2)
                             throw new NotSupportedException("Your GPU does not support OpenGL version 2.0 or above!");
 

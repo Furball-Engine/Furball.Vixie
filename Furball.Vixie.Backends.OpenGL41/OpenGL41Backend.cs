@@ -12,7 +12,7 @@ using Silk.NET.Core.Native;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
-using Silk.NET.OpenGL.Extensions.ImGui;
+using Silk.NET.OpenGL.Legacy.Extensions.ImGui;
 using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -28,6 +28,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
         /// </summary>
         // ReSharper disable once InconsistentNaming
         private GL gl;
+        private Silk.NET.OpenGL.Legacy.GL legacyGl;
         /// <summary>
         /// Projection Matrix used to go from Window Coordinates to OpenGL Coordinates
         /// </summary>
@@ -70,7 +71,8 @@ namespace Furball.Vixie.Backends.OpenGL41 {
         /// <param name="inputContext"></param>
         /// <param name="game"></param>
         public override void Initialize(IWindow window, IInputContext inputContext) {
-            this.gl     = window.CreateOpenGL();
+            this.gl       = window.CreateOpenGL();
+            this.legacyGl = Silk.NET.OpenGL.Legacy.GL.GetApi(this.gl.Context);
             this.CheckError("create opengl");
 
             this.Window = window;
@@ -92,7 +94,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
 
             this.gl.Enable(EnableCap.ScissorTest);
 
-            this.ImGuiController = new ImGuiController(this.gl, window, inputContext);
+            this.ImGuiController = new ImGuiController(this.legacyGl, window, inputContext);
             this.CheckError("create imguicontroller");
             
             BackendInfoSection mainSection = new BackendInfoSection("OpenGL Info");
