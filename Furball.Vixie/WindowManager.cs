@@ -6,6 +6,7 @@ using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
 using Silk.NET.Windowing.Extensions.Veldrid;
+using Silk.NET.Windowing.Sdl;
 
 namespace Furball.Vixie {
     public class WindowManager : IDisposable {
@@ -75,6 +76,9 @@ namespace Furball.Vixie {
         /// Creates the Window and grabs the OpenGL API of Window
         /// </summary>
         public void Create() {
+            SdlWindowing.Use();
+            Window.PrioritizeSdl();
+            
             ContextAPI api = this.Backend switch {
                 Backend.OpenGLES     => ContextAPI.OpenGLES,
                 Backend.LegacyOpenGL => ContextAPI.OpenGL,
