@@ -18,6 +18,7 @@ namespace Furball.Vixie {
                 Backend.ModernOpenGL => OpenGL41Backend.FeatureLevels,
                 Backend.OpenGLES     => OpenGLESBackend.FeatureLevels,
                 Backend.Veldrid      => new Dictionary<string, FeatureLevel>(),
+                Backend.Vulkan       => new Dictionary<string, FeatureLevel>(),
                 _                    => throw new ArgumentOutOfRangeException(nameof(backend), backend, null)
             };
         }

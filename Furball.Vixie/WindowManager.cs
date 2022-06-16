@@ -80,6 +80,7 @@ namespace Furball.Vixie {
                 Backend.LegacyOpenGL => ContextAPI.OpenGL,
                 Backend.ModernOpenGL => ContextAPI.OpenGL,
                 Backend.Veldrid      => ContextAPI.None,
+                Backend.Vulkan       => ContextAPI.Vulkan,
                 Backend.Direct3D11   => ContextAPI.None,
                 _                    => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
             };
@@ -89,23 +90,26 @@ namespace Furball.Vixie {
                 Backend.LegacyOpenGL => ContextProfile.Core,
                 Backend.ModernOpenGL => ContextProfile.Core,
                 Backend.Veldrid      => ContextProfile.Core,
+                Backend.Vulkan       => ContextProfile.Core,
                 Backend.Direct3D11   => ContextProfile.Core,
                 _                    => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
             };
 
             ContextFlags flags = this.Backend switch {
 #if DEBUG
-                Backend.OpenGLES => ContextFlags.Debug,
-                Backend.ModernOpenGL   => ContextFlags.Debug,
-                Backend.LegacyOpenGL   => ContextFlags.Debug,
-                Backend.Veldrid    => ContextFlags.ForwardCompatible,
-                Backend.Direct3D11 => ContextFlags.Debug,
+                Backend.OpenGLES     => ContextFlags.Debug,
+                Backend.ModernOpenGL => ContextFlags.Debug,
+                Backend.LegacyOpenGL => ContextFlags.Debug,
+                Backend.Veldrid      => ContextFlags.ForwardCompatible | ContextFlags.Debug,
+                Backend.Vulkan       => ContextFlags.Debug,
+                Backend.Direct3D11   => ContextFlags.Debug,
 #else
                 Backend.OpenGLES => ContextFlags.Default,
                 Backend.OpenGL41 => ContextFlags.Default,
                 Backend.OpenGL20 => ContextFlags.Default,
                 Backend.Direct3D11 => ContextFlags.Default,
                 Backend.Veldrid  => ContextFlags.ForwardCompatible,
+                Backend.Vulkan   => ContextFlags.Default,
 #endif
                 _ => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
             };
@@ -141,6 +145,9 @@ namespace Furball.Vixie {
                     break;
                 case Backend.Direct3D11:
                     version = new APIVersion(11, 0);
+                    break;
+                case Backend.Vulkan:
+                    version = new APIVersion(1, 1);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...");

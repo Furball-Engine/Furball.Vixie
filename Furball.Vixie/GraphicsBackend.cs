@@ -6,6 +6,7 @@ using Furball.Vixie.Backends.OpenGL41;
 using Furball.Vixie.Backends.OpenGLES;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Veldrid;
+using Furball.Vixie.Backends.Vulkan;
 using Furball.Vixie.Helpers.Helpers;
 using Kettu;
 
@@ -22,12 +23,13 @@ namespace Furball.Vixie {
         /// <exception cref="ArgumentOutOfRangeException">Throws if a Invalid API was chosen</exception>
         public static void SetBackend(Backend backend) {
             Current = backend switch {
-                Backend.OpenGLES => new OpenGLESBackend(),
-                Backend.Direct3D11 => new Direct3D11Backend(),
-                Backend.LegacyOpenGL   => new OpenGL20Backend(),
-                Backend.ModernOpenGL   => new OpenGL41Backend(),
-                Backend.Veldrid    => new VeldridBackend(),
-                _                  => throw new ArgumentOutOfRangeException(nameof (backend), backend, "Invalid API")
+                Backend.OpenGLES     => new OpenGLESBackend(),
+                Backend.Direct3D11   => new Direct3D11Backend(),
+                Backend.LegacyOpenGL => new OpenGL20Backend(),
+                Backend.ModernOpenGL => new OpenGL41Backend(),
+                Backend.Veldrid      => new VeldridBackend(),
+                Backend.Vulkan       => new VulkanBackend(),
+                _                    => throw new ArgumentOutOfRangeException(nameof (backend), backend, "Invalid API")
             };
         }
 

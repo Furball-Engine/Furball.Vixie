@@ -33,6 +33,7 @@
     <ItemGroup>
       <ProjectReference Include="..\Furball.Vixie.Backends.Shared\Furball.Vixie.Backends.Shared.csproj" />
       <ProjectReference Include="..\Furball.Vixie.Backends.Direct3D11\Furball.Vixie.Backends.Direct3D11.csproj" />
+      <ProjectReference Include="..\Furball.Vixie.Backends.Vulkan\Furball.Vixie.Backends.Vulkan.csproj" />
       <ProjectReference Include="..\Furball.Vixie.Helpers\Furball.Vixie.Helpers.csproj" />
       <ProjectReference Include="..\Furball.Vixie.Backends.OpenGL20\Furball.Vixie.Backends.OpenGL20.csproj" />
       <ProjectReference Include="..\Furball.Vixie.Backends.OpenGL41\Furball.Vixie.Backends.OpenGL41.csproj" />
