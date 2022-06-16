@@ -53,8 +53,8 @@ namespace Furball.Vixie.Backends.Vulkan {
             #endregion
 
         }
-        public override void Cleanup() {
-            throw new NotImplementedException();
+        public override unsafe void Cleanup() {
+            this._vk.DestroyInstance(this._instance, null);
         }
         public override void HandleWindowSizeChange(int width, int height) {
             throw new NotImplementedException();
