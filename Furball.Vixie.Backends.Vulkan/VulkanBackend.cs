@@ -1,16 +1,57 @@
 using System;
 using System.IO;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.Renderers;
+using Silk.NET.Core;
 using Silk.NET.Input;
+using Silk.NET.Vulkan;
 using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
 
 namespace Furball.Vixie.Backends.Vulkan {
     public class VulkanBackend : IGraphicsBackend {
-        public override void Initialize(IWindow window, IInputContext inputContext) {
-            throw new NotImplementedException();
+        private Instance _instance;
+        private Vk       _vk;
+        public override unsafe void Initialize(IWindow window, IInputContext inputContext) {
+            _vk = Vk.GetApi();
+            
+            #region Create instance
+
+            ApplicationInfo appInfo = new ApplicationInfo {
+                SType              = StructureType.ApplicationInfo,
+                PApplicationName   = (byte*) Marshal.StringToHGlobalAnsi(Assembly.GetEntryAssembly()!.FullName),
+                ApplicationVersion = new Version32(1, 0, 0),
+                PEngineName        = (byte*)Marshal.StringToHGlobalAnsi("Furball.Vixie"),
+                EngineVersion      = new Version32(1, 0, 0),
+                ApiVersion         = Vk.Version10
+            };
+
+            InstanceCreateInfo createInfo = new InstanceCreateInfo {
+                SType            = StructureType.InstanceCreateInfo,
+                PApplicationInfo = &appInfo
+            };
+
+            var requiredExtensions = window.VkSurface!.GetRequiredExtensions(out uint requiredExtensionsCount);
+            
+            createInfo.EnabledExtensionCount   = requiredExtensionsCount;
+            createInfo.PpEnabledExtensionNames = requiredExtensions;
+
+            createInfo.EnabledLayerCount = 0;
+
+            Instance instance;
+            Result   result = this._vk.CreateInstance(&createInfo, null, &instance);
+
+            if (result != Result.Success) {
+                throw new Exception($"Creating vulkan instance failed! err:{result}");
+            }
+
+            this._instance = instance;
+
+            #endregion
+
         }
         public override void Cleanup() {
             throw new NotImplementedException();
