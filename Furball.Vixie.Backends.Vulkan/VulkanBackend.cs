@@ -12,14 +12,17 @@ using Silk.NET.Core.Native;
 using Silk.NET.Input;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
+using Silk.NET.Vulkan.Extensions.KHR;
 using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
 
 namespace Furball.Vixie.Backends.Vulkan {
     internal class QueueFamilyIndicies {
         public uint? GraphicsFamily;
+        public uint? PresentationFamily;
+        
         public bool IsComplete() {
-            return this.GraphicsFamily.HasValue;
+            return this.GraphicsFamily.HasValue && this.PresentationFamily.HasValue;
         }
     }
 
@@ -34,6 +37,8 @@ namespace Furball.Vixie.Backends.Vulkan {
         private PhysicalDevice?         _physicalDevice;
         private Device                  _device;
         private Queue                   _graphicsQueue;
+        private KhrSurface              _vkSurface;
+        private SurfaceKHR              _surface;
 
         private static readonly unsafe PfnDebugUtilsMessengerCallbackEXT _DebugCallback = new(DebugCallback);
 
@@ -44,6 +49,10 @@ namespace Furball.Vixie.Backends.Vulkan {
         public override unsafe void Initialize(IWindow window, IInputContext inputContext) {
             this._window = window;
 
+            if (_window.VkSurface == null) {
+                throw new NotSupportedException("The window was created without Vulkan support");
+            }
+            
             _vk = Vk.GetApi();
 
             this.PrintValidationLayers();
@@ -99,6 +108,15 @@ namespace Furball.Vixie.Backends.Vulkan {
             this._instance = instance;
 
             Logger.Log($"Created Vulkan Instance {this._instance.Handle}", LoggerLevelVulkan.InstanceInfo);
+
+            #endregion
+            
+            #region Vulkan Surface
+
+            if(!this._vk.TryGetInstanceExtension(instance, out this._vkSurface))
+                throw new Exception("Your device does not support KHR_SURFACE!");
+
+            this._surface = _window.VkSurface!.Create<AllocationCallbacks>(_instance.ToHandle(), null).ToSurface();
 
             #endregion
 
@@ -158,12 +176,20 @@ namespace Furball.Vixie.Backends.Vulkan {
                 QueueFamilyProperties2 queueFamily = queueProperties[i];
                 if (!QueueFamilyIndicies.GraphicsFamily.HasValue && (queueFamily.QueueFamilyProperties.QueueFlags & QueueFlags.QueueGraphicsBit) != 0)
                     this.QueueFamilyIndicies.GraphicsFamily = i;
+                if (!this.QueueFamilyIndicies.PresentationFamily.HasValue) {
+                    Bool32 presentationSupport = false;
+                    this._vkSurface.GetPhysicalDeviceSurfaceSupport(this._physicalDevice.Value, i, this._surface, &presentationSupport);
+
+                    if (presentationSupport)
+                        this.QueueFamilyIndicies.PresentationFamily = i;
+                }
 
                 if (this.QueueFamilyIndicies.IsComplete())
                     break;
             }
 
             Logger.Log($"Found Graphics Queue Family with an ID of {this.QueueFamilyIndicies.GraphicsFamily!.Value}!", LoggerLevelVulkan.InstanceInfo);
+            Logger.Log($"Found Presentation Queue Family with an ID of {this.QueueFamilyIndicies.PresentationFamily!.Value}!", LoggerLevelVulkan.InstanceInfo);
             
             #endregion
 
@@ -198,7 +224,7 @@ namespace Furball.Vixie.Backends.Vulkan {
 
             #endregion
 
-            #region Retrieve queues
+            #region Retrieve graphics queue
 
             Queue graphicsQueue;
             this._vk.GetDeviceQueue(this._device, this.QueueFamilyIndicies.GraphicsFamily.Value, 0, &graphicsQueue);
@@ -268,6 +294,7 @@ namespace Furball.Vixie.Backends.Vulkan {
         }
 
         public override unsafe void Cleanup() {
+            this._vkSurface.DestroySurface(this._instance, this._surface, null);
             this._vk.DestroyDevice(this._device, null);
             if (this._messenger.HasValue)
                 this._extDebugUtils.DestroyDebugUtilsMessenger(this._instance, this._messenger.Value, null);
