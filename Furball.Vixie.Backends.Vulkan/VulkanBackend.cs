@@ -116,7 +116,7 @@ namespace Furball.Vixie.Backends.Vulkan {
                 
                 Logger.Log($"Found Vulkan device {SilkMarshal.PtrToString((nint)properties.Properties.DeviceName)} of type {properties.Properties.DeviceType} with Driver version {properties.Properties.DriverVersion} and API Version of {properties.Properties.ApiVersion}", LoggerLevelVulkan.InstanceInfo);
                 
-                if (!physicalDevice.HasValue && CanUseDevice(deviceIter)) {
+                if (!physicalDevice.HasValue && CanUseDevice(deviceIter, properties)) {
                     physicalDevice = deviceIter;
                 }
             }
@@ -132,7 +132,7 @@ namespace Furball.Vixie.Backends.Vulkan {
             #endregion
         }
 
-        private bool CanUseDevice(PhysicalDevice device) {
+        private bool CanUseDevice(PhysicalDevice device, PhysicalDeviceProperties2 properties) {
             return true; //todo: see how much video memory the test suite needs at its max, and make sure we have at least that
         }
         
