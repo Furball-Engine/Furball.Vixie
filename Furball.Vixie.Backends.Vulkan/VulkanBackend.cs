@@ -18,23 +18,35 @@ namespace Furball.Vixie.Backends.Vulkan {
     public class VulkanBackend : IGraphicsBackend {
         private Instance _instance;
         private Vk       _vk;
+        private IWindow  _window;
 
-        private static readonly string[] _ValidationLayers = new[] {
-            "VK_LAYER_KHRONOS_validation"
+        private static string[] _Extensions = new[] {
+            "VK_EXT_debug_utils"
         };
 
-        private bool _enableValidationLayers = false;
-        
         public override unsafe void Initialize(IWindow window, IInputContext inputContext) {
+            this._window = window;
+            
             _vk = Vk.GetApi();
 
-            this._enableValidationLayers = window.API.Flags.HasFlag(ContextFlags.Debug);
+            this.PrintValidationLayers();
 
-            #region Validation Layers
+            bool debug = window.API.Flags.HasFlag(ContextFlags.Debug);
+            
+            #region Get required extensions
 
-            if(this._enableValidationLayers)
-                if (!this.CheckForValidationLayers())
-                    throw new Exception("Failed to initialize validation layers!");
+            byte** required = this._window.VkSurface!.GetRequiredExtensions(out uint count);
+
+            uint   extensionCount = (uint)(count + (debug ? _Extensions.Length : 0));
+            byte** extensions     = stackalloc byte*[(int)extensionCount];
+
+            for (uint i = 0; i < count; i++) {
+                extensions[i] = required[i];
+            }
+            if(debug)
+                for (var i = 0; i < _Extensions.Length; i++) {
+                    extensions[count + i] = (byte*)SilkMarshal.StringToPtr(_Extensions[i]);
+                }
             
             #endregion
             
@@ -54,16 +66,11 @@ namespace Furball.Vixie.Backends.Vulkan {
                 PApplicationInfo = &appInfo
             };
 
-            var requiredExtensions = window.VkSurface!.GetRequiredExtensions(out uint requiredExtensionsCount);
             
-            createInfo.EnabledExtensionCount   = requiredExtensionsCount;
-            createInfo.PpEnabledExtensionNames = requiredExtensions;
+            createInfo.EnabledExtensionCount   = extensionCount;
+            createInfo.PpEnabledExtensionNames = extensions;
 
-            //If we want validation layers, enable them!
-            createInfo.EnabledLayerCount = (uint)(this._enableValidationLayers ? _ValidationLayers.Length : 0);
-            if (this._enableValidationLayers) {
-                createInfo.PpEnabledExtensionNames = (byte**)SilkMarshal.StringArrayToPtr(_ValidationLayers);
-            }
+            createInfo.EnabledLayerCount = 0;
 
             Instance instance;
             Result   result = this._vk.CreateInstance(&createInfo, null, &instance);
@@ -73,11 +80,13 @@ namespace Furball.Vixie.Backends.Vulkan {
             }
 
             this._instance = instance;
+            
+            Logger.Log($"Created Vulkan Instance {this._instance}", LoggerLevelVulkan.InstanceInfo);
 
             #endregion
         }
 
-        private unsafe bool CheckForValidationLayers() {
+        private unsafe void PrintValidationLayers() {
             uint count;
             this._vk.EnumerateInstanceLayerProperties(&count, null);
 
@@ -87,21 +96,6 @@ namespace Furball.Vixie.Backends.Vulkan {
             foreach (LayerProperties layerProperties in properties) {
                 Logger.Log($"Validation layer {SilkMarshal.PtrToString((nint)layerProperties.LayerName)} available!", LoggerLevelVulkan.InstanceInfo);
             }
-            
-            foreach (string validationLayer in _ValidationLayers) {
-                bool found = false;
-                foreach (LayerProperties layerProperties in properties) {
-                    if (Marshal.PtrToStringAnsi((nint)layerProperties.LayerName) == validationLayer) {
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (!found)
-                    return false;
-            }
-            
-            return true;
         }
         
         public override unsafe void Cleanup() {
