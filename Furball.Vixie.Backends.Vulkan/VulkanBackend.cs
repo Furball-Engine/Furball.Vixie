@@ -33,6 +33,7 @@ namespace Furball.Vixie.Backends.Vulkan {
         private DebugUtilsMessengerEXT? _messenger = null;
         private PhysicalDevice?         _physicalDevice;
         private Device                  _device;
+        private Queue                   _graphicsQueue;
 
         private static readonly unsafe PfnDebugUtilsMessengerCallbackEXT _DebugCallback = new(DebugCallback);
 
@@ -196,6 +197,16 @@ namespace Furball.Vixie.Backends.Vulkan {
             this._device = device;
 
             #endregion
+
+            #region Retrieve queues
+
+            Queue graphicsQueue;
+            this._vk.GetDeviceQueue(this._device, this.QueueFamilyIndicies.GraphicsFamily.Value, 0, &graphicsQueue);
+
+            this._graphicsQueue = graphicsQueue;
+
+            #endregion
+
         }
 
         private unsafe bool CanUseDevice(PhysicalDevice device, PhysicalDeviceProperties2 properties) {
