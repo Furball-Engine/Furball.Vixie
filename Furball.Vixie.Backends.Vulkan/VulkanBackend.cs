@@ -37,6 +37,7 @@ namespace Furball.Vixie.Backends.Vulkan {
         private PhysicalDevice?         _physicalDevice;
         private Device                  _device;
         private Queue                   _graphicsQueue;
+        private Queue                   _presentationQueue;
         private KhrSurface              _vkSurface;
         private SurfaceKHR              _surface;
 
@@ -197,22 +198,38 @@ namespace Furball.Vixie.Backends.Vulkan {
 
             Device device;
 
-            DeviceQueueCreateInfo queueCreateInfo = new DeviceQueueCreateInfo {
-                SType = StructureType.DeviceQueueCreateInfo,
-                QueueFamilyIndex = this.QueueFamilyIndicies.GraphicsFamily.Value,
-                QueueCount = 1
+            //list of all unique queue families
+            uint[] uniqueQueueFamilies = new[] {
+                this.QueueFamilyIndicies.GraphicsFamily.Value, this.QueueFamilyIndicies.PresentationFamily.Value
             };
+            
+            //c# bs
+            ReadOnlySpan<DeviceQueueCreateInfo> queueCreateInfosRaw     = new DeviceQueueCreateInfo[uniqueQueueFamilies.Length];
+            DeviceQueueCreateInfo               pinnableQueueCreateInfo = queueCreateInfosRaw.GetPinnableReference();
+            DeviceQueueCreateInfo*              queueCreateInfos        = &pinnableQueueCreateInfo;
 
+            
             float queuePriority = 1f;
-            queueCreateInfo.PQueuePriorities = &queuePriority;
-
+            //iterate over all the unique queue families, making DeviceQueueCreateInfo for each one
+            for (var i = 0; i < queueCreateInfosRaw.Length; i++) {
+                uint queueFamily = uniqueQueueFamilies[i];
+                
+                DeviceQueueCreateInfo queueCreateInfo = new() {
+                    SType            = StructureType.DeviceQueueCreateInfo,
+                    QueueFamilyIndex = queueFamily,
+                    QueueCount       = 1,
+                    PQueuePriorities = &queuePriority
+                };
+                queueCreateInfos[i] = queueCreateInfo;
+            }
+            
             PhysicalDeviceFeatures physicalDeviceFeatures = new PhysicalDeviceFeatures();
-
-            DeviceCreateInfo deviceCreateInfo = new DeviceCreateInfo() {
-                SType = StructureType.DeviceCreateInfo,
-                PQueueCreateInfos = &queueCreateInfo,
-                QueueCreateInfoCount = 1,
-                PEnabledFeatures = &physicalDeviceFeatures,
+            
+            DeviceCreateInfo deviceCreateInfo = new DeviceCreateInfo {
+                SType                 = StructureType.DeviceCreateInfo,
+                PQueueCreateInfos     = queueCreateInfos,
+                QueueCreateInfoCount  = (uint)queueCreateInfosRaw.Length,
+                PEnabledFeatures      = &physicalDeviceFeatures,
                 EnabledExtensionCount = 0 //todo: device specific extensions
             };
 
@@ -224,12 +241,17 @@ namespace Furball.Vixie.Backends.Vulkan {
 
             #endregion
 
-            #region Retrieve graphics queue
+            #region Retrieve queues
 
             Queue graphicsQueue;
             this._vk.GetDeviceQueue(this._device, this.QueueFamilyIndicies.GraphicsFamily.Value, 0, &graphicsQueue);
 
             this._graphicsQueue = graphicsQueue;
+
+            Queue presntationQueue;
+            this._vk.GetDeviceQueue(this._device, this.QueueFamilyIndicies.PresentationFamily.Value, 0, &presntationQueue);
+
+            this._presentationQueue = presntationQueue;
 
             #endregion
 
