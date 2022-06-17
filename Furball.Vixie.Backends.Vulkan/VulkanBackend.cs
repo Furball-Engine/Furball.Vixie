@@ -17,11 +17,11 @@ using SixLabors.ImageSharp;
 
 namespace Furball.Vixie.Backends.Vulkan {
     public class VulkanBackend : IGraphicsBackend {
-        private        Instance                _instance;
-        private        Vk                      _vk;
-        private        IWindow                 _window;
-        private        ExtDebugUtils           _extDebugUtils;
-        private unsafe DebugUtilsMessengerEXT _messenger;
+        private Instance               _instance;
+        private Vk                     _vk;
+        private IWindow                _window;
+        private ExtDebugUtils          _extDebugUtils;
+        private DebugUtilsMessengerEXT? _messenger = null;
 
         private static string[] _Extensions = new[] {
             "VK_EXT_debug_utils"
@@ -84,14 +84,56 @@ namespace Furball.Vixie.Backends.Vulkan {
 
             this._instance = instance;
             
-            Logger.Log($"Created Vulkan Instance {this._instance}", LoggerLevelVulkan.InstanceInfo);
+            Logger.Log($"Created Vulkan Instance {this._instance.Handle}", LoggerLevelVulkan.InstanceInfo);
 
             #endregion
 
+            #region Message Callback 
+            
             this._vk.TryGetInstanceExtension(this._instance, out this._extDebugUtils);
 
             if(debug)
                 this.CreateDebugMessenger();
+
+            #endregion
+            
+            #region Pick Physical Device
+
+            uint deviceCount;
+            this._vk.EnumeratePhysicalDevices(this._instance, &deviceCount, null);
+
+            if (deviceCount == 0) {
+                throw new Exception("No Vulkan Devices found!");
+            }
+
+            PhysicalDevice[] devices = new PhysicalDevice[deviceCount];
+            this._vk.EnumeratePhysicalDevices(this._instance, &deviceCount, devices);
+
+            PhysicalDevice? physicalDevice = null;
+            foreach (PhysicalDevice deviceIter in devices) {
+                PhysicalDeviceProperties2 properties;
+                this._vk.GetPhysicalDeviceProperties2(deviceIter, &properties);
+                
+                Logger.Log($"Found Vulkan device {SilkMarshal.PtrToString((nint)properties.Properties.DeviceName)} of type {properties.Properties.DeviceType} with Driver version {properties.Properties.DriverVersion} and API Version of {properties.Properties.ApiVersion}", LoggerLevelVulkan.InstanceInfo);
+                
+                if (!physicalDevice.HasValue && CanUseDevice(deviceIter)) {
+                    physicalDevice = deviceIter;
+                }
+            }
+
+            if (!physicalDevice.HasValue)
+                throw new Exception("No physical device met our requirements!");
+
+            PhysicalDeviceProperties2 deviceProperties;
+            this._vk.GetPhysicalDeviceProperties2(physicalDevice.Value, &deviceProperties);
+
+            Logger.Log($"Picked vulkan device {SilkMarshal.PtrToString((nint)deviceProperties.Properties.DeviceName)}", LoggerLevelVulkan.InstanceInfo);
+            
+            #endregion
+        }
+
+        private bool CanUseDevice(PhysicalDevice device) {
+            return true; //todo: see how much video memory the test suite needs at its max, and make sure we have at least that
         }
         
         private unsafe void CreateDebugMessenger() {
@@ -115,25 +157,15 @@ namespace Furball.Vixie.Backends.Vulkan {
         private static readonly unsafe PfnDebugUtilsMessengerCallbackEXT _DebugCallback = new(DebugCallback);
 
         private static unsafe uint DebugCallback(DebugUtilsMessageSeverityFlagsEXT severity, DebugUtilsMessageTypeFlagsEXT type, DebugUtilsMessengerCallbackDataEXT* callbackData, void* userData) {
-            LoggerLevel level;
-            switch (severity) {
-                case DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityVerboseBitExt:
-                    level = LoggerLevelVulkan.InstanceInfo;
-                    break;
-                case DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityInfoBitExt:
-                    level = LoggerLevelVulkan.InstanceInfo;
-                    break;
-                case DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityWarningBitExt:
-                    level = LoggerLevelVulkan.InstanceWarning;
-                    break;
-                case DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityErrorBitExt:
-                    level = LoggerLevelVulkan.InstanceError;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(severity), severity, null);
-            }
-            
-            Logger.Log($"VKCallback {SilkMarshal.PtrToString((nint)callbackData->PMessage)}", level);
+            LoggerLevel level = severity switch {
+                DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityVerboseBitExt => LoggerLevelVulkan.InstanceCallbackInfo,
+                DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityInfoBitExt    => LoggerLevelVulkan.InstanceCallbackInfo,
+                DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityWarningBitExt => LoggerLevelVulkan.InstanceCallbackWarning,
+                DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityErrorBitExt   => LoggerLevelVulkan.InstanceCallbackError,
+                _                                                                        => throw new ArgumentOutOfRangeException(nameof(severity), severity, null)
+            };
+
+            Logger.Log($"{SilkMarshal.PtrToString((nint)callbackData->PMessage)}", level);
             
             return 0;
         }
@@ -151,8 +183,8 @@ namespace Furball.Vixie.Backends.Vulkan {
         }
         
         public override unsafe void Cleanup() {
-            if(this._messenger.Handle != 0)
-                this._extDebugUtils.DestroyDebugUtilsMessenger(this._instance, this._messenger, null);
+            if(this._messenger.HasValue)
+                this._extDebugUtils.DestroyDebugUtilsMessenger(this._instance, this._messenger.Value, null);
             this._vk.DestroyInstance(this._instance, null);
         }
         public override void HandleWindowSizeChange(int width, int height) {
