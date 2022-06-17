@@ -11,14 +11,17 @@ using Silk.NET.Core;
 using Silk.NET.Core.Native;
 using Silk.NET.Input;
 using Silk.NET.Vulkan;
+using Silk.NET.Vulkan.Extensions.EXT;
 using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
 
 namespace Furball.Vixie.Backends.Vulkan {
     public class VulkanBackend : IGraphicsBackend {
-        private Instance _instance;
-        private Vk       _vk;
-        private IWindow  _window;
+        private        Instance                _instance;
+        private        Vk                      _vk;
+        private        IWindow                 _window;
+        private        ExtDebugUtils           _extDebugUtils;
+        private unsafe DebugUtilsMessengerEXT _messenger;
 
         private static string[] _Extensions = new[] {
             "VK_EXT_debug_utils"
@@ -84,6 +87,55 @@ namespace Furball.Vixie.Backends.Vulkan {
             Logger.Log($"Created Vulkan Instance {this._instance}", LoggerLevelVulkan.InstanceInfo);
 
             #endregion
+
+            this._vk.TryGetInstanceExtension(this._instance, out this._extDebugUtils);
+
+            if(debug)
+                this.CreateDebugMessenger();
+        }
+        
+        private unsafe void CreateDebugMessenger() {
+            DebugUtilsMessengerCreateInfoEXT createInfo = new() {
+                SType           = StructureType.DebugUtilsMessengerCreateInfoExt,
+                MessageSeverity = DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityVerboseBitExt | DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityInfoBitExt | DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityWarningBitExt | DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityErrorBitExt,
+                MessageType     = DebugUtilsMessageTypeFlagsEXT.DebugUtilsMessageTypeGeneralBitExt         | DebugUtilsMessageTypeFlagsEXT.DebugUtilsMessageTypePerformanceBitExt  | DebugUtilsMessageTypeFlagsEXT.DebugUtilsMessageTypeValidationBitExt,
+                PfnUserCallback = _DebugCallback
+            };
+
+            DebugUtilsMessengerEXT messenger;
+                
+            Result result = this._extDebugUtils.CreateDebugUtilsMessenger(this._instance, &createInfo, null, &messenger);
+            
+            if (result != Result.Success)
+                throw new Exception($"Creating debug messenger failed! err{result}");
+
+            this._messenger = messenger;
+        }
+
+        private static readonly unsafe PfnDebugUtilsMessengerCallbackEXT _DebugCallback = new(DebugCallback);
+
+        private static unsafe uint DebugCallback(DebugUtilsMessageSeverityFlagsEXT severity, DebugUtilsMessageTypeFlagsEXT type, DebugUtilsMessengerCallbackDataEXT* callbackData, void* userData) {
+            LoggerLevel level;
+            switch (severity) {
+                case DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityVerboseBitExt:
+                    level = LoggerLevelVulkan.InstanceInfo;
+                    break;
+                case DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityInfoBitExt:
+                    level = LoggerLevelVulkan.InstanceInfo;
+                    break;
+                case DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityWarningBitExt:
+                    level = LoggerLevelVulkan.InstanceWarning;
+                    break;
+                case DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityErrorBitExt:
+                    level = LoggerLevelVulkan.InstanceError;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(severity), severity, null);
+            }
+            
+            Logger.Log($"VKCallback {SilkMarshal.PtrToString((nint)callbackData->PMessage)}", level);
+            
+            return 0;
         }
 
         private unsafe void PrintValidationLayers() {
@@ -99,6 +151,8 @@ namespace Furball.Vixie.Backends.Vulkan {
         }
         
         public override unsafe void Cleanup() {
+            if(this._messenger.Handle != 0)
+                this._extDebugUtils.DestroyDebugUtilsMessenger(this._instance, this._messenger, null);
             this._vk.DestroyInstance(this._instance, null);
         }
         public override void HandleWindowSizeChange(int width, int height) {

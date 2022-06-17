@@ -10,6 +10,7 @@
     <ItemGroup>
       <PackageReference Include="Kettu" Version="1.4.0" />
       <PackageReference Include="Silk.NET.Vulkan" Version="2.15.0" />
+      <PackageReference Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.15.0" />
     </ItemGroup>
 
     <ItemGroup>
