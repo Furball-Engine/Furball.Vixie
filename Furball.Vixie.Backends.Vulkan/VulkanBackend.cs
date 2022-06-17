@@ -17,7 +17,10 @@ using SixLabors.ImageSharp;
 
 namespace Furball.Vixie.Backends.Vulkan {
     internal class QueueFamilyIndicies {
-        public uint GraphicsFamily;
+        public uint? GraphicsFamily;
+        public bool IsComplete() {
+            return this.GraphicsFamily.HasValue;
+        }
     }
 
     public class VulkanBackend : IGraphicsBackend {
@@ -29,6 +32,7 @@ namespace Furball.Vixie.Backends.Vulkan {
         private ExtDebugUtils           _extDebugUtils;
         private DebugUtilsMessengerEXT? _messenger = null;
         private PhysicalDevice?         _physicalDevice;
+        private Device                  _device;
 
         private static readonly unsafe PfnDebugUtilsMessengerCallbackEXT _DebugCallback = new(DebugCallback);
 
@@ -151,9 +155,45 @@ namespace Furball.Vixie.Backends.Vulkan {
 
             for (uint i = 0; i < queueProperties.Length; i++) {
                 QueueFamilyProperties2 queueFamily = queueProperties[i];
-                if ((queueFamily.QueueFamilyProperties.QueueFlags & QueueFlags.QueueGraphicsBit) != 0)
+                if (!QueueFamilyIndicies.GraphicsFamily.HasValue && (queueFamily.QueueFamilyProperties.QueueFlags & QueueFlags.QueueGraphicsBit) != 0)
                     this.QueueFamilyIndicies.GraphicsFamily = i;
+
+                if (this.QueueFamilyIndicies.IsComplete())
+                    break;
             }
+
+            Logger.Log($"Found Graphics Queue Family with an ID of {this.QueueFamilyIndicies.GraphicsFamily!.Value}!", LoggerLevelVulkan.InstanceInfo);
+            
+            #endregion
+
+            #region Create physical device
+
+            Device device;
+
+            DeviceQueueCreateInfo queueCreateInfo = new DeviceQueueCreateInfo {
+                SType = StructureType.DeviceQueueCreateInfo,
+                QueueFamilyIndex = this.QueueFamilyIndicies.GraphicsFamily.Value,
+                QueueCount = 1
+            };
+
+            float queuePriority = 1f;
+            queueCreateInfo.PQueuePriorities = &queuePriority;
+
+            PhysicalDeviceFeatures physicalDeviceFeatures = new PhysicalDeviceFeatures();
+
+            DeviceCreateInfo deviceCreateInfo = new DeviceCreateInfo() {
+                SType = StructureType.DeviceCreateInfo,
+                PQueueCreateInfos = &queueCreateInfo,
+                QueueCreateInfoCount = 1,
+                PEnabledFeatures = &physicalDeviceFeatures,
+                EnabledExtensionCount = 0 //todo: device specific extensions
+            };
+
+            result = this._vk.CreateDevice(this._physicalDevice.Value, &deviceCreateInfo, null, &device);
+            if (result != Result.Success)
+                throw new Exception($"Unable to create logical device! err:{result}");
+
+            this._device = device;
 
             #endregion
         }
@@ -217,6 +257,7 @@ namespace Furball.Vixie.Backends.Vulkan {
         }
 
         public override unsafe void Cleanup() {
+            this._vk.DestroyDevice(this._device, null);
             if (this._messenger.HasValue)
                 this._extDebugUtils.DestroyDebugUtilsMessenger(this._instance, this._messenger.Value, null);
             this._vk.DestroyInstance(this._instance, null);
