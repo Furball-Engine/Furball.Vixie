@@ -16,12 +16,21 @@ using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
 
 namespace Furball.Vixie.Backends.Vulkan {
+    internal class QueueFamilyIndicies {
+        public uint GraphicsFamily;
+    }
+
     public class VulkanBackend : IGraphicsBackend {
-        private Instance               _instance;
-        private Vk                     _vk;
-        private IWindow                _window;
-        private ExtDebugUtils          _extDebugUtils;
+        internal QueueFamilyIndicies QueueFamilyIndicies = new();
+
+        private Instance                _instance;
+        private Vk                      _vk;
+        private IWindow                 _window;
+        private ExtDebugUtils           _extDebugUtils;
         private DebugUtilsMessengerEXT? _messenger = null;
+        private PhysicalDevice?         _physicalDevice;
+
+        private static readonly unsafe PfnDebugUtilsMessengerCallbackEXT _DebugCallback = new(DebugCallback);
 
         private static string[] _Extensions = new[] {
             "VK_EXT_debug_utils"
@@ -29,13 +38,13 @@ namespace Furball.Vixie.Backends.Vulkan {
 
         public override unsafe void Initialize(IWindow window, IInputContext inputContext) {
             this._window = window;
-            
+
             _vk = Vk.GetApi();
 
             this.PrintValidationLayers();
 
             bool debug = window.API.Flags.HasFlag(ContextFlags.Debug);
-            
+
             #region Get required extensions
 
             byte** required = this._window.VkSurface!.GetRequiredExtensions(out uint count);
@@ -46,18 +55,18 @@ namespace Furball.Vixie.Backends.Vulkan {
             for (uint i = 0; i < count; i++) {
                 extensions[i] = required[i];
             }
-            if(debug)
+            if (debug)
                 for (var i = 0; i < _Extensions.Length; i++) {
                     extensions[count + i] = (byte*)SilkMarshal.StringToPtr(_Extensions[i]);
                 }
-            
+
             #endregion
-            
+
             #region Create instance
 
             ApplicationInfo appInfo = new ApplicationInfo {
                 SType              = StructureType.ApplicationInfo,
-                PApplicationName   = (byte*) Marshal.StringToHGlobalAnsi(Assembly.GetEntryAssembly()!.FullName),
+                PApplicationName   = (byte*)Marshal.StringToHGlobalAnsi(Assembly.GetEntryAssembly()!.FullName),
                 ApplicationVersion = new Version32(1, 0, 0),
                 PEngineName        = (byte*)Marshal.StringToHGlobalAnsi("Furball.Vixie"),
                 EngineVersion      = new Version32(1, 0, 0),
@@ -69,7 +78,7 @@ namespace Furball.Vixie.Backends.Vulkan {
                 PApplicationInfo = &appInfo
             };
 
-            
+
             createInfo.EnabledExtensionCount   = extensionCount;
             createInfo.PpEnabledExtensionNames = extensions;
 
@@ -83,20 +92,20 @@ namespace Furball.Vixie.Backends.Vulkan {
             }
 
             this._instance = instance;
-            
+
             Logger.Log($"Created Vulkan Instance {this._instance.Handle}", LoggerLevelVulkan.InstanceInfo);
 
             #endregion
 
-            #region Message Callback 
-            
+            #region Message Callback
+
             this._vk.TryGetInstanceExtension(this._instance, out this._extDebugUtils);
 
-            if(debug)
+            if (debug)
                 this.CreateDebugMessenger();
 
             #endregion
-            
+
             #region Pick Physical Device
 
             uint deviceCount;
@@ -110,32 +119,59 @@ namespace Furball.Vixie.Backends.Vulkan {
             this._vk.EnumeratePhysicalDevices(this._instance, &deviceCount, devices);
 
             PhysicalDevice? physicalDevice = null;
+            this._physicalDevice = physicalDevice;
             foreach (PhysicalDevice deviceIter in devices) {
                 PhysicalDeviceProperties2 properties;
                 this._vk.GetPhysicalDeviceProperties2(deviceIter, &properties);
-                
+
                 Logger.Log($"Found Vulkan device {SilkMarshal.PtrToString((nint)properties.Properties.DeviceName)} of type {properties.Properties.DeviceType} with Driver version {properties.Properties.DriverVersion} and API Version of {properties.Properties.ApiVersion}", LoggerLevelVulkan.InstanceInfo);
-                
-                if (!physicalDevice.HasValue && CanUseDevice(deviceIter, properties)) {
-                    physicalDevice = deviceIter;
+
+                if (!this._physicalDevice.HasValue && CanUseDevice(deviceIter, properties)) {
+                    this._physicalDevice = deviceIter;
                 }
             }
 
-            if (!physicalDevice.HasValue)
+            if (!this._physicalDevice.HasValue)
                 throw new Exception("No physical device met our requirements!");
 
             PhysicalDeviceProperties2 deviceProperties;
-            this._vk.GetPhysicalDeviceProperties2(physicalDevice.Value, &deviceProperties);
+            this._vk.GetPhysicalDeviceProperties2(this._physicalDevice.Value, &deviceProperties);
 
             Logger.Log($"Picked vulkan device {SilkMarshal.PtrToString((nint)deviceProperties.Properties.DeviceName)}", LoggerLevelVulkan.InstanceInfo);
+
+            #endregion
             
+            #region Queue families
+
+            uint queueFamilyCount;
+            this._vk.GetPhysicalDeviceQueueFamilyProperties2(this._physicalDevice.Value, &queueFamilyCount, null);
+
+            QueueFamilyProperties2[] queueProperties = new QueueFamilyProperties2[queueFamilyCount];
+            this._vk.GetPhysicalDeviceQueueFamilyProperties2(this._physicalDevice.Value, &queueFamilyCount, queueProperties);
+
+            for (uint i = 0; i < queueProperties.Length; i++) {
+                QueueFamilyProperties2 queueFamily = queueProperties[i];
+                if ((queueFamily.QueueFamilyProperties.QueueFlags & QueueFlags.QueueGraphicsBit) != 0)
+                    this.QueueFamilyIndicies.GraphicsFamily = i;
+            }
+
             #endregion
         }
 
-        private bool CanUseDevice(PhysicalDevice device, PhysicalDeviceProperties2 properties) {
-            return true; //todo: see how much video memory the test suite needs at its max, and make sure we have at least that
+        private unsafe bool CanUseDevice(PhysicalDevice device, PhysicalDeviceProperties2 properties) {
+            uint queueFamilyCount;
+            this._vk.GetPhysicalDeviceQueueFamilyProperties2(device, &queueFamilyCount, null);
+
+            QueueFamilyProperties2[] queueProperties = new QueueFamilyProperties2[queueFamilyCount];
+            this._vk.GetPhysicalDeviceQueueFamilyProperties2(device, &queueFamilyCount, queueProperties);
+
+            //If there is no graphics queue, then the device is not suitable
+            if (queueProperties.Count(x => (x.QueueFamilyProperties.QueueFlags & QueueFlags.QueueGraphicsBit) != 0) == 0)
+                return false;
+            
+            return true;//todo: see how much video memory the test suite needs at its max, and make sure we have at least that
         }
-        
+
         private unsafe void CreateDebugMessenger() {
             DebugUtilsMessengerCreateInfoEXT createInfo = new() {
                 SType           = StructureType.DebugUtilsMessengerCreateInfoExt,
@@ -145,16 +181,14 @@ namespace Furball.Vixie.Backends.Vulkan {
             };
 
             DebugUtilsMessengerEXT messenger;
-                
+
             Result result = this._extDebugUtils.CreateDebugUtilsMessenger(this._instance, &createInfo, null, &messenger);
-            
+
             if (result != Result.Success)
                 throw new Exception($"Creating debug messenger failed! err{result}");
 
             this._messenger = messenger;
         }
-
-        private static readonly unsafe PfnDebugUtilsMessengerCallbackEXT _DebugCallback = new(DebugCallback);
 
         private static unsafe uint DebugCallback(DebugUtilsMessageSeverityFlagsEXT severity, DebugUtilsMessageTypeFlagsEXT type, DebugUtilsMessengerCallbackDataEXT* callbackData, void* userData) {
             LoggerLevel level = severity switch {
@@ -166,7 +200,7 @@ namespace Furball.Vixie.Backends.Vulkan {
             };
 
             Logger.Log($"{SilkMarshal.PtrToString((nint)callbackData->PMessage)}", level);
-            
+
             return 0;
         }
 
@@ -181,9 +215,9 @@ namespace Furball.Vixie.Backends.Vulkan {
                 Logger.Log($"Validation layer {SilkMarshal.PtrToString((nint)layerProperties.LayerName)} available!", LoggerLevelVulkan.InstanceInfo);
             }
         }
-        
+
         public override unsafe void Cleanup() {
-            if(this._messenger.HasValue)
+            if (this._messenger.HasValue)
                 this._extDebugUtils.DestroyDebugUtilsMessenger(this._instance, this._messenger.Value, null);
             this._vk.DestroyInstance(this._instance, null);
         }
