@@ -1,7 +1,7 @@
 using Kettu;
 
 namespace Furball.Vixie.Backends.Vulkan {
-    public class LoggerLevelVeldrid : LoggerLevel {
+    public class LoggerLevelVulkan : LoggerLevel {
         public override string Name => "Vulkan";
 
         private enum Channel {
@@ -10,11 +10,11 @@ namespace Furball.Vixie.Backends.Vulkan {
             Error
         }
 
-        public static readonly LoggerLevelVeldrid InstanceInfo    = new(Channel.Info);
-        public static readonly LoggerLevelVeldrid InstanceWarning = new(Channel.Warning);
-        public static readonly LoggerLevelVeldrid InstanceError   = new(Channel.Error);
+        public static readonly LoggerLevelVulkan InstanceInfo    = new(Channel.Info);
+        public static readonly LoggerLevelVulkan InstanceWarning = new(Channel.Warning);
+        public static readonly LoggerLevelVulkan InstanceError   = new(Channel.Error);
         
-        private LoggerLevelVeldrid(Channel channel) {
+        private LoggerLevelVulkan(Channel channel) {
             base.Channel = channel.ToString();
         }
     }

@@ -1,11 +1,14 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.Renderers;
+using Kettu;
 using Silk.NET.Core;
+using Silk.NET.Core.Native;
 using Silk.NET.Input;
 using Silk.NET.Vulkan;
 using Silk.NET.Windowing;
@@ -15,8 +18,25 @@ namespace Furball.Vixie.Backends.Vulkan {
     public class VulkanBackend : IGraphicsBackend {
         private Instance _instance;
         private Vk       _vk;
+
+        private static readonly string[] _ValidationLayers = new[] {
+            "VK_LAYER_KHRONOS_validation"
+        };
+
+        private bool _enableValidationLayers = false;
+        
         public override unsafe void Initialize(IWindow window, IInputContext inputContext) {
             _vk = Vk.GetApi();
+
+            this._enableValidationLayers = window.API.Flags.HasFlag(ContextFlags.Debug);
+
+            #region Validation Layers
+
+            if(this._enableValidationLayers)
+                if (!this.CheckForValidationLayers())
+                    throw new Exception("Failed to initialize validation layers!");
+            
+            #endregion
             
             #region Create instance
 
@@ -39,7 +59,11 @@ namespace Furball.Vixie.Backends.Vulkan {
             createInfo.EnabledExtensionCount   = requiredExtensionsCount;
             createInfo.PpEnabledExtensionNames = requiredExtensions;
 
-            createInfo.EnabledLayerCount = 0;
+            //If we want validation layers, enable them!
+            createInfo.EnabledLayerCount = (uint)(this._enableValidationLayers ? _ValidationLayers.Length : 0);
+            if (this._enableValidationLayers) {
+                createInfo.PpEnabledExtensionNames = (byte**)SilkMarshal.StringArrayToPtr(_ValidationLayers);
+            }
 
             Instance instance;
             Result   result = this._vk.CreateInstance(&createInfo, null, &instance);
@@ -51,8 +75,35 @@ namespace Furball.Vixie.Backends.Vulkan {
             this._instance = instance;
 
             #endregion
-
         }
+
+        private unsafe bool CheckForValidationLayers() {
+            uint count;
+            this._vk.EnumerateInstanceLayerProperties(&count, null);
+
+            LayerProperties[] properties = new LayerProperties[count];
+            this._vk.EnumerateInstanceLayerProperties(&count, properties);
+
+            foreach (LayerProperties layerProperties in properties) {
+                Logger.Log($"Validation layer {SilkMarshal.PtrToString((nint)layerProperties.LayerName)} available!", LoggerLevelVulkan.InstanceInfo);
+            }
+            
+            foreach (string validationLayer in _ValidationLayers) {
+                bool found = false;
+                foreach (LayerProperties layerProperties in properties) {
+                    if (Marshal.PtrToStringAnsi((nint)layerProperties.LayerName) == validationLayer) {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                    return false;
+            }
+            
+            return true;
+        }
+        
         public override unsafe void Cleanup() {
             this._vk.DestroyInstance(this._instance, null);
         }
