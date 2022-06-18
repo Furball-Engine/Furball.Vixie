@@ -3,3 +3,4 @@ obj/
 packages/
 Furball.Vixie.sln.DotSettings
 .vs/
+.idea/
