@@ -167,7 +167,7 @@ namespace Furball.Vixie {
                     version = new APIVersion(11, 0);
                     break;
                 case Backend.Vulkan:
-                    version = new APIVersion(1, 1);
+                    version = new APIVersion(0, 0);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...");

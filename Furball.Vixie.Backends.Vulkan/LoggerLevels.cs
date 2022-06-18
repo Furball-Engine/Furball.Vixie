@@ -8,6 +8,7 @@ namespace Furball.Vixie.Backends.Vulkan {
             Info,
             Warning,
             Error,
+            Fatal,
             CallbackVerbose,
             CallbackInfo,
             CallbackWarning,
@@ -17,6 +18,7 @@ namespace Furball.Vixie.Backends.Vulkan {
         public static readonly LoggerLevelVulkan InstanceInfo            = new(Channel.Info);
         public static readonly LoggerLevelVulkan InstanceWarning         = new(Channel.Warning);
         public static readonly LoggerLevelVulkan InstanceError           = new(Channel.Error);
+        public static readonly LoggerLevelVulkan InstanceFatal           = new(Channel.Fatal);
         public static readonly LoggerLevelVulkan InstanceCallbackVerbose = new(Channel.CallbackVerbose);
         public static readonly LoggerLevelVulkan InstanceCallbackInfo    = new(Channel.CallbackInfo);
         public static readonly LoggerLevelVulkan InstanceCallbackWarning = new(Channel.CallbackWarning);
