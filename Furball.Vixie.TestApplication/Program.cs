@@ -12,4 +12,4 @@ options.VSync = false;
 
 // VeldridBackend.PrefferedBackend = Veldrid.GraphicsBackend.Vulkan;
 
-new TestGame(options).Run(options, Backend.Vulkan);
+new TestGame(options).Run(options, Backend.ModernOpenGL);

@@ -35,28 +35,30 @@ namespace Furball.Vixie {
 
             Global.AlreadyInitialized = true;
         }
-        /// <summary>
-        /// Runs the Game
-        /// </summary>
-        public void Run(WindowOptions options, Backend backend = Backend.None) {
+
+        private void RunInternal(WindowOptions options, Backend backend, bool requestViewOnly) {
             Backends.Shared.Global.LatestSupportedGL = OpenGLDetector.OpenGLDetector.GetLatestSupported();
 
+            
             if (backend == Backend.None)
                 backend = GraphicsBackend.GetReccomendedBackend();
             
             this.WindowManager = new WindowManager(options, backend);
+            this.WindowManager.RequestViewOnly = requestViewOnly;
             this.WindowManager.Create();
 
-            this.WindowManager.GameWindow.Update            += this.Update;
-            this.WindowManager.GameWindow.Render            += this.VixieDraw;
-            this.WindowManager.GameWindow.Load              += this.RendererInitialize;
-            this.WindowManager.GameWindow.Closing           += this.RendererOnClosing;
-            this.WindowManager.GameWindow.FileDrop          += this.OnFileDrop;
-            this.WindowManager.GameWindow.Move              += this.OnWindowMove;
-            this.WindowManager.GameWindow.FocusChanged      += this.EngineOnFocusChanged;
-            this.WindowManager.GameWindow.StateChanged      += this.EngineOnWindowStateChange;
-            this.WindowManager.GameWindow.FramebufferResize += this.EngineFrameBufferResize;
-            this.WindowManager.GameWindow.Resize            += this.EngineWindowResize;
+            this.WindowManager.GameView.Update  += this.Update;
+            this.WindowManager.GameView.Render  += this.VixieDraw;
+            this.WindowManager.GameView.Load    += this.RendererInitialize;
+            this.WindowManager.GameView.Closing += this.RendererOnClosing;
+            if(!this.WindowManager.ViewOnly) {
+                this.WindowManager.GameWindow.FileDrop     += this.OnFileDrop;
+                this.WindowManager.GameWindow.Move         += this.OnViewMove;
+                this.WindowManager.GameWindow.StateChanged += this.EngineOnViewStateChange;
+            }
+            this.WindowManager.GameView.FocusChanged      += this.EngineOnFocusChanged;
+            this.WindowManager.GameView.FramebufferResize += this.EngineFrameBufferResize;
+            this.WindowManager.GameView.Resize            += this.EngineViewResize;
             
             Global.GameInstance = this;
 
@@ -68,13 +70,24 @@ namespace Furball.Vixie {
             
             this.WindowManager.RunWindow();
         }
+        
+        public void RunViewOnly(WindowOptions options, Backend backend = Backend.None) {
+            this.RunInternal(options, backend, true);
+        }
+        
+        /// <summary>
+        /// Runs the Game
+        /// </summary>
+        public void Run(WindowOptions options, Backend backend = Backend.None) {
+            this.RunInternal(options, backend, false);
+        }
 
         #region Renderer Actions
         /// <summary>
         /// Used to Initialize the Renderer and stuff,
         /// </summary>
         private void RendererInitialize() {
-            this._inputContext = this.WindowManager.GameWindow.CreateInput();
+            this._inputContext = this.WindowManager.GameView.CreateInput();
 
             this.WindowManager.InputContext = this._inputContext;
             this.WindowManager.SetupGraphicsApi();
@@ -103,7 +116,7 @@ namespace Furball.Vixie {
         /// Gets fired when the Window Gets Maxi/Minimized
         /// </summary>
         /// <param name="newState"></param>
-        private void EngineOnWindowStateChange(WindowState newState) {
+        private void EngineOnViewStateChange(WindowState newState) {
             this.WindowManager.WindowState = newState;
 
             this.OnWindowStateChange(newState);
@@ -112,7 +125,7 @@ namespace Furball.Vixie {
         /// Gets Fired when The Window gets Resized
         /// </summary>
         /// <param name="newSize"></param>
-        private void EngineWindowResize(Vector2D<int> newSize) {
+        private void EngineViewResize(Vector2D<int> newSize) {
             this.OnWindowResize(newSize);
         }
         /// <summary>
@@ -194,7 +207,7 @@ namespace Furball.Vixie {
         /// Gets fired when the Window Moves
         /// </summary>
         /// <param name="newPosition">New Window Position</param>
-        protected virtual void OnWindowMove(Vector2D<int> newPosition) {}
+        protected virtual void OnViewMove(Vector2D<int> newPosition) {}
         /// <summary>
         /// Gets fired when the Focus of the Window Changes
         /// </summary>

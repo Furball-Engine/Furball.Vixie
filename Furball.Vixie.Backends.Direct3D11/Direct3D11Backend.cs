@@ -44,7 +44,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
         private TextureD3D11 _privateWhitePixelTexture;
         internal TextureD3D11 GetPrivateWhitePixelTexture() => this._privateWhitePixelTexture;
 
-        public override void Initialize(IWindow window, IInputContext inputContext) {
+        public override void Initialize(IView view, IInputContext inputContext) {
             FeatureLevel featureLevel = FeatureLevel.Level_11_0;
             DeviceCreationFlags deviceFlags = DeviceCreationFlags.BgraSupport;
 
@@ -94,8 +94,8 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 
             SwapChainDescription swapChainDescription = new SwapChainDescription {
                 BufferDescription = new ModeDescription {
-                    Width  = window.Size.X,
-                    Height = window.Size.Y,
+                    Width  = view.Size.X,
+                    Height = view.Size.Y,
                     Format = Format.R8G8B8A8_UNorm,
                 },
                 SampleDescription = new SampleDescription {
@@ -105,14 +105,14 @@ namespace Furball.Vixie.Backends.Direct3D11 {
                 BufferCount  = 2,
                 SwapEffect   = SwapEffect.FlipDiscard,
                 Flags        = SwapChainFlags.None,
-                OutputWindow = window.Native.Win32.Value.Hwnd,
+                OutputWindow = view.Native.Win32.Value.Hwnd,
                 Windowed     = true
             };
 
             IDXGISwapChain swapChain = dxgiFactory.CreateSwapChain(this._device, swapChainDescription);
             this._swapChain = swapChain;
 
-            dxgiFactory.MakeWindowAssociation(window.Native.Win32.Value.Hwnd, WindowAssociationFlags.IgnoreAll);
+            dxgiFactory.MakeWindowAssociation(view.Native.Win32.Value.Hwnd, WindowAssociationFlags.IgnoreAll);
 
             this.CreateSwapchainResources();
 
@@ -154,13 +154,13 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 
             this._defaultBlendState = blendState;
 
-            this._imGuiController = new ImGuiControllerD3D11(this, window, inputContext, null);
+            this._imGuiController = new ImGuiControllerD3D11(this, view, inputContext, null);
 
             this._privateWhitePixelTexture = (TextureD3D11) this.CreateWhitePixelTexture();
 
             this.InfoSections.ForEach(x => x.Log(LoggerLevelD3D11.InstanceInfo));
 
-            this.ScissorRect = new Rectangle(0, 0, window.Size.X, window.Size.Y);
+            this.ScissorRect = new Rectangle(0, 0, view.Size.X, view.Size.Y);
         }
 
         private void CreateSwapchainResources() {

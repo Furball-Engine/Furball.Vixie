@@ -29,7 +29,7 @@ namespace Furball.Vixie.Backends.Veldrid {
         public GraphicsBackend ChosenBackend;
         
         internal Matrix4x4       ProjectionMatrix;
-        private  IWindow         _window;
+        private  IView         _view;
         private  ImGuiController _imgui;
 
         internal ResourceLayout SamplerResourceLayout;
@@ -45,22 +45,22 @@ namespace Furball.Vixie.Backends.Veldrid {
         private bool                    _screenshotQueued;
         private Rectangle               _lastScissor;
 
-        public override void Initialize(IWindow window, IInputContext inputContext) {
-            this._window = window;
+        public override void Initialize(IView view, IInputContext inputContext) {
+            this._view = view;
             
             GraphicsDeviceOptions options = new() {
-                SyncToVerticalBlank               = window.VSync,
-                Debug                             = window.API.Flags.HasFlag(ContextFlags.Debug),
+                SyncToVerticalBlank               = view.VSync,
+                Debug                             = view.API.Flags.HasFlag(ContextFlags.Debug),
                 ResourceBindingModel              = ResourceBindingModel.Improved,
                 PreferStandardClipSpaceYDirection = true
             };
 
-            this.GraphicsDevice     = window.CreateGraphicsDevice(options, PrefferedBackend);
+            this.GraphicsDevice     = view.CreateGraphicsDevice(options, PrefferedBackend);
             this.ResourceFactory    = this.GraphicsDevice.ResourceFactory;
             this.CommandList = this.ResourceFactory.CreateCommandList();
 
             //we do a little trolling
-            if(this.GraphicsDevice.BackendType is GraphicsBackend.OpenGL or GraphicsBackend.OpenGLES && !window.VSync) {
+            if(this.GraphicsDevice.BackendType is GraphicsBackend.OpenGL or GraphicsBackend.OpenGLES && !view.VSync) {
                 this.GraphicsDevice.SyncToVerticalBlank = true;
                 this.GraphicsDevice.SyncToVerticalBlank = false;
             }
@@ -158,7 +158,7 @@ namespace Furball.Vixie.Backends.Veldrid {
 
             this.CreateFramebuffer(this.GraphicsDevice.SwapchainFramebuffer.Width, this.GraphicsDevice.SwapchainFramebuffer.Height);
 
-            this._imgui = new ImGuiController(this.GraphicsDevice, this.RenderFramebuffer.OutputDescription, window, inputContext);
+            this._imgui = new ImGuiController(this.GraphicsDevice, this.RenderFramebuffer.OutputDescription, view, inputContext);
 
             for (int i = 0; i < MAX_TEXTURE_UNITS; i++) {
                 ResourceLayout layout = this.ResourceFactory.CreateResourceLayout(new(new ResourceLayoutElementDescription[] {
@@ -187,7 +187,7 @@ namespace Furball.Vixie.Backends.Veldrid {
             
             this.InfoSections.ForEach(x => x.Log(LoggerLevelVeldrid.InstanceInfo));
 
-            this._lastScissor = new Rectangle(0, 0, window.Size.X, window.Size.Y);
+            this._lastScissor = new Rectangle(0, 0, view.Size.X, view.Size.Y);
         }
         
 
@@ -351,7 +351,7 @@ namespace Furball.Vixie.Backends.Veldrid {
             }
         }
         public override void SetFullScissorRect() {
-            this._lastScissor = new Rectangle(0, 0, this._window.Size.X, this._window.Size.Y);
+            this._lastScissor = new Rectangle(0, 0, this._view.Size.X, this._view.Size.Y);
             this.CommandList.SetFullScissorRect(0);
         }
         public override TextureRenderTarget CreateRenderTarget(uint width, uint height) => new TextureRenderTargetVeldrid(this, width, height);

@@ -42,7 +42,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
         /// </summary>
         internal ImGuiController ImGuiController;
         public   bool          RunImGui = true;
-        internal IWindow       Window;
+        internal IView         View;
         private  bool          _screenshotQueued;
         private  Vector2D<int> _Viewport;
         private  Rectangle     _lastScissor;
@@ -63,19 +63,19 @@ namespace Furball.Vixie.Backends.OpenGL41 {
                 Logger.Log($"Enabling multi-texture bind!", LoggerLevelOpenGL41.InstanceInfo);
             }
         }
-        
+
         /// <summary>
         /// Used to Initialize the Backend
         /// </summary>
-        /// <param name="window"></param>
+        /// <param name="view"></param>
         /// <param name="inputContext"></param>
         /// <param name="game"></param>
-        public override void Initialize(IWindow window, IInputContext inputContext) {
-            this.gl       = window.CreateOpenGL();
+        public override void Initialize(IView view, IInputContext inputContext) {
+            this.gl       = view.CreateOpenGL();
             this.legacyGl = Silk.NET.OpenGL.Legacy.GL.GetApi(this.gl.Context);
             this.CheckError("create opengl");
 
-            this.Window = window;
+            this.View = view;
             
 #if DEBUGWITHGL
             unsafe {
@@ -94,7 +94,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
 
             this.gl.Enable(EnableCap.ScissorTest);
 
-            this.ImGuiController = new ImGuiController(this.legacyGl, window, inputContext);
+            this.ImGuiController = new ImGuiController(this.legacyGl, view, inputContext);
             this.CheckError("create imguicontroller");
             
             BackendInfoSection mainSection = new BackendInfoSection("OpenGL Info");
@@ -115,11 +115,11 @@ namespace Furball.Vixie.Backends.OpenGL41 {
 
             this.InfoSections.ForEach(x => x.Log(LoggerLevelOpenGL41.InstanceInfo));
             
-            window.Closing += delegate {
+            view.Closing += delegate {
                 this.RunImGui = false;
             };
-            this._Viewport    = new Vector2D<int>(window.Size.X, window.Size.Y);
-            this._lastScissor = new(0, 0, window.FramebufferSize.X, window.FramebufferSize.Y);
+            this._Viewport    = new Vector2D<int>(view.Size.X, view.Size.Y);
+            this._lastScissor = new(0, 0, view.FramebufferSize.X, view.FramebufferSize.Y);
         }
 
         public void CheckError(string message) {
@@ -214,6 +214,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
         /// </summary>
         public override void Clear() {
             this.gl.Clear(ClearBufferMask.ColorBufferBit);
+            this.gl.ClearColor(0, 0, 0, 1);
         }
         public override void TakeScreenshot() {
             this._screenshotQueued = true;
