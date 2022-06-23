@@ -158,10 +158,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
         /// <param name="width">New width</param>
         /// <param name="height">New height</param>
         public override void HandleWindowSizeChange(int width, int height) {
-            this.gl.Viewport(0, 0, (uint)width, (uint)height);
-            this._Viewport = new Vector2D<int>(width, height);
-
-            this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, height, 0, 1f, 0f);
+            
         }
         /// <summary>
         /// Used to handle the Framebuffer Resizing
@@ -171,7 +168,10 @@ namespace Furball.Vixie.Backends.OpenGL41 {
         public override void HandleFramebufferResize(int width, int height) {
             this.gl.Viewport(0, 0, (uint)width, (uint)height);
             this._Viewport = new Vector2D<int>(width, height);
+            
+            this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, height, 0, 1f, 0f);
         }
+        
         public override Rectangle ScissorRect {
             get => this._lastScissor;
             set {

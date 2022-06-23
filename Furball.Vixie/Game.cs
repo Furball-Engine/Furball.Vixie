@@ -165,6 +165,8 @@ namespace Furball.Vixie {
             GraphicsBackend.Current.EndScene();
 
             GraphicsBackend.Current.Present();
+            
+            GraphicsBackend.Current.SetFullScissorRect();
         }
         /// <summary>
         /// Draw Method, do your Drawing work in there
