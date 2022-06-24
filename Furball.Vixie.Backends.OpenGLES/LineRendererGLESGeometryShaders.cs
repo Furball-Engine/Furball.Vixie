@@ -123,7 +123,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
             this._lineShaderGles
                 .LockingBind()
                 .SetUniform("u_mvp",           this._backend.ProjectionMatrix)
-                .SetUniform("u_viewport_size", (float) this._backend.Window.Size.X, (float) this._backend.Window.Size.Y)
+                .SetUniform("u_viewport_size", (float) this._backend.View.Size.X, (float) this._backend.View.Size.Y)
                 .SetUniform("u_aa_radius",     0f,                                  0f);
 
             //Bind the Buffer and Array

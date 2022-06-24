@@ -71,8 +71,8 @@ namespace Furball.Vixie.Backends.OpenGL20 {
             }
         }
 
-        public override void Initialize(IWindow window, IInputContext inputContext) {
-            this.gl = window.CreateLegacyOpenGL();
+        public override void Initialize(IView view, IInputContext inputContext) {
+            this.gl = view.CreateLegacyOpenGL();
 
             //TODO: Lets just assume they have it for now :^)
             this.framebufferObjectEXT = new ExtFramebufferObject(this.gl.Context);
@@ -93,7 +93,7 @@ namespace Furball.Vixie.Backends.OpenGL20 {
             this.gl.Enable(EnableCap.Texture2D);
             this.gl.Enable(EnableCap.ScissorTest);
 
-            this._imgui = new ImGuiController(this.gl, window, inputContext);
+            this._imgui = new ImGuiController(this.gl, view, inputContext);
             
             BackendInfoSection mainSection = new BackendInfoSection("OpenGL Info");
             mainSection.Contents.Add(("OpenGL Version", this.gl.GetStringS(StringName.Version)));
@@ -105,10 +105,10 @@ namespace Furball.Vixie.Backends.OpenGL20 {
 
             this.InfoSections.ForEach(x => x.Log(LoggerLevelOpenGL20.InstanceInfo));
             
-            window.Closing += delegate {
+            view.Closing += delegate {
                 this.RunImGui = false;
             };
-            this._fbSize = new Vector2D<int>(window.Size.X, window.Size.Y);
+            this._fbSize = new Vector2D<int>(view.Size.X, view.Size.Y);
         }
 
         /// <summary>

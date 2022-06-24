@@ -17,16 +17,29 @@ namespace Furball.Vixie {
         /// <summary>
         /// Actual Game Window
         /// </summary>
+        internal IView GameView;
         internal IWindow GameWindow;
         /// <summary>
         /// Current Window State
         /// </summary>
         public WindowState WindowState { get; internal set; }
 
+        public bool ViewOnly { get; internal set; } = false;
+
         public Vector2 WindowSize { get; private set; }
         public bool Fullscreen {
-            get => this.GameWindow.WindowState == WindowState.Fullscreen;
-            set => this.GameWindow.WindowState = value ? WindowState.Fullscreen : WindowState.Normal;
+            get {
+                if (this.ViewOnly)
+                    throw new NotSupportedException("No fullscreen on view only platforms!");
+
+                return this.GameWindow.WindowState == WindowState.Fullscreen;
+            }
+            set {
+                if (this.ViewOnly)
+                    throw new NotSupportedException("No fullscreen on view only platforms!");
+
+                this.GameWindow.WindowState = value ? WindowState.Fullscreen : WindowState.Normal;
+            }
         }
         
         public IInputContext InputContext;
@@ -40,29 +53,35 @@ namespace Furball.Vixie {
             this._windowOptions = windowOptions;
         }
 
-        public nint GetWindowHandle() => this.GameWindow.Handle;
+        public nint GetWindowHandle() => this.GameView.Handle;
 
-        public IMonitor Monitor => this.GameWindow.Monitor;
-        
+        public IMonitor Monitor => this.ViewOnly ? null : this.GameWindow.Monitor;
+
         public void SetWindowSize(int width, int height) {
+            if (ViewOnly)
+                throw new NotSupportedException("You cant set window size on a view only platform!");
+            
             this.GameWindow.Size = new Vector2D<int>(width, height);
             this.UpdateProjectionAndSize(width, height);
         }
 
         public void SetTargetFramerate(int framerate) {
-            this.GameWindow.FramesPerSecond = framerate;
+            this.GameView.FramesPerSecond = framerate;
         }
 
         public int GetTargetFramerate() {
-            return (int)this.GameWindow.FramesPerSecond;
+            return (int)this.GameView.FramesPerSecond;
         }
         
         public void SetWindowTitle(string title) {
+            if (ViewOnly)
+                throw new NotSupportedException("You cant set the window title on a view only platform!");
+            
             this.GameWindow.Title = title;
         }
 
         public void Close() {
-            this.GameWindow.Close();
+            this.GameView.Close();
         }
 
         private void UpdateProjectionAndSize(int width, int height) {
@@ -71,6 +90,8 @@ namespace Furball.Vixie {
             GraphicsBackend.Current.HandleWindowSizeChange(width, height);
         }
 
+        internal bool RequestViewOnly = false;
+        
         /// <summary>
         /// Creates the Window and grabs the OpenGL API of Window
         /// </summary>
@@ -160,24 +181,29 @@ namespace Furball.Vixie {
 
                 this._windowOptions.ShouldSwapAutomatically = false;
             }
-            
-            this.GameWindow = Window.Create(this._windowOptions);
+
+            if (this.RequestViewOnly) {
+                this.GameView = Window.GetView(new ViewOptions(this._windowOptions));
+                this.ViewOnly = true;
+            }
+            else
+                this.GameView = this.GameWindow = Window.Create(this._windowOptions);
 
             if (this.Backend == Backend.Veldrid) {
-                this.GameWindow.IsContextControlDisabled = true;
+                this.GameView.IsContextControlDisabled = true;
             }
             
-            this.GameWindow.FramebufferResize += newSize => {
+            this.GameView.FramebufferResize += newSize => {
                 this.UpdateProjectionAndSize(newSize.X, newSize.Y);
             };
             
-            this.GameWindow.Closing += OnWindowClosing;
+            this.GameView.Closing += this.OnViewClosing;
         }
         public void SetupGraphicsApi() {
             GraphicsBackend.SetBackend(this.Backend);
             Global.GameInstance.SetApiFeatureLevels();
             GraphicsBackend.Current.SetMainThread();
-            GraphicsBackend.Current.Initialize(this.GameWindow, this.InputContext);
+            GraphicsBackend.Current.Initialize(this.GameView, this.InputContext);
             
             this.UpdateProjectionAndSize(this._windowOptions.Size.X, this._windowOptions.Size.Y);
         }
@@ -185,10 +211,10 @@ namespace Furball.Vixie {
         /// Runs the Window
         /// </summary>
         public void RunWindow() {
-            this.GameWindow.Run();
+            this.GameView.Run();
         }
         
-        private void OnWindowClosing() {
+        private void OnViewClosing() {
             this.Dispose();
         }
         

@@ -123,7 +123,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             this._lineShaderGl41
                 .LockingBind()
                 .SetUniform("u_mvp",           this._backend.ProjectionMatrix)
-                .SetUniform("u_viewport_size", this._backend.Window.Size.X, this._backend.Window.Size.Y)
+                .SetUniform("u_viewport_size", this._backend.View.Size.X, this._backend.View.Size.Y)
                 .SetUniform("u_aa_radius",     0f,                                  0f);
 
             //Bind the Buffer and Array

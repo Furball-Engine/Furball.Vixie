@@ -31,7 +31,7 @@ namespace Furball.Vixie.Backends.Vulkan {
 
         private Instance                _instance;
         private Vk                      _vk;
-        private IWindow                 _window;
+        private IView                 _view;
         private ExtDebugUtils           _extDebugUtils;
         private DebugUtilsMessengerEXT? _messenger = null;
         private PhysicalDevice?         _physicalDevice;
@@ -47,10 +47,10 @@ namespace Furball.Vixie.Backends.Vulkan {
             "VK_EXT_debug_utils"
         };
 
-        public override unsafe void Initialize(IWindow window, IInputContext inputContext) {
-            this._window = window;
+        public override unsafe void Initialize(IView view, IInputContext inputContext) {
+            this._view = view;
 
-            if (_window.VkSurface == null) {
+            if (this._view.VkSurface == null) {
                 throw new NotSupportedException("The window was created without Vulkan support");
             }
             
@@ -58,11 +58,11 @@ namespace Furball.Vixie.Backends.Vulkan {
 
             this.PrintValidationLayers();
 
-            bool debug = window.API.Flags.HasFlag(ContextFlags.Debug);
+            bool debug = view.API.Flags.HasFlag(ContextFlags.Debug);
 
             #region Get required extensions
 
-            byte** required = this._window.VkSurface!.GetRequiredExtensions(out uint count);
+            byte** required = this._view.VkSurface!.GetRequiredExtensions(out uint count);
 
             uint   extensionCount = (uint)(count + (debug ? _Extensions.Length : 0));
             byte** extensions     = stackalloc byte*[(int)extensionCount];
@@ -117,7 +117,7 @@ namespace Furball.Vixie.Backends.Vulkan {
             if(!this._vk.TryGetInstanceExtension(instance, out this._vkSurface))
                 throw new Exception("Your device does not support KHR_SURFACE!");
 
-            this._surface = _window.VkSurface!.Create<AllocationCallbacks>(_instance.ToHandle(), null).ToSurface();
+            this._surface = this._view.VkSurface!.Create<AllocationCallbacks>(_instance.ToHandle(), null).ToSurface();
 
             #endregion
 
