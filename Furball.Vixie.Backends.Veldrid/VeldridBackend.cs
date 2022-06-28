@@ -245,12 +245,7 @@ namespace Furball.Vixie.Backends.Veldrid {
 
             this.CreateFramebuffer(this.GraphicsDevice.SwapchainFramebuffer.Width, this.GraphicsDevice.SwapchainFramebuffer.Height);
 
-            CommandList commandList = this.ResourceFactory.CreateCommandList();
-            commandList.Begin();
             this.SetFullScissorRect();
-            commandList.End();
-            this.GraphicsDevice.SubmitCommands(commandList);
-            this.GraphicsDevice.WaitForIdle();
         }
         public override IQuadRenderer CreateTextureRenderer() => new QuadRendererVeldrid(this);
         public override ILineRenderer CreateLineRenderer()    => new LineRendererVeldrid(this);
@@ -347,8 +342,13 @@ namespace Furball.Vixie.Backends.Veldrid {
             }
         }
         public override void SetFullScissorRect() {
+            CommandList commandList = this.ResourceFactory.CreateCommandList();
+            commandList.Begin();
             this._lastScissor = new Rectangle(0, 0, this._view.Size.X, this._view.Size.Y);
-            this.CommandList.SetFullScissorRect(0);
+            commandList.SetFullScissorRect(0);
+            commandList.End();
+            this.GraphicsDevice.SubmitCommands(commandList);
+            this.GraphicsDevice.WaitForIdle();
         }
         public override TextureRenderTarget CreateRenderTarget(uint width, uint height) => new TextureRenderTargetVeldrid(this, width, height);
         
