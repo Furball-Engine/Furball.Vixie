@@ -218,7 +218,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
 
             this.CreateSwapchainResources();
 
-            this._projectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, height, 0, 1f, 0f);
+            this._projectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width / (float)height * 720f, 720, 0, 1f, 0f);
         }
 
         public override IQuadRenderer CreateTextureRenderer() {

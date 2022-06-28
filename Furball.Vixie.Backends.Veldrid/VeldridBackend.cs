@@ -235,7 +235,7 @@ namespace Furball.Vixie.Backends.Veldrid {
         }
         
         public void SetProjectionMatrix(uint width, uint height) {
-            this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, height, 0, 1f, 0f);
+            this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width / (float)height * 720f, 720, 0, 1f, 0f);
         }
 
         public override void HandleFramebufferResize(int width, int height) {

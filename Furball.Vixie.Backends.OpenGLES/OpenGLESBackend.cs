@@ -161,7 +161,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
             this.gl.Viewport(0, 0, (uint)width, (uint)height);
 
             this._fbSize          = new Vector2D<int>(width, height);
-            this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, height, 0, 1f, 0f);
+            this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width / (float)height * 720f, 720, 0, 1f, 0f);
         }
         /// <summary>
         /// Used to Create a Texture Renderer
