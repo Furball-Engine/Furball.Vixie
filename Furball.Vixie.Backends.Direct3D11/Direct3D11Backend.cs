@@ -203,7 +203,7 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             _debug?.Dispose();
         }
 
-        public override void HandleWindowSizeChange(int width, int height) {
+        public override void HandleFramebufferResize(int width, int height) {
             this._deviceContext.Flush();
 
             this.DestroySwapchainResources();
@@ -219,10 +219,6 @@ namespace Furball.Vixie.Backends.Direct3D11 {
             this.CreateSwapchainResources();
 
             this._projectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, height, 0, 1f, 0f);
-        }
-
-        public override void HandleFramebufferResize(int width, int height) {
-            this.HandleWindowSizeChange(width, height);
         }
 
         public override IQuadRenderer CreateTextureRenderer() {

@@ -322,9 +322,6 @@ namespace Furball.Vixie.Backends.Vulkan {
                 this._extDebugUtils.DestroyDebugUtilsMessenger(this._instance, this._messenger.Value, null);
             this._vk.DestroyInstance(this._instance, null);
         }
-        public override void HandleWindowSizeChange(int width, int height) {
-            throw new NotImplementedException();
-        }
         public override void HandleFramebufferResize(int width, int height) {
             throw new NotImplementedException();
         }

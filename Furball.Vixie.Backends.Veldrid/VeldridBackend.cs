@@ -234,26 +234,22 @@ namespace Furball.Vixie.Backends.Veldrid {
             
         }
         
-        public override void HandleWindowSizeChange(int width, int height) {
-            this.GraphicsDevice.ResizeMainWindow((uint)width, (uint)height);
-
-            this.SetProjectionMatrix((uint)width, (uint)height);
-            
-            this.CreateFramebuffer(this.GraphicsDevice.SwapchainFramebuffer.Width, this.GraphicsDevice.SwapchainFramebuffer.Height);
-        }
-
         public void SetProjectionMatrix(uint width, uint height) {
             this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, height, 0, 1f, 0f);
         }
 
         public override void HandleFramebufferResize(int width, int height) {
             this.GraphicsDevice.ResizeMainWindow((uint)width, (uint)height);
-            
+
+            this.SetProjectionMatrix((uint)width, (uint)height);
+
             this.CreateFramebuffer(this.GraphicsDevice.SwapchainFramebuffer.Width, this.GraphicsDevice.SwapchainFramebuffer.Height);
-            this.CommandList.Begin();
-            this.ScissorRect = new Rectangle(0, 0, width, height);
-            this.CommandList.End();
-            this.GraphicsDevice.SubmitCommands(this.CommandList);
+
+            CommandList commandList = this.ResourceFactory.CreateCommandList();
+            commandList.Begin();
+            this.SetFullScissorRect();
+            commandList.End();
+            this.GraphicsDevice.SubmitCommands(commandList);
             this.GraphicsDevice.WaitForIdle();
         }
         public override IQuadRenderer CreateTextureRenderer() => new QuadRendererVeldrid(this);

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Numerics;
-using System.Threading;
 using Furball.Vixie.Backends.OpenGL.Shared;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
@@ -154,16 +153,6 @@ namespace Furball.Vixie.Backends.OpenGLES {
             this.gl.Dispose();
         }
         /// <summary>
-        /// Used to Handle the Window size Changing
-        /// </summary>
-        /// <param name="width">New width</param>
-        /// <param name="height">New height</param>
-        public override void HandleWindowSizeChange(int width, int height) {
-            this.gl.Viewport(0, 0, (uint)width, (uint)height);
-
-            this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, height, 0, 1f, 0f);
-        }
-        /// <summary>
         /// Used to handle the Framebuffer Resizing
         /// </summary>
         /// <param name="width">New width</param>
@@ -171,7 +160,8 @@ namespace Furball.Vixie.Backends.OpenGLES {
         public override void HandleFramebufferResize(int width, int height) {
             this.gl.Viewport(0, 0, (uint)width, (uint)height);
 
-            this._fbSize = new Vector2D<int>(width, height);
+            this._fbSize          = new Vector2D<int>(width, height);
+            this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, height, 0, 1f, 0f);
         }
         /// <summary>
         /// Used to Create a Texture Renderer

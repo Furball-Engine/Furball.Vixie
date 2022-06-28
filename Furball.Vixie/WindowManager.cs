@@ -85,9 +85,7 @@ namespace Furball.Vixie {
         }
 
         private void UpdateProjectionAndSize(int width, int height) {
-            this.WindowSize       = new Vector2(width, height);
-
-            GraphicsBackend.Current.HandleWindowSizeChange(width, height);
+            this.WindowSize = new Vector2(width, height);
         }
 
         internal bool RequestViewOnly = false;

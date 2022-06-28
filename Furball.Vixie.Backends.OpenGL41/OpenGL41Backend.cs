@@ -153,14 +153,6 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             this.gl.Dispose();
         }
         /// <summary>
-        /// Used to Handle the Window size Changing
-        /// </summary>
-        /// <param name="width">New width</param>
-        /// <param name="height">New height</param>
-        public override void HandleWindowSizeChange(int width, int height) {
-            
-        }
-        /// <summary>
         /// Used to handle the Framebuffer Resizing
         /// </summary>
         /// <param name="width">New width</param>

@@ -132,12 +132,6 @@ namespace Furball.Vixie.Backends.OpenGL20 {
             this.gl.Dispose();
         }
 
-        public override void HandleWindowSizeChange(int width, int height) {
-            this.gl.Viewport(0, 0, (uint)width, (uint)height);
-
-            this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, height, 0, 0, 1);
-        }
-
         public override void HandleFramebufferResize(int width, int height) {
             this.gl.Viewport(0, 0, (uint)width, (uint)height);
 
