@@ -124,8 +124,8 @@ namespace Furball.Vixie {
                 Backend.Direct3D11   => ContextFlags.Debug,
 #else
                 Backend.OpenGLES => ContextFlags.Default,
-                Backend.OpenGL41 => ContextFlags.Default,
-                Backend.OpenGL20 => ContextFlags.Default,
+                Backend.ModernOpenGL => ContextFlags.Default,
+                Backend.LegacyOpenGL => ContextFlags.Default,
                 Backend.Direct3D11 => ContextFlags.Default,
                 Backend.Veldrid  => ContextFlags.ForwardCompatible,
                 Backend.Vulkan   => ContextFlags.Default,
