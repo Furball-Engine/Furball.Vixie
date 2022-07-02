@@ -345,6 +345,7 @@ namespace Furball.Vixie.Backends.Veldrid {
             CommandList commandList = this.ResourceFactory.CreateCommandList();
             commandList.Begin();
             this._lastScissor = new Rectangle(0, 0, this._view.Size.X, this._view.Size.Y);
+            commandList.SetFramebuffer(this.RenderFramebuffer);
             commandList.SetFullScissorRect(0);
             commandList.End();
             this.GraphicsDevice.SubmitCommands(commandList);
