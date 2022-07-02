@@ -202,8 +202,8 @@ namespace Furball.Vixie {
             Global.GameInstance.SetApiFeatureLevels();
             GraphicsBackend.Current.SetMainThread();
             GraphicsBackend.Current.Initialize(this.GameView, this.InputContext);
-            
-            this.UpdateProjectionAndSize(this._windowOptions.Size.X, this._windowOptions.Size.Y);
+
+            GraphicsBackend.Current.HandleFramebufferResize(this.GameView.Size.X, this.GameView.Size.Y);
         }
         /// <summary>
         /// Runs the Window
