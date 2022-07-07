@@ -154,7 +154,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             this._vertexPointer->Positions[0] = begin.X;
             this._vertexPointer->Positions[1] = begin.Y;
             this._vertexPointer->Positions[2] = 0;
-            this._vertexPointer->Positions[3] = thickness;
+            this._vertexPointer->Positions[3] = thickness * this._backend.VerticalRatio;
             this._vertexPointer->Color[0]     = color.Rf;
             this._vertexPointer->Color[1]     = color.Gf;
             this._vertexPointer->Color[2]     = color.Bf;
@@ -165,7 +165,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             this._vertexPointer->Positions[0] = end.X;
             this._vertexPointer->Positions[1] = end.Y;
             this._vertexPointer->Positions[2] = 0;
-            this._vertexPointer->Positions[3] = thickness;
+            this._vertexPointer->Positions[3] = thickness * this._backend.VerticalRatio;
             this._vertexPointer->Color[0]     = color.Rf;
             this._vertexPointer->Color[1]     = color.Gf;
             this._vertexPointer->Color[2]     = color.Bf;

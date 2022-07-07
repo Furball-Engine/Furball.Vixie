@@ -107,8 +107,8 @@ namespace Furball.Vixie.Backends.OpenGL20 {
             if (this._batchedLines == 0 || this.lastThickness == 0) return;
 
             this._program.Bind();
-            
-            this._gl.LineWidth(this.lastThickness);
+
+            this._gl.LineWidth(this.lastThickness * this._backend.VerticalRatio);
 
             this._gl.BindBuffer(GLEnum.ArrayBuffer, this._arrayBuf);
             

@@ -6,7 +6,6 @@ using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers;
 using Furball.Vixie.Helpers.Helpers;
 using Silk.NET.OpenGLES;
-using GL=Silk.NET.OpenGLES.GL;
 
 namespace Furball.Vixie.Backends.OpenGLES {
     public class LineRendererGLESLinePrimitiveBatcher : ILineRenderer {
@@ -115,7 +114,7 @@ namespace Furball.Vixie.Backends.OpenGLES {
             //Buffer the data
             this._gl.BufferSubData<LineData>(GLEnum.ArrayBuffer, 0, (nuint)(this._batchedLines * sizeof(LineData)), this._lineData);
 
-            this._gl.LineWidth(this.lastThickness);
+            this._gl.LineWidth(this.lastThickness * this._backend.VerticalRatio);
             this._gl.DrawArrays(PrimitiveType.Lines, 0, (uint)this._batchedLines);
 
             //Unbind buffer

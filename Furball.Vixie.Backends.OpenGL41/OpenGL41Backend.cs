@@ -161,6 +161,8 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             this.gl.Viewport(0, 0, (uint)width, (uint)height);
             this._Viewport = new Vector2D<int>(width, height);
 
+            this.VerticalRatio = width / 1280f;
+            
             this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width / (float)height * 720f, 720, 0, 1f, 0f);
         }
         
@@ -312,6 +314,10 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             Console.WriteLine(stringMessage);
         }
         public GLBackendType             GetType()     => GLBackendType.Modern;
+        public float VerticalRatio {
+            get;
+            set;
+        }
         public GL                        GetModernGL() => this.gl;
         public Silk.NET.OpenGL.Legacy.GL GetLegacyGL() => throw new WrongGLBackendException();
         public Silk.NET.OpenGLES.GL      GetGLES()     => throw new WrongGLBackendException();

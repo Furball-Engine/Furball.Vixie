@@ -10,9 +10,11 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
     public interface IGLBasedBackend {
         public GLBackendType GetType();
 
-        public GL GetModernGL();
+        public float VerticalRatio { get; set; }
+        
+        public GL                        GetModernGL();
         public Silk.NET.OpenGL.Legacy.GL GetLegacyGL();
-        public Silk.NET.OpenGLES.GL GetGLES();
+        public Silk.NET.OpenGLES.GL      GetGLES();
 
         public uint GenBuffer();
 

@@ -135,6 +135,8 @@ namespace Furball.Vixie.Backends.OpenGL20 {
         public override void HandleFramebufferResize(int width, int height) {
             this.gl.Viewport(0, 0, (uint)width, (uint)height);
 
+            this.VerticalRatio = width / 1280f;
+
             this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width / (float)height * 720f, 720, 0, 0, 1);
             this._fbSize          = new Vector2D<int>(width, height);
         }
@@ -217,9 +219,13 @@ namespace Furball.Vixie.Backends.OpenGL20 {
         }
 
         public new GLBackendType        GetType()     => GLBackendType.Legacy;
-        public     Silk.NET.OpenGL.GL   GetModernGL() => throw new WrongGLBackendException();
-        public     GL                   GetLegacyGL() => this.gl;
-        public     Silk.NET.OpenGLES.GL GetGLES()     => throw new WrongGLBackendException();
+        public float VerticalRatio {
+            get;
+            set;
+        }
+        public Silk.NET.OpenGL.GL   GetModernGL() => throw new WrongGLBackendException();
+        public GL                   GetLegacyGL() => this.gl;
+        public Silk.NET.OpenGLES.GL GetGLES()     => throw new WrongGLBackendException();
 
         public uint GenBuffer() => this.gl.GenBuffer();
 
