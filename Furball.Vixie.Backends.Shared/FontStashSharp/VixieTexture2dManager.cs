@@ -1,3 +1,4 @@
+using System;
 using System.Drawing;
 using System.Numerics;
 using FontStashSharp.Interfaces;
@@ -12,7 +13,13 @@ namespace Furball.Vixie.Backends.Shared.FontStashSharp {
         }
 
         public object CreateTexture(int width, int height) {
-            return this._backend.CreateTexture((uint) width, (uint) height);
+            Texture tex = this._backend.CreateTexture((uint)width, (uint)height);
+
+#if DEBUG
+            Global.TRACKED_TEXTURES.Add(new WeakReference<Texture>(tex));
+#endif
+
+            return tex;
         }
 
         public Point GetTextureSize(object texture) {
