@@ -13,6 +13,7 @@ namespace Furball.Vixie {
         /// The Window's Creation Options
         /// </summary>
         private WindowOptions _windowOptions;
+        public bool    Debug   => this._windowOptions.API.Flags.HasFlag(ContextFlags.Debug);
         public Backend Backend { get; internal set; }
         /// <summary>
         /// Actual Game Window

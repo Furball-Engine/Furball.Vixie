@@ -156,6 +156,7 @@ namespace Furball.Vixie {
         /// Used to set the feature levels of all the APIs you are using
         /// </summary>
         public virtual void SetApiFeatureLevels() {}
+        private double _trackedDelta = 0;
         /// <summary>
         /// Update Method, Do your Updating work in here
         /// </summary>
@@ -165,6 +166,14 @@ namespace Furball.Vixie {
             this.Components.Update(deltaTime);
 
             DisposeQueue.DoDispose();
+
+            this._trackedDelta += deltaTime;
+            if (this._trackedDelta > 5 && this.WindowManager.Debug) {
+                Backends.Shared.Global.TRACKED_TEXTURES.RemoveAll(x => !x.TryGetTarget(out _));
+                Backends.Shared.Global.TRACKED_RENDER_TARGETS.RemoveAll(x => !x.TryGetTarget(out _));
+
+                this._trackedDelta = 0;
+            }
         }
         /// <summary>
         /// Sets up and ends the scene
