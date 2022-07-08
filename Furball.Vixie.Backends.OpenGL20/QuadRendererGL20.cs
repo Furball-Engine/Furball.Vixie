@@ -152,17 +152,16 @@ namespace Furball.Vixie.Backends.OpenGL20 {
             this._gl.BindBuffer(GLEnum.ArrayBuffer, 0);
         }
 
-        private int GetTextureId(Texture tex) {
+        private int GetTextureId(TextureGL tex) {
             this._backend.CheckThread();
             if (this.UsedTextures != 0)
                 for (int i = 0; i < this.UsedTextures; i++) {
-                    TextureGL tex2 = this.TextureArray[i];
+                    uint tex2 = this.TextureArray[i];
 
-                    if (tex2 == null) break;
-                    if (tex  == tex2) return i;
+                    if (tex.TextureId == tex2) return i;
                 }
 
-            this.TextureArray[this.UsedTextures] = (TextureGL)tex;
+            this.TextureArray[this.UsedTextures] = tex.TextureId;
             this.UsedTextures++;
 
             return this.UsedTextures - 1;
@@ -174,7 +173,7 @@ namespace Furball.Vixie.Backends.OpenGL20 {
                 throw new Exception("Begin() has not been called!");
 
             //Ignore calls with invalid textures
-            if (texture == null || texture is not TextureGL textureGl20)
+            if (texture is not TextureGL textureGl)
                 return;
 
             if (scale.X == 0 || scale.Y == 0 || colorOverride.A == 0) return;
@@ -189,13 +188,13 @@ namespace Furball.Vixie.Backends.OpenGL20 {
             this.BatchedSizes[this.BatchedQuads]                = texture.Size * scale;
             this.BatchedRotationOrigins[this.BatchedQuads]      = rotOrigin;
             this.BatchedRotations[this.BatchedQuads]            = rotation;
-            this.BatchedTextureIds[this.BatchedQuads]           = this.GetTextureId(texture);
+            this.BatchedTextureIds[this.BatchedQuads]           = this.GetTextureId(textureGl);
             this.BatchedTextureCoordinates[this.BatchedQuads].X = 0;
             this.BatchedTextureCoordinates[this.BatchedQuads].Y = 0;
             this.BatchedTextureCoordinates[this.BatchedQuads].Z = texFlip == TextureFlip.FlipHorizontal ? -1 : 1;
             this.BatchedTextureCoordinates[this.BatchedQuads].W = texFlip == TextureFlip.FlipVertical ? -1 : 1;
 
-            if(textureGl20.IsFramebufferTexture)
+            if (textureGl.IsFramebufferTexture)
                 this.BatchedTextureCoordinates[this.BatchedQuads].W *= -1;
 
             this.BatchedQuads++;
@@ -207,7 +206,7 @@ namespace Furball.Vixie.Backends.OpenGL20 {
                 throw new Exception("Begin() has not been called!");
 
             //Ignore calls with invalid textures
-            if (texture == null || texture is not TextureGL)
+            if (texture is not TextureGL textureGl)
                 return;
 
             if (scale.X == 0 || scale.Y == 0 || colorOverride.A == 0) return;
@@ -230,9 +229,9 @@ namespace Furball.Vixie.Backends.OpenGL20 {
             this.BatchedSizes[this.BatchedQuads]                = size;
             this.BatchedRotationOrigins[this.BatchedQuads]      = rotOrigin;
             this.BatchedRotations[this.BatchedQuads]            = rotation;
-            this.BatchedTextureIds[this.BatchedQuads]           = this.GetTextureId(texture);
-            this.BatchedTextureCoordinates[this.BatchedQuads].X = (float)sourceRect.X                         / texture.Width;
-            this.BatchedTextureCoordinates[this.BatchedQuads].Y = (float)sourceRect.Y                         / texture.Height;
+            this.BatchedTextureIds[this.BatchedQuads]           = this.GetTextureId(textureGl);
+            this.BatchedTextureCoordinates[this.BatchedQuads].X = (float)sourceRect.X                       / texture.Width;
+            this.BatchedTextureCoordinates[this.BatchedQuads].Y = (float)sourceRect.Y                       / texture.Height;
             this.BatchedTextureCoordinates[this.BatchedQuads].Z = (float)sourceRect.Width  / texture.Width  * (texFlip == TextureFlip.FlipHorizontal ? -1 : 1);
             this.BatchedTextureCoordinates[this.BatchedQuads].W = (float)sourceRect.Height / texture.Height * (texFlip == TextureFlip.FlipVertical ? -1 : 1);
 
@@ -268,7 +267,7 @@ namespace Furball.Vixie.Backends.OpenGL20 {
         private float[]         BatchedTextureIds         = new float[BATCH_COUNT];
         private Vector4[]       BatchedTextureCoordinates = new Vector4[BATCH_COUNT];
 
-        private          TextureGL[]          TextureArray = new TextureGL[32];
+        private readonly uint[]                 TextureArray = new uint[32];
         private readonly VixieFontStashRenderer _textRenderer;
 
         private unsafe void Flush() {
@@ -279,12 +278,10 @@ namespace Furball.Vixie.Backends.OpenGL20 {
 
             //Bind all the textures
             for (var i = 0; i < this.UsedTextures; i++) {
-                TextureGL tex = this.TextureArray[i];
-
-                if (tex == null) continue;
+                uint tex = this.TextureArray[i];
 
                 this._gl.ActiveTexture(TextureUnit.Texture0 + i);
-                this._gl.BindTexture(TextureTarget.Texture2D, tex.TextureId);
+                this._gl.BindTexture(TextureTarget.Texture2D, tex);
             }
             this._backend.CheckError("bind texes");
 
