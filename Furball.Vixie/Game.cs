@@ -26,6 +26,8 @@ namespace Furball.Vixie {
         /// </summary>
         public GameComponentCollection Components { get; internal set;}
 
+        private bool _doDisplayLoadingScreen;
+
         /// <summary>
         /// Creates a Game Window using `options`
         /// </summary>
@@ -93,6 +95,9 @@ namespace Furball.Vixie {
             this.WindowManager.SetupGraphicsApi();
 
             Global.WindowManager = this.WindowManager;
+
+            this._doDisplayLoadingScreen = true;
+            Global.WindowManager.GameView.DoRender();
 
             this.Initialize();
         }
@@ -182,8 +187,13 @@ namespace Furball.Vixie {
         private void VixieDraw(double deltaTime) {
             GraphicsBackend.Current.BeginScene();
 
-            this.Draw(deltaTime);
-            
+            if (this._doDisplayLoadingScreen) {
+                this.DrawLoadingScreen();
+                this._doDisplayLoadingScreen = false;
+            } else {
+                this.Draw(deltaTime);
+            }
+
             GraphicsBackend.Current.EndScene();
 
             GraphicsBackend.Current.Present();
@@ -198,6 +208,7 @@ namespace Furball.Vixie {
             this.Components.Draw(deltaTime);
             GraphicsBackend.Current.ImGuiDraw(deltaTime);
         }
+        protected virtual void DrawLoadingScreen() {}
         /// <summary>
         /// Dispose any IDisposables and other things left to clean up here
         /// </summary>
