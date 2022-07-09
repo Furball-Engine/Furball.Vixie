@@ -146,17 +146,17 @@ namespace Furball.Vixie.Backends.Veldrid {
             if (this._isDisposed) return;
             
             this._isDisposed = true;
-            
-            DisposeQueue.Enqueue(this._pipeline);
-            DisposeQueue.Enqueue(this._indexBuffer);
-            DisposeQueue.Enqueue(this._projectionBuffer);
-            DisposeQueue.Enqueue(this._vertexBuffer);
-            DisposeQueue.Enqueue(this._instanceVertexBuffer);
-            DisposeQueue.Enqueue(this._projectionBufferResourceSet);
+
+            this._pipeline.Dispose();
+            this._indexBuffer.Dispose();
+            this._projectionBuffer.Dispose();
+            this._vertexBuffer.Dispose();
+            this._instanceVertexBuffer.Dispose();
+            this._projectionBufferResourceSet.Dispose();
         }
 
         ~LineRendererVeldrid() {
-            this.Dispose();
+            DisposeQueue.Enqueue(this);
         }
         
         public bool IsBegun {

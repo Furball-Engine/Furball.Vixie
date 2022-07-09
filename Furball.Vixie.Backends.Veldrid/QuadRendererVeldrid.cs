@@ -329,17 +329,17 @@ namespace Furball.Vixie.Backends.Veldrid {
             this._backend.CheckThread();
             if (this._isDisposed) return;
             this._isDisposed = true;
-            
-            DisposeQueue.Enqueue(this._pipeline);
-            DisposeQueue.Enqueue(this._indexBuffer);
-            DisposeQueue.Enqueue(this._projectionBuffer);
-            DisposeQueue.Enqueue(this._vertexBuffer);
-            DisposeQueue.Enqueue(this._instanceVertexBuffer);
-            DisposeQueue.Enqueue(this._projectionBufferResourceSet);
+
+            this._pipeline.Dispose();
+            this._indexBuffer.Dispose();
+            this._projectionBuffer.Dispose();
+            this._vertexBuffer.Dispose();
+            this._instanceVertexBuffer.Dispose();
+            this._projectionBufferResourceSet.Dispose();
         }
 
         ~QuadRendererVeldrid() {
-            this.Dispose();
+            DisposeQueue.Enqueue(this);
         }
         
         public void Draw(Texture texture, Vector2 position, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {
