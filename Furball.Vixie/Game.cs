@@ -40,7 +40,6 @@ namespace Furball.Vixie {
 
         private void RunInternal(WindowOptions options, Backend backend, bool requestViewOnly) {
             Backends.Shared.Global.LatestSupportedGL = OpenGLDetector.OpenGLDetector.GetLatestSupported();
-
             
             if (backend == Backend.None)
                 backend = GraphicsBackend.GetReccomendedBackend();
@@ -72,15 +71,15 @@ namespace Furball.Vixie {
             
             this.WindowManager.RunWindow();
         }
-        
-        public void RunViewOnly(WindowOptions options, Backend backend = Backend.None) {
+
+        protected void RunViewOnly(WindowOptions options, Backend backend = Backend.None) {
             this.RunInternal(options, backend, true);
         }
         
         /// <summary>
         /// Runs the Game
         /// </summary>
-        public void Run(WindowOptions options, Backend backend = Backend.None) {
+        protected void Run(WindowOptions options, Backend backend = Backend.None) {
             this.RunInternal(options, backend, false);
         }
 
