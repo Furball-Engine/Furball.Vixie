@@ -161,7 +161,7 @@ namespace Furball.Vixie.Backends.OpenGL41 {
             this.gl.Viewport(0, 0, (uint)width, (uint)height);
             this._Viewport = new Vector2D<int>(width, height);
 
-            this.VerticalRatio = width / 1280f;
+            this.VerticalRatio = height / 720f;
             
             this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width / (float)height * 720f, 720, 0, 1f, 0f);
         }
