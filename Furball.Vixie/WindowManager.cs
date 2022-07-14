@@ -27,7 +27,7 @@ namespace Furball.Vixie {
 
         public bool ViewOnly { get; internal set; } = false;
 
-        public Vector2 WindowSize { get; private set; }
+        public Vector2 WindowSize => new(this.GameView.FramebufferSize.X, this.GameView.FramebufferSize.Y);
         public bool Fullscreen {
             get {
                 if (this.ViewOnly)
@@ -86,7 +86,7 @@ namespace Furball.Vixie {
         }
 
         private void UpdateProjectionAndSize(int width, int height) {
-            this.WindowSize = new Vector2(width, height);
+            
         }
 
         internal bool RequestViewOnly = false;
