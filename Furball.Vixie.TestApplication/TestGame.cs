@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Helpers.Helpers;
 using ImGuiNET;
 using Kettu;
@@ -8,7 +9,7 @@ using SixLabors.ImageSharp;
 
 namespace Furball.Vixie.TestApplication {
     public class TestGame : Game {
-        public TestGame(WindowOptions options) {}
+        public TestGame() {}
 
         protected override void Initialize() {
             this.Components.Add(new BaseTestSelector());
@@ -24,6 +25,14 @@ namespace Furball.Vixie.TestApplication {
         private       double updateDelta = 5f;
         private const double UPDATE_RATE = 1f;
         private       long   alloccedMemory;
+        
+        public void Run(Backend backend = Backend.None) {
+            var options = WindowOptions.Default;
+
+            options.VSync = false;
+            
+            this.Run(options, backend);
+        }
         
         protected override void Draw(double deltaTime) {
             ImGui.Begin("Global Controls");
