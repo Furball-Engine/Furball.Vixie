@@ -261,7 +261,7 @@ namespace Furball.Vixie.Backends.Vulkan {
 
         private Instance                _instance;
         private Vk                      _vk;
-        private IWindow                 _window;
+        private IView                   _view;
         private PhysicalDeviceInfo      _physicalDeviceInfo;
         private Device                  _device;
         private SurfaceKHR              _surface;
@@ -281,9 +281,9 @@ namespace Furball.Vixie.Backends.Vulkan {
             var requiredExtensions = new List<string>();
             var optionalExtensions = new List<string>();
 
-            Debug.Assert(this._window.VkSurface is not null);
+            Debug.Assert(this._view.VkSurface is not null);
             requiredExtensions.AddRange(SilkMarshal.PtrToStringArray(
-                                            (nint)this._window.VkSurface!.GetRequiredExtensions(
+                                            (nint)this._view.VkSurface!.GetRequiredExtensions(
                                                 out var windowExtensionCount),
                                             (int)windowExtensionCount));
             requiredExtensions.Add(KhrSurface.ExtensionName);
@@ -519,11 +519,11 @@ namespace Furball.Vixie.Backends.Vulkan {
             return true;
         }
 
-        public override unsafe void Initialize(IWindow window, IInputContext inputContext) {
-            this._window = window;
+        public override unsafe void Initialize(IView window, IInputContext inputContext) {
+            this._view = window;
 
-            if (_window.VkSurface == null) {
-                throw new NotSupportedException("The window was created without Vulkan support");
+            if (this._view.VkSurface == null) {
+                throw new NotSupportedException("The view was created without Vulkan support");
             }
 
             _vk = Vk.GetApi();
@@ -549,7 +549,7 @@ namespace Furball.Vixie.Backends.Vulkan {
             this._vk.TryGetInstanceExtension(this._instance, out this._extDebugUtils);
             this._vk.TryGetInstanceExtension(this._instance, out this._vkToolingInfo);
 
-            this._surface = _window.VkSurface!.Create<AllocationCallbacks>(_instance.ToHandle(), null).ToSurface();
+            this._surface = this._view.VkSurface!.Create<AllocationCallbacks>(_instance.ToHandle(), null).ToSurface();
 
             if (_debug)
                 this.CreateDebugMessenger();
@@ -695,9 +695,6 @@ namespace Furball.Vixie.Backends.Vulkan {
                 this._extDebugUtils.DestroyDebugUtilsMessenger(this._instance, this._messenger.Value, null);
             this._vkSurface.DestroySurface(this._instance, this._surface, null);
             this._vk.DestroyInstance(this._instance, null);
-        }
-        public override void HandleWindowSizeChange(int width, int height) {
-            throw new NotImplementedException();
         }
         public override void HandleFramebufferResize(int width, int height) {
             throw new NotImplementedException();
