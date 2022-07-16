@@ -274,6 +274,9 @@ namespace Furball.Vixie.Backends.OpenGL.Shared {
             this._backend.GlCheckThread();
             this.LockingBind();
 
+            if (sizeof(pDataType) * data.Length < sizeof(Rgba32) * this.Size.X * this.Size.Y)
+                throw new Exception("Data is too small!");
+            
             fixed(void* d = data)
                 this._backend.TexImage2D(TextureTarget.Texture2D, level, InternalFormat.Rgba, (uint) this.Size.X, (uint) this.Size.Y, 0, PixelFormat.Rgba, PixelType.UnsignedByte, d);
             this._backend.CheckError("set texture data");
