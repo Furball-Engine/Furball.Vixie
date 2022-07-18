@@ -18,6 +18,7 @@ using Silk.NET.Vulkan.Extensions.EXT;
 using Silk.NET.Vulkan.Extensions.KHR;
 using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
+using Image=Silk.NET.Vulkan.Image;
 
 namespace Furball.Vixie.Backends.Vulkan {
     public unsafe class VulkanBackend : IGraphicsBackend {
@@ -83,13 +84,21 @@ namespace Furball.Vixie.Backends.Vulkan {
         private DebugUtilsMessengerEXT? _messenger = null;
         private QueuePool               _queuePool;
         private QueueInfo               _presentationQueueInfo;
-        private SwapchainKHR            _swapchain;
+
+        private SwapchainKHR _swapchain;
+        private Format       _swapchainImageFormat;
+        private Extent2D     _swapchainExtent;
+        private Image[]      _swapChainImages;
+        private ImageView[]  _swapChainImageViews;
 
         // Extensions:
         private ExtDebugUtils  _extDebugUtils;
         private KhrSurface     _vkSurface;
         private KhrSwapchain   _vkSwapchain;
         private ExtToolingInfo _vkToolingInfo;
+
+        internal Device GetDevice() => this._device;
+        internal Vk GetVk() => this._vk;
 
         private string[] _validationLayers = new string[] {
             "VK_LAYER_KHRONOS_validation"
@@ -475,6 +484,13 @@ namespace Furball.Vixie.Backends.Vulkan {
 
             Logger.Log($"Picked Presentation Queue from queue family {presentQueue!.QueueFamilyIndex} and registered with pool", LoggerLevelVulkan.InstanceInfo);
 
+            if(!TryCreateSwapchain())
+                throw new Exception("Failed to create SwapChain!");
+
+            this.TryCreateSwapchainImageViews();
+        }
+
+        private bool TryCreateSwapchain() {
             this._vk.TryGetDeviceExtension(this._instance, this._device, out this._vkSwapchain);
 
             //Check SwapChain support details
@@ -528,11 +544,11 @@ namespace Furball.Vixie.Backends.Vulkan {
             QueueInfo graphicsQueue = this._queuePool.NextGraphicsQueue();
 
             uint[] queueFamilyIndicies = new uint[] {
-                (uint)presentQueue.QueueFamilyIndex, (uint)graphicsQueue.QueueFamilyIndex
+                (uint)this._presentationQueueInfo.QueueFamilyIndex, (uint)graphicsQueue.QueueFamilyIndex
             };
 
             fixed (uint* queueFamilyIndiciesPtr = queueFamilyIndicies) {
-                if (graphicsQueue.QueueFamilyIndex != presentQueue.QueueFamilyIndex) {
+                if (graphicsQueue.QueueFamilyIndex != _presentationQueueInfo.QueueFamilyIndex) {
                     swapchainCreateInfo.ImageSharingMode      = SharingMode.Concurrent;
                     swapchainCreateInfo.QueueFamilyIndexCount = 2;
                     swapchainCreateInfo.PQueueFamilyIndices   = queueFamilyIndiciesPtr;
@@ -552,10 +568,59 @@ namespace Furball.Vixie.Backends.Vulkan {
 
             Result result = this._vkSwapchain.CreateSwapchain(this._device, swapchainCreateInfo, null, out swapChain);
 
-            if (result != Result.Success)
-                throw new Exception("Failed to create SwapChain!");
+            if (result != Result.Success) {
+                Logger.Log("Swapchain creaation resulted in failure!", LoggerLevelVulkan.InstanceError);
+                return false;
+            }
 
-            this._swapchain = swapChain;
+            this._swapchain            = swapChain;
+            this._swapchainImageFormat = surfaceFormat.Format;
+            this._swapchainExtent      = extent;
+
+            uint imageCount = 0;
+            this._vkSwapchain.GetSwapchainImages(this._device, swapChain, ref imageCount, null);
+
+            Image[] swapChainImages = new Image[imageCount];
+            this._vkSwapchain.GetSwapchainImages(this._device, swapChain, &imageCount, swapChainImages);
+
+            this._swapChainImages = swapChainImages;
+
+            return true;
+        }
+
+        private void TryCreateSwapchainImageViews() {
+            ImageView[] swapchainImageViews = new ImageView[this._swapChainImages.Length];
+
+            for (var i = 0; i < this._swapChainImages.Length; i++) {
+                Image image = this._swapChainImages[i];
+
+                ImageViewCreateInfo imageViewCreateInfo = new ImageViewCreateInfo {
+                    SType    = StructureType.ImageViewCreateInfo,
+                    Image    = image,
+                    ViewType = ImageViewType.ImageViewType2D,
+                    Format   = this._swapchainImageFormat,
+                    Components = new ComponentMapping {
+                        R = ComponentSwizzle.Identity,
+                        G = ComponentSwizzle.Identity,
+                        B = ComponentSwizzle.Identity,
+                        A = ComponentSwizzle.Identity,
+                    },
+                    SubresourceRange = new ImageSubresourceRange {
+                        AspectMask     = ImageAspectFlags.ImageAspectColorBit,
+                        BaseMipLevel   = 0,
+                        LevelCount     = 1,
+                        BaseArrayLayer = 0,
+                        LayerCount     = 1
+                    }
+                };
+
+                if (this._vk.CreateImageView(this._device, imageViewCreateInfo, null, out swapchainImageViews[i]) != Result.Success)
+                    throw new Exception("Failed to create SwapChain Image Views!");
+            }
+
+            this._swapChainImageViews = swapchainImageViews;
+
+            this.TestStuff();
         }
 
         private SwapChainSupportDetails QuerySwapChainSupportDetails(PhysicalDevice device) {
@@ -696,10 +761,157 @@ namespace Furball.Vixie.Backends.Vulkan {
             this._vkSurface.DestroySurface(this._instance, this._surface, null);
             this._vkSwapchain.DestroySwapchain(this._device, this._swapchain, null);
 
+            foreach (ImageView imageView in this._swapChainImageViews) {
+                this._vk.DestroyImageView(this._device, imageView, null);
+            }
+
+            this._vk.DestroyPipelineLayout(this._device, this._pipelineLayout, null);
+
             this._vk.DestroyInstance(this._instance, null);
         }
+
+        private Shader         _vertexShader;
+        private Shader         _fragmentShader;
+        private PipelineLayout _pipelineLayout;
+
+        private void TestStuff() {
+            this._vertexShader   = new Shader(this, ResourceHelpers.GetByteResource("ShaderCode/Compiled/VertexShader.spv"),   ShaderStageFlags.ShaderStageVertexBit,   "main");
+            this._fragmentShader = new Shader(this, ResourceHelpers.GetByteResource("ShaderCode/Compiled/FragmentShader.spv"), ShaderStageFlags.ShaderStageFragmentBit, "main");
+
+            PipelineShaderStageCreateInfo[] shaderStages = new PipelineShaderStageCreateInfo[] {
+                this._vertexShader.GetPipelineCreateInfo(), this._fragmentShader.GetPipelineCreateInfo(),
+            };
+
+            PipelineVertexInputStateCreateInfo vertexInputInfo = new PipelineVertexInputStateCreateInfo {
+                SType                           = StructureType.PipelineVertexInputStateCreateInfo,
+                VertexBindingDescriptionCount   = 0,
+                PVertexBindingDescriptions      = null,
+                VertexAttributeDescriptionCount = 0,
+                PVertexAttributeDescriptions    = null, };
+
+            PipelineInputAssemblyStateCreateInfo inputAssembler = new PipelineInputAssemblyStateCreateInfo {
+                SType = StructureType.PipelineInputAssemblyStateCreateInfo, Topology = PrimitiveTopology.TriangleList, PrimitiveRestartEnable = false,
+            };
+
+            Viewport viewport = new Viewport {
+                X        = 0,
+                Y        = 0,
+                Width    = (float)this._swapchainExtent.Width,
+                Height   = (float)this._swapchainExtent.Height,
+                MinDepth = 0,
+                MaxDepth = 1
+            };
+
+            Rect2D scissorRectangle = new Rect2D {
+                Offset = new Offset2D(0, 0), Extent = this._swapchainExtent
+            };
+
+            DynamicState[] dynamicStates = new DynamicState[] {
+                DynamicState.Viewport, DynamicState.Scissor
+            };
+
+            fixed (DynamicState* dynamicStatePtr = dynamicStates) {
+                PipelineDynamicStateCreateInfo dynamicState = new PipelineDynamicStateCreateInfo {
+                    SType = StructureType.PipelineDynamicStateCreateInfo, DynamicStateCount = 2, PDynamicStates = dynamicStatePtr
+                };
+
+                PipelineViewportStateCreateInfo viewportState = new PipelineViewportStateCreateInfo {
+                    SType         = StructureType.PipelineViewportStateCreateInfo,
+                    ViewportCount = 1,
+                    ScissorCount  = 1,
+                    PViewports    = &viewport,
+                    PScissors     = &scissorRectangle, };
+
+                PipelineRasterizationStateCreateInfo rasterizerState = new PipelineRasterizationStateCreateInfo {
+                    SType                   = StructureType.PipelineRasterizationProvokingVertexStateCreateInfoExt,
+                    RasterizerDiscardEnable = false,
+                    PolygonMode             = PolygonMode.Fill,
+                    LineWidth               = 1.0f,
+                    CullMode                = CullModeFlags.CullModeBackBit,
+                    FrontFace               = FrontFace.Clockwise,
+                    DepthBiasEnable         = false,
+                    DepthBiasConstantFactor = 0.0f,
+                    DepthBiasClamp          = 0.0f,
+                    DepthBiasSlopeFactor    = 0.0f,
+                };
+
+                PipelineMultisampleStateCreateInfo multisampleState = new PipelineMultisampleStateCreateInfo {
+                    SType                 = StructureType.PipelineMultisampleStateCreateInfo,
+                    SampleShadingEnable   = false,
+                    RasterizationSamples  = SampleCountFlags.SampleCount1Bit,
+                    MinSampleShading      = 1.0f,
+                    PSampleMask           = null,
+                    AlphaToCoverageEnable = false,
+                    AlphaToOneEnable      = false,
+                };
+
+                PipelineColorBlendAttachmentState blendState = new PipelineColorBlendAttachmentState {
+                    ColorWriteMask      = ColorComponentFlags.ColorComponentRBit |
+                                          ColorComponentFlags.ColorComponentGBit |
+                                          ColorComponentFlags.ColorComponentBBit |
+                                          ColorComponentFlags.ColorComponentABit,
+                    BlendEnable         = true,
+                    SrcColorBlendFactor = BlendFactor.SrcAlpha,
+                    DstColorBlendFactor = BlendFactor.OneMinusSrcAlpha,
+                    ColorBlendOp        = BlendOp.Add,
+                    SrcAlphaBlendFactor = BlendFactor.One,
+                    DstAlphaBlendFactor = BlendFactor.OneMinusSrcAlpha,
+                    AlphaBlendOp        = BlendOp.Add
+                };
+
+                float[] blendConstants = new float[] {
+                    0.0f, 0.0f, 0.0f, 0.0f
+                };
+
+                fixed (void* blendConstantsPtr = blendConstants) {
+                    PipelineColorBlendStateCreateInfo colorBlendState = new PipelineColorBlendStateCreateInfo {
+                        SType           = StructureType.PipelineColorBlendStateCreateInfo,
+                        LogicOpEnable   = true,
+                        LogicOp         = LogicOp.Copy,
+                        AttachmentCount = 1,
+                        PAttachments    = &blendState,
+                        BlendConstants  = (float*)blendConstantsPtr,
+                    };
+
+                    PipelineLayoutCreateInfo pipelineLayoutInfo = new PipelineLayoutCreateInfo {
+                        SType                  = StructureType.PipelineLayoutCreateInfo,
+                        SetLayoutCount         = 0,
+                        PSetLayouts            = null,
+                        PushConstantRangeCount = 0,
+                        PPushConstantRanges    = null
+                    };
+
+                    Result result = this._vk.CreatePipelineLayout(this._device, &pipelineLayoutInfo, null, out this._pipelineLayout);
+
+                    if (result != Result.Success)
+                        throw new Exception("Failed to create Pipeline layout!");
+
+                    
+
+                    fixed (PipelineShaderStageCreateInfo* shaderStagesPtr = shaderStages) {
+                        GraphicsPipelineCreateInfo pipelineInfo = new GraphicsPipelineCreateInfo {
+                            SType               = StructureType.GraphicsPipelineCreateInfo,
+                            StageCount          = 2,
+                            PStages             = shaderStagesPtr,
+                            PVertexInputState   = &vertexInputInfo,
+                            PInputAssemblyState = &inputAssembler,
+                            PViewportState      = &viewportState,
+                            PRasterizationState = &rasterizerState,
+                            PMultisampleState   = &multisampleState,
+                            PDepthStencilState  = null,
+                            PColorBlendState    = &colorBlendState,
+                            PDynamicState       = &dynamicState,
+                            Layout = this._pipelineLayout,
+
+                        };
+                    }
+                }
+            }
+        }
+
+
         public override void HandleFramebufferResize(int width, int height) {
-            throw new NotImplementedException();
+
         }
 
         public override IQuadRenderer CreateTextureRenderer() => throw new NotImplementedException();

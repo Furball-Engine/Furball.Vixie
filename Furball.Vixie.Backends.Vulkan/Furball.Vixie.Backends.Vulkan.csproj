@@ -18,4 +18,15 @@
       <ProjectReference Include="..\Furball.Vixie.Backends.Shared\Furball.Vixie.Backends.Shared.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="ShaderCode\Compiled\HardcodedTriangle" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="ShaderCode\Compiled\HardcodedTriangle\FragmentShader.spv" />
+      <EmbeddedResource Include="ShaderCode\Compiled\HardcodedTriangle\FragmentShader.spv" />
+      <None Remove="ShaderCode\Compiled\HardcodedTriangle\VertexShader.spv" />
+      <EmbeddedResource Include="ShaderCode\Compiled\HardcodedTriangle\VertexShader.spv" />
+    </ItemGroup>
+
 </Project>
