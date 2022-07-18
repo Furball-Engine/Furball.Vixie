@@ -88,6 +88,10 @@ namespace Furball.Vixie.Backends.Vulkan {
         private KhrSurface     _vkSurface;
         private ExtToolingInfo _vkToolingInfo;
 
+        private string[] _validationLayers = new string[] {
+            "VK_LAYER_KHRONOS_validation"
+        };
+
         private static readonly unsafe PfnDebugUtilsMessengerCallbackEXT _DebugCallback = new(DebugCallback);
 
         private ExtensionSet GetInstanceExtensions() {
@@ -106,6 +110,8 @@ namespace Furball.Vixie.Backends.Vulkan {
             }
 
             optionalExtensions.Add(ExtToolingInfo.ExtensionName);
+
+            //NOTE: this is where we add more optional or required extensions
 
             return new ExtensionSet(requiredExtensions, optionalExtensions);
         }
@@ -153,6 +159,7 @@ namespace Furball.Vixie.Backends.Vulkan {
 
             memory = SilkMarshal.StringArrayToMemory(usedExtensions.ToArray());
             count  = usedExtensions.Count;
+
             return true;
         }
 
@@ -180,15 +187,38 @@ namespace Furball.Vixie.Backends.Vulkan {
                 ApplicationVersion = (Version32)entryAssemblyname.Version,
                 PEngineName        = engineNameMem.AsPtr<byte>(),
                 EngineVersion      = new Version32(1, 0, 0),
-                ApiVersion         = Vk.Version10
+                ApiVersion         = Vk.Version11
             };
+
+            int validationLayerCount = 0;
+            string[] validationLayerNames = Array.Empty<string>();
+
+#if DEBUG
+            uint[] layerCount = new uint[] { 0 };
+
+            fixed (uint* layerCountPtr = layerCount) {
+                this._vk.EnumerateInstanceLayerProperties(layerCountPtr, null);
+
+                LayerProperties[] propertiesArray = new LayerProperties[layerCount[0]];
+                Span<LayerProperties> properties = new Span<LayerProperties>(propertiesArray);
+
+                this._vk.EnumerateInstanceLayerProperties(layerCountPtr, properties);
+
+                if (!VerifyRequestedValidationLayersSupported(propertiesArray, out validationLayerCount, out validationLayerNames)) {
+                    Logger.Log("Validation layers requested, but not all were available! Validation layers may not work.", LoggerLevelVulkan.InstanceWarning);
+                }
+            }
+#endif
+
+            GlobalMemory? layerNameMemory = SilkMarshal.StringArrayToMemory(validationLayerNames);
 
             InstanceCreateInfo createInfo = new InstanceCreateInfo {
                 SType                   = StructureType.InstanceCreateInfo, PApplicationInfo = &appInfo,
                 EnabledExtensionCount   = (uint)extensionCount,
-                PpEnabledExtensionNames = (byte**)(extensionMemory?.Handle ?? 0)
+                PpEnabledExtensionNames = (byte**)(extensionMemory?.Handle ?? 0),
+                EnabledLayerCount       = (uint)validationLayerCount,
+                PpEnabledLayerNames     = (byte**)(layerNameMemory?.Handle ?? 0)
             };
-
 
             Result result = this._vk.CreateInstance(&createInfo, null, out instance);
 
@@ -438,6 +468,35 @@ namespace Furball.Vixie.Backends.Vulkan {
                 $"Picked Presentation Queue from queue family {presQueue!.QueueFamilyIndex} and registered with pool",
                 LoggerLevelVulkan.InstanceInfo);
         }
+
+        private bool VerifyRequestedValidationLayersSupported(LayerProperties[] properties, out int foundLayers, out string[] foundLayerNames) {
+            bool allLayersFound = true;
+
+            List<string> layerNames = new List<string>();
+
+            foreach (string validationLayer in this._validationLayers) {
+                bool layerFound = false;
+
+                foreach (LayerProperties property in properties) {
+                    string layerName = SilkMarshal.PtrToString((nint)property.LayerName)!;
+
+                    if (validationLayer == layerName) {
+                        layerFound = true;
+                        layerNames.Add(validationLayer);
+                    }
+                }
+
+                if (layerFound == false) {
+                    allLayersFound = false;
+                }
+            }
+
+            foundLayers     = layerNames.Count;
+            foundLayerNames = layerNames.ToArray();
+
+            return allLayersFound;
+        }
+
         private bool TryGetPresentationQueue(out QueueInfo? presentationQueueInfo) {
             ReadOnlySpan<QueueInfo> physicalQueues = this._physicalDeviceInfo.Queues.Span;
 

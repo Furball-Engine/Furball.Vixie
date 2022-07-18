@@ -8,4 +8,4 @@ using Silk.NET.Windowing;
 
 // VeldridBackend.PrefferedBackend = Veldrid.GraphicsBackend.Vulkan;
 
-new TestGame().Run(Backend.ModernOpenGL);
+new TestGame().Run(Backend.Vulkan);
