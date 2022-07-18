@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.Renderers;
+using Furball.Vixie.Helpers.Helpers;
 using Kettu;
 using Silk.NET.Core;
 using Silk.NET.Core.Native;
@@ -82,10 +83,12 @@ namespace Furball.Vixie.Backends.Vulkan {
         private DebugUtilsMessengerEXT? _messenger = null;
         private QueuePool               _queuePool;
         private QueueInfo               _presentationQueueInfo;
+        private SwapchainKHR            _swapchain;
 
         // Extensions:
         private ExtDebugUtils  _extDebugUtils;
         private KhrSurface     _vkSurface;
+        private KhrSwapchain   _vkSwapchain;
         private ExtToolingInfo _vkToolingInfo;
 
         private string[] _validationLayers = new string[] {
@@ -103,6 +106,7 @@ namespace Furball.Vixie.Backends.Vulkan {
                                             (nint)this._view.VkSurface!.GetRequiredExtensions(
                                                 out uint windowExtensionCount),
                                             (int)windowExtensionCount));
+
             requiredExtensions.Add(KhrSurface.ExtensionName);
 
             if (_debug) {
@@ -119,6 +123,8 @@ namespace Furball.Vixie.Backends.Vulkan {
         private ExtensionSet GetDeviceExtensions() {
             List<string> requiredExtensions = new List<string>();
             List<string> optionalExtensions = new List<string>();
+
+            requiredExtensions.Add(KhrSwapchain.ExtensionName);
 
             return new ExtensionSet(requiredExtensions, optionalExtensions);
         }
@@ -319,8 +325,11 @@ namespace Furball.Vixie.Backends.Vulkan {
             DeviceQueueCreateInfo[] queueCreates = new DeviceQueueCreateInfo[physicalQueues.Length];
 
             int queueCreateCount = -1;
+
             foreach (QueueInfo q in physicalQueues) {
-                if (q.QueueFamilyIndex > queueCreateCount) queueCreateCount = q.QueueFamilyIndex;
+                if (q.QueueFamilyIndex > queueCreateCount)
+                    queueCreateCount = q.QueueFamilyIndex;
+
                 queueCreates[q.QueueFamilyIndex] = new DeviceQueueCreateInfo(
                     queueCount: q.FamilyProperties.QueueCount,
                     queueFamilyIndex: (uint)q.QueueFamilyIndex,
@@ -437,7 +446,7 @@ namespace Furball.Vixie.Backends.Vulkan {
 
             if (!TryCreateLogicalDevice(deviceExtensionSet,
                                         out this._device,
-                                        out this._queuePool,
+                                        out this._queuePool!,
                                         out ReadOnlyMemory<QueueInfo> queueInfos)) {
                 Logger.Log("Failed to create logical device", LoggerLevelVulkan.InstanceFatal);
                 return;
@@ -455,18 +464,126 @@ namespace Furball.Vixie.Backends.Vulkan {
                 $"Created Physical Device {this._device} with associated queue pool. Using {queueInfos.Length} queues.",
                 LoggerLevelVulkan.InstanceInfo);
 
-            if (!TryGetPresentationQueue(out QueueInfo? presQueue)) {
+            if (!TryGetPresentationQueue(out QueueInfo? presentQueue)) {
                 Logger.Log(
                     "Could not retrieve presentation queue. This should be prohibited by earlier code... Did you unplug your monitor?",
                     LoggerLevelVulkan.InstanceFatal);
                 return;
             }
 
-            this._presentationQueueInfo = this._queuePool!.GetReferenceTo(presQueue!);
+            this._presentationQueueInfo = this._queuePool!.GetReferenceTo(presentQueue!);
 
-            Logger.Log(
-                $"Picked Presentation Queue from queue family {presQueue!.QueueFamilyIndex} and registered with pool",
-                LoggerLevelVulkan.InstanceInfo);
+            Logger.Log($"Picked Presentation Queue from queue family {presentQueue!.QueueFamilyIndex} and registered with pool", LoggerLevelVulkan.InstanceInfo);
+
+            this._vk.TryGetDeviceExtension(this._instance, this._device, out this._vkSwapchain);
+
+            //Check SwapChain support details
+            SwapChainSupportDetails swapChainSupportDetails = QuerySwapChainSupportDetails(this._physicalDeviceInfo.Handle);
+
+            //pick best settings
+            SurfaceFormatKHR surfaceFormat;
+            PresentModeKHR presentMode = PresentModeKHR.PresentModeImmediateKhr;
+            Extent2D extent;
+
+            PresentModeKHR[] presentModeTryList = new PresentModeKHR[] {
+                PresentModeKHR.PresentModeFifoKhr,
+                PresentModeKHR.PresentModeMailboxKhr,
+                PresentModeKHR.PresentModeImmediateKhr,
+                PresentModeKHR.PresentModeSharedContinuousRefreshKhr,
+                PresentModeKHR.PresentModeSharedDemandRefreshKhr,
+                PresentModeKHR.PresentModeFifoRelaxedKhr,
+                PresentModeKHR.PresentModeFifoKhr
+            };
+
+            surfaceFormat = swapChainSupportDetails.Formats[0];
+
+            foreach (PresentModeKHR presentModeTry in presentModeTryList) {
+                if (swapChainSupportDetails.PresentModes.Contains(presentModeTry)) {
+                    presentMode = presentModeTry;
+                    break;
+                }
+            }
+
+            extent = new Extent2D((uint)this._view.Size.X, (uint)this._view.Size.Y);
+
+            extent.Width  = extent.Width.Clamp(swapChainSupportDetails.SurfaceCapabilities.MinImageExtent.Width, swapChainSupportDetails.SurfaceCapabilities.MaxImageExtent.Width);
+            extent.Height = extent.Height.Clamp(swapChainSupportDetails.SurfaceCapabilities.MinImageExtent.Height, swapChainSupportDetails.SurfaceCapabilities.MaxImageExtent.Height);
+
+            uint bufferCount = swapChainSupportDetails.SurfaceCapabilities.MinImageCount + 1;
+
+            if (swapChainSupportDetails.SurfaceCapabilities.MaxImageCount > 0 && bufferCount > swapChainSupportDetails.SurfaceCapabilities.MaxImageCount)
+                bufferCount = swapChainSupportDetails.SurfaceCapabilities.MaxImageCount;
+
+            SwapchainCreateInfoKHR swapchainCreateInfo = new SwapchainCreateInfoKHR {
+                SType = StructureType.SwapchainCreateInfoKhr,
+                Surface = this._surface,
+                MinImageCount = bufferCount,
+                ImageFormat = surfaceFormat.Format,
+                ImageColorSpace = surfaceFormat.ColorSpace,
+                ImageExtent =  extent,
+                ImageArrayLayers = 1,
+                ImageUsage = ImageUsageFlags.ImageUsageColorAttachmentBit
+            };
+
+            QueueInfo graphicsQueue = this._queuePool.NextGraphicsQueue();
+
+            uint[] queueFamilyIndicies = new uint[] {
+                (uint)presentQueue.QueueFamilyIndex, (uint)graphicsQueue.QueueFamilyIndex
+            };
+
+            fixed (uint* queueFamilyIndiciesPtr = queueFamilyIndicies) {
+                if (graphicsQueue.QueueFamilyIndex != presentQueue.QueueFamilyIndex) {
+                    swapchainCreateInfo.ImageSharingMode      = SharingMode.Concurrent;
+                    swapchainCreateInfo.QueueFamilyIndexCount = 2;
+                    swapchainCreateInfo.PQueueFamilyIndices   = queueFamilyIndiciesPtr;
+                } else {
+                    swapchainCreateInfo.ImageSharingMode      = SharingMode.Exclusive;
+                    swapchainCreateInfo.QueueFamilyIndexCount = 0;
+                    swapchainCreateInfo.PQueueFamilyIndices   = null;
+                }
+            }
+
+            swapchainCreateInfo.PreTransform   = swapChainSupportDetails.SurfaceCapabilities.CurrentTransform;
+            swapchainCreateInfo.CompositeAlpha = CompositeAlphaFlagsKHR.CompositeAlphaOpaqueBitKhr;
+            swapchainCreateInfo.PresentMode    = presentMode;
+            swapchainCreateInfo.Clipped        = true;
+
+            SwapchainKHR swapChain;
+
+            Result result = this._vkSwapchain.CreateSwapchain(this._device, swapchainCreateInfo, null, out swapChain);
+
+            if (result != Result.Success)
+                throw new Exception("Failed to create SwapChain!");
+
+            this._swapchain = swapChain;
+        }
+
+        private SwapChainSupportDetails QuerySwapChainSupportDetails(PhysicalDevice device) {
+            SwapChainSupportDetails details = new SwapChainSupportDetails();
+
+            this._vkSurface.GetPhysicalDeviceSurfaceCapabilities(device, this._surface, out details.SurfaceCapabilities);
+
+            uint formatCount = 0;
+            this._vkSurface.GetPhysicalDeviceSurfaceFormats(device, this._surface, ref formatCount, null);
+
+            if (formatCount != 0) {
+                details.Formats = new SurfaceFormatKHR[formatCount];
+                Span<SurfaceFormatKHR> spanFormats = new Span<SurfaceFormatKHR>(details.Formats);
+
+                this._vkSurface.GetPhysicalDeviceSurfaceFormats(device, this._surface, &formatCount, spanFormats);
+            }
+
+            uint presentModeCount = 0;
+            this._vkSurface.GetPhysicalDeviceSurfacePresentModes(device, this._surface, ref presentModeCount, null);
+
+            if (presentModeCount != 0) {
+                details.PresentModes = new PresentModeKHR[presentModeCount];
+                Span<PresentModeKHR> spanPresentModes = new Span<PresentModeKHR>(details.PresentModes);
+
+                this._vkSurface.GetPhysicalDeviceSurfacePresentModes(device, this._surface, &presentModeCount, spanPresentModes);
+            }
+
+            return details;
         }
 
         private bool VerifyRequestedValidationLayersSupported(LayerProperties[] properties, out int foundLayers, out string[] foundLayerNames) {
@@ -577,6 +694,8 @@ namespace Furball.Vixie.Backends.Vulkan {
                 this._extDebugUtils.DestroyDebugUtilsMessenger(this._instance, this._messenger.Value, null);
 
             this._vkSurface.DestroySurface(this._instance, this._surface, null);
+            this._vkSwapchain.DestroySwapchain(this._device, this._swapchain, null);
+
             this._vk.DestroyInstance(this._instance, null);
         }
         public override void HandleFramebufferResize(int width, int height) {

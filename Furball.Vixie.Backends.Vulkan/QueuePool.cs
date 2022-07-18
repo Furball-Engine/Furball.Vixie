@@ -95,6 +95,7 @@ namespace Furball.Vixie.Backends.Vulkan {
 
             return true;
         }
+
         public QueueInfo NextTransferQueue() {
             if (!TryFindNext(QueueFlags.QueueTransferBit, out QueueInfo? queueInfo)) {
                 Logger.Log("Could not find Transfer queue", LoggerLevelVulkan.InstanceFatal);
@@ -103,17 +104,19 @@ namespace Furball.Vixie.Backends.Vulkan {
 
             return queueInfo;
         }
+
         public QueueInfo NextComputeQueue() {
             if (!TryFindNext(QueueFlags.QueueComputeBit, out QueueInfo? queueInfo)) {
-                Logger.Log("Could not find Transfer queue", LoggerLevelVulkan.InstanceFatal);
+                Logger.Log("Could not find Compute queue", LoggerLevelVulkan.InstanceFatal);
                 return null!;
             }
 
             return queueInfo;
         }
+
         public QueueInfo NextGraphicsQueue() {
             if (!TryFindNext(QueueFlags.QueueGraphicsBit, out QueueInfo? queueInfo)) {
-                Logger.Log("Could not find Transfer queue", LoggerLevelVulkan.InstanceFatal);
+                Logger.Log("Could not find Graphics queue", LoggerLevelVulkan.InstanceFatal);
                 return null!;
             }
 
