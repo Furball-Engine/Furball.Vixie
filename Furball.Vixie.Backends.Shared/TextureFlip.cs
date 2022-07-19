@@ -1,7 +1,7 @@
-namespace Furball.Vixie.Backends.Shared {
-    public enum TextureFlip {
-        None,
-        FlipHorizontal,
-        FlipVertical
-    }
+namespace Furball.Vixie.Backends.Shared; 
+
+public enum TextureFlip {
+    None,
+    FlipHorizontal,
+    FlipVertical
 }

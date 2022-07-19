@@ -1,138 +1,136 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
-using Silk.NET.GLFW;
 using Silk.NET.SDL;
 using Silk.NET.Windowing;
 using Window=Silk.NET.SDL.Window;
 
-namespace Furball.Vixie.OpenGLDetector {
-    public static class OpenGLDetector {
-        private static unsafe Window* CreateWindow(Sdl sdl) {
-            var window = sdl.CreateWindow("", 0, 0, 1, 1, (uint)(WindowFlags.WindowHidden | WindowFlags.WindowOpengl));
+namespace Furball.Vixie.OpenGLDetector; 
 
-            if (window == (Window*)0)
-                throw new Exception("Unable to create SDL window for OpenGL detection");
+public static class OpenGLDetector {
+    private static unsafe Window* CreateWindow(Sdl sdl) {
+        var window = sdl.CreateWindow("", 0, 0, 1, 1, (uint)(WindowFlags.WindowHidden | WindowFlags.WindowOpengl));
 
-            return window;
-        }
+        if (window == (Window*)0)
+            throw new Exception("Unable to create SDL window for OpenGL detection");
 
-        private static APIVersion _LastTested = new(0, 0);
-        private static APIVersion _LastTestedES = new(0, 0);
+        return window;
+    }
 
-        private static readonly APIVersion[] OPEN_GL_VERSIONS = new [] {
-            //1.x
-            new APIVersion(1, 0),
-            new APIVersion(1, 1),
-            new APIVersion(1, 2),
-            new APIVersion(1, 3),
-            new APIVersion(1, 4),
-            new APIVersion(1, 5),
-            //2.x
-            new APIVersion(2, 0),
-            new APIVersion(2, 1),
-            //3.x
-            new APIVersion(3, 0),
-            new APIVersion(3, 1),
-            new APIVersion(3, 2),
-            new APIVersion(3, 3),
-            //4.x
-            new APIVersion(4, 0),
-            new APIVersion(4, 1),
-            new APIVersion(4, 2),
-            new APIVersion(4, 3),
-            new APIVersion(4, 4),
-            new APIVersion(4, 5),
-            new APIVersion(4, 6),
-        };
+    private static APIVersion _LastTested   = new(0, 0);
+    private static APIVersion _LastTestedES = new(0, 0);
+
+    private static readonly APIVersion[] OPEN_GL_VERSIONS = new [] {
+        //1.x
+        new APIVersion(1, 0),
+        new APIVersion(1, 1),
+        new APIVersion(1, 2),
+        new APIVersion(1, 3),
+        new APIVersion(1, 4),
+        new APIVersion(1, 5),
+        //2.x
+        new APIVersion(2, 0),
+        new APIVersion(2, 1),
+        //3.x
+        new APIVersion(3, 0),
+        new APIVersion(3, 1),
+        new APIVersion(3, 2),
+        new APIVersion(3, 3),
+        //4.x
+        new APIVersion(4, 0),
+        new APIVersion(4, 1),
+        new APIVersion(4, 2),
+        new APIVersion(4, 3),
+        new APIVersion(4, 4),
+        new APIVersion(4, 5),
+        new APIVersion(4, 6),
+    };
         
-        private static readonly APIVersion[] OPEN_GLES_VERSIONS = new [] {
-            //1.x
-            // new APIVersion(1, 0),
-            // new APIVersion(1, 1),
-            //2.x
-            new APIVersion(2, 0),
-            //3.x
-            new APIVersion(3, 0),
-            new APIVersion(3, 1),
-            new APIVersion(3, 2),
-        };
-        private static unsafe Window* _Window;
+    private static readonly APIVersion[] OPEN_GLES_VERSIONS = new [] {
+        //1.x
+        // new APIVersion(1, 0),
+        // new APIVersion(1, 1),
+        //2.x
+        new APIVersion(2, 0),
+        //3.x
+        new APIVersion(3, 0),
+        new APIVersion(3, 1),
+        new APIVersion(3, 2),
+    };
+    private static unsafe Window* _Window;
 
-        public static unsafe (APIVersion GL, APIVersion GLES) GetLatestSupported(bool testgl = true, bool testgles = true) {
-            var sdl = Sdl.GetApi();
+    public static unsafe (APIVersion GL, APIVersion GLES) GetLatestSupported(bool testgl = true, bool testgles = true) {
+        var sdl = Sdl.GetApi();
 
-            if (sdl.Init(Sdl.InitVideo) < 0)
-                throw new Exception("Unable to init video");
-            try {
-                _Window = CreateWindow(sdl);
+        if (sdl.Init(Sdl.InitVideo) < 0)
+            throw new Exception("Unable to init video");
+        try {
+            _Window = CreateWindow(sdl);
 
-                if (testgl)
-                    GetLatestGLSupported(sdl);
-                if (testgles)
-                    GetLatestGLESSupported(sdl);
+            if (testgl)
+                GetLatestGLSupported(sdl);
+            if (testgles)
+                GetLatestGLESSupported(sdl);
 
-                sdl.DestroyWindow(_Window);
-            }
-            catch {
-                sdl.Quit();
-                sdl.Dispose();
-
-                throw;
-            }
-
+            sdl.DestroyWindow(_Window);
+        }
+        catch {
             sdl.Quit();
             sdl.Dispose();
 
-            return (_LastTested, _LastTestedES);
+            throw;
         }
+
+        sdl.Quit();
+        sdl.Dispose();
+
+        return (_LastTested, _LastTestedES);
+    }
         
-        private static void GetLatestGLSupported(Sdl sdl) {
-            // ReSharper disable once LoopCanBeConvertedToQuery
-            foreach (APIVersion openGlVersion in OPEN_GL_VERSIONS) {
-                if (!TestApiVersion(sdl, openGlVersion, ContextAPI.OpenGL) && _LastTested.MajorVersion != 0)
-                    return;
-            }
-
+    private static void GetLatestGLSupported(Sdl sdl) {
+        // ReSharper disable once LoopCanBeConvertedToQuery
+        foreach (APIVersion openGlVersion in OPEN_GL_VERSIONS) {
+            if (!TestApiVersion(sdl, openGlVersion, ContextAPI.OpenGL) && _LastTested.MajorVersion != 0)
+                return;
         }
 
-        private static void GetLatestGLESSupported(Sdl sdl) {
-            // ReSharper disable once LoopCanBeConvertedToQuery
-            foreach (APIVersion openGlesVersion in OPEN_GLES_VERSIONS) {
-                if (!TestApiVersion(sdl, openGlesVersion, ContextAPI.OpenGLES) && _LastTestedES.MajorVersion != 0)
-                    return;
-            }
+    }
 
+    private static void GetLatestGLESSupported(Sdl sdl) {
+        // ReSharper disable once LoopCanBeConvertedToQuery
+        foreach (APIVersion openGlesVersion in OPEN_GLES_VERSIONS) {
+            if (!TestApiVersion(sdl, openGlesVersion, ContextAPI.OpenGLES) && _LastTestedES.MajorVersion != 0)
+                return;
         }
+
+    }
         
-        private static unsafe bool TestApiVersion(Sdl sdl, APIVersion version, ContextAPI contextApi) {
-            sdl.GLSetAttribute(GLattr.GLContextMajorVersion, version.MajorVersion);
-            sdl.GLSetAttribute(GLattr.GLContextMinorVersion, version.MinorVersion);
-            if (contextApi == ContextAPI.OpenGLES)
-                sdl.GLSetAttribute(GLattr.GLContextProfileMask, (int)GLprofile.GLContextProfileES);
-            else
-                sdl.GLSetAttribute(GLattr.GLContextProfileMask, (int)GLprofile.GLContextProfileCore);
+    private static unsafe bool TestApiVersion(Sdl sdl, APIVersion version, ContextAPI contextApi) {
+        sdl.GLSetAttribute(GLattr.GLContextMajorVersion, version.MajorVersion);
+        sdl.GLSetAttribute(GLattr.GLContextMinorVersion, version.MinorVersion);
+        if (contextApi == ContextAPI.OpenGLES)
+            sdl.GLSetAttribute(GLattr.GLContextProfileMask, (int)GLprofile.GLContextProfileES);
+        else
+            sdl.GLSetAttribute(GLattr.GLContextProfileMask, (int)GLprofile.GLContextProfileCore);
             
-            var ctx = sdl.GLCreateContext(_Window);
+        var ctx = sdl.GLCreateContext(_Window);
             
-            string err = sdl.GetErrorS();
-            if (err.Length != 0) {
-                sdl.ClearError();
-                sdl.DestroyWindow(_Window);
-                if (err.Contains("GLXBadFBConfig")) {
-                    sdl.Quit();
-                    sdl.Init(Sdl.InitVideo);
-                }
-                _Window = CreateWindow(sdl);
-
-                return false;
+        string err = sdl.GetErrorS();
+        if (err.Length != 0) {
+            sdl.ClearError();
+            sdl.DestroyWindow(_Window);
+            if (err.Contains("GLXBadFBConfig")) {
+                sdl.Quit();
+                sdl.Init(Sdl.InitVideo);
             }
-            if (contextApi == ContextAPI.OpenGLES)
-                _LastTestedES = version;
-            else
-                _LastTested = version;
-            sdl.GLDeleteContext(ctx);
+            _Window = CreateWindow(sdl);
+
+            return false;
+        }
+        if (contextApi == ContextAPI.OpenGLES)
+            _LastTestedES = version;
+        else
+            _LastTested = version;
+        sdl.GLDeleteContext(ctx);
          
-            return true;
-        }
+        return true;
     }
 }

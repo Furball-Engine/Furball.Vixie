@@ -5,7 +5,8 @@
         <Configurations>Debug;Release;DebugWithGL</Configurations>
         <Platforms>AnyCPU</Platforms>
         <LangVersion>10</LangVersion>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFrameworks>net461;net6.0</TargetFrameworks>
+        <OutputType>Exe</OutputType>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'DebugWithGL' ">
@@ -14,21 +15,14 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Furball.Vixie.TestApplication\Furball.Vixie.TestApplication.csproj" />
       <ProjectReference Include="..\Furball.Vixie\Furball.Vixie.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="Shaders\BasicPixelShader.glsl" />
-      <None Remove="Shaders\BasicVertexShader.glsl" />
-    </ItemGroup>
-
-    <ItemGroup>
       <None Remove="Resources\pippidonclear0.png" />
-      <EmbeddedResource Include="Resources\pippidonclear0.png" />
       <None Remove="Resources\font.ttf" />
-      <EmbeddedResource Include="Resources\font.ttf" />
       <None Remove="Resources\test.qoi" />
-      <EmbeddedResource Include="Resources\test.qoi" />
     </ItemGroup>
     
     <ItemGroup>
