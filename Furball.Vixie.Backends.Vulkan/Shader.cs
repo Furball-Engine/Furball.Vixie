@@ -37,7 +37,7 @@ public class Shader : IDisposable {
             SType  = StructureType.PipelineShaderStageCreateInfo,
             Stage  = this._shaderStage,
             Module = this._shaderModule,
-            PName  = (byte*) SilkMarshal.StringToPtr(this._entrypoint)
+            PName  = (byte*) SilkMarshal.StringToPtr(this._entrypoint) //TODO: this needs to be manually freed.
         };
     }
 
