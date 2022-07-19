@@ -859,52 +859,47 @@ namespace Furball.Vixie.Backends.Vulkan {
                     AlphaBlendOp        = BlendOp.Add
                 };
 
-                float[] blendConstants = new float[] {
+                float* blendConstants = stackalloc float[] {
                     0.0f, 0.0f, 0.0f, 0.0f
                 };
 
-                fixed (void* blendConstantsPtr = blendConstants) {
-                    PipelineColorBlendStateCreateInfo colorBlendState = new PipelineColorBlendStateCreateInfo {
-                        SType           = StructureType.PipelineColorBlendStateCreateInfo,
-                        LogicOpEnable   = true,
-                        LogicOp         = LogicOp.Copy,
-                        AttachmentCount = 1,
-                        PAttachments    = &blendState,
-                        BlendConstants  = (float*)blendConstantsPtr,
+                PipelineColorBlendStateCreateInfo colorBlendState = new PipelineColorBlendStateCreateInfo {
+                    SType           = StructureType.PipelineColorBlendStateCreateInfo,
+                    LogicOpEnable   = true,
+                    LogicOp         = LogicOp.Copy,
+                    AttachmentCount = 1,
+                    PAttachments    = &blendState,
+                    BlendConstants  = blendConstants,
+                };
+
+                PipelineLayoutCreateInfo pipelineLayoutInfo = new PipelineLayoutCreateInfo {
+                    SType                  = StructureType.PipelineLayoutCreateInfo,
+                    SetLayoutCount         = 0,
+                    PSetLayouts            = null,
+                    PushConstantRangeCount = 0,
+                    PPushConstantRanges    = null
+                };
+
+                Result result = this._vk.CreatePipelineLayout(this._device, &pipelineLayoutInfo, null, out this._pipelineLayout);
+
+                if (result != Result.Success)
+                    throw new Exception("Failed to create Pipeline layout!");
+
+                fixed (PipelineShaderStageCreateInfo* shaderStagesPtr = shaderStages) {
+                    GraphicsPipelineCreateInfo pipelineInfo = new GraphicsPipelineCreateInfo {
+                        SType               = StructureType.GraphicsPipelineCreateInfo,
+                        StageCount          = 2,
+                        PStages             = shaderStagesPtr,
+                        PVertexInputState   = &vertexInputInfo,
+                        PInputAssemblyState = &inputAssembler,
+                        PViewportState      = &viewportState,
+                        PRasterizationState = &rasterizerState,
+                        PMultisampleState   = &multisampleState,
+                        PDepthStencilState  = null,
+                        PColorBlendState    = &colorBlendState,
+                        PDynamicState       = &dynamicState,
+                        Layout = this._pipelineLayout,
                     };
-
-                    PipelineLayoutCreateInfo pipelineLayoutInfo = new PipelineLayoutCreateInfo {
-                        SType                  = StructureType.PipelineLayoutCreateInfo,
-                        SetLayoutCount         = 0,
-                        PSetLayouts            = null,
-                        PushConstantRangeCount = 0,
-                        PPushConstantRanges    = null
-                    };
-
-                    Result result = this._vk.CreatePipelineLayout(this._device, &pipelineLayoutInfo, null, out this._pipelineLayout);
-
-                    if (result != Result.Success)
-                        throw new Exception("Failed to create Pipeline layout!");
-
-                    
-
-                    fixed (PipelineShaderStageCreateInfo* shaderStagesPtr = shaderStages) {
-                        GraphicsPipelineCreateInfo pipelineInfo = new GraphicsPipelineCreateInfo {
-                            SType               = StructureType.GraphicsPipelineCreateInfo,
-                            StageCount          = 2,
-                            PStages             = shaderStagesPtr,
-                            PVertexInputState   = &vertexInputInfo,
-                            PInputAssemblyState = &inputAssembler,
-                            PViewportState      = &viewportState,
-                            PRasterizationState = &rasterizerState,
-                            PMultisampleState   = &multisampleState,
-                            PDepthStencilState  = null,
-                            PColorBlendState    = &colorBlendState,
-                            PDynamicState       = &dynamicState,
-                            Layout = this._pipelineLayout,
-
-                        };
-                    }
                 }
             }
         }
