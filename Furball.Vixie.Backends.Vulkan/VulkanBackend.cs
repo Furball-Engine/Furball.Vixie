@@ -209,19 +209,17 @@ namespace Furball.Vixie.Backends.Vulkan {
             string[] validationLayerNames = Array.Empty<string>();
 
 #if DEBUG
-            uint[] layerCount = new uint[] { 0 };
+            uint layerCount;
 
-            fixed (uint* layerCountPtr = layerCount) {
-                this._vk.EnumerateInstanceLayerProperties(layerCountPtr, null);
+            this._vk.EnumerateInstanceLayerProperties(&layerCount, null);
 
-                LayerProperties[] propertiesArray = new LayerProperties[layerCount[0]];
-                Span<LayerProperties> properties = new Span<LayerProperties>(propertiesArray);
+            LayerProperties[] propertiesArray = new LayerProperties[layerCount];
+            Span<LayerProperties> properties = new Span<LayerProperties>(propertiesArray);
 
-                this._vk.EnumerateInstanceLayerProperties(layerCountPtr, properties);
+            this._vk.EnumerateInstanceLayerProperties(&layerCount, properties);
 
-                if (!VerifyRequestedValidationLayersSupported(propertiesArray, out validationLayerCount, out validationLayerNames)) {
-                    Logger.Log("Validation layers requested, but not all were available! Validation layers may not work.", LoggerLevelVulkan.InstanceWarning);
-                }
+            if (!VerifyRequestedValidationLayersSupported(propertiesArray, out validationLayerCount, out validationLayerNames)) {
+                Logger.Log("Validation layers requested, but not all were available! Validation layers may not work.", LoggerLevelVulkan.InstanceWarning);
             }
 #endif
 
@@ -331,7 +329,7 @@ namespace Furball.Vixie.Backends.Vulkan {
             };
 
             ReadOnlySpan<QueueInfo> physicalQueues = this._physicalDeviceInfo.Queues.Span;
-            DeviceQueueCreateInfo[] queueCreates = new DeviceQueueCreateInfo[physicalQueues.Length];
+            DeviceQueueCreateInfo* queueCreates = stackalloc DeviceQueueCreateInfo[physicalQueues.Length];
 
             int queueCreateCount = -1;
 
@@ -357,15 +355,14 @@ namespace Furball.Vixie.Backends.Vulkan {
                 return false;
             }
 
-            fixed (DeviceQueueCreateInfo* pQueueCreateInfos = queueCreates)
-                this._vk.CreateDevice(this._physicalDeviceInfo.Handle,
-                                      new DeviceCreateInfo(queueCreateInfoCount: (uint)(queueCreateCount + 1),
-                                                           pQueueCreateInfos: pQueueCreateInfos,
-                                                           enabledExtensionCount: (uint)enabledExtensionCount,
-                                                           ppEnabledExtensionNames: (byte**)extensionMem.Handle,
-                                                           pEnabledFeatures: &enabledFeature),
-                                      null,
-                                      out device);
+            this._vk.CreateDevice(this._physicalDeviceInfo.Handle,
+                                  new DeviceCreateInfo(queueCreateInfoCount: (uint)(queueCreateCount + 1),
+                                                       pQueueCreateInfos: queueCreates,
+                                                       enabledExtensionCount: (uint)enabledExtensionCount,
+                                                       ppEnabledExtensionNames: (byte**)extensionMem.Handle,
+                                                       pEnabledFeatures: &enabledFeature),
+                                  null,
+                                  out device);
 
             QueueInfo[] newQueueInfos = new QueueInfo[this._physicalDeviceInfo.Queues.Length];
 
@@ -437,12 +434,12 @@ namespace Furball.Vixie.Backends.Vulkan {
                                                                     ref toolCount,
                                                                     null);
 
-                PhysicalDeviceToolProperties[] toolingProperties = new PhysicalDeviceToolProperties[toolCount];
+                PhysicalDeviceToolProperties* toolingProperties = stackalloc PhysicalDeviceToolProperties[(int)toolCount];
 
-                fixed (PhysicalDeviceToolProperties* pToolingProps = toolingProperties)
-                    this._vkToolingInfo.GetPhysicalDeviceToolProperties(this._physicalDeviceInfo.Handle,
-                                                                        ref toolCount,
-                                                                        pToolingProps);
+                
+                this._vkToolingInfo.GetPhysicalDeviceToolProperties(this._physicalDeviceInfo.Handle,
+                                                                    ref toolCount,
+                                                                    toolingProperties);
 
                 for (int i = 0; i < toolCount; i++) {
                     PhysicalDeviceToolProperties tool = toolingProperties[i];
@@ -543,20 +540,18 @@ namespace Furball.Vixie.Backends.Vulkan {
 
             QueueInfo graphicsQueue = this._queuePool.NextGraphicsQueue();
 
-            uint[] queueFamilyIndicies = new uint[] {
+            uint* queueFamilyIndicies = stackalloc uint[] {
                 (uint)this._presentationQueueInfo.QueueFamilyIndex, (uint)graphicsQueue.QueueFamilyIndex
             };
 
-            fixed (uint* queueFamilyIndiciesPtr = queueFamilyIndicies) {
-                if (graphicsQueue.QueueFamilyIndex != _presentationQueueInfo.QueueFamilyIndex) {
-                    swapchainCreateInfo.ImageSharingMode      = SharingMode.Concurrent;
-                    swapchainCreateInfo.QueueFamilyIndexCount = 2;
-                    swapchainCreateInfo.PQueueFamilyIndices   = queueFamilyIndiciesPtr;
-                } else {
-                    swapchainCreateInfo.ImageSharingMode      = SharingMode.Exclusive;
-                    swapchainCreateInfo.QueueFamilyIndexCount = 0;
-                    swapchainCreateInfo.PQueueFamilyIndices   = null;
-                }
+            if (graphicsQueue.QueueFamilyIndex != _presentationQueueInfo.QueueFamilyIndex) {
+                swapchainCreateInfo.ImageSharingMode      = SharingMode.Concurrent;
+                swapchainCreateInfo.QueueFamilyIndexCount = 2;
+                swapchainCreateInfo.PQueueFamilyIndices   = queueFamilyIndicies;
+            } else {
+                swapchainCreateInfo.ImageSharingMode      = SharingMode.Exclusive;
+                swapchainCreateInfo.QueueFamilyIndexCount = 0;
+                swapchainCreateInfo.PQueueFamilyIndices   = null;
             }
 
             swapchainCreateInfo.PreTransform   = swapChainSupportDetails.SurfaceCapabilities.CurrentTransform;
@@ -778,7 +773,7 @@ namespace Furball.Vixie.Backends.Vulkan {
             this._vertexShader   = new Shader(this, ResourceHelpers.GetByteResource("ShaderCode/Compiled/VertexShader.spv"),   ShaderStageFlags.ShaderStageVertexBit,   "main");
             this._fragmentShader = new Shader(this, ResourceHelpers.GetByteResource("ShaderCode/Compiled/FragmentShader.spv"), ShaderStageFlags.ShaderStageFragmentBit, "main");
 
-            PipelineShaderStageCreateInfo[] shaderStages = new PipelineShaderStageCreateInfo[] {
+            PipelineShaderStageCreateInfo* shaderStages = stackalloc PipelineShaderStageCreateInfo[] {
                 this._vertexShader.GetPipelineCreateInfo(), this._fragmentShader.GetPipelineCreateInfo(),
             };
 
@@ -806,102 +801,98 @@ namespace Furball.Vixie.Backends.Vulkan {
                 Offset = new Offset2D(0, 0), Extent = this._swapchainExtent
             };
 
-            DynamicState[] dynamicStates = new DynamicState[] {
+            DynamicState* dynamicStates = stackalloc DynamicState[] {
                 DynamicState.Viewport, DynamicState.Scissor
             };
 
-            fixed (DynamicState* dynamicStatePtr = dynamicStates) {
-                PipelineDynamicStateCreateInfo dynamicState = new PipelineDynamicStateCreateInfo {
-                    SType = StructureType.PipelineDynamicStateCreateInfo, DynamicStateCount = 2, PDynamicStates = dynamicStatePtr
-                };
+            PipelineDynamicStateCreateInfo dynamicState = new PipelineDynamicStateCreateInfo {
+                SType = StructureType.PipelineDynamicStateCreateInfo, DynamicStateCount = 2, PDynamicStates = dynamicStates
+            };
 
-                PipelineViewportStateCreateInfo viewportState = new PipelineViewportStateCreateInfo {
-                    SType         = StructureType.PipelineViewportStateCreateInfo,
-                    ViewportCount = 1,
-                    ScissorCount  = 1,
-                    PViewports    = &viewport,
-                    PScissors     = &scissorRectangle, };
+            PipelineViewportStateCreateInfo viewportState = new PipelineViewportStateCreateInfo {
+                SType         = StructureType.PipelineViewportStateCreateInfo,
+                ViewportCount = 1,
+                ScissorCount  = 1,
+                PViewports    = &viewport,
+                PScissors     = &scissorRectangle, };
 
-                PipelineRasterizationStateCreateInfo rasterizerState = new PipelineRasterizationStateCreateInfo {
-                    SType                   = StructureType.PipelineRasterizationProvokingVertexStateCreateInfoExt,
-                    RasterizerDiscardEnable = false,
-                    PolygonMode             = PolygonMode.Fill,
-                    LineWidth               = 1.0f,
-                    CullMode                = CullModeFlags.CullModeBackBit,
-                    FrontFace               = FrontFace.Clockwise,
-                    DepthBiasEnable         = false,
-                    DepthBiasConstantFactor = 0.0f,
-                    DepthBiasClamp          = 0.0f,
-                    DepthBiasSlopeFactor    = 0.0f,
-                };
+            PipelineRasterizationStateCreateInfo rasterizerState = new PipelineRasterizationStateCreateInfo {
+                SType                   = StructureType.PipelineRasterizationProvokingVertexStateCreateInfoExt,
+                RasterizerDiscardEnable = false,
+                PolygonMode             = PolygonMode.Fill,
+                LineWidth               = 1.0f,
+                CullMode                = CullModeFlags.CullModeBackBit,
+                FrontFace               = FrontFace.Clockwise,
+                DepthBiasEnable         = false,
+                DepthBiasConstantFactor = 0.0f,
+                DepthBiasClamp          = 0.0f,
+                DepthBiasSlopeFactor    = 0.0f,
+            };
 
-                PipelineMultisampleStateCreateInfo multisampleState = new PipelineMultisampleStateCreateInfo {
-                    SType                 = StructureType.PipelineMultisampleStateCreateInfo,
-                    SampleShadingEnable   = false,
-                    RasterizationSamples  = SampleCountFlags.SampleCount1Bit,
-                    MinSampleShading      = 1.0f,
-                    PSampleMask           = null,
-                    AlphaToCoverageEnable = false,
-                    AlphaToOneEnable      = false,
-                };
+            PipelineMultisampleStateCreateInfo multisampleState = new PipelineMultisampleStateCreateInfo {
+                SType                 = StructureType.PipelineMultisampleStateCreateInfo,
+                SampleShadingEnable   = false,
+                RasterizationSamples  = SampleCountFlags.SampleCount1Bit,
+                MinSampleShading      = 1.0f,
+                PSampleMask           = null,
+                AlphaToCoverageEnable = false,
+                AlphaToOneEnable      = false,
+            };
 
-                PipelineColorBlendAttachmentState blendState = new PipelineColorBlendAttachmentState {
-                    ColorWriteMask      = ColorComponentFlags.ColorComponentRBit |
-                                          ColorComponentFlags.ColorComponentGBit |
-                                          ColorComponentFlags.ColorComponentBBit |
-                                          ColorComponentFlags.ColorComponentABit,
-                    BlendEnable         = true,
-                    SrcColorBlendFactor = BlendFactor.SrcAlpha,
-                    DstColorBlendFactor = BlendFactor.OneMinusSrcAlpha,
-                    ColorBlendOp        = BlendOp.Add,
-                    SrcAlphaBlendFactor = BlendFactor.One,
-                    DstAlphaBlendFactor = BlendFactor.OneMinusSrcAlpha,
-                    AlphaBlendOp        = BlendOp.Add
-                };
+            PipelineColorBlendAttachmentState blendState = new PipelineColorBlendAttachmentState {
+                ColorWriteMask      = ColorComponentFlags.ColorComponentRBit |
+                                      ColorComponentFlags.ColorComponentGBit |
+                                      ColorComponentFlags.ColorComponentBBit |
+                                      ColorComponentFlags.ColorComponentABit,
+                BlendEnable         = true,
+                SrcColorBlendFactor = BlendFactor.SrcAlpha,
+                DstColorBlendFactor = BlendFactor.OneMinusSrcAlpha,
+                ColorBlendOp        = BlendOp.Add,
+                SrcAlphaBlendFactor = BlendFactor.One,
+                DstAlphaBlendFactor = BlendFactor.OneMinusSrcAlpha,
+                AlphaBlendOp        = BlendOp.Add
+            };
 
-                float* blendConstants = stackalloc float[] {
-                    0.0f, 0.0f, 0.0f, 0.0f
-                };
+            float* blendConstantArray = stackalloc float[] {
+                0.0f, 0.0f, 0.0f, 0.0f
+            };
 
-                PipelineColorBlendStateCreateInfo colorBlendState = new PipelineColorBlendStateCreateInfo {
-                    SType           = StructureType.PipelineColorBlendStateCreateInfo,
-                    LogicOpEnable   = true,
-                    LogicOp         = LogicOp.Copy,
-                    AttachmentCount = 1,
-                    PAttachments    = &blendState,
-                    BlendConstants  = blendConstants,
-                };
+            PipelineColorBlendStateCreateInfo colorBlendState = new PipelineColorBlendStateCreateInfo {
+                SType           = StructureType.PipelineColorBlendStateCreateInfo,
+                LogicOp         = LogicOp.Copy,
+                AttachmentCount = 1,
+                LogicOpEnable   = true,
+                PAttachments    = &blendState,
+                BlendConstants  = blendConstantArray
+            };
 
-                PipelineLayoutCreateInfo pipelineLayoutInfo = new PipelineLayoutCreateInfo {
-                    SType                  = StructureType.PipelineLayoutCreateInfo,
-                    SetLayoutCount         = 0,
-                    PSetLayouts            = null,
-                    PushConstantRangeCount = 0,
-                    PPushConstantRanges    = null
-                };
+            PipelineLayoutCreateInfo pipelineLayoutInfo = new PipelineLayoutCreateInfo {
+                SType                  = StructureType.PipelineLayoutCreateInfo,
+                SetLayoutCount         = 0,
+                PSetLayouts            = null,
+                PushConstantRangeCount = 0,
+                PPushConstantRanges    = null
+            };
 
-                Result result = this._vk.CreatePipelineLayout(this._device, &pipelineLayoutInfo, null, out this._pipelineLayout);
+            Result result = this._vk.CreatePipelineLayout(this._device, &pipelineLayoutInfo, null, out this._pipelineLayout);
 
-                if (result != Result.Success)
-                    throw new Exception("Failed to create Pipeline layout!");
+            if (result != Result.Success)
+                throw new Exception("Failed to create Pipeline layout!");
 
-                fixed (PipelineShaderStageCreateInfo* shaderStagesPtr = shaderStages) {
-                    GraphicsPipelineCreateInfo pipelineInfo = new GraphicsPipelineCreateInfo {
-                        SType               = StructureType.GraphicsPipelineCreateInfo,
-                        StageCount          = 2,
-                        PStages             = shaderStagesPtr,
-                        PVertexInputState   = &vertexInputInfo,
-                        PInputAssemblyState = &inputAssembler,
-                        PViewportState      = &viewportState,
-                        PRasterizationState = &rasterizerState,
-                        PMultisampleState   = &multisampleState,
-                        PDepthStencilState  = null,
-                        PColorBlendState    = &colorBlendState,
-                        PDynamicState       = &dynamicState,
-                        Layout = this._pipelineLayout,
-                    };
-                }
-            }
+            GraphicsPipelineCreateInfo pipelineInfo = new GraphicsPipelineCreateInfo {
+                SType               = StructureType.GraphicsPipelineCreateInfo,
+                StageCount          = 2,
+                PStages             = shaderStages,
+                PVertexInputState   = &vertexInputInfo,
+                PInputAssemblyState = &inputAssembler,
+                PViewportState      = &viewportState,
+                PRasterizationState = &rasterizerState,
+                PMultisampleState   = &multisampleState,
+                PDepthStencilState  = null,
+                PColorBlendState    = &colorBlendState,
+                PDynamicState       = &dynamicState,
+                Layout = this._pipelineLayout,
+            };
         }
 
 
