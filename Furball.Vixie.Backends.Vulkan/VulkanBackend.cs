@@ -770,8 +770,8 @@ namespace Furball.Vixie.Backends.Vulkan {
         private PipelineLayout _pipelineLayout;
 
         private void TestStuff() {
-            this._vertexShader   = new Shader(this, ResourceHelpers.GetByteResource("ShaderCode/Compiled/VertexShader.spv"),   ShaderStageFlags.ShaderStageVertexBit,   "main");
-            this._fragmentShader = new Shader(this, ResourceHelpers.GetByteResource("ShaderCode/Compiled/FragmentShader.spv"), ShaderStageFlags.ShaderStageFragmentBit, "main");
+            this._vertexShader   = new Shader(this, ResourceHelpers.GetByteResource("ShaderCode/Compiled/HardcodedTriangle/VertexShader.spv"),   ShaderStageFlags.ShaderStageVertexBit,   "main");
+            this._fragmentShader = new Shader(this, ResourceHelpers.GetByteResource("ShaderCode/Compiled/HardcodedTriangle/FragmentShader.spv"), ShaderStageFlags.ShaderStageFragmentBit, "main");
 
             PipelineShaderStageCreateInfo* shaderStages = stackalloc PipelineShaderStageCreateInfo[] {
                 this._vertexShader.GetPipelineCreateInfo(), this._fragmentShader.GetPipelineCreateInfo(),
@@ -863,8 +863,12 @@ namespace Furball.Vixie.Backends.Vulkan {
                 AttachmentCount = 1,
                 LogicOpEnable   = true,
                 PAttachments    = &blendState,
-                BlendConstants  = blendConstantArray
             };
+            //todo: figure out why the normal way of doing it causes weird compile errors
+            colorBlendState.BlendConstants[0] = blendConstantArray[0];
+            colorBlendState.BlendConstants[1] = blendConstantArray[1];
+            colorBlendState.BlendConstants[2] = blendConstantArray[2];
+            colorBlendState.BlendConstants[3] = blendConstantArray[3];
 
             PipelineLayoutCreateInfo pipelineLayoutInfo = new PipelineLayoutCreateInfo {
                 SType                  = StructureType.PipelineLayoutCreateInfo,
