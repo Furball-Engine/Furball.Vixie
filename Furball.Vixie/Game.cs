@@ -39,8 +39,16 @@ namespace Furball.Vixie {
         }
 
         private void RunInternal(WindowOptions options, Backend backend, bool requestViewOnly) {
-            Backends.Shared.Global.LatestSupportedGL = OpenGLDetector.OpenGLDetector.GetLatestSupported();
-            
+            try {
+                Backends.Shared.Global.LatestSupportedGL = OpenGLDetector.OpenGLDetector.GetLatestSupported();
+            }
+            catch {
+                //if an error occurs detecting the OpenGL version, fallback to legacy gl
+                //todo make this logic smarter
+                Backends.Shared.Global.LatestSupportedGL.GL   = new APIVersion(2, 0);
+                Backends.Shared.Global.LatestSupportedGL.GLES = new APIVersion(0, 0);
+            }
+
             if (backend == Backend.None)
                 backend = GraphicsBackend.GetReccomendedBackend();
             

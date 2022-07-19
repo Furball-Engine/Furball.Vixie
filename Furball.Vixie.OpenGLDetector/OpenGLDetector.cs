@@ -11,7 +11,7 @@ namespace Furball.Vixie.OpenGLDetector {
             var window = sdl.CreateWindow("", 0, 0, 1, 1, (uint)(WindowFlags.WindowHidden | WindowFlags.WindowOpengl));
 
             if (window == (Window*)0)
-                throw new Exception();
+                throw new Exception("Unable to create SDL window for OpenGL detection");
 
             return window;
         }
@@ -62,16 +62,23 @@ namespace Furball.Vixie.OpenGLDetector {
             var sdl = Sdl.GetApi();
 
             if (sdl.Init(Sdl.InitVideo) < 0)
-                throw new Exception();
-            
-            _Window = CreateWindow(sdl);
-            
-            if(testgl)
-                GetLatestGLSupported(sdl);
-            if(testgles)
-                GetLatestGLESSupported(sdl);
-            
-            sdl.DestroyWindow(_Window);
+                throw new Exception("Unable to init video");
+            try {
+                _Window = CreateWindow(sdl);
+
+                if (testgl)
+                    GetLatestGLSupported(sdl);
+                if (testgles)
+                    GetLatestGLESSupported(sdl);
+
+                sdl.DestroyWindow(_Window);
+            }
+            catch {
+                sdl.Quit();
+                sdl.Dispose();
+
+                throw;
+            }
 
             sdl.Quit();
             sdl.Dispose();
