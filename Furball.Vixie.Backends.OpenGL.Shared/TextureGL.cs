@@ -398,10 +398,21 @@ public class TextureGL : Texture, IDisposable {
 
         return this;
     }
-        
+
+    private TextureFilterType _filterType = TextureFilterType.Smooth;
     public override TextureFilterType FilterType {
-        get => throw new NotImplementedException();
-        set => throw new NotImplementedException();
+        get => this._filterType;
+        set {
+            TextureMagFilter magFilter = value == TextureFilterType.Smooth ? TextureMagFilter.Linear : TextureMagFilter.Nearest;
+            TextureMinFilter minFilter = value == TextureFilterType.Smooth ? TextureMinFilter.Linear : TextureMinFilter.Nearest;
+
+            this.Bind(TextureUnit.Texture0);
+            
+            this._backend.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)minFilter);
+            this._backend.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)magFilter);
+
+            this._filterType = value;
+        }
     }
     
     private bool _isDisposed = false;
