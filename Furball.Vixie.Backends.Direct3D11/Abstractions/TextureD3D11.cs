@@ -253,6 +253,11 @@ public class TextureD3D11 : Texture {
         return this;
     }
 
+    public override TextureFilterType FilterType {
+        get => throw new NotImplementedException();
+        set => throw new NotImplementedException();
+    }
+    
     public Texture BindToPixelShader(int slot) {
         this._backend.CheckThread();
         this._deviceContext.PSSetShaderResource(slot, this.TextureView);

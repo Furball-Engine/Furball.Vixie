@@ -399,6 +399,11 @@ public class TextureGL : Texture, IDisposable {
         return this;
     }
         
+    public override TextureFilterType FilterType {
+        get => throw new NotImplementedException();
+        set => throw new NotImplementedException();
+    }
+    
     private bool _isDisposed = false;
 
     /// <summary>

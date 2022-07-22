@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Numerics;
 using Furball.Vixie.Backends.Shared;
@@ -137,6 +138,10 @@ public class TextureVeldrid : Texture {
         this.Size = new Vector2(width, height);
     }
 
+    public override TextureFilterType FilterType {
+        get => throw new NotImplementedException();
+        set => throw new NotImplementedException();
+    }
     public override Texture SetData <pDataType>(int level, pDataType[] data) {
         this._backend.CheckThread();
         this._backend.GraphicsDevice.UpdateTexture(this.Texture, data, 0, 0, 0, this.Texture.Width, this.Texture.Height, 1, 0, (uint)level);
