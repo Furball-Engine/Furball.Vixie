@@ -53,6 +53,11 @@ public class BaseTestSelector : GameComponent {
             this.BaseGame.Components.Add(new TestMultipleTextures());
             this.BaseGame.Components.Remove(this);
         }
+        
+        if (ImGui.Button("Filtering Mode Test")) {
+            this.BaseGame.Components.Add(new TestFilteringMode());
+            this.BaseGame.Components.Remove(this);
+        }
 
         if (ImGui.Button("Empty Screen")) {
             this.BaseGame.Components.Add(new TestEmptyScreen());

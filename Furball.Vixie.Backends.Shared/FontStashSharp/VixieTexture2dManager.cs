@@ -15,6 +15,7 @@ public class VixieTexture2dManager : ITexture2DManager {
 
     public object CreateTexture(int width, int height) {
         Texture tex = this._backend.CreateTexture((uint)width, (uint)height);
+        tex.FilterType = TextureFilterType.Pixelated;
 
 #if DEBUG
         Global.TRACKED_TEXTURES.Add(new WeakReference<Texture>(tex));
@@ -33,5 +34,6 @@ public class VixieTexture2dManager : ITexture2DManager {
     public void SetTextureData(object texture, Rectangle bounds, byte[] data) {
         // ReSharper disable once PossibleNullReferenceException
         (texture as Texture).SetData(0, bounds, data);
+        (texture as Texture).FilterType = TextureFilterType.Pixelated;
     }
 }
