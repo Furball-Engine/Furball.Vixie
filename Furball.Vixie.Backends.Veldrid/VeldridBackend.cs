@@ -169,12 +169,13 @@ public class VeldridBackend : IGraphicsBackend {
         }
             
         ResourceLayout blankLayout = this.ResourceFactory.CreateResourceLayout(new(new ResourceLayoutElementDescription[] {
-            new($"tex_blank", ResourceKind.TextureReadOnly, ShaderStages.Fragment)
+            new($"tex_blank", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
+            new($"sampler_blank", ResourceKind.Sampler, ShaderStages.Fragment),
         }));
 
         this.WhitePixel = (TextureVeldrid)this.CreateWhitePixelTexture();
             
-        this.WhitePixelResourceSet = this.ResourceFactory.CreateResourceSet(new(blankLayout, this.WhitePixel.Texture));
+        this.WhitePixelResourceSet = this.ResourceFactory.CreateResourceSet(new(blankLayout, this.WhitePixel.Texture, this.GraphicsDevice.PointSampler));
 
         this.CommandList.Begin();
         this.FullScreenQuad = new FullScreenQuad(this);

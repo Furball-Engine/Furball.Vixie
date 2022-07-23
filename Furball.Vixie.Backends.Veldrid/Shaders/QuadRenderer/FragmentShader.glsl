@@ -5,13 +5,13 @@ layout(location = 1)      in vec2 fs_in_tex;
 layout(location = 2) flat in int  fs_in_texid;
 
 layout(set = 1, binding = 0) uniform texture2D tex_0;
-layout(set = 1, binding = 1) uniform texture2D sampler_0;
+layout(set = 1, binding = 1) uniform sampler   sampler_0;
 layout(set = 2, binding = 0) uniform texture2D tex_1;
-layout(set = 2, binding = 1) uniform texture2D sampler_1;
+layout(set = 2, binding = 1) uniform sampler   sampler_1;
 layout(set = 3, binding = 0) uniform texture2D tex_2;
-layout(set = 3, binding = 1) uniform texture2D sampler_2;
+layout(set = 3, binding = 1) uniform sampler   sampler_2;
 layout(set = 4, binding = 0) uniform texture2D tex_3;
-layout(set = 4, binding = 1) uniform texture2D sampler_3;
+layout(set = 4, binding = 1) uniform sampler   sampler_3;
 
 layout(location = 0) out vec4 fsout_Color;
 
