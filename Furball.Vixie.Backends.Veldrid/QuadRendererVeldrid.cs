@@ -146,8 +146,7 @@ public class QuadRendererVeldrid : IQuadRenderer {
                 TextureVeldrid.ResourceLayouts[0],
                 TextureVeldrid.ResourceLayouts[1],
                 TextureVeldrid.ResourceLayouts[2],
-                TextureVeldrid.ResourceLayouts[3],
-                this._backend.SamplerResourceLayout
+                TextureVeldrid.ResourceLayouts[3]
             },
             RasterizerState = new RasterizerStateDescription(FaceCullMode.None, PolygonFillMode.Solid, FrontFace.Clockwise, true, true)
         };
@@ -195,9 +194,6 @@ public class QuadRendererVeldrid : IQuadRenderer {
         for (uint i = 0; i < VeldridBackend.MAX_TEXTURE_UNITS; i++) {
             this._backend.CommandList.SetGraphicsResourceSet(i + 1, this._backend.WhitePixelResourceSet);
         }
-            
-        //Sets the last slot to the sampler
-        this._backend.CommandList.SetGraphicsResourceSet(5, this._backend.SamplerResourceSet);
     }
 
     public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {

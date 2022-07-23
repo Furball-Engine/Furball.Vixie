@@ -23,14 +23,18 @@ public class TextureVeldrid : Texture {
 
     internal int UsedId = -1;
 
-    public        ResourceSet[]    ResourceSets    = new ResourceSet[VeldridBackend.MAX_TEXTURE_UNITS];
-    public static ResourceLayout[] ResourceLayouts = new ResourceLayout[VeldridBackend.MAX_TEXTURE_UNITS];
+    private          TextureFilterType[] FilterTypes     = new TextureFilterType[VeldridBackend.MAX_TEXTURE_UNITS];
+    private readonly ResourceSet?[]      ResourceSets    = new ResourceSet[VeldridBackend.MAX_TEXTURE_UNITS];
+    public static    ResourceLayout[]    ResourceLayouts = new ResourceLayout[VeldridBackend.MAX_TEXTURE_UNITS];
         
     private readonly VeldridBackend _backend;
     private readonly Image<Rgba32>  _localBuffer;
 
     public ResourceSet GetResourceSet(VeldridBackend backend, int i) {
-        return this.ResourceSets[i] ?? (this.ResourceSets[i] = backend.ResourceFactory.CreateResourceSet(new ResourceSetDescription(ResourceLayouts[i], this.Texture)));
+        if (this.FilterTypes[i] != this.FilterType)
+            this.ResourceSets[i] = null;
+        
+        return this.ResourceSets[i] ?? (this.ResourceSets[i] = backend.ResourceFactory.CreateResourceSet(new ResourceSetDescription(ResourceLayouts[i], this.Texture, this.FilterType == TextureFilterType.Smooth ? this._backend.GraphicsDevice.Aniso4xSampler : this._backend.GraphicsDevice.PointSampler)));
     }
         
     public TextureVeldrid(VeldridBackend backend, string filepath) {
@@ -138,9 +142,10 @@ public class TextureVeldrid : Texture {
         this.Size = new Vector2(width, height);
     }
 
+    private TextureFilterType _filterType = TextureFilterType.Smooth;
     public override TextureFilterType FilterType {
-        get => throw new NotImplementedException();
-        set => throw new NotImplementedException();
+        get => this._filterType;
+        set => this._filterType = value;
     }
     public override Texture SetData <pDataType>(int level, pDataType[] data) {
         this._backend.CheckThread();

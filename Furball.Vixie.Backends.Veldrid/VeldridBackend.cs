@@ -33,8 +33,6 @@ public class VeldridBackend : IGraphicsBackend {
     private  IView           _view;
     private  ImGuiController _imgui;
 
-    internal ResourceLayout SamplerResourceLayout;
-    internal ResourceSet    SamplerResourceSet;
     public   TextureVeldrid WhitePixel;
     public   ResourceSet    WhitePixelResourceSet;
 
@@ -163,7 +161,8 @@ public class VeldridBackend : IGraphicsBackend {
 
         for (int i = 0; i < MAX_TEXTURE_UNITS; i++) {
             ResourceLayout layout = this.ResourceFactory.CreateResourceLayout(new(new ResourceLayoutElementDescription[] {
-                new($"tex_{i}", ResourceKind.TextureReadOnly, ShaderStages.Fragment)
+                new($"tex_{i}", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
+                new($"sampler_{i}", ResourceKind.Sampler, ShaderStages.Fragment)
             }));
 
             TextureVeldrid.ResourceLayouts[i] = layout;
@@ -173,13 +172,9 @@ public class VeldridBackend : IGraphicsBackend {
             new($"tex_blank", ResourceKind.TextureReadOnly, ShaderStages.Fragment)
         }));
 
-        this.WhitePixel = this.CreateWhitePixelTexture() as TextureVeldrid;
+        this.WhitePixel = (TextureVeldrid)this.CreateWhitePixelTexture();
             
         this.WhitePixelResourceSet = this.ResourceFactory.CreateResourceSet(new(blankLayout, this.WhitePixel.Texture));
-
-        this.SamplerResourceLayout = this.ResourceFactory.CreateResourceLayout(new(new ResourceLayoutElementDescription("TextureSampler", ResourceKind.Sampler, ShaderStages.Fragment)));
-
-        this.SamplerResourceSet = this.ResourceFactory.CreateResourceSet(new(this.SamplerResourceLayout, this.GraphicsDevice.Aniso4xSampler));
 
         this.CommandList.Begin();
         this.FullScreenQuad = new FullScreenQuad(this);
@@ -226,8 +221,6 @@ public class VeldridBackend : IGraphicsBackend {
     public override void Cleanup() {
         this.WhitePixelResourceSet.Dispose();
         this.WhitePixel.Dispose();
-        this.SamplerResourceSet.Dispose();
-        this.SamplerResourceLayout.Dispose();
         this._imgui.Dispose();
         this.CommandList.Dispose();
 
