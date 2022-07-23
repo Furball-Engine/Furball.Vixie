@@ -253,9 +253,14 @@ public class TextureD3D11 : Texture {
         return this;
     }
 
+    private TextureFilterType _filterType = TextureFilterType.Smooth;
     public override TextureFilterType FilterType {
-        get => throw new NotImplementedException();
-        set => throw new NotImplementedException();
+        get => this._filterType;
+        set {
+            this._filterType = value;
+            
+            //TODO: actually implement this
+        }
     }
     
     public Texture BindToPixelShader(int slot) {
