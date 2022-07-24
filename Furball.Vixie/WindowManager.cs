@@ -96,38 +96,36 @@ public class WindowManager : IDisposable {
     /// Creates the Window and grabs the OpenGL API of Window
     /// </summary>
     public void Create() {
+        Window.PrioritizeSdl();
+
         ContextAPI api = this.Backend switch {
-            Backend.OpenGLES     => ContextAPI.OpenGLES,
-            Backend.LegacyOpenGL => ContextAPI.OpenGL,
-            Backend.ModernOpenGL => ContextAPI.OpenGL,
-            Backend.Veldrid      => ContextAPI.None,
-            Backend.Vulkan       => ContextAPI.Vulkan,
-            Backend.Direct3D11   => ContextAPI.None,
-            _                    => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
+            Backend.OpenGLES   => ContextAPI.OpenGLES,
+            Backend.OpenGL     => ContextAPI.OpenGL,
+            Backend.Veldrid    => ContextAPI.None,
+            Backend.Vulkan     => ContextAPI.Vulkan,
+            Backend.Direct3D11 => ContextAPI.None,
+            _                  => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
         };
 
         ContextProfile profile = this.Backend switch {
-            Backend.OpenGLES     => ContextProfile.Core,
-            Backend.LegacyOpenGL => ContextProfile.Core,
-            Backend.ModernOpenGL => ContextProfile.Core,
-            Backend.Veldrid      => ContextProfile.Core,
-            Backend.Vulkan       => ContextProfile.Core,
-            Backend.Direct3D11   => ContextProfile.Core,
-            _                    => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
+            Backend.OpenGLES   => ContextProfile.Core,
+            Backend.OpenGL     => ContextProfile.Core,
+            Backend.Veldrid    => ContextProfile.Core,
+            Backend.Vulkan     => ContextProfile.Core,
+            Backend.Direct3D11 => ContextProfile.Core,
+            _                  => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
         };
 
         ContextFlags flags = this.Backend switch {
 #if DEBUG
-            Backend.OpenGLES     => ContextFlags.Debug,
-            Backend.ModernOpenGL => ContextFlags.Debug,
-            Backend.LegacyOpenGL => ContextFlags.Debug,
-            Backend.Veldrid      => ContextFlags.ForwardCompatible | ContextFlags.Debug,
-            Backend.Vulkan       => ContextFlags.Debug,
-            Backend.Direct3D11   => ContextFlags.Debug,
+            Backend.OpenGLES   => ContextFlags.Debug,
+            Backend.OpenGL     => ContextFlags.Debug,
+            Backend.Veldrid    => ContextFlags.ForwardCompatible | ContextFlags.Debug,
+            Backend.Vulkan     => ContextFlags.Debug,
+            Backend.Direct3D11 => ContextFlags.Debug,
 #else
                 Backend.OpenGLES => ContextFlags.Default,
-                Backend.ModernOpenGL => ContextFlags.Default,
-                Backend.LegacyOpenGL => ContextFlags.Default,
+                Backend.OpenGL => ContextFlags.Default,
                 Backend.Direct3D11 => ContextFlags.Default,
                 Backend.Veldrid  => ContextFlags.ForwardCompatible,
                 Backend.Vulkan   => ContextFlags.Default,
@@ -145,17 +143,9 @@ public class WindowManager : IDisposable {
 
                 version = Backends.Shared.Global.LatestSupportedGL.GLES;
                 break;
-            case Backend.LegacyOpenGL:
-                if (Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion > 3 || Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion == 3 && Backends.Shared.Global.LatestSupportedGL.GL.MinorVersion > 0) {
-                    Backends.Shared.Global.LatestSupportedGL.GL = new APIVersion(3, 0);
-                    GraphicsBackend.IsOnUnsupportedPlatform     = true;//mark us as running on an unsupported configuration
-                }
-
-                version = Backends.Shared.Global.LatestSupportedGL.GL;
-                break;
-            case Backend.ModernOpenGL:
-                if (Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 3 || Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion == 3 && Backends.Shared.Global.LatestSupportedGL.GL.MinorVersion < 2) {
-                    Backends.Shared.Global.LatestSupportedGL.GL = new APIVersion(3, 2);
+            case Backend.OpenGL:
+                if (Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 2) {
+                    Backends.Shared.Global.LatestSupportedGL.GL = new APIVersion(2, 0);
                     GraphicsBackend.IsOnUnsupportedPlatform     = true;//mark us as running on an unsupported configuration
                 }
 

@@ -7,7 +7,7 @@ using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers.Helpers;
 using Silk.NET.OpenGL;
 
-namespace Furball.Vixie.Backends.OpenGL41; 
+namespace Furball.Vixie.Backends.OpenGL; 
 
 [StructLayout(LayoutKind.Sequential)]
 public unsafe struct BatchedLineVertex {
@@ -16,7 +16,7 @@ public unsafe struct BatchedLineVertex {
 }
 
 public class GeometryShaderLineRenderer : IDisposable, ILineRenderer {
-    private readonly ModernOpenGLBackend _backend;
+    private readonly OpenGLBackend _backend;
     /// <summary>
     /// Max Lines allowed in 1 Batch
     /// </summary>
@@ -56,19 +56,19 @@ public class GeometryShaderLineRenderer : IDisposable, ILineRenderer {
     /// </summary>
     /// <param name="backend">OpenGL API</param>
     /// <param name="capacity">How many Lines to allow in 1 Batch</param>
-    public unsafe GeometryShaderLineRenderer(ModernOpenGLBackend backend, int capacity = 8192) {
+    public unsafe GeometryShaderLineRenderer(OpenGLBackend backend, int capacity = 8192) {
         this._backend = backend;
         this._backend.CheckThread();
-        this.gl = backend.GetGlApi();
+        this.gl = backend.GetModernGL();
 
         //Calculate Constants
         this.MaxLines     = capacity;
         this.MaxVerticies = capacity * 32;
 
         //Load Shader Source
-        string vertexSource   = ResourceHelpers.GetStringResource("Shaders/LineRenderer/VertexShader.glsl");
-        string fragmentSource = ResourceHelpers.GetStringResource("Shaders/LineRenderer/FragmentShader.glsl");
-        string geometrySource = ResourceHelpers.GetStringResource("Shaders/LineRenderer/GeometryShader.glsl");
+        string vertexSource   = ResourceHelpers.GetStringResource("Shaders/GeometryShaderLineRenderer/VertexShader.glsl");
+        string fragmentSource = ResourceHelpers.GetStringResource("Shaders/GeometryShaderLineRenderer/FragmentShader.glsl");
+        string geometrySource = ResourceHelpers.GetStringResource("Shaders/GeometryShaderLineRenderer/GeometryShader.glsl");
 
         //Create, Bind, Attach, Compile and Link the Vertex Fragment and Geometry Shaders
         this._lineShaderGl41 = new ShaderGL(backend);

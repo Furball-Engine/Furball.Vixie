@@ -2,11 +2,11 @@ using System.Text;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Helpers.Helpers;
 
-namespace Furball.Vixie.Backends.OpenGL20; 
+namespace Furball.Vixie.Backends.OpenGL; 
 
-internal static class FakeInstancingQuadShaderGenerator {
+public static class InstancedQuadShaderGenerator {
     public static string GetFragment(IGraphicsBackend backend) {
-        string orig = ResourceHelpers.GetStringResource("Shaders/QuadRenderer/FragmentShader.glsl");
+        string orig = ResourceHelpers.GetStringResource("Shaders/InstancedQuadRenderer/FragmentShader.glsl");
 
         StringBuilder uniformBuilder = new();
         StringBuilder ifBuilder      = new();
@@ -16,7 +16,7 @@ internal static class FakeInstancingQuadShaderGenerator {
 
             if (i != 0) ifBuilder.Append("else ");
 
-            ifBuilder.Append($"if(tex_id == {i}) {{ gl_FragColor = texture2D(tex_{i}, fs_in_tex) * fs_in_col; }}");
+            ifBuilder.Append($"if(fs_in_texid == {i}) {{ OutputColor = texture(tex_{i}, fs_in_tex) * fs_in_col; }}");
         }
 
         return orig

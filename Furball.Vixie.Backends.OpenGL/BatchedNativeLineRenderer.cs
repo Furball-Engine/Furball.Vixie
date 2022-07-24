@@ -8,7 +8,7 @@ using Furball.Vixie.Helpers.Helpers;
 using Silk.NET.OpenGL.Legacy;
 using ShaderType=Silk.NET.OpenGL.ShaderType;
 
-namespace Furball.Vixie.Backends.OpenGL20; 
+namespace Furball.Vixie.Backends.OpenGL; 
 
 internal class BatchedNativeLineRenderer : ILineRenderer {
     private struct LineData {
@@ -16,23 +16,24 @@ internal class BatchedNativeLineRenderer : ILineRenderer {
         public Color   Color;
     }
         
-    private readonly LegacyOpenGLBackend _backend;
+    private readonly OpenGLBackend _backend;
 
     private const int BATCH_MAX = 128; //cut this in two for actual line count, as we use 2 LineData structs per line :^)
         
-    private readonly ShaderGL _program;
-    private readonly uint     _arrayBuf;
-
-    private          int        _batchedLines = 0;
-    private readonly LineData[] _lineData     = new LineData[BATCH_MAX];
+    private readonly ShaderGL            _program;
+    private readonly BufferObjectGL      _arrayBuf;
+    private readonly GL                  _gl;
+    private          VertexArrayObjectGL _vao;
+    private          int                 _batchedLines = 0;
+    private readonly LineData[]          _lineData     = new LineData[BATCH_MAX];
         
-    internal unsafe BatchedNativeLineRenderer(LegacyOpenGLBackend backend) {
+    internal unsafe BatchedNativeLineRenderer(OpenGLBackend backend) {
         this._backend = backend;
         this._backend.CheckThread();
-        this._gl = backend.GetOpenGL();
+        this._gl = backend.GetLegacyGL();
             
-        string vertex   = ResourceHelpers.GetStringResource("Shaders/LineRenderer/VertexShader.glsl");
-        string fragment = ResourceHelpers.GetStringResource("Shaders/LineRenderer/FragmentShader.glsl");
+        string vertex   = ResourceHelpers.GetStringResource("Shaders/BatchedNativeLineRenderer/VertexShader.glsl");
+        string fragment = ResourceHelpers.GetStringResource("Shaders/BatchedNativeLineRenderer/FragmentShader.glsl");
 
         this._program = new ShaderGL(backend);
 
@@ -40,12 +41,20 @@ internal class BatchedNativeLineRenderer : ILineRenderer {
             .AttachShader(ShaderType.FragmentShader, fragment)
             .Link();
 
-        this._arrayBuf = this._gl.GenBuffer();
-        this._gl.BindBuffer(BufferTargetARB.ArrayBuffer, this._arrayBuf);
-        //Fill the buffer with empty
-        this._gl.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(sizeof(LineData) * BATCH_MAX), null, BufferUsageARB.DynamicDraw);
-            
-        this._gl.BindBuffer(GLEnum.ArrayBuffer, 0);
+        this._vao = new VertexArrayObjectGL(backend);
+
+        this._vao.Bind();
+
+        this._arrayBuf = new BufferObjectGL(this._backend, (sizeof(LineData) * BATCH_MAX), Silk.NET.OpenGL.BufferTargetARB.ArrayBuffer, Silk.NET.OpenGL.BufferUsageARB.DynamicDraw);
+        this._arrayBuf.Bind();
+        this._arrayBuf.SetData<LineData>(this._lineData);
+        
+        VertexBufferLayoutGL layout = new VertexBufferLayoutGL();
+        layout.AddElement<float>(2);
+        layout.AddElement<float>(4);
+
+        this._vao.AddBuffer(this._arrayBuf, layout);
+        this._vao.Unbind();
     }
 
     public void Dispose() {
@@ -69,20 +78,20 @@ internal class BatchedNativeLineRenderer : ILineRenderer {
         fixed (void* ptr = &this._backend.ProjectionMatrix)
             this._gl.UniformMatrix4(this._program.GetUniformLocation("u_ProjectionMatrix"), 1, false, (float*)ptr);
         this._backend.CheckError("uniform matrix 4");
-            
-        this._gl.BindBuffer(GLEnum.ArrayBuffer, this._arrayBuf);
-            
-        this._gl.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, (uint)sizeof(LineData), (void*)0);
-        this._gl.VertexAttribPointer(1, 4, VertexAttribPointerType.Float, false, (uint)sizeof(LineData), (void*)sizeof(Vector2));
-            
+        
+        this._vao.Bind();
+
+        // this._gl.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, (uint)sizeof(LineData), (void*)0);
+        // this._backend.CheckError("set vertex attrib ptr 1");
+        // this._gl.VertexAttribPointer(1, 4, VertexAttribPointerType.Float, false, (uint)sizeof(LineData), (void*)sizeof(Vector2));
+        // this._backend.CheckError("set vertex attrib ptr 2");
+        
         this._gl.EnableVertexAttribArray(0);
         this._gl.EnableVertexAttribArray(1);
-            
-        this._gl.BindBuffer(GLEnum.ArrayBuffer, 0);
+        this._backend.CheckError("enable vertex attrib arrays");
     }
 
-    private          float lastThickness = 0;
-    private readonly GL    _gl;
+    private float               lastThickness = 0;
     public void Draw(Vector2 begin, Vector2 end, float thickness, Color color) {
         this._backend.CheckThread();
         if (!this.IsBegun) throw new Exception("LineRenderer is not begun!!");
@@ -103,21 +112,24 @@ internal class BatchedNativeLineRenderer : ILineRenderer {
         this._batchedLines += 2;
     }
 
-    private void Flush() {
+    private unsafe void Flush() {
+
         this._backend.CheckThread();
         if (this._batchedLines == 0 || this.lastThickness == 0) return;
 
         this._program.Bind();
+        this._backend.CheckError("bindshader");
 
         this._gl.LineWidth(this.lastThickness * this._backend.VerticalRatio);
+        this._backend.CheckError("line width");
 
-        this._gl.BindBuffer(GLEnum.ArrayBuffer, this._arrayBuf);
-            
-        this._gl.BufferSubData<LineData>(GLEnum.ArrayBuffer, 0, this._lineData);
-
+        this._arrayBuf.Bind();
+        fixed(void* ptr = this._lineData)
+            this._arrayBuf.SetSubData(ptr, (nuint)(sizeof(LineData) * this._batchedLines));
+        this._backend.CheckError("buffer data");
+        
         this._gl.DrawArrays(PrimitiveType.Lines, 0, (uint)this._batchedLines);
-
-        this._gl.BindBuffer(GLEnum.ArrayBuffer, 0);
+        this._backend.CheckError("draw arrays");
 
         this._program.Unbind();
 
@@ -130,7 +142,7 @@ internal class BatchedNativeLineRenderer : ILineRenderer {
         this.IsBegun = false;
         this.Flush();
 
-        this._gl.DisableVertexAttribArray(0);
-        this._gl.DisableVertexAttribArray(1);
+        // this._gl.DisableVertexAttribArray(0);
+        // this._gl.DisableVertexAttribArray(1);
     }
 }

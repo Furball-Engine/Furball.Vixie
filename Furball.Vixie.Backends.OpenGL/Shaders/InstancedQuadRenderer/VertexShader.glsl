@@ -1,4 +1,4 @@
-#version 150
+#version 140
 
 //Vertex data
 /* layout (location = 0) */ in vec2 VertexPosition;

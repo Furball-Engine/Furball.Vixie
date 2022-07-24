@@ -9,8 +9,6 @@ public enum GLBackendType {
 }
 
 public interface IGLBasedBackend {
-    public GLBackendType GetType();
-
     public float VerticalRatio { get; set; }
         
     public GL                        GetModernGL();

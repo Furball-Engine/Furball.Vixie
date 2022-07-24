@@ -13,10 +13,10 @@ using Color=Furball.Vixie.Backends.Shared.Color;
 using ShaderType=Silk.NET.OpenGL.ShaderType;
 using Texture=Furball.Vixie.Backends.Shared.Texture;
 
-namespace Furball.Vixie.Backends.OpenGL20; 
+namespace Furball.Vixie.Backends.OpenGL; 
 
-internal class QuadRendererGL20 : IQuadRenderer {
-    private readonly LegacyOpenGLBackend _backend;
+internal class FakeInstancingQuadRenderer : IQuadRenderer {
+    private readonly OpenGLBackend _backend;
     private readonly GL              _gl;
 
     private readonly ShaderGL _program;
@@ -33,7 +33,7 @@ internal class QuadRendererGL20 : IQuadRenderer {
         this.disposed = true;
     }
         
-    ~QuadRendererGL20() {
+    ~FakeInstancingQuadRenderer() {
         DisposeQueue.Enqueue(this);
     }
 
@@ -42,12 +42,12 @@ internal class QuadRendererGL20 : IQuadRenderer {
         set;
     }
 
-    internal QuadRendererGL20(LegacyOpenGLBackend backend) {
+    internal FakeInstancingQuadRenderer(OpenGLBackend backend) {
         this._backend = backend;
         this._backend.CheckThread();
-        this._gl = backend.GetOpenGL();
+        this._gl = backend.GetLegacyGL();
 
-        string vertex   = ResourceHelpers.GetStringResource("Shaders/QuadRenderer/VertexShader.glsl");
+        string vertex   = ResourceHelpers.GetStringResource("Shaders/FakeInstancingQuadRenderer/VertexShader.glsl");
         string fragment = FakeInstancingQuadShaderGenerator.GetFragment(backend);
 
         this._program = new(this._backend);
@@ -331,9 +331,9 @@ internal class QuadRendererGL20 : IQuadRenderer {
         this.IsBegun = false;
         this.Flush();
 
-        this._gl.DisableVertexAttribArray(0);
-        this._gl.DisableVertexAttribArray(1);
-        this._gl.DisableVertexAttribArray(2);
+        // this._gl.DisableVertexAttribArray(0);
+        // this._gl.DisableVertexAttribArray(1);
+        // this._gl.DisableVertexAttribArray(2);
     }
 
     #region overloads

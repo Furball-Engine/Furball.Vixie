@@ -51,11 +51,13 @@ public class VertexArrayObjectGL : IDisposable {
             LayoutElement currentElement = elements[(int) i];
             //Define the Layout of this Element
             this._backend.EnableVertexAttribArray(i);
+            this._backend.CheckError("vertexattribarr");
 
             if (currentElement.Type != VertexAttribPointerType.Int)
                 this._backend.VertexAttribPointer(i, currentElement.Count, currentElement.Type, currentElement.Normalized, layoutGl41.GetStride(), (void*)offset);
             else
                 this._backend.VertexAttribIPointer(i, currentElement.Count, VertexAttribIType.Int, layoutGl41.GetStride(), (void*)offset);
+            this._backend.CheckError("vertex attrib ptr");
 
             offset += (uint) currentElement.Count * LayoutElement.GetSizeOfType(currentElement.Type);
         }

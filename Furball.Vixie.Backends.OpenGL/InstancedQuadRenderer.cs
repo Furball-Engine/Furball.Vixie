@@ -12,7 +12,7 @@ using Silk.NET.OpenGL;
 using Color=Furball.Vixie.Backends.Shared.Color;
 using Texture=Furball.Vixie.Backends.Shared.Texture;
 
-namespace Furball.Vixie.Backends.OpenGL41; 
+namespace Furball.Vixie.Backends.OpenGL; 
 
 public class InstancedQuadRenderer : IQuadRenderer {
     [StructLayout(LayoutKind.Sequential)]
@@ -66,22 +66,22 @@ public class InstancedQuadRenderer : IQuadRenderer {
 
     private ShaderGL _shaderGl41;
 
-    private ModernOpenGLBackend _backend;
+    private OpenGLBackend _backend;
     // ReSharper disable once InconsistentNaming
     private GL gl;
 
-    public unsafe InstancedQuadRenderer(ModernOpenGLBackend backend) {
+    public unsafe InstancedQuadRenderer(OpenGLBackend backend) {
         this._backend = backend;
         this._backend.CheckThread();
 
-        this.gl = this._backend.GetGlApi();
+        this.gl = this._backend.GetModernGL();
 
         this._boundTextures = new uint[this._backend.QueryMaxTextureUnits()];
         for (var i = 0; i < this._boundTextures.Length; i++) {
             this._boundTextures[i] = uint.MaxValue;
         }
             
-        string vertSource = ResourceHelpers.GetStringResource("Shaders/QuadRenderer/VertexShader.glsl");
+        string vertSource = ResourceHelpers.GetStringResource("Shaders/InstancedQuadRenderer/VertexShader.glsl");
         string fragSource = InstancedQuadShaderGenerator.GetFragment(backend);
 
         this._shaderGl41 = new ShaderGL(backend);
@@ -198,6 +198,17 @@ public class InstancedQuadRenderer : IQuadRenderer {
 
         // this._InstanceVBO.SetData<InstanceData>(this._instanceData);
         this._instanceVbo.Bind();
+        
+        this.gl.EnableVertexAttribArray(0);
+        this.gl.EnableVertexAttribArray(1);
+        this.gl.EnableVertexAttribArray(2);
+        this.gl.EnableVertexAttribArray(3);
+        this.gl.EnableVertexAttribArray(4);
+        this.gl.EnableVertexAttribArray(5);
+        this.gl.EnableVertexAttribArray(6);
+        this.gl.EnableVertexAttribArray(7);
+        this.gl.EnableVertexAttribArray(8);
+        this.gl.EnableVertexAttribArray(9);
 
         this.IsBegun = true;
     }
