@@ -2,7 +2,7 @@ using System;
 using System.Drawing;
 using System.Numerics;
 using FontStashSharp;
-using Furball.Vixie.Backends.OpenGL.Shared;
+using Furball.Vixie.Backends.OpenGL.Abstractions;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.FontStashSharp;
 using Furball.Vixie.Backends.Shared.Renderers;

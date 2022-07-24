@@ -2,9 +2,9 @@ using System;
 using Furball.Vixie.Helpers;
 using Silk.NET.OpenGL;
 
-namespace Furball.Vixie.Backends.OpenGL.Shared; 
+namespace Furball.Vixie.Backends.OpenGL.Abstractions; 
 
-public class BufferObjectGL : IDisposable {
+internal sealed class BufferObjectGL : IDisposable {
     internal static BufferObjectGL CurrentlyBound;
     public          bool           Bound => CurrentlyBound == this;
 

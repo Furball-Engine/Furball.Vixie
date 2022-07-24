@@ -1,6 +1,6 @@
 using Silk.NET.OpenGL;
 
-namespace Furball.Vixie.Backends.OpenGL.Shared; 
+namespace Furball.Vixie.Backends.OpenGL.Abstractions; 
 
 public enum GLBackendType {
     Modern,
@@ -8,7 +8,7 @@ public enum GLBackendType {
     Legacy
 }
 
-public interface IGLBasedBackend {
+internal interface IGLBasedBackend {
     public float VerticalRatio { get; set; }
         
     public GL                        GetModernGL();

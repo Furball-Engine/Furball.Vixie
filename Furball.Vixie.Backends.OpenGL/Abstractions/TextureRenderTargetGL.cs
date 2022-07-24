@@ -5,9 +5,9 @@ using Furball.Vixie.Helpers;
 using Silk.NET.OpenGL;
 using Texture=Furball.Vixie.Backends.Shared.Texture;
 
-namespace Furball.Vixie.Backends.OpenGL.Shared; 
+namespace Furball.Vixie.Backends.OpenGL.Abstractions; 
 
-public class TextureRenderTargetGL : TextureRenderTarget, IDisposable {
+internal sealed class TextureRenderTargetGL : TextureRenderTarget, IDisposable {
     /// <summary>
     /// Currently Bound TextureRenderTarget
     /// </summary>

@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using Silk.NET.OpenGL;
 
-namespace Furball.Vixie.Backends.OpenGL.Shared; 
+namespace Furball.Vixie.Backends.OpenGL.Abstractions;
 
-public struct LayoutElement {
+internal struct LayoutElement {
     /// <summary>
     /// Element Count, for example in a 2 component Vector this would be 2
     /// </summary>
@@ -42,7 +42,7 @@ public struct LayoutElement {
     }
 }
 
-public class VertexBufferLayoutGL {
+internal class VertexBufferLayoutGL {
     /// <summary>
     /// All of the Layout Elements
     /// </summary>

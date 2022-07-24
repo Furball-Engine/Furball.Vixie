@@ -7,12 +7,12 @@ using Furball.Vixie.Helpers.Helpers;
 using Kettu;
 using Silk.NET.OpenGL;
 
-namespace Furball.Vixie.Backends.OpenGL.Shared; 
+namespace Furball.Vixie.Backends.OpenGL.Abstractions; 
 
 /// <summary>
 /// A Shader, a Program run on the GPU
 /// </summary>
-public class ShaderGL : IDisposable {
+internal sealed class ShaderGL : IDisposable {
     private readonly IGLBasedBackend _backend;
     /// <summary>
     /// Currently Bound Shader

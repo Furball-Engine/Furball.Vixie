@@ -2,9 +2,9 @@ using System;
 using Furball.Vixie.Helpers;
 using Silk.NET.OpenGL;
 
-namespace Furball.Vixie.Backends.OpenGL.Shared; 
+namespace Furball.Vixie.Backends.OpenGL.Abstractions; 
 
-public class VertexArrayObjectGL : IDisposable {
+internal sealed class VertexArrayObjectGL : IDisposable {
     private readonly IGLBasedBackend _backend;
     /// <summary>
     /// Current Bound VAO
