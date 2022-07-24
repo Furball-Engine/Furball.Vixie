@@ -221,6 +221,51 @@ public class ShaderGL : IDisposable {
         //Return this for chaining
         return this;
     }
+    
+    public unsafe ShaderGL SetUniform4<T>(string uniformName, T[] arr, int count = -1) where T : unmanaged {
+        if (count == -1)
+            count = arr.Length;
+        
+        this._backend.GlCheckThread();
+        
+        fixed(T* ptr = arr)
+            this._backend.Uniform4(this.GetUniformLocation(uniformName), (uint)count, (float*)ptr);
+        
+        this._backend.CheckError("set uniform float");
+            
+        //Return this for chaining
+        return this;
+    }
+    
+    public unsafe ShaderGL SetUniform2<T>(string uniformName, T[] arr, int count = -1) where T : unmanaged {
+        if (count == -1)
+            count = arr.Length;
+        
+        this._backend.GlCheckThread();
+        
+        fixed(T* ptr = arr)
+            this._backend.Uniform2(this.GetUniformLocation(uniformName), (uint)count, (float*)ptr);
+        
+        this._backend.CheckError("set uniform float");
+            
+        //Return this for chaining
+        return this;
+    }
+    
+    public unsafe ShaderGL SetUniform1<T>(string uniformName, T[] arr, int count = -1) where T : unmanaged {
+        if (count == -1)
+            count = arr.Length;
+        
+        this._backend.GlCheckThread();
+        
+        fixed(T* ptr = arr)
+            this._backend.Uniform1(this.GetUniformLocation(uniformName), (uint)count, (float*)ptr);
+        
+        this._backend.CheckError("set uniform float");
+            
+        //Return this for chaining
+        return this;
+    }
         
     public ShaderGL SetUniform(string uniformName, float f, float f2) {
         this._backend.GlCheckThread();

@@ -96,7 +96,9 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
         this._glBindTexturesFeatureLevel            = FeatureLevels["glBindTextures"];
         this._needsFrameBufferExtensionFeatureLevel = FeatureLevels["NeedsFramebufferExtension"];
         
-        if (backend != Backend.OpenGLES && Global.LatestSupportedGL.GL.MajorVersion < 3) {
+        if (backend != Backend.OpenGLES && (Global.LatestSupportedGL.GL.MajorVersion < 3 ||
+                                            (Global.LatestSupportedGL.GL.MajorVersion == 3 &&
+                                             Global.LatestSupportedGL.GL.MinorVersion < 2))) {
             FeatureLevels["NeedsFramebufferExtension"].Value = true;
             Logger.Log("Marking that we require the ExtFramebufferObject!", LoggerLevelOpenGL.InstanceInfo);
         }
@@ -123,8 +125,6 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
             FeatureLevels["glBindTextures"].Value = true;
             Logger.Log("Enabling multi-texture bind!", LoggerLevelOpenGL.InstanceInfo);
         }
-        
-        FeatureLevels["GeometryShaderLines"].Value = false;
     }
 
     /// <summary>
@@ -177,11 +177,24 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
         mainSection.Contents.Add(("Renderer", this.gl.GetStringS(StringName.Renderer)));
         this.CheckError("check check renderer");
         if(Global.LatestSupportedGL.GL.MajorVersion >= 3) {
-            //we dont check for the EXT_framebuffer_object extension here because the method of getting extensions was changed the same version FBO's were added to core
+            bool foundExtFramebufferObject = false;
+            Exception ex = new(
+                "Your OpenGL version is too old and does not support the EXT_framebuffer_object extension! Try updating your video card drivers or try the Direct3D 11 and Vulkan backends!");
             
             this.gl.GetInteger(GetPName.NumExtensions, out int numExtensions);
             for (uint i = 0; i < numExtensions; i++) {
-                mainSection.Contents.Add(("Supported Extension", this.gl.GetStringS(GLEnum.Extensions, i)));
+                string extension = this.gl.GetStringS(GLEnum.Extensions, i);
+                mainSection.Contents.Add(("Supported Extension", extension));
+
+                if (extension.Contains("EXT_framebuffer_object"))
+                    foundExtFramebufferObject = true;
+            }
+
+            if (!foundExtFramebufferObject && FeatureLevels["NeedsFramebufferExtension"].Boolean)
+                throw ex;
+
+            if (this._needsFrameBufferExtensionFeatureLevel.Boolean) {
+                this.framebufferObjectEXT = new ExtFramebufferObject(this.legacyGl.Context);
             }
         }
         else {
@@ -211,6 +224,12 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     }
     public void GlCheckThread() {
         this.CheckThread();
+    }
+    public unsafe void Uniform2(int getUniformLocation, uint count, float* ptr) {
+        this.gl.Uniform2(getUniformLocation, count, ptr);
+    }
+    public unsafe void Uniform1(int getUniformLocation, uint count, float* ptr) {
+        this.gl.Uniform1(getUniformLocation, count, ptr);
     }
 
     /// <summary>
@@ -645,6 +664,9 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
 
     public void Uniform2(int getUniformLocation, int f, int f2) {
         this.gl.Uniform2(getUniformLocation, f, f2);
+    }
+    public unsafe void Uniform4(int getUniformLocation, uint count, float* ptr) {
+        this.gl.Uniform4(getUniformLocation, count, ptr);
     }
 
     public void DeleteProgram(uint programId) {
