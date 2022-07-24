@@ -1,4 +1,5 @@
 #version 110
+precision highp float;
 
 attribute vec2 a_VertexPosition;
 attribute vec4 a_VertexColor;

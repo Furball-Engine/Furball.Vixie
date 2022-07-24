@@ -12,8 +12,8 @@ using Silk.NET.Core.Native;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
-using Silk.NET.OpenGL.Extensions.ImGui;
 using Silk.NET.OpenGL.Legacy.Extensions.EXT;
+using Silk.NET.OpenGLES.Extensions.ImGui;
 using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -31,7 +31,7 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     // ReSharper disable once InconsistentNaming
     private GL gl;
     private Silk.NET.OpenGL.Legacy.GL legacyGl;
-    private Silk.NET.OpenGLES.GL gles;
+    private Silk.NET.OpenGLES.GL      gles;
     /// <summary>
     ///     Projection Matrix used to go from Window Coordinates to OpenGL Coordinates
     /// </summary>
@@ -43,14 +43,14 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     /// <summary>
     ///     ImGui Controller
     /// </summary>
-    private Silk.NET.OpenGLES.Extensions.ImGui.ImGuiController      _esImGuiController     = null;
-    private Silk.NET.OpenGL.Legacy.Extensions.ImGui.ImGuiController _legacyImGuiController = null;
-    
-    private  bool                                               _runImGui = true;
-    internal IView                                              View;
-    private  bool                                               _screenshotQueued;
-    private  Vector2D<int>                                      _viewport;
-    private  Rectangle                                          _lastScissor;
+    private ImGuiController _esImGuiController;
+    private Silk.NET.OpenGL.Legacy.Extensions.ImGui.ImGuiController _legacyImGuiController;
+
+    private  bool          _runImGui = true;
+    internal IView         View;
+    private  bool          _screenshotQueued;
+    private  Vector2D<int> _viewport;
+    private  Rectangle     _lastScissor;
 
     public static Dictionary<string, FeatureLevel> FeatureLevels = new() {
         {
@@ -79,7 +79,7 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
             }
         }
     };
-    
+
     private ExtFramebufferObject framebufferObjectEXT;
 
     private readonly FeatureLevel _instancedQuadRenderingFeatureLevel;
@@ -87,43 +87,56 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     private readonly FeatureLevel _glBindTexturesFeatureLevel;
     private readonly FeatureLevel _needsFrameBufferExtensionFeatureLevel;
 
-    private Backend              _creationBackend;
+    public readonly Backend CreationBackend;
     public OpenGLBackend(Backend backend) {
-        this._creationBackend = backend;
+        this.CreationBackend = backend;
 
         this._instancedQuadRenderingFeatureLevel    = FeatureLevels["InstancedQuadRendering"];
         this._geometryShaderLinesFeatureLevel       = FeatureLevels["GeometryShaderLines"];
         this._glBindTexturesFeatureLevel            = FeatureLevels["glBindTextures"];
         this._needsFrameBufferExtensionFeatureLevel = FeatureLevels["NeedsFramebufferExtension"];
-        
-        if (backend != Backend.OpenGLES && (Global.LatestSupportedGL.GL.MajorVersion < 3 ||
-                                            (Global.LatestSupportedGL.GL.MajorVersion == 3 &&
-                                             Global.LatestSupportedGL.GL.MinorVersion < 2))) {
-            FeatureLevels["NeedsFramebufferExtension"].Value = true;
-            Logger.Log("Marking that we require the ExtFramebufferObject!", LoggerLevelOpenGL.InstanceInfo);
+
+        if (backend == Backend.OpenGLES) {
+            if (Global.LatestSupportedGL.GLES.MajorVersion >= 3) {
+                FeatureLevels["InstancedQuadRendering"].Value = true;
+                Logger.Log("Enabling instanced quad rendering!", LoggerLevelOpenGL.InstanceInfo);
+            }
+            
+            if ((Global.LatestSupportedGL.GLES.MajorVersion >= 3 &&
+                 Global.LatestSupportedGL.GLES.MinorVersion >= 2) ||
+                Global.LatestSupportedGL.GLES.MajorVersion > 3) {
+                FeatureLevels["GeometryShaderLines"].Value = true;
+                Logger.Log("Enabling geometry shader lines!", LoggerLevelOpenGL.InstanceInfo);
+            }
         }
-        if(backend == Backend.OpenGL && ((Global.LatestSupportedGL.GL.MajorVersion == 3 &&
-                                          Global.LatestSupportedGL.GL.MinorVersion >= 1) || Global.LatestSupportedGL.GL.MajorVersion > 3)) {
-            FeatureLevels["InstancedQuadRendering"].Value = true;
-            Logger.Log("Enabling instanced quad rendering!", LoggerLevelOpenGL.InstanceInfo);
-        }
-        if(backend == Backend.OpenGLES && Global.LatestSupportedGL.GLES.MajorVersion >= 3) {
-            FeatureLevels["InstancedQuadRendering"].Value = true;
-            Logger.Log("Enabling instanced quad rendering!", LoggerLevelOpenGL.InstanceInfo);
-        }
-        if ((backend != Backend.OpenGLES && (Global.LatestSupportedGL.GL.MajorVersion >= 3 &&
-                                             Global.LatestSupportedGL.GL.MinorVersion >= 2) ||
-             Global.LatestSupportedGL.GL.MajorVersion > 3) ||
-            (backend == Backend.OpenGLES && (Global.LatestSupportedGL.GLES.MajorVersion >= 3 &&
-                                             Global.LatestSupportedGL.GLES.MinorVersion >= 2) ||
-             Global.LatestSupportedGL.GLES.MajorVersion > 3)) {
-            FeatureLevels["GeometryShaderLines"].Value = true;
-            Logger.Log("Enabling geometry shader lines!", LoggerLevelOpenGL.InstanceInfo);
-        }
-        if (backend != Backend.OpenGLES && (Global.LatestSupportedGL.GL.MajorVersion >= 4 && Global.LatestSupportedGL.GL.MinorVersion >= 4) ||
-            Global.LatestSupportedGL.GL.MajorVersion > 4) {
-            FeatureLevels["glBindTextures"].Value = true;
-            Logger.Log("Enabling multi-texture bind!", LoggerLevelOpenGL.InstanceInfo);
+        else {
+            if (Global.LatestSupportedGL.GL.MajorVersion < 3 ||
+                (Global.LatestSupportedGL.GL.MajorVersion == 3 &&
+                 Global.LatestSupportedGL.GL.MinorVersion < 2)) {
+                FeatureLevels["NeedsFramebufferExtension"].Value = true;
+                Logger.Log("Marking that we require the ExtFramebufferObject!", LoggerLevelOpenGL.InstanceInfo);
+            }
+            
+            if ((Global.LatestSupportedGL.GL.MajorVersion == 3 &&
+                 Global.LatestSupportedGL.GL.MinorVersion >= 1) ||
+                Global.LatestSupportedGL.GL.MajorVersion > 3) {
+                FeatureLevels["InstancedQuadRendering"].Value = true;
+                Logger.Log("Enabling instanced quad rendering!", LoggerLevelOpenGL.InstanceInfo);
+            }
+
+            if ((Global.LatestSupportedGL.GL.MajorVersion >= 3 &&
+                 Global.LatestSupportedGL.GL.MinorVersion >= 2) ||
+                Global.LatestSupportedGL.GL.MajorVersion > 3) {
+                FeatureLevels["GeometryShaderLines"].Value = true;
+                Logger.Log("Enabling geometry shader lines!", LoggerLevelOpenGL.InstanceInfo);
+            }
+            
+            if ((Global.LatestSupportedGL.GL.MajorVersion >= 4 &&
+                 Global.LatestSupportedGL.GL.MinorVersion >= 4) ||
+                Global.LatestSupportedGL.GL.MajorVersion > 4) {
+                FeatureLevels["glBindTextures"].Value = true;
+                Logger.Log("Enabling multi-texture bind!", LoggerLevelOpenGL.InstanceInfo);
+            }
         }
     }
 
@@ -137,19 +150,19 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
         this.gl       = view.CreateOpenGL();
         this.legacyGl = Silk.NET.OpenGL.Legacy.GL.GetApi(this.gl.Context);
         this.gles     = Silk.NET.OpenGLES.GL.GetApi(this.gl.Context);
-        
+
         this.CheckError("create opengl");
 
         this.View = view;
 
-// #if DEBUGWITHGL
-            unsafe {
-                //Enables Debugging
-                gl.Enable(EnableCap.DebugOutput);
-                gl.Enable(EnableCap.DebugOutputSynchronous);
-                gl.DebugMessageCallback(this.Callback, null);
-            }
-// #endif
+        // #if DEBUGWITHGL
+        unsafe {
+            //Enables Debugging
+            this.gl.Enable(EnableCap.DebugOutput);
+            this.gl.Enable(EnableCap.DebugOutputSynchronous);
+            this.gl.DebugMessageCallback(this.Callback, null);
+        }
+        // #endif
 
         //Enables Blending (Required for Transparent Objects)
         this.gl.Enable(EnableCap.Blend);
@@ -159,12 +172,12 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
 
         this.gl.Enable(EnableCap.ScissorTest);
 
-        if (this._creationBackend == Backend.OpenGL)
+        if (this.CreationBackend == Backend.OpenGL)
             this._legacyImGuiController =
                 new Silk.NET.OpenGL.Legacy.Extensions.ImGui.ImGuiController(this.legacyGl, view, inputContext);
-        if (this._creationBackend == Backend.OpenGLES)
+        if (this.CreationBackend == Backend.OpenGLES)
             this._esImGuiController =
-                new Silk.NET.OpenGLES.Extensions.ImGui.ImGuiController(this.gles, view, inputContext);
+                new ImGuiController(this.gles, view, inputContext);
         this.CheckError("create imguicontroller");
 
         BackendInfoSection mainSection = new("OpenGL Info");
@@ -176,11 +189,11 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
         this.CheckError("check check vendor");
         mainSection.Contents.Add(("Renderer", this.gl.GetStringS(StringName.Renderer)));
         this.CheckError("check check renderer");
-        if(Global.LatestSupportedGL.GL.MajorVersion >= 3) {
+        if (Global.LatestSupportedGL.GL.MajorVersion >= 3) {
             bool foundExtFramebufferObject = false;
             Exception ex = new(
                 "Your OpenGL version is too old and does not support the EXT_framebuffer_object extension! Try updating your video card drivers or try the Direct3D 11 and Vulkan backends!");
-            
+
             this.gl.GetInteger(GetPName.NumExtensions, out int numExtensions);
             for (uint i = 0; i < numExtensions; i++) {
                 string extension = this.gl.GetStringS(GLEnum.Extensions, i);
@@ -193,9 +206,8 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
             if (!foundExtFramebufferObject && FeatureLevels["NeedsFramebufferExtension"].Boolean)
                 throw ex;
 
-            if (this._needsFrameBufferExtensionFeatureLevel.Boolean) {
+            if (this._needsFrameBufferExtensionFeatureLevel.Boolean)
                 this.framebufferObjectEXT = new ExtFramebufferObject(this.legacyGl.Context);
-            }
         }
         else {
             Exception ex = new(
@@ -284,7 +296,7 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     /// </summary>
     /// <returns>A Texture Renderer</returns>
     public override IQuadRenderer CreateTextureRenderer() {
-        if(this._instancedQuadRenderingFeatureLevel.Boolean)
+        if (this._instancedQuadRenderingFeatureLevel.Boolean)
             return new InstancedQuadRenderer(this);
 
         return new FakeInstancingQuadRenderer(this);
@@ -294,7 +306,7 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     /// </summary>
     /// <returns></returns>
     public override ILineRenderer CreateLineRenderer() {
-        if(this._geometryShaderLinesFeatureLevel.Boolean)
+        if (this._geometryShaderLinesFeatureLevel.Boolean)
             return new GeometryShaderLineRenderer(this);
 
         return new BatchedNativeLineRenderer(this);
@@ -402,7 +414,7 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     public override void ImGuiUpdate(double deltaTime) {
         if (!this._runImGui)
             return;
-        
+
         this._esImGuiController?.Update((float)deltaTime);
         this._legacyImGuiController?.Update((float)deltaTime);
     }
@@ -413,7 +425,7 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     public override void ImGuiDraw(double deltaTime) {
         if (!this._runImGui)
             return;
-        
+
         this._esImGuiController?.Render();
         this._legacyImGuiController?.Render();
     }
@@ -426,7 +438,7 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
 
         if (stringMessage!.Contains("Buffer detailed info:"))
             return;
-        
+
         Console.WriteLine(stringMessage);
     }
     public float VerticalRatio {
@@ -492,15 +504,17 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     }
 
     public void BindFramebuffer(FramebufferTarget framebuffer, uint frameBufferId) {
-        if(this._needsFrameBufferExtensionFeatureLevel.Boolean) {
-            this.framebufferObjectEXT.BindFramebuffer((Silk.NET.OpenGL.Legacy.FramebufferTarget)framebuffer, frameBufferId);
+        if (this._needsFrameBufferExtensionFeatureLevel.Boolean) {
+            this.framebufferObjectEXT.BindFramebuffer((Silk.NET.OpenGL.Legacy.FramebufferTarget)framebuffer,
+                                                      frameBufferId);
             return;
         }
         this.gl.BindFramebuffer(framebuffer, frameBufferId);
     }
 
     public uint GenFramebuffer() {
-        return this._needsFrameBufferExtensionFeatureLevel.Boolean ? this.framebufferObjectEXT.GenFramebuffer() : this.gl.GenFramebuffer();
+        return this._needsFrameBufferExtensionFeatureLevel.Boolean ? this.framebufferObjectEXT.GenFramebuffer()
+            : this.gl.GenFramebuffer();
     }
 
     public void BindTexture(TextureTarget target, uint textureId) {
@@ -527,7 +541,8 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     }
 
     public uint GenRenderbuffer() {
-        return this._needsFrameBufferExtensionFeatureLevel.Boolean ? this.framebufferObjectEXT.GenRenderbuffer() : this.gl.GenRenderbuffer();
+        return this._needsFrameBufferExtensionFeatureLevel.Boolean ? this.framebufferObjectEXT.GenRenderbuffer()
+            : this.gl.GenRenderbuffer();
     }
 
     public void Viewport(int x, int y, uint width, uint height) {
@@ -548,7 +563,8 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
 
     public void RenderbufferStorage(RenderbufferTarget target, InternalFormat format, uint width, uint height) {
         if (this._needsFrameBufferExtensionFeatureLevel.Boolean) {
-            this.framebufferObjectEXT.RenderbufferStorage((Silk.NET.OpenGL.Legacy.RenderbufferTarget)target, (Silk.NET.OpenGL.Legacy.InternalFormat)format, width, height);
+            this.framebufferObjectEXT.RenderbufferStorage((Silk.NET.OpenGL.Legacy.RenderbufferTarget)target,
+                                                          (Silk.NET.OpenGL.Legacy.InternalFormat)format, width, height);
             return;
         }
         this.gl.RenderbufferStorage(target, format, width, height);
@@ -579,9 +595,9 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     }
 
     public GLEnum CheckFramebufferStatus(FramebufferTarget target) {
-        if (this._needsFrameBufferExtensionFeatureLevel.Boolean) {
-            return (GLEnum)this.framebufferObjectEXT.CheckFramebufferStatus((Silk.NET.OpenGL.Legacy.FramebufferTarget)target);
-        }
+        if (this._needsFrameBufferExtensionFeatureLevel.Boolean)
+            return (GLEnum)this.framebufferObjectEXT.CheckFramebufferStatus(
+                (Silk.NET.OpenGL.Legacy.FramebufferTarget)target);
         return this.gl.CheckFramebufferStatus(target);
     }
 

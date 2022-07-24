@@ -3,6 +3,7 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.OpenGL.Abstractions;
 using Furball.Vixie.Backends.Shared;
+using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers.Helpers;
 using Silk.NET.OpenGL;
@@ -70,6 +71,15 @@ public class GeometryShaderLineRenderer : IDisposable, ILineRenderer {
         string fragmentSource = ResourceHelpers.GetStringResource("Shaders/GeometryShaderLineRenderer/FragmentShader.glsl");
         string geometrySource = ResourceHelpers.GetStringResource("Shaders/GeometryShaderLineRenderer/GeometryShader.glsl");
 
+        if (backend.CreationBackend == Backend.OpenGLES) {
+            const string glVersion   = "#version 150";
+            const string glesVersion = "#version 320 es";
+            
+            vertexSource   = vertexSource  .Replace(glVersion, glesVersion);
+            fragmentSource = fragmentSource.Replace(glVersion, glesVersion);
+            geometrySource = geometrySource.Replace(glVersion, glesVersion);
+        }
+        
         //Create, Bind, Attach, Compile and Link the Vertex Fragment and Geometry Shaders
         this._lineShaderGl41 = new ShaderGL(backend);
         this._lineShaderGl41

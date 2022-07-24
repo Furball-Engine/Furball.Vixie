@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using FontStashSharp;
 using Furball.Vixie.Backends.OpenGL.Abstractions;
 using Furball.Vixie.Backends.Shared;
+using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.FontStashSharp;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers.Helpers;
@@ -83,6 +84,14 @@ public class InstancedQuadRenderer : IQuadRenderer {
             
         string vertSource = ResourceHelpers.GetStringResource("Shaders/InstancedQuadRenderer/VertexShader.glsl");
         string fragSource = InstancedQuadShaderGenerator.GetFragment(backend);
+
+        if (backend.CreationBackend == Backend.OpenGLES) {
+            const string glVersion = "#version 140";
+            const string glesVersion = "#version 300 es";
+            
+            vertSource = vertSource.Replace(glVersion, glesVersion);
+            fragSource = fragSource.Replace(glVersion, glesVersion);
+        }
 
         this._shaderGl41 = new ShaderGL(backend);
 

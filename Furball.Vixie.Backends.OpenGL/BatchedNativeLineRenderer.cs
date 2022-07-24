@@ -2,6 +2,7 @@ using System;
 using System.Numerics;
 using Furball.Vixie.Backends.OpenGL.Abstractions;
 using Furball.Vixie.Backends.Shared;
+using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers;
 using Furball.Vixie.Helpers.Helpers;
@@ -34,6 +35,28 @@ internal class BatchedNativeLineRenderer : ILineRenderer {
             
         string vertex   = ResourceHelpers.GetStringResource("Shaders/BatchedNativeLineRenderer/VertexShader.glsl");
         string fragment = ResourceHelpers.GetStringResource("Shaders/BatchedNativeLineRenderer/FragmentShader.glsl");
+        
+        if (backend.CreationBackend == Backend.OpenGLES) {
+            const string glVersion   = "#version 110";
+            const string glesVersion = "#version 300 es";
+            
+            vertex   = vertex.Replace(glVersion, glesVersion);
+            fragment = fragment.Replace(glVersion, glesVersion);
+
+            vertex = vertex.Replace("attribute", "in");
+            vertex = vertex.Replace("varying", "out");
+
+            fragment = fragment.Replace("varying", "in");
+
+            fragment = fragment.Replace("$FRAGOUT$", "out vec4 FragColor;");
+            fragment = fragment.Replace("gl_", "");
+        }
+        else {
+            fragment = fragment.Replace("$FRAGOUT$", "");
+            fragment = fragment.Replace("precision highp float;", "");
+
+            vertex = vertex.Replace("precision highp float;", "");
+        }
 
         this._program = new ShaderGL(backend);
 
