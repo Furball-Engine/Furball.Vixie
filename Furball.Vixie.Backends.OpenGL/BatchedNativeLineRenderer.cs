@@ -103,15 +103,7 @@ internal class BatchedNativeLineRenderer : ILineRenderer {
         this._backend.CheckError("uniform matrix 4");
         
         this._vao.Bind();
-
-        // this._gl.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, (uint)sizeof(LineData), (void*)0);
-        // this._backend.CheckError("set vertex attrib ptr 1");
-        // this._gl.VertexAttribPointer(1, 4, VertexAttribPointerType.Float, false, (uint)sizeof(LineData), (void*)sizeof(Vector2));
-        // this._backend.CheckError("set vertex attrib ptr 2");
-        
-        this._gl.EnableVertexAttribArray(0);
-        this._gl.EnableVertexAttribArray(1);
-        this._backend.CheckError("enable vertex attrib arrays");
+        this._arrayBuf.Bind();
     }
 
     private float               lastThickness = 0;
@@ -136,25 +128,18 @@ internal class BatchedNativeLineRenderer : ILineRenderer {
     }
 
     private unsafe void Flush() {
-
         this._backend.CheckThread();
         if (this._batchedLines == 0 || this.lastThickness == 0) return;
-
-        this._program.Bind();
-        this._backend.CheckError("bindshader");
 
         this._gl.LineWidth(this.lastThickness * this._backend.VerticalRatio);
         this._backend.CheckError("line width");
 
-        this._arrayBuf.Bind();
         fixed(void* ptr = this._lineData)
             this._arrayBuf.SetSubData(ptr, (nuint)(sizeof(LineData) * this._batchedLines));
         this._backend.CheckError("buffer data");
         
         this._gl.DrawArrays(PrimitiveType.Lines, 0, (uint)this._batchedLines);
         this._backend.CheckError("draw arrays");
-
-        this._program.Unbind();
 
         this._batchedLines = 0;
         this.lastThickness = 0;
@@ -164,8 +149,5 @@ internal class BatchedNativeLineRenderer : ILineRenderer {
         this._backend.CheckThread();
         this.IsBegun = false;
         this.Flush();
-
-        // this._gl.DisableVertexAttribArray(0);
-        // this._gl.DisableVertexAttribArray(1);
     }
 }
