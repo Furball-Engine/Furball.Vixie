@@ -40,7 +40,7 @@ using VertexAttribPointerType=Silk.NET.OpenGL.VertexAttribPointerType;
 
 namespace Furball.Vixie.Backends.OpenGL20; 
 
-public class OpenGL20Backend : IGraphicsBackend, IGLBasedBackend {
+public class LegacyOpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     private GL gl;
 
     private ImGuiController _imgui;
@@ -150,7 +150,7 @@ public class OpenGL20Backend : IGraphicsBackend, IGLBasedBackend {
         this.ScissorRect = new(0, 0, this._fbSize.X, this._fbSize.Y);
     }
     public override IQuadRenderer CreateTextureRenderer() => new QuadRendererGL20(this);
-    public override ILineRenderer CreateLineRenderer()    => new LineRendererGL20(this);
+    public override ILineRenderer CreateLineRenderer()    => new BatchedNativeLineRenderer(this);
 
     private int                  _maxTexUnits = -1;
     private ExtFramebufferObject framebufferObjectEXT;

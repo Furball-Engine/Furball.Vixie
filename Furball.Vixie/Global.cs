@@ -16,7 +16,7 @@ internal static class Global {
             Backend.None         => new Dictionary<string, FeatureLevel>(),
             Backend.Direct3D11   => new Dictionary<string, FeatureLevel>(),
             Backend.LegacyOpenGL => new Dictionary<string, FeatureLevel>(),
-            Backend.ModernOpenGL => OpenGL41Backend.FeatureLevels,
+            Backend.ModernOpenGL => ModernOpenGLBackend.FeatureLevels,
             Backend.OpenGLES     => OpenGLESBackend.FeatureLevels,
             Backend.Veldrid      => new Dictionary<string, FeatureLevel>(),
             Backend.Vulkan       => new Dictionary<string, FeatureLevel>(),

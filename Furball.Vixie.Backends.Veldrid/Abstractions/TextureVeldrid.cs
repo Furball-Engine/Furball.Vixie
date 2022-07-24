@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using System.Numerics;
 using Furball.Vixie.Backends.Shared;
@@ -11,7 +10,7 @@ using Texture=Furball.Vixie.Backends.Shared.Texture;
 
 namespace Furball.Vixie.Backends.Veldrid.Abstractions; 
 
-public class TextureVeldrid : Texture {
+internal sealed class TextureVeldrid : Texture {
     public global::Veldrid.Texture Texture;
         
     public override Vector2 Size {

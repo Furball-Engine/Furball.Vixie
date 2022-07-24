@@ -6,7 +6,7 @@ using Texture=Furball.Vixie.Backends.Shared.Texture;
 
 namespace Furball.Vixie.Backends.Veldrid.Abstractions; 
 
-public sealed class TextureRenderTargetVeldrid : TextureRenderTarget {
+internal sealed class TextureRenderTargetVeldrid : TextureRenderTarget {
     private readonly VeldridBackend _backend;
     public override Vector2 Size {
         get;

@@ -4,7 +4,7 @@ using Furball.Vixie.Helpers.Helpers;
 
 namespace Furball.Vixie.Backends.OpenGLES; 
 
-public static class QuadShaderGeneratorGLES {
+internal static class QuadShaderGeneratorGLES {
     public static string GetFragment(IGraphicsBackend backend) {
         string orig = ResourceHelpers.GetStringResource("Shaders/QuadRenderer/FragmentShader.glsl");
 

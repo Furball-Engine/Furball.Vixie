@@ -26,8 +26,8 @@ public class GraphicsBackend {
         Current = backend switch {
             Backend.OpenGLES     => new OpenGLESBackend(),
             Backend.Direct3D11   => new Direct3D11Backend(),
-            Backend.LegacyOpenGL => new OpenGL20Backend(),
-            Backend.ModernOpenGL => new OpenGL41Backend(),
+            Backend.LegacyOpenGL => new LegacyOpenGLBackend(),
+            Backend.ModernOpenGL => new ModernOpenGLBackend(),
             Backend.Veldrid      => new VeldridBackend(),
             Backend.Vulkan       => new VulkanBackend(),
             _                    => throw new ArgumentOutOfRangeException(nameof (backend), backend, "Invalid API")

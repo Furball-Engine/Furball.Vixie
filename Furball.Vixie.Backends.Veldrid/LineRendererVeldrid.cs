@@ -11,7 +11,7 @@ using Veldrid.SPIRV;
 
 namespace Furball.Vixie.Backends.Veldrid; 
 
-public class LineRendererVeldrid : ILineRenderer {
+internal class LineRendererVeldrid : ILineRenderer {
     private readonly VeldridBackend _backend;
         
     private Pipeline _pipeline;

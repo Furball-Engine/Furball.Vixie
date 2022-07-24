@@ -15,8 +15,8 @@ using Texture=Furball.Vixie.Backends.Shared.Texture;
 
 namespace Furball.Vixie.Backends.OpenGL20; 
 
-public class QuadRendererGL20 : IQuadRenderer {
-    private readonly OpenGL20Backend _backend;
+internal class QuadRendererGL20 : IQuadRenderer {
+    private readonly LegacyOpenGLBackend _backend;
     private readonly GL              _gl;
 
     private readonly ShaderGL _program;
@@ -42,13 +42,13 @@ public class QuadRendererGL20 : IQuadRenderer {
         set;
     }
 
-    internal QuadRendererGL20(OpenGL20Backend backend) {
+    internal QuadRendererGL20(LegacyOpenGLBackend backend) {
         this._backend = backend;
         this._backend.CheckThread();
         this._gl = backend.GetOpenGL();
 
         string vertex   = ResourceHelpers.GetStringResource("Shaders/QuadRenderer/VertexShader.glsl");
-        string fragment = QuadShaderGeneratorGL20.GetFragment(backend);
+        string fragment = FakeInstancingQuadShaderGenerator.GetFragment(backend);
 
         this._program = new(this._backend);
 

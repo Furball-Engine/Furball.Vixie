@@ -11,7 +11,7 @@ using Vortice.DXGI;
 
 namespace Furball.Vixie.Backends.Direct3D11; 
 
-public class LineRendererD3D11 : ILineRenderer {
+internal sealed class LineRendererD3D11 : ILineRenderer {
     public bool IsBegun { get; set; }
 
     private Direct3D11Backend   _backend;

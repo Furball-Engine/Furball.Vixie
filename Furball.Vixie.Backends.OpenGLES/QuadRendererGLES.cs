@@ -14,7 +14,7 @@ using Texture=Furball.Vixie.Backends.Shared.Texture;
 
 namespace Furball.Vixie.Backends.OpenGLES; 
 
-public class QuadRendererGLES : IQuadRenderer {
+internal sealed class QuadRendererGLES : IQuadRenderer {
     [StructLayout(LayoutKind.Sequential)]
     private struct Vertex {
         public Vector2 Position;

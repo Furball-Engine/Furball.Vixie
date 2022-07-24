@@ -15,8 +15,8 @@ public unsafe struct BatchedLineVertex {
     public fixed float Color[4];
 }
 
-public class LineRendererGL41 : IDisposable, ILineRenderer {
-    private readonly OpenGL41Backend _backend;
+public class GeometryShaderLineRenderer : IDisposable, ILineRenderer {
+    private readonly ModernOpenGLBackend _backend;
     /// <summary>
     /// Max Lines allowed in 1 Batch
     /// </summary>
@@ -56,7 +56,7 @@ public class LineRendererGL41 : IDisposable, ILineRenderer {
     /// </summary>
     /// <param name="backend">OpenGL API</param>
     /// <param name="capacity">How many Lines to allow in 1 Batch</param>
-    public unsafe LineRendererGL41(OpenGL41Backend backend, int capacity = 8192) {
+    public unsafe GeometryShaderLineRenderer(ModernOpenGLBackend backend, int capacity = 8192) {
         this._backend = backend;
         this._backend.CheckThread();
         this.gl = backend.GetGlApi();

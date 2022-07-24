@@ -16,8 +16,7 @@ using Texture=Furball.Vixie.Backends.Shared.Texture;
 
 namespace Furball.Vixie.Backends.Veldrid; 
 
-public class QuadRendererVeldrid : IQuadRenderer {
-
+internal class QuadRendererVeldrid : IQuadRenderer {
     private readonly VeldridBackend _backend;
         
     public bool IsBegun {

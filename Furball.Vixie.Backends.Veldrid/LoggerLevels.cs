@@ -2,7 +2,7 @@ using Kettu;
 
 namespace Furball.Vixie.Backends.Veldrid; 
 
-public class LoggerLevelVeldrid : LoggerLevel {
+internal class LoggerLevelVeldrid : LoggerLevel {
     public override string Name => "Veldrid";
 
     private enum Channel {

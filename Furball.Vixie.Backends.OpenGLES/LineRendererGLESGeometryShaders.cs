@@ -15,7 +15,7 @@ public unsafe struct BatchedLineVertex {
     public fixed float Color[4];
 }
 
-public class LineRendererGLESGeometryShaders : IDisposable, ILineRenderer {
+internal sealed class LineRendererGLESGeometryShaders : IDisposable, ILineRenderer {
     private readonly OpenGLESBackend _backend;
     /// <summary>
     /// Max Lines allowed in 1 Batch

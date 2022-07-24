@@ -10,13 +10,13 @@ using ShaderType=Silk.NET.OpenGL.ShaderType;
 
 namespace Furball.Vixie.Backends.OpenGL20; 
 
-public class LineRendererGL20 : ILineRenderer {
+internal class BatchedNativeLineRenderer : ILineRenderer {
     private struct LineData {
         public Vector2 Position;
         public Color   Color;
     }
         
-    private readonly OpenGL20Backend _backend;
+    private readonly LegacyOpenGLBackend _backend;
 
     private const int BATCH_MAX = 128; //cut this in two for actual line count, as we use 2 LineData structs per line :^)
         
@@ -26,7 +26,7 @@ public class LineRendererGL20 : ILineRenderer {
     private          int        _batchedLines = 0;
     private readonly LineData[] _lineData     = new LineData[BATCH_MAX];
         
-    internal unsafe LineRendererGL20(OpenGL20Backend backend) {
+    internal unsafe BatchedNativeLineRenderer(LegacyOpenGLBackend backend) {
         this._backend = backend;
         this._backend.CheckThread();
         this._gl = backend.GetOpenGL();
@@ -53,7 +53,7 @@ public class LineRendererGL20 : ILineRenderer {
 
         this._program.Dispose();
     }
-    ~LineRendererGL20() {
+    ~BatchedNativeLineRenderer() {
         DisposeQueue.Enqueue(this._program);
     }
     public bool IsBegun {

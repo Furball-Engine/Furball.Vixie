@@ -14,7 +14,7 @@ using Texture=Furball.Vixie.Backends.Shared.Texture;
 
 namespace Furball.Vixie.Backends.OpenGL41; 
 
-public class QuadRendererGL41 : IQuadRenderer {
+public class InstancedQuadRenderer : IQuadRenderer {
     [StructLayout(LayoutKind.Sequential)]
     private struct Vertex {
         public Vector2 Position;
@@ -66,11 +66,11 @@ public class QuadRendererGL41 : IQuadRenderer {
 
     private ShaderGL _shaderGl41;
 
-    private OpenGL41Backend _backend;
+    private ModernOpenGLBackend _backend;
     // ReSharper disable once InconsistentNaming
     private GL gl;
 
-    public unsafe QuadRendererGL41(OpenGL41Backend backend) {
+    public unsafe InstancedQuadRenderer(ModernOpenGLBackend backend) {
         this._backend = backend;
         this._backend.CheckThread();
 
@@ -82,7 +82,7 @@ public class QuadRendererGL41 : IQuadRenderer {
         }
             
         string vertSource = ResourceHelpers.GetStringResource("Shaders/QuadRenderer/VertexShader.glsl");
-        string fragSource = QuadShaderGeneratorGL41.GetFragment(backend);
+        string fragSource = InstancedQuadShaderGenerator.GetFragment(backend);
 
         this._shaderGl41 = new ShaderGL(backend);
 

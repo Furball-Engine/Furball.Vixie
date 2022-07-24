@@ -27,20 +27,20 @@ public class VeldridBackend : IGraphicsBackend {
     internal ResourceFactory ResourceFactory;
     internal CommandList     CommandList;
 
-    public GraphicsBackend ChosenBackend;
+    internal GraphicsBackend ChosenBackend;
         
     internal Matrix4x4       ProjectionMatrix;
     private  IView           _view;
     private  ImGuiController _imgui;
 
-    public   TextureVeldrid WhitePixel;
-    public   ResourceSet    WhitePixelResourceSet;
+    internal TextureVeldrid WhitePixel;
+    internal ResourceSet    WhitePixelResourceSet;
 
-    public  Framebuffer    RenderFramebuffer;
-    public  Texture        MainFramebufferTexture;
-    public  ResourceSet    MainFramebufferTextureSet;
-    public  ResourceLayout MainFramebufferTextureLayout;
-    public  FullScreenQuad FullScreenQuad;
+    internal  Framebuffer    RenderFramebuffer;
+    internal  Texture        MainFramebufferTexture;
+    internal  ResourceSet    MainFramebufferTextureSet;
+    internal  ResourceLayout MainFramebufferTextureLayout;
+    internal  FullScreenQuad FullScreenQuad;
     private bool           _screenshotQueued;
     private Rectangle      _lastScissor;
 
@@ -229,7 +229,7 @@ public class VeldridBackend : IGraphicsBackend {
             
     }
         
-    public void SetProjectionMatrix(uint width, uint height) {
+    internal void SetProjectionMatrix(uint width, uint height) {
         this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width / (float)height * 720f, 720, 0, 1f, 0f);
     }
 

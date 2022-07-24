@@ -5,7 +5,7 @@ using Veldrid.SPIRV;
 
 namespace Furball.Vixie.Backends.Veldrid; 
 
-public class FullScreenQuad {
+internal class FullScreenQuad {
     private readonly VeldridBackend _backend;
 
     private static ushort[] s_quadIndices = new ushort[] {

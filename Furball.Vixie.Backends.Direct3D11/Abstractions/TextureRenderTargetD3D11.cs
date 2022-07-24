@@ -9,7 +9,7 @@ using Vortice.Mathematics;
 
 namespace Furball.Vixie.Backends.Direct3D11.Abstractions; 
 
-public class TextureRenderTargetD3D11 : TextureRenderTarget {
+internal sealed class TextureRenderTargetD3D11 : TextureRenderTarget {
     public override Vector2 Size { get; protected set; }
 
     private Direct3D11Backend        _backend;

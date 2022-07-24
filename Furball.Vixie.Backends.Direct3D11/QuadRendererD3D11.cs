@@ -15,7 +15,7 @@ using Color=Furball.Vixie.Backends.Shared.Color;
 
 namespace Furball.Vixie.Backends.Direct3D11; 
 
-public unsafe class QuadRendererD3D11 : IQuadRenderer {
+internal sealed unsafe class QuadRendererD3D11 : IQuadRenderer {
     public bool IsBegun { get; set; }
 
     private Direct3D11Backend   _backend;

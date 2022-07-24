@@ -9,7 +9,7 @@ using Silk.NET.OpenGLES;
 
 namespace Furball.Vixie.Backends.OpenGLES; 
 
-public class LineRendererGLESLinePrimitiveBatcher : ILineRenderer {
+internal sealed class LineRendererGLESLinePrimitiveBatcher : ILineRenderer {
     private struct LineData {
         public Vector2 Position;
         public Color   Color;
