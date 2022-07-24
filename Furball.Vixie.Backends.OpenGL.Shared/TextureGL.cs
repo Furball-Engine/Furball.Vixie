@@ -12,7 +12,7 @@ using Texture=Furball.Vixie.Backends.Shared.Texture;
 
 namespace Furball.Vixie.Backends.OpenGL.Shared; 
 
-public class TextureGL : Texture, IDisposable {
+public sealed class TextureGL : Texture, IDisposable {
     private readonly IGLBasedBackend _backend;
     /// <summary>
     /// All the Currently Bound Textures
@@ -179,8 +179,7 @@ public class TextureGL : Texture, IDisposable {
         //Bind as we will be working on the Texture
         this._backend.BindTexture(TextureTarget.Texture2D, this.TextureId);
         //Apply Linear filtering, and make Image wrap around and repeat
-        this._backend.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int) GLEnum.Linear);
-        this._backend.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int) GLEnum.Linear);
+        this.FilterType = TextureFilterType.Smooth;
         this._backend.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS,     (int) GLEnum.Repeat);
         this._backend.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT,                   (int) GLEnum.Repeat);
         //Upload Image Data
