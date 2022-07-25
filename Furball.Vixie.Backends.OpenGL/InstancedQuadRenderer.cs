@@ -114,63 +114,35 @@ public class InstancedQuadRenderer : IQuadRenderer {
         this._vbo.Bind();
         this._vbo.SetData<Vertex>(_vertices);
 
-        //Vertex Position
-        this.gl.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, (uint)sizeof(Vertex), (void*)0);
-        //Texture position
-        this.gl.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, (uint)sizeof(Vertex), (void*)sizeof(Vector2));
-        this._backend.CheckError("quad renderer vertex attrib ptrs");
+        VertexBufferLayoutGL layout = new();
+        layout.AddElement<float>(2);
+        layout.AddElement<float>(2);
 
-        this.gl.EnableVertexAttribArray(0);
-        this.gl.EnableVertexAttribArray(1);
-        this._backend.CheckError("quad renderer enable vtx attrib arrays");
-
+        this._vao.AddBuffer(this._vbo, layout);
+            
         this._instanceVbo = new BufferObjectGL(backend, BufferTargetARB.ArrayBuffer, BufferUsageARB.DynamicDraw);
         this._instanceVbo.Bind();
-
         this._instanceVbo.SetData(null, (nuint)(sizeof(InstanceData) * NUM_INSTANCES));
 
-        int ptrPos = 0;
+        layout = new VertexBufferLayoutGL();
         //Position
-        this.gl.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
-        this.gl.VertexAttribDivisor(2, 1);
-        ptrPos += sizeof(Vector2);
+        layout.AddElement<float>(2, false, 1);
         //Size
-        this.gl.VertexAttribPointer(3, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
-        this.gl.VertexAttribDivisor(3, 1);
-        ptrPos += sizeof(Vector2);
+        layout.AddElement<float>(2, false, 1);
         //Color
-        this.gl.VertexAttribPointer(4, 4, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
-        this.gl.VertexAttribDivisor(4, 1);
-        ptrPos += sizeof(Color);
-        //Texture position
-        this.gl.VertexAttribPointer(5, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
-        this.gl.VertexAttribDivisor(5, 1);
-        ptrPos += sizeof(Vector2);
+        layout.AddElement<float>(4, false, 1);
+        //Texture Position
+        layout.AddElement<float>(2, false, 1);
         //Texture size
-        this.gl.VertexAttribPointer(6, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
-        this.gl.VertexAttribDivisor(6, 1);
-        ptrPos += sizeof(Vector2);
+        layout.AddElement<float>(2, false, 1);
         //Rotation origin
-        this.gl.VertexAttribPointer(7, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
-        this.gl.VertexAttribDivisor(7, 1);
-        ptrPos += sizeof(Vector2);
+        layout.AddElement<float>(2, false, 1);
         //Rotation
-        this.gl.VertexAttribPointer(8, 1, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
-        this.gl.VertexAttribDivisor(8, 1);
-        ptrPos += sizeof(float);
-        //Texture id
-        this.gl.VertexAttribIPointer(9, 1, VertexAttribIType.Int, (uint)sizeof(InstanceData), (void*)ptrPos);
-        this.gl.VertexAttribDivisor(9, 1);
-        ptrPos += sizeof(int);
+        layout.AddElement<float>(1, false, 1);
+        //Texture ID
+        layout.AddElement<int>(1, false, 1);
 
-        this.gl.EnableVertexAttribArray(2);
-        this.gl.EnableVertexAttribArray(3);
-        this.gl.EnableVertexAttribArray(4);
-        this.gl.EnableVertexAttribArray(5);
-        this.gl.EnableVertexAttribArray(6);
-        this.gl.EnableVertexAttribArray(7);
-        this.gl.EnableVertexAttribArray(8);
-        this.gl.EnableVertexAttribArray(9);
+        this._vao.AddBuffer(this._instanceVbo, layout, 2);
 
         this._backend.CheckError("more vtx attrib stuffs");
 
@@ -207,17 +179,6 @@ public class InstancedQuadRenderer : IQuadRenderer {
 
         // this._InstanceVBO.SetData<InstanceData>(this._instanceData);
         this._instanceVbo.Bind();
-        
-        this.gl.EnableVertexAttribArray(0);
-        this.gl.EnableVertexAttribArray(1);
-        this.gl.EnableVertexAttribArray(2);
-        this.gl.EnableVertexAttribArray(3);
-        this.gl.EnableVertexAttribArray(4);
-        this.gl.EnableVertexAttribArray(5);
-        this.gl.EnableVertexAttribArray(6);
-        this.gl.EnableVertexAttribArray(7);
-        this.gl.EnableVertexAttribArray(8);
-        this.gl.EnableVertexAttribArray(9);
 
         this.IsBegun = true;
     }

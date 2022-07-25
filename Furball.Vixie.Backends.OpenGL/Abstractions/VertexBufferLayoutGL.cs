@@ -18,6 +18,10 @@ internal struct LayoutElement {
     /// </summary>
     public bool Normalized;
     /// <summary>
+    /// The instance divisor
+    /// </summary>
+    public uint InstanceDivisor;
+    /// <summary>
     /// Returns the Size in bytes of `type`
     /// </summary>
     /// <param name="type">Type to get size for</param>
@@ -62,7 +66,7 @@ internal class VertexBufferLayoutGL {
     /// <param name="normalized">Do they need to be Normalized?</param>
     /// <typeparam name="pElementType">Type of Element</typeparam>
     /// <returns></returns>
-    public VertexBufferLayoutGL AddElement<pElementType>(int count, bool normalized = false) where pElementType : unmanaged {
+    public VertexBufferLayoutGL AddElement<pElementType>(int count, bool normalized = false, uint instanceDivisor = uint.MaxValue) where pElementType : unmanaged {
         VertexAttribPointerType type = Type.GetTypeCode(typeof(pElementType)) switch {
             TypeCode.Single => VertexAttribPointerType.Float,
             TypeCode.Byte   => VertexAttribPointerType.Byte,
@@ -74,9 +78,10 @@ internal class VertexBufferLayoutGL {
         };
 
         this._elements.Add(new LayoutElement {
-            Count      = count,
-            Normalized = normalized,
-            Type       = type
+            Count           = count,
+            Normalized      = normalized,
+            Type            = type,
+            InstanceDivisor = instanceDivisor
         });
 
         this._stride += (uint) (LayoutElement.GetSizeOfType(type) * count);

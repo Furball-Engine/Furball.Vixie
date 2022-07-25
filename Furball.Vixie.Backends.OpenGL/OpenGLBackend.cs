@@ -243,6 +243,9 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     public unsafe void Uniform1(int getUniformLocation, uint count, float* ptr) {
         this.gl.Uniform1(getUniformLocation, count, ptr);
     }
+    public void VertexAttribDivisor(uint iOffset, uint currentElementInstanceDivisor) {
+        this.gl.VertexAttribDivisor(iOffset, currentElementInstanceDivisor);
+    }
 
     /// <summary>
     ///     Checks for OpenGL errors

@@ -37,7 +37,7 @@ internal sealed class VertexArrayObjectGL : IDisposable {
     /// </summary>
     /// <param name="vertexBuffer">Vertex Buffer to add</param>
     /// <param name="layoutGl41">Layout of said Vertex Buffer</param>
-    public unsafe VertexArrayObjectGL AddBuffer(BufferObjectGL vertexBuffer, VertexBufferLayoutGL layoutGl41) {
+    public unsafe VertexArrayObjectGL AddBuffer(BufferObjectGL vertexBuffer, VertexBufferLayoutGL layoutGl41, uint iOffset = 0) {
         this._backend.GlCheckThread();
         //Bind both this and the Vertex Buffer
         this.Bind();
@@ -50,14 +50,17 @@ internal sealed class VertexArrayObjectGL : IDisposable {
         for (uint i = 0; i != elements.Count; i++) {
             LayoutElement currentElement = elements[(int) i];
             //Define the Layout of this Element
-            this._backend.EnableVertexAttribArray(i);
+            this._backend.EnableVertexAttribArray(i + iOffset);
             this._backend.CheckError("vertexattribarr");
 
             if (currentElement.Type != VertexAttribPointerType.Int)
-                this._backend.VertexAttribPointer(i, currentElement.Count, currentElement.Type, currentElement.Normalized, layoutGl41.GetStride(), (void*)offset);
+                this._backend.VertexAttribPointer(i + iOffset, currentElement.Count, currentElement.Type, currentElement.Normalized, layoutGl41.GetStride(), (void*)offset);
             else
-                this._backend.VertexAttribIPointer(i, currentElement.Count, VertexAttribIType.Int, layoutGl41.GetStride(), (void*)offset);
+                this._backend.VertexAttribIPointer(i + iOffset, currentElement.Count, VertexAttribIType.Int, layoutGl41.GetStride(), (void*)offset);
             this._backend.CheckError("vertex attrib ptr");
+
+            if (currentElement.InstanceDivisor != uint.MaxValue)
+                this._backend.VertexAttribDivisor(i + iOffset, currentElement.InstanceDivisor);
 
             offset += (uint) currentElement.Count * LayoutElement.GetSizeOfType(currentElement.Type);
         }
