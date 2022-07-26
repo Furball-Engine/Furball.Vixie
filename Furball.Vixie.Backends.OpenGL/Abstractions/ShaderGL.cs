@@ -74,10 +74,14 @@ internal sealed class ShaderGL : IDisposable {
         this._backend.CompileShader(shaderId);
         this._backend.CheckError($"compile shader type {type}");
 
-        string infoLog = this._backend.GetShaderInfoLog(shaderId);
+        this._backend.GetShader(shaderId, ShaderParameterName.CompileStatus, out int compileStatus);
 
-        if (!string.IsNullOrEmpty(infoLog))
-            throw new Exception($"Failed to Compile shader of type {type}, Error Message: {infoLog}");
+        if (compileStatus == 0) {
+            string infoLog = this._backend.GetShaderInfoLog(shaderId);
+
+            if (!string.IsNullOrEmpty(infoLog))
+                throw new Exception($"Failed to Compile shader of type {type}, Error Message: {infoLog}");
+        }
 
         this._backend.AttachShader(this.ProgramId, shaderId);
         this._backend.CheckError("attach shader");

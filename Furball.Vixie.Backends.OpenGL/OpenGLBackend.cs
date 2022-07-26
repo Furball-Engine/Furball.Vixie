@@ -653,6 +653,10 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
         this.gl.DeleteShader(shader);
     }
 
+    public void GetShader(uint shaderId, ShaderParameterName paramName, out int returnValue) {
+        this.gl.GetShader(shaderId, paramName, out returnValue);
+    }
+
     public string GetProgramInfoLog(uint programId) {
         return this.gl.GetProgramInfoLog(programId);
     }

@@ -74,6 +74,7 @@ internal interface IGLBasedBackend {
     public uint CreateShader(ShaderType type);
 
     public void ShaderSource(uint shaderId, string source);
+    public void GetShader(uint shaderId, ShaderParameterName paramName, out int returnValue);
 
     public void CompileShader(uint shaderId);
 
