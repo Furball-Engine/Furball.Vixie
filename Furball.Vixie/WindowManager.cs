@@ -124,11 +124,11 @@ public class WindowManager : IDisposable {
             Backend.Vulkan     => ContextFlags.Debug,
             Backend.Direct3D11 => ContextFlags.Debug,
 #else
-                Backend.OpenGLES => ContextFlags.Default,
-                Backend.OpenGL => ContextFlags.Default,
-                Backend.Direct3D11 => ContextFlags.Default,
-                Backend.Veldrid  => ContextFlags.ForwardCompatible,
-                Backend.Vulkan   => ContextFlags.Default,
+            Backend.OpenGLES   => ContextFlags.Default,
+            Backend.OpenGL     => ContextFlags.Default,
+            Backend.Direct3D11 => ContextFlags.Default,
+            Backend.Veldrid    => ContextFlags.ForwardCompatible,
+            Backend.Vulkan     => ContextFlags.Default,
 #endif
             _ => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
         };

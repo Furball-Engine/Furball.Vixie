@@ -12,13 +12,13 @@ internal static class Global {
         
     public static Dictionary<string, FeatureLevel> GetFeatureLevels(Backend backend) {
         return backend switch {
-            Backend.None         => new Dictionary<string, FeatureLevel>(),
-            Backend.Direct3D11   => new Dictionary<string, FeatureLevel>(),
-            Backend.OpenGL => OpenGLBackend.FeatureLevels,
-            Backend.OpenGLES     => OpenGLBackend.FeatureLevels,
-            Backend.Veldrid      => new Dictionary<string, FeatureLevel>(),
-            Backend.Vulkan       => new Dictionary<string, FeatureLevel>(),
-            _                    => throw new ArgumentOutOfRangeException(nameof(backend), backend, null)
+            Backend.None       => new Dictionary<string, FeatureLevel>(),
+            Backend.Direct3D11 => new Dictionary<string, FeatureLevel>(),
+            Backend.OpenGL     => OpenGLBackend.FeatureLevels,
+            Backend.OpenGLES   => OpenGLBackend.FeatureLevels,
+            Backend.Veldrid    => new Dictionary<string, FeatureLevel>(),
+            Backend.Vulkan     => new Dictionary<string, FeatureLevel>(),
+            _                  => throw new ArgumentOutOfRangeException(nameof (backend), backend, null)
         };
     }
 }

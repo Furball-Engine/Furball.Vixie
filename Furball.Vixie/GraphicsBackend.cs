@@ -22,12 +22,12 @@ public class GraphicsBackend {
     /// <exception cref="ArgumentOutOfRangeException">Throws if a Invalid API was chosen</exception>
     public static void SetBackend(Backend backend) {
         Current = backend switch {
-            Backend.OpenGLES     => new OpenGLBackend(backend),
-            Backend.Direct3D11   => new Direct3D11Backend(),
-            Backend.OpenGL => new OpenGLBackend(backend),
-            Backend.Veldrid      => new VeldridBackend(),
-            Backend.Vulkan       => new VulkanBackend(),
-            _                    => throw new ArgumentOutOfRangeException(nameof (backend), backend, "Invalid API")
+            Backend.OpenGLES   => new OpenGLBackend(backend),
+            Backend.Direct3D11 => new Direct3D11Backend(),
+            Backend.OpenGL     => new OpenGLBackend(backend),
+            Backend.Veldrid    => new VeldridBackend(),
+            Backend.Vulkan     => new VulkanBackend(),
+            _                  => throw new ArgumentOutOfRangeException(nameof (backend), backend, "Invalid API")
         };
     }
 
