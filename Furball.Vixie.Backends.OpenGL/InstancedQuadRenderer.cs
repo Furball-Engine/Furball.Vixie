@@ -3,8 +3,9 @@ using System.Drawing;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using FontStashSharp;
-using Furball.Vixie.Backends.OpenGL.Shared;
+using Furball.Vixie.Backends.OpenGL.Abstractions;
 using Furball.Vixie.Backends.Shared;
+using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.FontStashSharp;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers.Helpers;
@@ -12,7 +13,7 @@ using Silk.NET.OpenGL;
 using Color=Furball.Vixie.Backends.Shared.Color;
 using Texture=Furball.Vixie.Backends.Shared.Texture;
 
-namespace Furball.Vixie.Backends.OpenGL41; 
+namespace Furball.Vixie.Backends.OpenGL; 
 
 public class InstancedQuadRenderer : IQuadRenderer {
     [StructLayout(LayoutKind.Sequential)]
@@ -66,23 +67,31 @@ public class InstancedQuadRenderer : IQuadRenderer {
 
     private ShaderGL _shaderGl41;
 
-    private ModernOpenGLBackend _backend;
+    private OpenGLBackend _backend;
     // ReSharper disable once InconsistentNaming
     private GL gl;
 
-    public unsafe InstancedQuadRenderer(ModernOpenGLBackend backend) {
+    public unsafe InstancedQuadRenderer(OpenGLBackend backend) {
         this._backend = backend;
         this._backend.CheckThread();
 
-        this.gl = this._backend.GetGlApi();
+        this.gl = this._backend.GetModernGL();
 
         this._boundTextures = new uint[this._backend.QueryMaxTextureUnits()];
         for (var i = 0; i < this._boundTextures.Length; i++) {
             this._boundTextures[i] = uint.MaxValue;
         }
             
-        string vertSource = ResourceHelpers.GetStringResource("Shaders/QuadRenderer/VertexShader.glsl");
+        string vertSource = ResourceHelpers.GetStringResource("Shaders/InstancedQuadRenderer/VertexShader.glsl");
         string fragSource = InstancedQuadShaderGenerator.GetFragment(backend);
+
+        if (backend.CreationBackend == Backend.OpenGLES) {
+            const string glVersion = "#version 140";
+            const string glesVersion = "#version 300 es";
+            
+            vertSource = vertSource.Replace(glVersion, glesVersion);
+            fragSource = fragSource.Replace(glVersion, glesVersion);
+        }
 
         this._shaderGl41 = new ShaderGL(backend);
 
@@ -105,63 +114,35 @@ public class InstancedQuadRenderer : IQuadRenderer {
         this._vbo.Bind();
         this._vbo.SetData<Vertex>(_vertices);
 
-        //Vertex Position
-        this.gl.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, (uint)sizeof(Vertex), (void*)0);
-        //Texture position
-        this.gl.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, (uint)sizeof(Vertex), (void*)sizeof(Vector2));
-        this._backend.CheckError("quad renderer vertex attrib ptrs");
+        VertexBufferLayoutGL layout = new();
+        layout.AddElement<float>(2);
+        layout.AddElement<float>(2);
 
-        this.gl.EnableVertexAttribArray(0);
-        this.gl.EnableVertexAttribArray(1);
-        this._backend.CheckError("quad renderer enable vtx attrib arrays");
-
+        this._vao.AddBuffer(this._vbo, layout);
+            
         this._instanceVbo = new BufferObjectGL(backend, BufferTargetARB.ArrayBuffer, BufferUsageARB.DynamicDraw);
         this._instanceVbo.Bind();
-
         this._instanceVbo.SetData(null, (nuint)(sizeof(InstanceData) * NUM_INSTANCES));
 
-        int ptrPos = 0;
+        layout = new VertexBufferLayoutGL();
         //Position
-        this.gl.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
-        this.gl.VertexAttribDivisor(2, 1);
-        ptrPos += sizeof(Vector2);
+        layout.AddElement<float>(2, false, 1);
         //Size
-        this.gl.VertexAttribPointer(3, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
-        this.gl.VertexAttribDivisor(3, 1);
-        ptrPos += sizeof(Vector2);
+        layout.AddElement<float>(2, false, 1);
         //Color
-        this.gl.VertexAttribPointer(4, 4, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
-        this.gl.VertexAttribDivisor(4, 1);
-        ptrPos += sizeof(Color);
-        //Texture position
-        this.gl.VertexAttribPointer(5, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
-        this.gl.VertexAttribDivisor(5, 1);
-        ptrPos += sizeof(Vector2);
+        layout.AddElement<float>(4, false, 1);
+        //Texture Position
+        layout.AddElement<float>(2, false, 1);
         //Texture size
-        this.gl.VertexAttribPointer(6, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
-        this.gl.VertexAttribDivisor(6, 1);
-        ptrPos += sizeof(Vector2);
+        layout.AddElement<float>(2, false, 1);
         //Rotation origin
-        this.gl.VertexAttribPointer(7, 2, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
-        this.gl.VertexAttribDivisor(7, 1);
-        ptrPos += sizeof(Vector2);
+        layout.AddElement<float>(2, false, 1);
         //Rotation
-        this.gl.VertexAttribPointer(8, 1, VertexAttribPointerType.Float, false, (uint)sizeof(InstanceData), (void*)ptrPos);
-        this.gl.VertexAttribDivisor(8, 1);
-        ptrPos += sizeof(float);
-        //Texture id
-        this.gl.VertexAttribIPointer(9, 1, VertexAttribIType.Int, (uint)sizeof(InstanceData), (void*)ptrPos);
-        this.gl.VertexAttribDivisor(9, 1);
-        ptrPos += sizeof(int);
+        layout.AddElement<float>(1, false, 1);
+        //Texture ID
+        layout.AddElement<int>(1, false, 1);
 
-        this.gl.EnableVertexAttribArray(2);
-        this.gl.EnableVertexAttribArray(3);
-        this.gl.EnableVertexAttribArray(4);
-        this.gl.EnableVertexAttribArray(5);
-        this.gl.EnableVertexAttribArray(6);
-        this.gl.EnableVertexAttribArray(7);
-        this.gl.EnableVertexAttribArray(8);
-        this.gl.EnableVertexAttribArray(9);
+        this._vao.AddBuffer(this._instanceVbo, layout, 2);
 
         this._backend.CheckError("more vtx attrib stuffs");
 

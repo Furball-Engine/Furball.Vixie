@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using Silk.NET.OpenGL;
 
-namespace Furball.Vixie.Backends.OpenGL.Shared; 
+namespace Furball.Vixie.Backends.OpenGL.Abstractions;
 
-public struct LayoutElement {
+internal struct LayoutElement {
     /// <summary>
     /// Element Count, for example in a 2 component Vector this would be 2
     /// </summary>
@@ -17,6 +17,10 @@ public struct LayoutElement {
     /// Does it need to be Normalized? i.e. does it need to be put into 0.0-1.0 space?
     /// </summary>
     public bool Normalized;
+    /// <summary>
+    /// The instance divisor
+    /// </summary>
+    public uint InstanceDivisor;
     /// <summary>
     /// Returns the Size in bytes of `type`
     /// </summary>
@@ -42,7 +46,7 @@ public struct LayoutElement {
     }
 }
 
-public class VertexBufferLayoutGL {
+internal class VertexBufferLayoutGL {
     /// <summary>
     /// All of the Layout Elements
     /// </summary>
@@ -62,7 +66,7 @@ public class VertexBufferLayoutGL {
     /// <param name="normalized">Do they need to be Normalized?</param>
     /// <typeparam name="pElementType">Type of Element</typeparam>
     /// <returns></returns>
-    public VertexBufferLayoutGL AddElement<pElementType>(int count, bool normalized = false) where pElementType : unmanaged {
+    public VertexBufferLayoutGL AddElement<pElementType>(int count, bool normalized = false, uint instanceDivisor = uint.MaxValue) where pElementType : unmanaged {
         VertexAttribPointerType type = Type.GetTypeCode(typeof(pElementType)) switch {
             TypeCode.Single => VertexAttribPointerType.Float,
             TypeCode.Byte   => VertexAttribPointerType.Byte,
@@ -74,9 +78,10 @@ public class VertexBufferLayoutGL {
         };
 
         this._elements.Add(new LayoutElement {
-            Count      = count,
-            Normalized = normalized,
-            Type       = type
+            Count           = count,
+            Normalized      = normalized,
+            Type            = type,
+            InstanceDivisor = instanceDivisor
         });
 
         this._stride += (uint) (LayoutElement.GetSizeOfType(type) * count);

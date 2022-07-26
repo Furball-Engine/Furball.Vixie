@@ -1,11 +1,11 @@
 ﻿<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="TestApplication (.NET Core) (LegacyOpenGL)" type="DotNetProject" factoryName=".NET Project">
+  <configuration default="false" name="TestApplication (.NET Core) (OpenGL)" type="DotNetProject" factoryName=".NET Project">
     <option name="EXE_PATH" value="$PROJECT_DIR$/Furball.Vixie.TestApplication.Desktop/bin/Debug/net6.0/Furball.Vixie.TestApplication.Desktop" />
     <option name="PROGRAM_PARAMETERS" value="" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Furball.Vixie.TestApplication.Desktop/bin/Debug/net6.0" />
     <option name="PASS_PARENT_ENVS" value="1" />
     <envs>
-      <env name="VIXIE_BACKEND_FORCE" value="LegacyOpenGL" />
+      <env name="VIXIE_BACKEND_FORCE" value="OpenGL" />
     </envs>
     <option name="USE_EXTERNAL_CONSOLE" value="0" />
     <option name="USE_MONO" value="0" />

@@ -26,11 +26,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Include="Shaders\LineRenderer\FragmentShader.glsl" />
-      <EmbeddedResource Include="Shaders\LineRenderer\VertexShader.glsl" />
-        
-      <EmbeddedResource Include="Shaders\QuadRenderer\FragmentShader.glsl" />
-      <EmbeddedResource Include="Shaders\QuadRenderer\VertexShader.glsl" />
+      <Folder Include="Shaders\LineRenderer" />
+      <Folder Include="Shaders\QuadRenderer" />
     </ItemGroup>
 
 </Project>

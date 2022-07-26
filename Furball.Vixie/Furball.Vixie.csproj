@@ -20,24 +20,22 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="FontStashSharp" Version="1.1.6"/>
-        <PackageReference Include="ImGui.NET" Version="1.87.3"/>
-        <PackageReference Include="Kettu" Version="1.4.0"/>
-        <PackageReference Include="Silk.NET.Input" Version="2.15.0"/>
-        <PackageReference Include="Silk.NET.Input.Extensions" Version="2.15.0"/>
-        <PackageReference Include="Silk.NET.Windowing" Version="2.15.0"/>
-        <PackageReference Include="Silk.NET.Windowing.Extensions.Veldrid" Version="2.15.0"/>
-        <PackageReference Include="SixLabors.ImageSharp" Version="2.1.3"/>
+        <PackageReference Include="FontStashSharp" Version="1.1.6" />
+        <PackageReference Include="ImGui.NET" Version="1.87.3" />
+        <PackageReference Include="Kettu" Version="1.4.0" />
+        <PackageReference Include="Silk.NET.Input" Version="2.15.0" />
+        <PackageReference Include="Silk.NET.Input.Extensions" Version="2.15.0" />
+        <PackageReference Include="Silk.NET.Windowing" Version="2.15.0" />
+        <PackageReference Include="Silk.NET.Windowing.Extensions.Veldrid" Version="2.15.0" />
+        <PackageReference Include="SixLabors.ImageSharp" Version="2.1.3" />
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Furball.Vixie.Backends.OpenGL\Furball.Vixie.Backends.OpenGL.csproj" />
       <ProjectReference Include="..\Furball.Vixie.Backends.Shared\Furball.Vixie.Backends.Shared.csproj" />
       <ProjectReference Include="..\Furball.Vixie.Backends.Direct3D11\Furball.Vixie.Backends.Direct3D11.csproj" />
       <ProjectReference Include="..\Furball.Vixie.Backends.Vulkan\Furball.Vixie.Backends.Vulkan.csproj" />
       <ProjectReference Include="..\Furball.Vixie.Helpers\Furball.Vixie.Helpers.csproj" />
-      <ProjectReference Include="..\Furball.Vixie.Backends.OpenGL20\Furball.Vixie.Backends.OpenGL20.csproj" />
-      <ProjectReference Include="..\Furball.Vixie.Backends.OpenGL41\Furball.Vixie.Backends.OpenGL41.csproj" />
-      <ProjectReference Include="..\Furball.Vixie.Backends.OpenGLES\Furball.Vixie.Backends.OpenGLES.csproj" />
       <ProjectReference Include="..\Furball.Vixie.Backends.Veldrid\Furball.Vixie.Backends.Veldrid.csproj" />
       <ProjectReference Include="..\Furball.Vixie.OpenGLDetector\Furball.Vixie.OpenGLDetector.csproj" />
     </ItemGroup>

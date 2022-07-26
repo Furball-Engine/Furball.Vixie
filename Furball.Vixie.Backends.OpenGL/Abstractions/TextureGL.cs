@@ -10,9 +10,9 @@ using SixLabors.ImageSharp.PixelFormats;
 using Rectangle=System.Drawing.Rectangle;
 using Texture=Furball.Vixie.Backends.Shared.Texture;
 
-namespace Furball.Vixie.Backends.OpenGL.Shared; 
+namespace Furball.Vixie.Backends.OpenGL.Abstractions; 
 
-public sealed class TextureGL : Texture, IDisposable {
+internal sealed class TextureGL : Texture, IDisposable {
     private readonly IGLBasedBackend _backend;
     /// <summary>
     /// All the Currently Bound Textures

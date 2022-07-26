@@ -1,6 +1,6 @@
 using Silk.NET.OpenGL;
 
-namespace Furball.Vixie.Backends.OpenGL.Shared; 
+namespace Furball.Vixie.Backends.OpenGL.Abstractions; 
 
 public enum GLBackendType {
     Modern,
@@ -8,9 +8,7 @@ public enum GLBackendType {
     Legacy
 }
 
-public interface IGLBasedBackend {
-    public GLBackendType GetType();
-
+internal interface IGLBasedBackend {
     public float VerticalRatio { get; set; }
         
     public GL                        GetModernGL();
@@ -103,7 +101,8 @@ public interface IGLBasedBackend {
 
     public void Uniform2(int getUniformLocation, float f, float f2);
 
-    public void Uniform2(int getUniformLocation, int f, int f2);
+    public        void Uniform2(int getUniformLocation, int  f,     int    f2);
+    public unsafe void Uniform4(int getUniformLocation, uint count, float* ptr);
 
     public void DeleteProgram(uint programId);
 
@@ -121,4 +120,7 @@ public interface IGLBasedBackend {
 
     public void CheckError(string error);
     public void GlCheckThread();
+    unsafe void Uniform2(int             getUniformLocation, uint count, float* ptr);
+    unsafe void Uniform1(int             getUniformLocation, uint count, float* ptr);
+    void        VertexAttribDivisor(uint iOffset,            uint currentElementInstanceDivisor);
 }

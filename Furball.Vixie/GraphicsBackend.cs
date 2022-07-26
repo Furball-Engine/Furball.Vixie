@@ -1,9 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.Direct3D11;
-using Furball.Vixie.Backends.OpenGL20;
-using Furball.Vixie.Backends.OpenGL41;
-using Furball.Vixie.Backends.OpenGLES;
+using Furball.Vixie.Backends.OpenGL;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Veldrid;
 using Furball.Vixie.Backends.Vulkan;
@@ -24,13 +22,12 @@ public class GraphicsBackend {
     /// <exception cref="ArgumentOutOfRangeException">Throws if a Invalid API was chosen</exception>
     public static void SetBackend(Backend backend) {
         Current = backend switch {
-            Backend.OpenGLES     => new OpenGLESBackend(),
-            Backend.Direct3D11   => new Direct3D11Backend(),
-            Backend.LegacyOpenGL => new LegacyOpenGLBackend(),
-            Backend.ModernOpenGL => new ModernOpenGLBackend(),
-            Backend.Veldrid      => new VeldridBackend(),
-            Backend.Vulkan       => new VulkanBackend(),
-            _                    => throw new ArgumentOutOfRangeException(nameof (backend), backend, "Invalid API")
+            Backend.OpenGLES   => new OpenGLBackend(backend),
+            Backend.Direct3D11 => new Direct3D11Backend(),
+            Backend.OpenGL     => new OpenGLBackend(backend),
+            Backend.Veldrid    => new VeldridBackend(),
+            Backend.Vulkan     => new VulkanBackend(),
+            _                  => throw new ArgumentOutOfRangeException(nameof (backend), backend, "Invalid API")
         };
     }
 
@@ -50,8 +47,7 @@ public class GraphicsBackend {
         }
             
         bool preferVeldridOverNative  = PrefferedBackends.HasFlag(Backend.Veldrid);
-        bool preferOpenGl             = PrefferedBackends.HasFlag(Backend.ModernOpenGL);
-        bool preferOpenGlLegacy       = PrefferedBackends.HasFlag(Backend.LegacyOpenGL);
+        bool preferOpenGl             = PrefferedBackends.HasFlag(Backend.OpenGL);
         bool preferOpenGlesOverOpenGl = PrefferedBackends.HasFlag(Backend.OpenGLES);
             
         bool supportsGl   = Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion   != 0;
@@ -73,16 +69,8 @@ public class GraphicsBackend {
                 }
 
             if (supportsGl) {
-                //if we are asking for legacy, or our GPU doesnt support OpenGL 4.x
-                if (preferOpenGlLegacy || Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 3 || Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion == 3 && Backends.Shared.Global.LatestSupportedGL.GL.MinorVersion < 2) {
-                    if (Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 2)
-                        throw new NotSupportedException("Your GPU does not support OpenGL version 2.0 or above!");
-
-                    return Backend.LegacyOpenGL;
-                }
-
-                if (Backends.Shared.Global.LatestSupportedGL.GL.MinorVersion >= 1)
-                    return Backend.ModernOpenGL;
+                if(Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion >= 2)
+                    return Backend.OpenGL;
             }
 
             throw new NotSupportedException("Your GPU does not support OpenGL!");
@@ -113,16 +101,8 @@ public class GraphicsBackend {
                 }
 
             if (supportsGl) {
-                //if we are asking for legacy, or our GPU doesnt support OpenGL 4.x
-                if (preferOpenGlLegacy || Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 3 || Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion == 3 && Backends.Shared.Global.LatestSupportedGL.GL.MinorVersion < 2) {
-                    if (Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 2)
-                        throw new NotSupportedException("Your GPU does not support OpenGL version 2.0 or above!");
-
-                    return Backend.LegacyOpenGL;
-                }
-
-                if (Backends.Shared.Global.LatestSupportedGL.GL.MinorVersion >= 1)
-                    return Backend.ModernOpenGL;
+                if(Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion >= 2)
+                    return Backend.OpenGL;
             }
 
             throw new NotSupportedException("Your GPU does not support OpenGL!");
@@ -141,16 +121,8 @@ public class GraphicsBackend {
                     }
 
                 if (supportsGl) {
-                    //if we are asking for legacy, or our GPU doesnt support OpenGL 4.x
-                    if (preferOpenGlLegacy || Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 3 || Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion == 3 && Backends.Shared.Global.LatestSupportedGL.GL.MinorVersion < 2) {
-                        if (Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 2)
-                            throw new NotSupportedException("Your GPU does not support OpenGL version 2.0 or above!");
-
-                        return Backend.LegacyOpenGL;
-                    }
-
-                    if (Backends.Shared.Global.LatestSupportedGL.GL.MinorVersion >= 1)
-                        return Backend.ModernOpenGL;
+                    if(Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion >= 2)
+                        return Backend.OpenGL;
                 }
 
                 throw new NotSupportedException("Your GPU does not support OpenGL!");
@@ -168,16 +140,8 @@ public class GraphicsBackend {
                 }
 
             if (supportsGl) {
-                //if we are asking for legacy, or our GPU doesnt support OpenGL 4.x
-                if (preferOpenGlLegacy || Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 3 || Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion == 3 && Backends.Shared.Global.LatestSupportedGL.GL.MinorVersion < 2) {
-                    if (Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 2)
-                        throw new NotSupportedException("Your GPU does not support OpenGL version 2.0 or above!");
-
-                    return Backend.LegacyOpenGL;
-                }
-
-                if (Backends.Shared.Global.LatestSupportedGL.GL.MinorVersion >= 1)
-                    return Backend.ModernOpenGL;
+                if(Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion >= 2)
+                    return Backend.OpenGL;
             }
 
             throw new NotSupportedException("Your GPU does not support OpenGL!");
@@ -185,6 +149,6 @@ public class GraphicsBackend {
 
         Logger.Log("You are running on an untested, unsupported platform!", LoggerLevelDebugMessageCallback.InstanceNotification);
         IsOnUnsupportedPlatform = true;
-        return Backend.LegacyOpenGL; //return the most likely supported backend
+        return Backend.OpenGL;
     }
 }

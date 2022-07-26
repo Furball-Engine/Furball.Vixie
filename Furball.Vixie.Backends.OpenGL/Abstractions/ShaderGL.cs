@@ -7,12 +7,12 @@ using Furball.Vixie.Helpers.Helpers;
 using Kettu;
 using Silk.NET.OpenGL;
 
-namespace Furball.Vixie.Backends.OpenGL.Shared; 
+namespace Furball.Vixie.Backends.OpenGL.Abstractions; 
 
 /// <summary>
 /// A Shader, a Program run on the GPU
 /// </summary>
-public class ShaderGL : IDisposable {
+internal sealed class ShaderGL : IDisposable {
     private readonly IGLBasedBackend _backend;
     /// <summary>
     /// Currently Bound Shader
@@ -216,6 +216,51 @@ public class ShaderGL : IDisposable {
     public ShaderGL SetUniform(string uniformName, float f) {
         this._backend.GlCheckThread();
         this._backend.Uniform1(this.GetUniformLocation(uniformName), f);
+        this._backend.CheckError("set uniform float");
+            
+        //Return this for chaining
+        return this;
+    }
+    
+    public unsafe ShaderGL SetUniform4<T>(string uniformName, T[] arr, int count = -1) where T : unmanaged {
+        if (count == -1)
+            count = arr.Length;
+        
+        this._backend.GlCheckThread();
+        
+        fixed(T* ptr = arr)
+            this._backend.Uniform4(this.GetUniformLocation(uniformName), (uint)count, (float*)ptr);
+        
+        this._backend.CheckError("set uniform float");
+            
+        //Return this for chaining
+        return this;
+    }
+    
+    public unsafe ShaderGL SetUniform2<T>(string uniformName, T[] arr, int count = -1) where T : unmanaged {
+        if (count == -1)
+            count = arr.Length;
+        
+        this._backend.GlCheckThread();
+        
+        fixed(T* ptr = arr)
+            this._backend.Uniform2(this.GetUniformLocation(uniformName), (uint)count, (float*)ptr);
+        
+        this._backend.CheckError("set uniform float");
+            
+        //Return this for chaining
+        return this;
+    }
+    
+    public unsafe ShaderGL SetUniform1<T>(string uniformName, T[] arr, int count = -1) where T : unmanaged {
+        if (count == -1)
+            count = arr.Length;
+        
+        this._backend.GlCheckThread();
+        
+        fixed(T* ptr = arr)
+            this._backend.Uniform1(this.GetUniformLocation(uniformName), (uint)count, (float*)ptr);
+        
         this._backend.CheckError("set uniform float");
             
         //Return this for chaining

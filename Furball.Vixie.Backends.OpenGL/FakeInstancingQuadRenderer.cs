@@ -2,7 +2,7 @@ using System;
 using System.Drawing;
 using System.Numerics;
 using FontStashSharp;
-using Furball.Vixie.Backends.OpenGL.Shared;
+using Furball.Vixie.Backends.OpenGL.Abstractions;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.FontStashSharp;
 using Furball.Vixie.Backends.Shared.Renderers;
@@ -13,14 +13,15 @@ using Color=Furball.Vixie.Backends.Shared.Color;
 using ShaderType=Silk.NET.OpenGL.ShaderType;
 using Texture=Furball.Vixie.Backends.Shared.Texture;
 
-namespace Furball.Vixie.Backends.OpenGL20; 
+namespace Furball.Vixie.Backends.OpenGL; 
 
-internal class QuadRendererGL20 : IQuadRenderer {
-    private readonly LegacyOpenGLBackend _backend;
-    private readonly GL              _gl;
+internal class FakeInstancingQuadRenderer : IQuadRenderer {
+    private readonly OpenGLBackend       _backend;
+    private readonly GL                  _gl;
+    private readonly VertexArrayObjectGL _vao;
 
     private readonly ShaderGL _program;
-    private readonly uint     _vertexBuffer;
+    private readonly BufferObjectGL     _vertexBuffer;
 
     private bool disposed = true;
     public void Dispose() {
@@ -28,12 +29,13 @@ internal class QuadRendererGL20 : IQuadRenderer {
         if (this.disposed) return;
             
         this._program.Dispose();
-        this._gl.DeleteBuffer(this._vertexBuffer);
+        this._vertexBuffer.Dispose();
+        this._vao.Dispose();
 
         this.disposed = true;
     }
         
-    ~QuadRendererGL20() {
+    ~FakeInstancingQuadRenderer() {
         DisposeQueue.Enqueue(this);
     }
 
@@ -42,14 +44,17 @@ internal class QuadRendererGL20 : IQuadRenderer {
         set;
     }
 
-    internal QuadRendererGL20(LegacyOpenGLBackend backend) {
+    internal FakeInstancingQuadRenderer(OpenGLBackend backend) {
         this._backend = backend;
         this._backend.CheckThread();
-        this._gl = backend.GetOpenGL();
+        this._gl = backend.GetLegacyGL();
 
-        string vertex   = ResourceHelpers.GetStringResource("Shaders/QuadRenderer/VertexShader.glsl");
+        string vertex   = ResourceHelpers.GetStringResource("Shaders/FakeInstancingQuadRenderer/VertexShader.glsl");
         string fragment = FakeInstancingQuadShaderGenerator.GetFragment(backend);
 
+        this._vao = new VertexArrayObjectGL(this._backend);
+        this._vao.Bind();
+        
         this._program = new(this._backend);
 
         this._program.AttachShader(ShaderType.VertexShader, vertex)
@@ -59,15 +64,6 @@ internal class QuadRendererGL20 : IQuadRenderer {
         this._program.Bind();
             
         this._backend.CheckError("create shaders");
-
-        this._quadColorsUniformPosition             = this._program.GetUniformLocation("u_QuadColors");
-        this._quadPositionsUniformPosition          = this._program.GetUniformLocation("u_QuadPositions");
-        this._quadSizesUniformPosition              = this._program.GetUniformLocation("u_QuadSizes");
-        this._quadRotationOriginsUniformPosition    = this._program.GetUniformLocation("u_QuadRotationOrigins");
-        this._quadRotationsUniformPosition          = this._program.GetUniformLocation("u_QuadRotations");
-        this._quadTextureIdsUniformPosition         = this._program.GetUniformLocation("u_QuadTextureIds");
-        this._quadTextureCoordinatesUniformPosition = this._program.GetUniformLocation("u_QuadTextureCoordinates");
-        this._backend.CheckError("get uniforms");
 
         for (int i = 0; i < backend.QueryMaxTextureUnits(); i++) {
             this._program.BindUniformToTexUnit($"tex_{i}", i);
@@ -120,14 +116,19 @@ internal class QuadRendererGL20 : IQuadRenderer {
             this.BatchedIndicies[i * 6 + 5] = (ushort)(0 + i * 4);
         }
 
-        this._vertexBuffer = this._gl.GenBuffer();
-        this._gl.BindBuffer(BufferTargetARB.ArrayBuffer, this._vertexBuffer);
-        this._backend.CheckError("bind buf 1");
-        this._gl.BufferData<BatchedVertex>(BufferTargetARB.ArrayBuffer, this.BatchedVertices, BufferUsageARB.StaticDraw);
-        this._backend.CheckError("buf data");
+        this._vertexBuffer = new BufferObjectGL(backend, Silk.NET.OpenGL.BufferTargetARB.ArrayBuffer, Silk.NET.OpenGL.BufferUsageARB.StaticDraw);
 
-        this._gl.BindBuffer(GLEnum.ArrayBuffer, 0);
-        this._backend.CheckError("unbind buf");
+        this._vertexBuffer.Bind();
+        this._vertexBuffer.SetData<BatchedVertex>(this.BatchedVertices);
+
+        VertexBufferLayoutGL layout = new();
+        layout.AddElement<float>(2);
+        layout.AddElement<float>(2);
+        layout.AddElement<float>(1);
+
+        this._vao.AddBuffer(this._vertexBuffer, layout);
+
+        this._vao.Unbind();
     }
 
     public unsafe void Begin() {
@@ -136,21 +137,10 @@ internal class QuadRendererGL20 : IQuadRenderer {
 
         this._program.Bind();
 
-        fixed (void* ptr = &this._backend.ProjectionMatrix)
-            this._gl.UniformMatrix4(this._program.GetUniformLocation("u_ProjectionMatrix"), 1, false, (float*)ptr);
-        this._backend.CheckError("uniform matrix 4");
+        this._program.SetUniform("u_ProjectionMatrix", this._backend.ProjectionMatrix);
 
-        this._gl.BindBuffer(GLEnum.ArrayBuffer, this._vertexBuffer);
-
-        this._gl.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, (uint)sizeof(BatchedVertex), (void*)0);
-        this._gl.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, (uint)sizeof(BatchedVertex), (void*)sizeof(Vector2));
-        this._gl.VertexAttribPointer(2, 1, VertexAttribPointerType.Float, false, (uint)sizeof(BatchedVertex), (void*)(sizeof(Vector2) + sizeof(Vector2)));
-
-        this._gl.EnableVertexAttribArray(0);
-        this._gl.EnableVertexAttribArray(1);
-        this._gl.EnableVertexAttribArray(2);
-
-        this._gl.BindBuffer(GLEnum.ArrayBuffer, 0);
+        this._vao.Bind();
+        this._vertexBuffer.Bind();
     }
 
     private int GetTextureId(TextureGL tex) {
@@ -180,25 +170,25 @@ internal class QuadRendererGL20 : IQuadRenderer {
         if (scale.X == 0 || scale.Y == 0 || colorOverride.A == 0) return;
 
         // Checks if we have filled the current batch or run out of texture slots
-        if (this.BatchedQuads == BATCH_COUNT || this.UsedTextures == this._backend.QueryMaxTextureUnits()) {
+        if (this.BatchedQuadCount == BATCH_COUNT || this.UsedTextures == this._backend.QueryMaxTextureUnits()) {
             this.Flush();
         }
 
-        this.BatchedColors[this.BatchedQuads]               = colorOverride;
-        this.BatchedPositions[this.BatchedQuads]            = position;
-        this.BatchedSizes[this.BatchedQuads]                = texture.Size * scale;
-        this.BatchedRotationOrigins[this.BatchedQuads]      = rotOrigin;
-        this.BatchedRotations[this.BatchedQuads]            = rotation;
-        this.BatchedTextureIds[this.BatchedQuads]           = this.GetTextureId(textureGl);
-        this.BatchedTextureCoordinates[this.BatchedQuads].X = 0;
-        this.BatchedTextureCoordinates[this.BatchedQuads].Y = 0;
-        this.BatchedTextureCoordinates[this.BatchedQuads].Z = texFlip == TextureFlip.FlipHorizontal ? -1 : 1;
-        this.BatchedTextureCoordinates[this.BatchedQuads].W = texFlip == TextureFlip.FlipVertical ? -1 : 1;
+        this.BatchedColors[this.BatchedQuadCount]               = colorOverride;
+        this.BatchedPositions[this.BatchedQuadCount]            = position;
+        this.BatchedSizes[this.BatchedQuadCount]                = texture.Size * scale;
+        this.BatchedRotationOrigins[this.BatchedQuadCount]      = rotOrigin;
+        this.BatchedRotations[this.BatchedQuadCount]            = rotation;
+        this.BatchedTextureIds[this.BatchedQuadCount]           = this.GetTextureId(textureGl);
+        this.BatchedTextureCoordinates[this.BatchedQuadCount].X = 0;
+        this.BatchedTextureCoordinates[this.BatchedQuadCount].Y = 0;
+        this.BatchedTextureCoordinates[this.BatchedQuadCount].Z = texFlip == TextureFlip.FlipHorizontal ? -1 : 1;
+        this.BatchedTextureCoordinates[this.BatchedQuadCount].W = texFlip == TextureFlip.FlipVertical ? -1 : 1;
 
         if (textureGl.IsFramebufferTexture)
-            this.BatchedTextureCoordinates[this.BatchedQuads].W *= -1;
+            this.BatchedTextureCoordinates[this.BatchedQuadCount].W *= -1;
 
-        this.BatchedQuads++;
+        this.BatchedQuadCount++;
     }
 
     public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, Rectangle sourceRect, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
@@ -213,7 +203,7 @@ internal class QuadRendererGL20 : IQuadRenderer {
         if (scale.X == 0 || scale.Y == 0 || colorOverride.A == 0) return;
 
         // Checks if we have filled the batch or run out of textures
-        if (this.BatchedQuads == BATCH_COUNT || this.UsedTextures == this._backend.QueryMaxTextureUnits()) {
+        if (this.BatchedQuadCount == BATCH_COUNT || this.UsedTextures == this._backend.QueryMaxTextureUnits()) {
             this.Flush();
         }
 
@@ -225,18 +215,18 @@ internal class QuadRendererGL20 : IQuadRenderer {
 
         sourceRect.Y = texture.Height - sourceRect.Y - sourceRect.Height;
 
-        this.BatchedColors[this.BatchedQuads]               = colorOverride;
-        this.BatchedPositions[this.BatchedQuads]            = position;
-        this.BatchedSizes[this.BatchedQuads]                = size;
-        this.BatchedRotationOrigins[this.BatchedQuads]      = rotOrigin;
-        this.BatchedRotations[this.BatchedQuads]            = rotation;
-        this.BatchedTextureIds[this.BatchedQuads]           = this.GetTextureId(textureGl);
-        this.BatchedTextureCoordinates[this.BatchedQuads].X = (float)sourceRect.X                       / texture.Width;
-        this.BatchedTextureCoordinates[this.BatchedQuads].Y = (float)sourceRect.Y                       / texture.Height;
-        this.BatchedTextureCoordinates[this.BatchedQuads].Z = (float)sourceRect.Width  / texture.Width  * (texFlip == TextureFlip.FlipHorizontal ? -1 : 1);
-        this.BatchedTextureCoordinates[this.BatchedQuads].W = (float)sourceRect.Height / texture.Height * (texFlip == TextureFlip.FlipVertical ? -1 : 1);
+        this.BatchedColors[this.BatchedQuadCount]               = colorOverride;
+        this.BatchedPositions[this.BatchedQuadCount]            = position;
+        this.BatchedSizes[this.BatchedQuadCount]                = size;
+        this.BatchedRotationOrigins[this.BatchedQuadCount]      = rotOrigin;
+        this.BatchedRotations[this.BatchedQuadCount]            = rotation;
+        this.BatchedTextureIds[this.BatchedQuadCount]           = this.GetTextureId(textureGl);
+        this.BatchedTextureCoordinates[this.BatchedQuadCount].X = (float)sourceRect.X                       / texture.Width;
+        this.BatchedTextureCoordinates[this.BatchedQuadCount].Y = (float)sourceRect.Y                       / texture.Height;
+        this.BatchedTextureCoordinates[this.BatchedQuadCount].Z = (float)sourceRect.Width  / texture.Width  * (texFlip == TextureFlip.FlipHorizontal ? -1 : 1);
+        this.BatchedTextureCoordinates[this.BatchedQuadCount].W = (float)sourceRect.Height / texture.Height * (texFlip == TextureFlip.FlipVertical ? -1 : 1);
 
-        this.BatchedQuads++;
+        this.BatchedQuadCount++;
     }
 
     internal struct BatchedVertex {
@@ -247,15 +237,15 @@ internal class QuadRendererGL20 : IQuadRenderer {
 
     private const int BATCH_COUNT = 128;
         
-    private int _quadColorsUniformPosition;
-    private int _quadPositionsUniformPosition;
-    private int _quadSizesUniformPosition;
-    private int _quadRotationOriginsUniformPosition;
-    private int _quadRotationsUniformPosition;
-    private int _quadTextureIdsUniformPosition;
-    private int _quadTextureCoordinatesUniformPosition;
+    // private int _quadColorsUniformPosition;             //u_QuadColors
+    // private int _quadPositionsUniformPosition;          //u_QuadPositions
+    // private int _quadSizesUniformPosition;              //u_QuadSizes
+    // private int _quadRotationOriginsUniformPosition;    //u_QuadRotationOrigins
+    // private int _quadRotationsUniformPosition;          //u_QuadRotations
+    // private int _quadTextureIdsUniformPosition;         //u_QuadTextureIds
+    // private int _quadTextureCoordinatesUniformPosition; //u_QuadTextureCoordinates
 
-    private int BatchedQuads = 0;
+    private int BatchedQuadCount = 0;
     private int UsedTextures = 0;
 
     private BatchedVertex[] BatchedVertices           = new BatchedVertex[BATCH_COUNT * 4];
@@ -273,9 +263,7 @@ internal class QuadRendererGL20 : IQuadRenderer {
 
     private unsafe void Flush() {
         this._backend.CheckThread();
-        if (this.BatchedQuads == 0) return;
-
-        this._program.Bind();
+        if (this.BatchedQuadCount == 0) return;
 
         //Bind all the textures
         for (var i = 0; i < this.UsedTextures; i++) {
@@ -286,43 +274,19 @@ internal class QuadRendererGL20 : IQuadRenderer {
         }
         this._backend.CheckError("bind texes");
 
-        fixed (void* ptr = this.BatchedColors)
-            this._gl.Uniform4(this._quadColorsUniformPosition, (uint)this.BatchedQuads, (float*)ptr);
-        this._backend.CheckError("uniform colors");
-
-        fixed (void* ptr = this.BatchedPositions)
-            this._gl.Uniform2(this._quadPositionsUniformPosition, (uint)this.BatchedQuads, (float*)ptr);
-        this._backend.CheckError("uniforms pos");
-
-        fixed (void* ptr = this.BatchedSizes)
-            this._gl.Uniform2(this._quadSizesUniformPosition, (uint)this.BatchedQuads, (float*)ptr);
-        this._backend.CheckError("uniform sizes");
-
-        fixed (void* ptr = this.BatchedRotationOrigins)
-            this._gl.Uniform2(this._quadRotationOriginsUniformPosition, (uint)this.BatchedQuads, (float*)ptr);
-        this._backend.CheckError("uniform rotation origins");
-
-        fixed (void* ptr = this.BatchedRotations)
-            this._gl.Uniform1(this._quadRotationsUniformPosition, (uint)this.BatchedQuads, (float*)ptr);
-        this._backend.CheckError("uniform rotations");
-
-        fixed (void* ptr = this.BatchedTextureIds)
-            this._gl.Uniform1(this._quadTextureIdsUniformPosition, (uint)this.BatchedQuads, (float*)ptr);
-        this._backend.CheckError("uniform texids");
-
-        fixed (void* ptr = this.BatchedTextureCoordinates)
-            this._gl.Uniform4(this._quadTextureCoordinatesUniformPosition, (uint)this.BatchedQuads, (float*)ptr);
-        this._backend.CheckError("uniform tex coords");
-
-        this._gl.BindBuffer(BufferTargetARB.ArrayBuffer, this._vertexBuffer);
-
-        this._gl.DrawElements<ushort>(PrimitiveType.Triangles, (uint)(this.BatchedQuads * 6), DrawElementsType.UnsignedShort, this.BatchedIndicies);
+        this._program.SetUniform4("u_QuadColors", this.BatchedColors, this.BatchedQuadCount);
+        this._program.SetUniform2("u_QuadPositions", this.BatchedPositions, this.BatchedQuadCount);
+        this._program.SetUniform2("u_QuadSizes", this.BatchedSizes, this.BatchedQuadCount);
+        this._program.SetUniform2("u_QuadRotationOrigins", this.BatchedRotationOrigins, this.BatchedQuadCount);
+        this._program.SetUniform1("u_QuadRotations", this.BatchedRotations, this.BatchedQuadCount);
+        this._program.SetUniform1("u_QuadTextureIds", this.BatchedTextureIds, this.BatchedQuadCount);
+        this._program.SetUniform4("u_QuadTextureCoordinates", this.BatchedTextureCoordinates, this.BatchedQuadCount);
+        
+        this._gl.DrawElements<ushort>(PrimitiveType.Triangles, (uint)(this.BatchedQuadCount * 6), DrawElementsType.UnsignedShort, this.BatchedIndicies);
 
         this._backend.CheckError("draw elements");
-            
-        this._gl.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
 
-        this.BatchedQuads = 0;
+        this.BatchedQuadCount = 0;
         this.UsedTextures = 0;
     }
 
@@ -331,9 +295,9 @@ internal class QuadRendererGL20 : IQuadRenderer {
         this.IsBegun = false;
         this.Flush();
 
-        this._gl.DisableVertexAttribArray(0);
-        this._gl.DisableVertexAttribArray(1);
-        this._gl.DisableVertexAttribArray(2);
+        this._program.Unbind();
+        this._vertexBuffer.Unbind();
+        this._vao.Unbind();
     }
 
     #region overloads
