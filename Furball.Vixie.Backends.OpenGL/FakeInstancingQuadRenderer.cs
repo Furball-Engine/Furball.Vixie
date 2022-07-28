@@ -134,12 +134,10 @@ internal class FakeInstancingQuadRenderer : IQuadRenderer {
     public unsafe void Begin() {
         this._backend.CheckThread();
         this.IsBegun = true;
-
-        this._program.Bind();
-
-        this._program.SetUniform("u_ProjectionMatrix", this._backend.ProjectionMatrix);
-
+        
         this._vao.Bind();
+        this._program.Bind();
+        this._program.SetUniform("u_ProjectionMatrix", this._backend.ProjectionMatrix);
         this._vertexBuffer.Bind();
     }
 

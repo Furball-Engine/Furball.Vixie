@@ -155,14 +155,14 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
 
         this.View = view;
 
-        // #if DEBUGWITHGL
+#if DEBUGWITHGL
         unsafe {
             //Enables Debugging
             this.gl.Enable(EnableCap.DebugOutput);
             this.gl.Enable(EnableCap.DebugOutputSynchronous);
             this.gl.DebugMessageCallback(this.Callback, null);
         }
-        // #endif
+#endif
 
         //Enables Blending (Required for Transparent Objects)
         this.gl.Enable(EnableCap.Blend);

@@ -96,8 +96,6 @@ public class WindowManager : IDisposable {
     /// Creates the Window and grabs the OpenGL API of Window
     /// </summary>
     public void Create() {
-        Window.PrioritizeSdl();
-
         ContextAPI api = this.Backend switch {
             Backend.OpenGLES   => ContextAPI.OpenGLES,
             Backend.OpenGL     => ContextAPI.OpenGL,

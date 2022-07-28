@@ -95,14 +95,14 @@ internal class BatchedNativeLineRenderer : ILineRenderer {
     public unsafe void Begin() {
         this._backend.CheckThread();
         this.IsBegun = true;
-            
+        
+        this._vao.Bind();
         this._program.Bind();
 
         fixed (void* ptr = &this._backend.ProjectionMatrix)
             this._gl.UniformMatrix4(this._program.GetUniformLocation("u_ProjectionMatrix"), 1, false, (float*)ptr);
         this._backend.CheckError("uniform matrix 4");
         
-        this._vao.Bind();
         this._arrayBuf.Bind();
     }
 
