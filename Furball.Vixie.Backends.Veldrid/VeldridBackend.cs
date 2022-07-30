@@ -27,7 +27,7 @@ public class VeldridBackend : IGraphicsBackend {
     internal ResourceFactory ResourceFactory;
     internal CommandList     CommandList;
 
-    internal GraphicsBackend ChosenBackend;
+    public GraphicsBackend ChosenBackend;
         
     internal Matrix4x4       ProjectionMatrix;
     private  IView           _view;
