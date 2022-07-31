@@ -68,8 +68,8 @@ public class ImGuiControllerD3D11 : IDisposable {
 
         this._view         = view;
         this._inputContext = context;
-        this._windowWidth  = this._view.Size.X;
-        this._windowHeight = this._view.Size.Y;
+        this._windowWidth  = this._view.FramebufferSize.X;
+        this._windowHeight = this._view.FramebufferSize.Y;
 
         IntPtr imGuiContext = ImGui.CreateContext();
         ImGui.SetCurrentContext(imGuiContext);
@@ -392,8 +392,8 @@ public class ImGuiControllerD3D11 : IDisposable {
     }
 
     private void OnViewResized(Vector2D<int> newSize) {
-        this._windowWidth  = this._view.Size.X;
-        this._windowHeight = this._view.Size.Y;
+        this._windowWidth  = this._view.FramebufferSize.X;
+        this._windowHeight = this._view.FramebufferSize.Y;
     }
 
     private void SetPerFrameImGuiData(float delta) {

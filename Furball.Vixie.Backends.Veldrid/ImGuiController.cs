@@ -72,8 +72,8 @@ public class ImGuiController : IDisposable {
         this._gd           = gd;
         this._view         = view;
         this._input        = input;
-        this._windowWidth  = view.Size.X;
-        this._windowHeight = view.Size.Y;
+        this._windowWidth  = view.FramebufferSize.X;
+        this._windowHeight = view.FramebufferSize.Y;
 
         this._context = ImGui.CreateContext();
         ImGui.SetCurrentContext(this._context);

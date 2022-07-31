@@ -184,7 +184,7 @@ public class VeldridBackend : IGraphicsBackend {
             
         this.InfoSections.ForEach(x => x.Log(LoggerLevelVeldrid.InstanceInfo));
 
-        this._lastScissor = new Rectangle(0, 0, view.Size.X, view.Size.Y);
+        this._lastScissor = new Rectangle(0, 0, view.FramebufferSize.X, view.FramebufferSize.Y);
     }
         
 
@@ -339,7 +339,7 @@ public class VeldridBackend : IGraphicsBackend {
     public override void SetFullScissorRect() {
         CommandList commandList = this.ResourceFactory.CreateCommandList();
         commandList.Begin();
-        this._lastScissor = new Rectangle(0, 0, this._view.Size.X, this._view.Size.Y);
+        this._lastScissor = new Rectangle(0, 0, this._view.FramebufferSize.X, this._view.FramebufferSize.Y);
         commandList.SetFramebuffer(this.RenderFramebuffer);
         commandList.SetFullScissorRect(0);
         commandList.End();

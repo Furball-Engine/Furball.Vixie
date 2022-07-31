@@ -95,8 +95,8 @@ public class Direct3D11Backend : IGraphicsBackend {
 
         SwapChainDescription swapChainDescription = new SwapChainDescription {
             BufferDescription = new ModeDescription {
-                Width  = view.Size.X,
-                Height = view.Size.Y,
+                Width  = view.FramebufferSize.X,
+                Height = view.FramebufferSize.Y,
                 Format = Format.R8G8B8A8_UNorm,
             },
             SampleDescription = new SampleDescription {
@@ -161,7 +161,7 @@ public class Direct3D11Backend : IGraphicsBackend {
 
         this.InfoSections.ForEach(x => x.Log(LoggerLevelD3D11.InstanceInfo));
 
-        this.ScissorRect = new Rectangle(0, 0, view.Size.X, view.Size.Y);
+        this.ScissorRect = new Rectangle(0, 0, view.FramebufferSize.X, view.FramebufferSize.Y);
     }
 
     private void CreateSwapchainResources() {

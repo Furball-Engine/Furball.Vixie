@@ -517,7 +517,7 @@ public unsafe class VulkanBackend : IGraphicsBackend {
             }
         }
 
-        extent = new Extent2D((uint)this._view.Size.X, (uint)this._view.Size.Y);
+        extent = new Extent2D((uint)this._view.FramebufferSize.X, (uint)this._view.FramebufferSize.Y);
 
         extent.Width  = extent.Width.Clamp(swapChainSupportDetails.SurfaceCapabilities.MinImageExtent.Width, swapChainSupportDetails.SurfaceCapabilities.MaxImageExtent.Width);
         extent.Height = extent.Height.Clamp(swapChainSupportDetails.SurfaceCapabilities.MinImageExtent.Height, swapChainSupportDetails.SurfaceCapabilities.MaxImageExtent.Height);

@@ -49,7 +49,7 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     private  bool          _runImGui = true;
     internal IView         View;
     private  bool          _screenshotQueued;
-    private  Vector2D<int> _viewport;
+    internal Vector2D<int> CurrentViewport;
     private  Rectangle     _lastScissor;
 
     public static Dictionary<string, FeatureLevel> FeatureLevels = new() {
@@ -227,7 +227,7 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
         view.Closing += delegate {
             this._runImGui = false;
         };
-        this._viewport    = new Vector2D<int>(view.Size.X, view.Size.Y);
+        this.CurrentViewport    = new Vector2D<int>(view.FramebufferSize.X, view.FramebufferSize.Y);
         this._lastScissor = new(0, 0, view.FramebufferSize.X, view.FramebufferSize.Y);
     }
 
@@ -277,7 +277,7 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     /// <param name="height">New height</param>
     public override void HandleFramebufferResize(int width, int height) {
         this.gl.Viewport(0, 0, (uint)width, (uint)height);
-        this._viewport = new Vector2D<int>(width, height);
+        this.CurrentViewport = new Vector2D<int>(width, height);
 
         this.VerticalRatio = height / 720f;
 
@@ -287,12 +287,12 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     public override Rectangle ScissorRect {
         get => this._lastScissor;
         set {
-            this.gl.Scissor(value.X, this._viewport.Y - value.Height - value.Y, (uint)value.Width, (uint)value.Height);
+            this.gl.Scissor(value.X, this.CurrentViewport.Y - value.Height - value.Y, (uint)value.Width, (uint)value.Height);
             this._lastScissor = value;
         }
     }
     public override void SetFullScissorRect() {
-        this.ScissorRect = new(0, 0, this._viewport.X, this._viewport.Y);
+        this.ScissorRect = new(0, 0, this.CurrentViewport.X, this.CurrentViewport.Y);
     }
     /// <summary>
     ///     Used to Create a Texture Renderer
