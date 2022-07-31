@@ -28,7 +28,8 @@ public class WindowManager : IDisposable {
 
     public bool ViewOnly { get; internal set; } = false;
 
-    public Vector2 WindowSize => new(this.GameView.FramebufferSize.X, this.GameView.FramebufferSize.Y);
+    private Vector2 _windowSize; 
+    public Vector2 WindowSize => this._windowSize;
     public bool Fullscreen {
         get {
             if (this.ViewOnly)
@@ -64,7 +65,7 @@ public class WindowManager : IDisposable {
             throw new NotSupportedException("You cant set window size on a view only platform!");
             
         this.GameWindow.Size = new Vector2D<int>(width, height);
-        this.UpdateProjectionAndSize(width, height);
+        this.UpdateWindowSize(this.GameView.FramebufferSize.X, this.GameView.FramebufferSize.Y);
     }
 
     public void SetTargetFramerate(int framerate) {
@@ -86,8 +87,8 @@ public class WindowManager : IDisposable {
         this.GameView.Close();
     }
 
-    private void UpdateProjectionAndSize(int width, int height) {
-            
+    private void UpdateWindowSize(int width, int height) {
+        this._windowSize = new Vector2(width, height);
     }
 
     internal bool RequestViewOnly = false;
@@ -182,18 +183,23 @@ public class WindowManager : IDisposable {
         }
             
         this.GameView.FramebufferResize += newSize => {
-            this.UpdateProjectionAndSize(newSize.X, newSize.Y);
+            this.UpdateWindowSize(newSize.X, newSize.Y);
+        };
+
+        this.GameView.Load += () => {
+            this._windowSize = new(this.GameView.FramebufferSize.X, this.GameView.FramebufferSize.Y);
         };
             
         this.GameView.Closing += this.OnViewClosing;
     }
+    
     public void SetupGraphicsApi() {
         GraphicsBackend.SetBackend(this.Backend);
         Global.GameInstance.SetApiFeatureLevels();
         GraphicsBackend.Current.SetMainThread();
         GraphicsBackend.Current.Initialize(this.GameView, this.InputContext);
 
-        GraphicsBackend.Current.HandleFramebufferResize(this.GameView.Size.X, this.GameView.Size.Y);
+        GraphicsBackend.Current.HandleFramebufferResize(this.GameView.FramebufferSize.X, this.GameView.FramebufferSize.Y);
     }
     /// <summary>
     /// Runs the Window
