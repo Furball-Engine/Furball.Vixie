@@ -392,8 +392,8 @@ public class ImGuiControllerD3D11 : IDisposable {
     }
 
     private void OnViewResized(Vector2D<int> newSize) {
-        this._windowWidth  = this._view.FramebufferSize.X;
-        this._windowHeight = this._view.FramebufferSize.Y;
+        this._windowWidth  = this._view.Size.X;
+        this._windowHeight = this._view.Size.Y;
     }
 
     private void SetPerFrameImGuiData(float delta) {
