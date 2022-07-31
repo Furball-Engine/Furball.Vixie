@@ -15,7 +15,6 @@
 
     <ItemGroup>
         <PackageReference Include="Kettu" Version="1.4.0" />
-        <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.15.0" />
         <PackageReference Include="Silk.NET.OpenGL" Version="2.15.0" />
         <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.15.0" />
         <PackageReference Include="Silk.NET.OpenGL.Legacy.Extensions.EXT" Version="2.15.0" />
@@ -33,15 +32,6 @@
       <EmbeddedResource Include="Shaders\GeometryShaderLineRenderer\VertexShader.glsl" />
       <EmbeddedResource Include="Shaders\InstancedQuadRenderer\FragmentShader.glsl" />
       <EmbeddedResource Include="Shaders\InstancedQuadRenderer\VertexShader.glsl" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Reference Include="Silk.NET.OpenGL.Legacy.Extensions.EXT">
-        <HintPath>..\..\..\..\..\.nuget\packages\silk.net.opengl.legacy.extensions.ext\2.15.0\lib\netstandard2.0\Silk.NET.OpenGL.Legacy.Extensions.EXT.dll</HintPath>
-      </Reference>
-      <Reference Include="SixLabors.ImageSharp">
-        <HintPath>..\..\..\..\..\.nuget\packages\sixlabors.imagesharp\2.1.3\lib\netstandard2.0\SixLabors.ImageSharp.dll</HintPath>
-      </Reference>
     </ItemGroup>
 
     <ItemGroup>
