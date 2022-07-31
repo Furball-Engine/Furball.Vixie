@@ -262,8 +262,9 @@ public class InstancedQuadRenderer : IQuadRenderer {
 
     private readonly uint[] _boundTextures;
     private          int    _usedTextures = 0;
-
-
+    
+    //TODO: store the tex id in the TextureGL object itself then clear on flush
+    //This will let us skip the iteration if the id is already set
     private int GetTextureId(TextureGL tex) {
         this._backend.CheckThread();
         if(this._usedTextures != 0)
