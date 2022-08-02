@@ -175,7 +175,6 @@ public abstract class Game : IDisposable {
     /// </summary>
     /// <param name="deltaTime">Delta Time</param>
     protected virtual void Update(double deltaTime) {
-        GraphicsBackend.Current.ImGuiUpdate(deltaTime);
         this.Components.Update(deltaTime);
 
         DisposeQueue.DoDispose();
@@ -215,6 +214,7 @@ public abstract class Game : IDisposable {
     protected virtual void Draw(double deltaTime) {
         this.Components.Draw(deltaTime);
         GraphicsBackend.Current.ImGuiDraw(deltaTime);
+        GraphicsBackend.Current.ImGuiUpdate(deltaTime);
     }
     protected virtual void DrawLoadingScreen() {}
     /// <summary>

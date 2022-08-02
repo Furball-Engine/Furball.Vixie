@@ -15,11 +15,11 @@
 
     <ItemGroup>
         <PackageReference Include="Kettu" Version="1.4.0" />
-        <PackageReference Include="Silk.NET.OpenGL" Version="2.15.0" />
-        <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.15.0" />
-        <PackageReference Include="Silk.NET.OpenGL.Legacy.Extensions.EXT" Version="2.15.0" />
-        <PackageReference Include="Silk.NET.OpenGL.Legacy.Extensions.ImGui" Version="2.15.0" />
-        <PackageReference Include="Silk.NET.OpenGLES.Extensions.ImGui" Version="2.15.0" />
+        <PackageReference Include="Silk.NET.OpenGL" Version="2.16.0" />
+        <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.16.0" />
+        <PackageReference Include="Silk.NET.OpenGL.Legacy.Extensions.EXT" Version="2.16.0" />
+        <PackageReference Include="Silk.NET.OpenGL.Legacy.Extensions.ImGui" Version="2.16.0" />
+        <PackageReference Include="Silk.NET.OpenGLES.Extensions.ImGui" Version="2.16.0" />
     </ItemGroup>
 
     <ItemGroup>

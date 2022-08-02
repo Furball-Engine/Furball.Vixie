@@ -19,8 +19,8 @@
       <PackageReference Include="ImGui.NET" Version="1.87.3"/>
       <PackageReference Include="Vortice.Direct3D11" Version="2.1.19" />
       <PackageReference Include="Vortice.D3DCompiler" Version="2.1.19" />
-      <PackageReference Include="Silk.NET.Input.Common" Version="2.15.0" />
-      <PackageReference Include="Silk.NET.Input.Extensions" Version="2.15.0" />
+      <PackageReference Include="Silk.NET.Input.Common" Version="2.16.0" />
+      <PackageReference Include="Silk.NET.Input.Extensions" Version="2.16.0" />
     </ItemGroup>
 
     <ItemGroup>
