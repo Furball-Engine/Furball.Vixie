@@ -21,15 +21,20 @@ public class WindowManager : IDisposable {
     /// </summary>
     internal IView GameView;
     internal IWindow GameWindow;
+    
     /// <summary>
     /// Current Window State
     /// </summary>
     public WindowState WindowState { get; internal set; }
 
-    public bool ViewOnly { get; internal set; } = false;
+    public bool ViewOnly {
+        get;
+        private set;
+    } = false;
 
     private Vector2 _windowSize; 
     public Vector2 WindowSize => this._windowSize;
+    
     public bool Fullscreen {
         get {
             if (this.ViewOnly)
@@ -68,21 +73,83 @@ public class WindowManager : IDisposable {
         this.UpdateWindowSize(this.GameView.FramebufferSize.X, this.GameView.FramebufferSize.Y);
     }
 
-    public double TargetFramerate {
-        get => this.GameView.FramesPerSecond;
-        set => this.GameView.FramesPerSecond = value;
-    }
+    private double _targetUnfocusedFramerate  = 15;
+    private double _targetUnfocusedUpdaterate = 30;
     
-    public double TargetUpdaterate {
-        get => this.GameView.UpdatesPerSecond;
-        set => this.GameView.UpdatesPerSecond = value;
+    public double TargetUnfocusedFramerate  {
+        get => this._targetUnfocusedFramerate;
+        set {
+            this._targetUnfocusedFramerate = value;
+            this.UpdateFramerates();
+        }
+    }
+    public double TargetUnfocusedUpdaterate {
+        get => this._targetUnfocusedUpdaterate;
+        set {
+            this._targetUnfocusedUpdaterate = value;
+            this.UpdateFramerates();
+        }
     }
 
-    public void SetWindowTitle(string title) {
-        if (ViewOnly)
-            throw new NotSupportedException("You cant set the window title on a view only platform!");
-            
-        this.GameWindow.Title = title;
+    private double _targetFramerate;
+    private double _targetUpdaterate;
+
+    public double TargetFramerate {
+        get => this._targetFramerate;
+        set {
+            this._targetFramerate = value;
+            this.UpdateFramerates();
+        }
+    }
+
+    public double TargetUpdaterate {
+        get => this._targetUpdaterate;
+        set {
+            this._targetUpdaterate = value;
+            this.UpdateFramerates();
+        }
+    }
+
+    public bool EnableUnfocusCap = true;
+    
+    private void UpdateFramerates() {
+        bool focus = this.Focused;
+        
+        if (!this.EnableUnfocusCap)
+            focus = true;
+        
+        if(focus) {
+            this.GameView.FramesPerSecond  = this._targetFramerate;
+            this.GameView.UpdatesPerSecond = this._targetUpdaterate;
+        } else {
+            this.GameView.FramesPerSecond  = this.TargetUnfocusedFramerate;
+            this.GameView.UpdatesPerSecond = this.TargetUnfocusedUpdaterate;
+        }
+    }
+
+    public bool Focused {
+        get;
+        private set;
+    } = true;
+    
+    private void GameViewOnFocusChanged(bool focus) {
+        this.Focused = focus;
+        this.UpdateFramerates();
+    }
+
+    public string WindowTitle {
+        get {
+            if (ViewOnly)
+                throw new NotSupportedException("You cant set the window title on a view only platform!");
+
+            return this.GameWindow.Title;
+        }
+        set {
+            if (ViewOnly)
+                throw new NotSupportedException("You cant set the window title on a view only platform!");
+
+            this.GameWindow.Title = value;
+        }
     }
 
     public void Close() {
@@ -193,8 +260,10 @@ public class WindowManager : IDisposable {
         };
             
         this.GameView.Closing += this.OnViewClosing;
+        
+        this.GameView.FocusChanged += GameViewOnFocusChanged;
     }
-    
+
     public void SetupGraphicsApi() {
         GraphicsBackend.SetBackend(this.Backend);
         Global.GameInstance.SetApiFeatureLevels();
