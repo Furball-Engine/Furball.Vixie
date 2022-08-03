@@ -1,11 +1,13 @@
 using System;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Veldrid;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
 using Silk.NET.Windowing.Extensions.Veldrid;
+using Silk.NET.Windowing.Sdl;
 
 namespace Furball.Vixie; 
 
@@ -166,12 +168,16 @@ public class WindowManager : IDisposable {
     /// Creates the Window and grabs the OpenGL API of Window
     /// </summary>
     public void Create() {
+        if(this.Backend is Backend.Direct3D9 or Backend.Direct3D11 && RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            SdlWindowing.Use();
+
         ContextAPI api = this.Backend switch {
             Backend.OpenGLES   => ContextAPI.OpenGLES,
             Backend.OpenGL     => ContextAPI.OpenGL,
             Backend.Veldrid    => ContextAPI.None,
             Backend.Vulkan     => ContextAPI.Vulkan,
             Backend.Direct3D11 => ContextAPI.None,
+            Backend.Direct3D9  => ContextAPI.None,
             _                  => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
         };
 
@@ -181,6 +187,7 @@ public class WindowManager : IDisposable {
             Backend.Veldrid    => ContextProfile.Core,
             Backend.Vulkan     => ContextProfile.Core,
             Backend.Direct3D11 => ContextProfile.Core,
+            Backend.Direct3D9  => ContextProfile.Core,
             _                  => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
         };
 
@@ -191,10 +198,12 @@ public class WindowManager : IDisposable {
             Backend.Veldrid    => ContextFlags.ForwardCompatible | ContextFlags.Debug,
             Backend.Vulkan     => ContextFlags.Debug,
             Backend.Direct3D11 => ContextFlags.Debug,
+            Backend.Direct3D9  => ContextFlags.Debug,
 #else
             Backend.OpenGLES   => ContextFlags.Default,
             Backend.OpenGL     => ContextFlags.Default,
             Backend.Direct3D11 => ContextFlags.Default,
+            Backend.Direct3D9  => ContextFlags.Default,
             Backend.Veldrid    => ContextFlags.ForwardCompatible,
             Backend.Vulkan     => ContextFlags.Default,
 #endif
@@ -224,6 +233,9 @@ public class WindowManager : IDisposable {
                 break;
             case Backend.Direct3D11:
                 version = new APIVersion(11, 0);
+                break;
+            case Backend.Direct3D9:
+                version = new APIVersion(9, 0);
                 break;
             case Backend.Vulkan:
                 version = new APIVersion(0, 0);
