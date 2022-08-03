@@ -68,14 +68,16 @@ public class WindowManager : IDisposable {
         this.UpdateWindowSize(this.GameView.FramebufferSize.X, this.GameView.FramebufferSize.Y);
     }
 
-    public void SetTargetFramerate(int framerate) {
-        this.GameView.FramesPerSecond = framerate;
+    public double TargetFramerate {
+        get => this.GameView.FramesPerSecond;
+        set => this.GameView.FramesPerSecond = value;
+    }
+    
+    public double TargetUpdaterate {
+        get => this.GameView.UpdatesPerSecond;
+        set => this.GameView.UpdatesPerSecond = value;
     }
 
-    public int GetTargetFramerate() {
-        return (int)this.GameView.FramesPerSecond;
-    }
-        
     public void SetWindowTitle(string title) {
         if (ViewOnly)
             throw new NotSupportedException("You cant set the window title on a view only platform!");
