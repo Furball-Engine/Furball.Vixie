@@ -281,7 +281,7 @@ public class InstancedQuadRenderer : IQuadRenderer {
         return this._usedTextures - 1;
     }
 
-    public const int NUM_INSTANCES = 1024;
+    public const int NUM_INSTANCES = 16384;
 
     private          uint           _instances    = 0;
     private readonly InstanceData[] _instanceData = new InstanceData[NUM_INSTANCES];
