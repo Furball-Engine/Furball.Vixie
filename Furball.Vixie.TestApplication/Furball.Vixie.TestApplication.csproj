@@ -18,11 +18,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="Shaders\BasicPixelShader.glsl" />
-      <None Remove="Shaders\BasicVertexShader.glsl" />
-    </ItemGroup>
-
-    <ItemGroup>
       <None Remove="Resources\pippidonclear0.png" />
       <EmbeddedResource Include="Resources\pippidonclear0.png" />
       <None Remove="Resources\font.ttf" />
@@ -32,9 +27,9 @@
     </ItemGroup>
     
     <ItemGroup>
-      <PackageReference Include="Silk.NET.Input" Version="2.15.0" />
-      <PackageReference Include="Silk.NET.Input.Extensions" Version="2.15.0" />
-      <PackageReference Include="Silk.NET.Windowing" Version="2.15.0" />
+      <PackageReference Include="Silk.NET.Input" Version="2.16.0" />
+      <PackageReference Include="Silk.NET.Input.Extensions" Version="2.16.0" />
+      <PackageReference Include="Silk.NET.Windowing" Version="2.16.0" />
     </ItemGroup>
 
 </Project>

@@ -7,7 +7,6 @@ using ImGuiNET;
 namespace Furball.Vixie.TestApplication.Tests; 
 
 public class TestTextureRenderTargets : GameComponent {
-    private ILineRenderer       _lineRenderer;
     private TextureRenderTarget _renderTarget;
     private Texture             _resultTexture;
     private IQuadRenderer       _quadRenderer;
@@ -17,7 +16,6 @@ public class TestTextureRenderTargets : GameComponent {
     public override void Initialize() {
         this._renderTarget = Resources.CreateTextureRenderTarget(200, 200);
             
-        this._lineRenderer = GraphicsBackend.Current.CreateLineRenderer();
         this._quadRenderer = GraphicsBackend.Current.CreateTextureRenderer();
             
         this._whiteTexture = Resources.CreateTexture();
@@ -31,9 +29,6 @@ public class TestTextureRenderTargets : GameComponent {
         this._renderTarget.Bind();
         GraphicsBackend.Current.Clear();
 
-        this._lineRenderer.Begin();
-        this._lineRenderer.Draw(new Vector2(0, 0), new Vector2(1280, 720), 16f, Color.Red);
-        this._lineRenderer.End();
         this._quadRenderer.Begin();
         this._quadRenderer.Draw(this._whiteTexture, new Vector2(5, 5), new Vector2(128, 128), Color.Green);
         this._quadRenderer.End();
@@ -62,7 +57,6 @@ public class TestTextureRenderTargets : GameComponent {
 
     public override void Dispose() {
         this._quadRenderer.Dispose();
-        this._lineRenderer.Dispose();
         this._renderTarget.Dispose();
         this._resultTexture.Dispose();
         this._whiteTexture.Dispose();
