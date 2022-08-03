@@ -22,15 +22,13 @@ internal sealed class TextureD3D11 : Texture {
 
     internal int UsedId = -1;
 
-    public override Vector2 Size { get; protected set; }
-
     public TextureD3D11(Direct3D11Backend backend, ID3D11Texture2D texture, ID3D11ShaderResourceView shaderResourceView, Vector2 size) {
         backend.CheckThread();
         this._backend       = backend;
         this._deviceContext = backend.GetDeviceContext();
         this._device        = backend.GetDevice();
 
-        this.Size = size;
+        this._size = size;
 
         this._texture    = texture;
         this.TextureView = shaderResourceView;
@@ -69,7 +67,7 @@ internal sealed class TextureD3D11 : Texture {
             this.TextureView = textureView;
         }
 
-        this.Size = Vector2.One;
+        this._size = Vector2.One;
     }
 
     public unsafe TextureD3D11(Direct3D11Backend backend, byte[] imageData, bool qoi = false) {
@@ -116,7 +114,7 @@ internal sealed class TextureD3D11 : Texture {
         this._texture    = texture;
         this.TextureView = textureView;
 
-        this.Size = new Vector2(image.Width, image.Height);
+        this._size = new Vector2(image.Width, image.Height);
 
         image.Dispose();
     }
@@ -157,7 +155,7 @@ internal sealed class TextureD3D11 : Texture {
         this._texture    = texture;
         this.TextureView = textureView;
 
-        this.Size = new Vector2(image.Width, image.Height);
+        this._size = new Vector2(image.Width, image.Height);
 
         image.Dispose();
     }
@@ -187,7 +185,7 @@ internal sealed class TextureD3D11 : Texture {
         this._texture    = texture;
         this.TextureView = textureView;
 
-        this.Size = new Vector2(width, height);
+        this._size = new Vector2(width, height);
     }
 
     public unsafe TextureD3D11(Direct3D11Backend backend, string filepath) {
@@ -226,7 +224,7 @@ internal sealed class TextureD3D11 : Texture {
         this._texture    = texture;
         this.TextureView = textureView;
 
-        this.Size = new Vector2(image.Width, image.Height);
+        this._size = new Vector2(image.Width, image.Height);
 
         image.Dispose();
     }

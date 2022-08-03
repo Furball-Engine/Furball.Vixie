@@ -75,10 +75,6 @@ internal sealed class TextureGL : Texture, IDisposable {
     /// Local Image, possibly useful to Sample on the CPU Side if necessary
     /// </summary>
     private Image<Rgba32> _localBuffer;
-    /// <summary>
-    /// Size of the Texture
-    /// </summary>
-    public override Vector2 Size { get; protected set; }
 
     /// <summary>
     /// Used for determening whether or not to Flip it internally because it's a framebuffer
@@ -105,7 +101,7 @@ internal sealed class TextureGL : Texture, IDisposable {
 
         this.Load(image);
 
-        this.Size = new Vector2(width, height);
+        this._size = new Vector2(width, height);
     }
     /// <summary>
     /// Creates a Texture from a byte array which contains Image Data
@@ -132,7 +128,7 @@ internal sealed class TextureGL : Texture, IDisposable {
 
         this.Load(image);
 
-        this.Size = new Vector2(width, height);
+        this._size = new Vector2(width, height);
     }
     /// <summary>
     /// Creates a Texture with a single White Pixel
@@ -164,7 +160,7 @@ internal sealed class TextureGL : Texture, IDisposable {
         this._backend.BindTexture(TextureTarget.Texture2D, 0);
         this._backend.CheckError("create white pixel texture");
 
-        this.Size = new Vector2(1, 1);
+        this._size = new Vector2(1, 1);
     }
     /// <summary>
     /// Creates a Empty texture given a width and height
@@ -188,7 +184,7 @@ internal sealed class TextureGL : Texture, IDisposable {
         this._backend.BindTexture(TextureTarget.Texture2D, 0);
         this._backend.CheckError("create blank texture with width + height");
 
-        this.Size = new Vector2(width, height);
+        this._size = new Vector2(width, height);
     }
     /// <summary>
     /// Creates a Texture from a Stream which Contains Image Data
@@ -207,7 +203,7 @@ internal sealed class TextureGL : Texture, IDisposable {
 
         this.Load(image);
 
-        this.Size = new Vector2(width, height);
+        this._size = new Vector2(width, height);
     }
 
     ~TextureGL() {
@@ -238,7 +234,7 @@ internal sealed class TextureGL : Texture, IDisposable {
         this._backend = backend;
         this._backend.GlCheckThread();
         this.TextureId = textureId;
-        this.Size      = new Vector2(width, height);
+        this._size     = new Vector2(width, height);
     }
 
     /// <summary>

@@ -243,7 +243,6 @@ public class VeldridBackend : IGraphicsBackend {
         this.SetFullScissorRect();
     }
     public override IQuadRenderer CreateTextureRenderer() => new QuadRendererVeldrid(this);
-    public override ILineRenderer CreateLineRenderer()    => new LineRendererVeldrid(this);
 
     public const int MAX_TEXTURE_UNITS = 4;
         

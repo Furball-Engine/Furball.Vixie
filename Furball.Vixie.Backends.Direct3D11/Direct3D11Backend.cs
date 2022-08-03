@@ -226,10 +226,6 @@ public class Direct3D11Backend : IGraphicsBackend {
         return new QuadRendererD3D11(this);
     }
 
-    public override ILineRenderer CreateLineRenderer() {
-        return new LineRendererD3D11(this);
-    }
-
     public override int QueryMaxTextureUnits() {
         return 128;
     }

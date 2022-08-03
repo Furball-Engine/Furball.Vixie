@@ -23,13 +23,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Include="Shaders\BatchedNativeLineRenderer\FragmentShader.glsl" />
-      <EmbeddedResource Include="Shaders\BatchedNativeLineRenderer\VertexShader.glsl" />
       <EmbeddedResource Include="Shaders\FakeInstancingQuadRenderer\FragmentShader.glsl" />
       <EmbeddedResource Include="Shaders\FakeInstancingQuadRenderer\VertexShader.glsl" />
-      <EmbeddedResource Include="Shaders\GeometryShaderLineRenderer\FragmentShader.glsl" />
-      <EmbeddedResource Include="Shaders\GeometryShaderLineRenderer\GeometryShader.glsl" />
-      <EmbeddedResource Include="Shaders\GeometryShaderLineRenderer\VertexShader.glsl" />
       <EmbeddedResource Include="Shaders\InstancedQuadRenderer\FragmentShader.glsl" />
       <EmbeddedResource Include="Shaders\InstancedQuadRenderer\VertexShader.glsl" />
     </ItemGroup>

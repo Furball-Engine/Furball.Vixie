@@ -5,7 +5,9 @@ using System.Numerics;
 namespace Furball.Vixie.Backends.Shared; 
 
 public abstract class Texture : IDisposable {
-    public abstract Vector2 Size   { get; protected set; }
+    protected Vector2 _size;
+
+    public Vector2 Size => this._size;
     public          int     Width  => (int)this.Size.X;
     public          int     Height => (int)this.Size.Y;
 

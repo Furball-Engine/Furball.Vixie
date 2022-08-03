@@ -36,11 +36,6 @@ public abstract class IGraphicsBackend {
     /// <returns>A Texture Renderer</returns>
     public abstract IQuadRenderer CreateTextureRenderer();
     /// <summary>
-    /// Used to Create a Line Renderer
-    /// </summary>
-    /// <returns></returns>
-    public abstract ILineRenderer CreateLineRenderer();
-    /// <summary>
     /// Gets the Amount of Texture Units available for use
     /// </summary>
     /// <returns>Amount of Texture Units supported</returns>

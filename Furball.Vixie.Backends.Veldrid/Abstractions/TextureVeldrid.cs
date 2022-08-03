@@ -13,11 +13,6 @@ namespace Furball.Vixie.Backends.Veldrid.Abstractions;
 internal sealed class TextureVeldrid : Texture {
     public global::Veldrid.Texture Texture;
         
-    public override Vector2 Size {
-        get;
-        protected set;
-    }
-
     public bool IsFbAndShouldFlip = false;
 
     internal int UsedId = -1;
@@ -49,7 +44,7 @@ internal sealed class TextureVeldrid : Texture {
 
         this.Load(image);
 
-        this.Size = new Vector2(width, height);
+        this._size = new Vector2(width, height);
     }
         
     private void Load(Image<Rgba32> image) {
@@ -89,7 +84,7 @@ internal sealed class TextureVeldrid : Texture {
 
         this.Load(image);
 
-        this.Size = new Vector2(width, height);
+        this._size = new Vector2(width, height);
     }
     /// <summary>
     /// Creates a Texture with a single White Pixel
@@ -103,7 +98,7 @@ internal sealed class TextureVeldrid : Texture {
         this._localBuffer = px;
         this.Load(px);
             
-        this.Size = new Vector2(1, 1);
+        this._size = new Vector2(1, 1);
     }
     /// <summary>
     /// Creates a Empty texture given a width and height
@@ -119,7 +114,7 @@ internal sealed class TextureVeldrid : Texture {
         this._localBuffer = px;
         this.Load(px);
 
-        this.Size = new Vector2(width, height);
+        this._size = new Vector2(width, height);
     }
     /// <summary>
     /// Creates a Texture from a Stream which Contains Image Data
@@ -138,7 +133,7 @@ internal sealed class TextureVeldrid : Texture {
 
         this.Load(image);
 
-        this.Size = new Vector2(width, height);
+        this._size = new Vector2(width, height);
     }
 
     private TextureFilterType _filterType = TextureFilterType.Smooth;

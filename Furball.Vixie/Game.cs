@@ -198,7 +198,9 @@ public abstract class Game : IDisposable {
             this.DrawLoadingScreen();
             this._doDisplayLoadingScreen = false;
         } else {
+            this.PreDraw(deltaTime);
             this.Draw(deltaTime);
+            this.PostDraw(deltaTime);
         }
 
         GraphicsBackend.Current.EndScene();
@@ -207,6 +209,8 @@ public abstract class Game : IDisposable {
             
         GraphicsBackend.Current.SetFullScissorRect();
     }
+    protected virtual void PreDraw(double deltaTime) {}
+    protected virtual void PostDraw(double deltaTime) {}
     /// <summary>
     /// Draw Method, do your Drawing work in there
     /// </summary>

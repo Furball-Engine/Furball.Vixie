@@ -305,16 +305,6 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
         return new FakeInstancingQuadRenderer(this);
     }
     /// <summary>
-    ///     Used to Create a Line Renderer
-    /// </summary>
-    /// <returns></returns>
-    public override ILineRenderer CreateLineRenderer() {
-        if (this._geometryShaderLinesFeatureLevel.Boolean)
-            return new GeometryShaderLineRenderer(this);
-
-        return new BatchedNativeLineRenderer(this);
-    }
-    /// <summary>
     ///     Gets the Amount of Texture Units available for use
     /// </summary>
     /// <returns>Amount of Texture Units supported</returns>
