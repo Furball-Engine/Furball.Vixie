@@ -14,6 +14,7 @@ public static class Global {
         return backend switch {
             Backend.None       => new Dictionary<string, FeatureLevel>(),
             Backend.Direct3D11 => new Dictionary<string, FeatureLevel>(),
+            Backend.Direct3D9  => new Dictionary<string, FeatureLevel>(),
             Backend.OpenGL     => OpenGLBackend.FeatureLevels,
             Backend.OpenGLES   => OpenGLBackend.FeatureLevels,
             Backend.Veldrid    => new Dictionary<string, FeatureLevel>(),

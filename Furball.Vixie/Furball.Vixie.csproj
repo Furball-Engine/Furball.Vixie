@@ -30,6 +30,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Furball.Vixie.Backends.Direct3D9\Furball.Vixie.Backends.Direct3D9.csproj" />
       <ProjectReference Include="..\Furball.Vixie.Backends.Dummy\Furball.Vixie.Backends.Dummy.csproj" />
       <ProjectReference Include="..\Furball.Vixie.Backends.OpenGL\Furball.Vixie.Backends.OpenGL.csproj" />
       <ProjectReference Include="..\Furball.Vixie.Backends.Shared\Furball.Vixie.Backends.Shared.csproj" />
@@ -45,4 +46,5 @@
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>
+
 </Project>

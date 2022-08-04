@@ -9,6 +9,7 @@ using Silk.NET.Input.Sdl;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
 using Silk.NET.Windowing.Extensions.Veldrid;
+using Silk.NET.Windowing.Sdl;
 using Silk.NET.Windowing.Glfw;
 using Silk.NET.Windowing.Sdl;
 
@@ -20,8 +21,7 @@ public class WindowManager : IDisposable {
     /// </summary>
     private WindowOptions _windowOptions;
     public bool    Debug   => this._windowOptions.API.Flags.HasFlag(ContextFlags.Debug);
-    public Backend Backend { get;
-        set; }
+    public Backend Backend { get; set; }
     /// <summary>
     /// Actual Game Window
     /// </summary>
@@ -53,7 +53,7 @@ public class WindowManager : IDisposable {
         }
         set {
             if (Global.GameInstance.EventLoop is not ViewEventLoop)
-                return;
+                return false;
             
             if (this.ViewOnly)
                 throw new NotSupportedException("No fullscreen on view only platforms!");
@@ -207,8 +207,9 @@ public class WindowManager : IDisposable {
             Backend.Vulkan   => ContextAPI.Vulkan,
             Backend.Direct3D11 => RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? ContextAPI.Vulkan
                 : ContextAPI.None,
-            Backend.Dummy => ContextAPI.None,
-            _             => throw new Exception("Invalid API chosen...")
+            Backend.Dummy     => ContextAPI.None,
+            Backend.Direct3D9 => ContextAPI.None,
+            _                 => throw new Exception("Invalid API chosen...")
         };
 
         ContextProfile profile = this.Backend switch {
@@ -217,8 +218,9 @@ public class WindowManager : IDisposable {
             Backend.Veldrid    => ContextProfile.Core,
             Backend.Vulkan     => ContextProfile.Core,
             Backend.Direct3D11 => ContextProfile.Core,
+            Backend.Direct3D9  => ContextProfile.Core,
             Backend.Dummy      => ContextProfile.Core,
-            _                  => throw new Exception("Invalid API chosen...")
+            _                  => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
         };
 
         ContextFlags flags = this.Backend switch {
@@ -228,11 +230,13 @@ public class WindowManager : IDisposable {
             Backend.Veldrid    => ContextFlags.ForwardCompatible | ContextFlags.Debug,
             Backend.Vulkan     => ContextFlags.Debug,
             Backend.Direct3D11 => ContextFlags.Debug,
+            Backend.Direct3D9  => ContextFlags.Debug,
             Backend.Dummy      => ContextFlags.Debug,
 #else
             Backend.OpenGLES   => ContextFlags.Default,
             Backend.OpenGL     => ContextFlags.Default,
             Backend.Direct3D11 => ContextFlags.Default,
+            Backend.Direct3D9  => ContextFlags.Default,
             Backend.Veldrid    => ContextFlags.ForwardCompatible,
             Backend.Vulkan     => ContextFlags.Default,
             Backend.Dummy      => ContextFlags.Default,
@@ -263,6 +267,9 @@ public class WindowManager : IDisposable {
                 break;
             case Backend.Direct3D11:
                 version = new APIVersion(11, 0);
+                break;
+            case Backend.Direct3D9:
+                version = new APIVersion(9, 0);
                 break;
             case Backend.Vulkan:
                 version = new APIVersion(0, 0);

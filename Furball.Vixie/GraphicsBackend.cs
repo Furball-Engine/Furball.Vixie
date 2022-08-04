@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.Direct3D11;
+using Furball.Vixie.Backends.Direct3D9;
 using Furball.Vixie.Backends.Dummy;
 using Furball.Vixie.Backends.OpenGL;
 using Furball.Vixie.Backends.Shared.Backends;
@@ -25,6 +26,7 @@ public class GraphicsBackend {
         Current = backend switch {
             Backend.OpenGLES   => new OpenGLBackend(backend),
             Backend.Direct3D11 => new Direct3D11Backend(),
+            Backend.Direct3D9  => new Direct3D9Backend(),
             Backend.OpenGL     => new OpenGLBackend(backend),
             Backend.Veldrid    => new VeldridBackend(),
             Backend.Vulkan     => new VulkanBackend(),
