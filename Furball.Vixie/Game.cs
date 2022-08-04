@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Helpers;
 using Kettu;
@@ -160,6 +161,8 @@ public abstract class Game : IDisposable {
     /// </summary>
     protected virtual void Initialize() {
         this.LoadContent();
+
+        this._stopwatch.Start();
     }
     /// <summary>
     /// Used to Preload content
@@ -187,6 +190,11 @@ public abstract class Game : IDisposable {
             this._trackedDelta = 0;
         }
     }
+
+    private readonly Stopwatch _stopwatch          = new();
+    private          bool      _isFirstImguiUpdate = true;
+    private          double    _lastImguiDrawTime;
+    
     /// <summary>
     /// Sets up and ends the scene
     /// </summary>
@@ -203,6 +211,16 @@ public abstract class Game : IDisposable {
             this.PostDraw(deltaTime);
         }
 
+        if (!this._isFirstImguiUpdate)
+            GraphicsBackend.Current.ImGuiDraw(deltaTime);
+
+        double finalDelta = this._lastImguiDrawTime == 0 ? deltaTime
+                                : this._stopwatch.Elapsed.TotalSeconds - this._lastImguiDrawTime;
+
+        GraphicsBackend.Current.ImGuiUpdate(finalDelta);
+        this._lastImguiDrawTime  = this._stopwatch.Elapsed.TotalSeconds;
+        this._isFirstImguiUpdate = false;
+
         GraphicsBackend.Current.EndScene();
 
         GraphicsBackend.Current.Present();
@@ -217,8 +235,6 @@ public abstract class Game : IDisposable {
     /// <param name="deltaTime"></param>
     protected virtual void Draw(double deltaTime) {
         this.Components.Draw(deltaTime);
-        GraphicsBackend.Current.ImGuiDraw(deltaTime);
-        GraphicsBackend.Current.ImGuiUpdate(deltaTime);
     }
     protected virtual void DrawLoadingScreen() {}
     /// <summary>
@@ -226,6 +242,7 @@ public abstract class Game : IDisposable {
     /// </summary>
     public virtual void Dispose() {
         this.Components.Dispose();
+        this._stopwatch.Stop();
         DisposeQueue.DisposeAll();
     }
     /// <summary>
