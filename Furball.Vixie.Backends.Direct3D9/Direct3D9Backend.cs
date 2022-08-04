@@ -23,8 +23,6 @@ namespace Furball.Vixie.Backends.Direct3D9 {
 
         public override IQuadRenderer CreateTextureRenderer() => throw new NotImplementedException();
 
-        public override ILineRenderer CreateLineRenderer() => throw new NotImplementedException();
-
         public override int QueryMaxTextureUnits() => throw new NotImplementedException();
 
         public override void Clear() {
