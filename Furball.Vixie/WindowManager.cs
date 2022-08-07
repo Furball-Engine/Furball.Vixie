@@ -1,11 +1,13 @@
 using System;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Veldrid;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
 using Silk.NET.Windowing.Extensions.Veldrid;
+using Silk.NET.Windowing.Sdl;
 
 namespace Furball.Vixie; 
 
@@ -166,12 +168,15 @@ public class WindowManager : IDisposable {
     /// Creates the Window and grabs the OpenGL API of Window
     /// </summary>
     public void Create() {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && this.Backend == Backend.Direct3D11)
+            SdlWindowing.Use();
+        
         ContextAPI api = this.Backend switch {
             Backend.OpenGLES   => ContextAPI.OpenGLES,
             Backend.OpenGL     => ContextAPI.OpenGL,
             Backend.Veldrid    => ContextAPI.None,
             Backend.Vulkan     => ContextAPI.Vulkan,
-            Backend.Direct3D11 => ContextAPI.None,
+            Backend.Direct3D11 => RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? ContextAPI.Vulkan : ContextAPI.None,
             _                  => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
         };
 

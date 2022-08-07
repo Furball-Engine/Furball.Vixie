@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.Direct3D11.Abstractions;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
@@ -64,41 +65,49 @@ public class Direct3D11Backend : IGraphicsBackend {
         }
 #endif
 
-        IDXGIFactory dxgiFactory = this._device.QueryInterface<IDXGIDevice>().GetParent<IDXGIAdapter>().GetParent<IDXGIFactory>();
+        IDXGIFactory3 dxgiFactory = this._device.QueryInterface<IDXGIDevice>().GetParent<IDXGIAdapter>().GetParent<IDXGIFactory3>();
 
-        int i = 0;
-        try {
-            while (dxgiFactory.GetAdapter(i) != null) {
-                AdapterDescription description = dxgiFactory.GetAdapter(i).Description;
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
+            int i = 0;
+            try {
+                while (dxgiFactory.GetAdapter(i) != null) {
+                    AdapterDescription description = dxgiFactory.GetAdapter(i).Description;
 
-                long luid = description.Luid.LowPart | description.Luid.HighPart;
+                    long luid = description.Luid.LowPart | description.Luid.HighPart;
 
-                string dedicatedSysMemMb = Math.Round((description.DedicatedSystemMemory / 1024.0) / 1024.0, 2).ToString(CultureInfo.InvariantCulture);
-                string dedicatedVidMemMb = Math.Round((description.DedicatedVideoMemory  / 1024.0) / 1024.0, 2).ToString(CultureInfo.InvariantCulture);
-                string dedicatedShrMemMb = Math.Round((description.SharedSystemMemory    / 1024.0) / 1024.0, 2).ToString(CultureInfo.InvariantCulture);
+                    string dedicatedSysMemMb = Math.Round((description.DedicatedSystemMemory / 1024.0) / 1024.0, 2)
+                                                   .ToString(CultureInfo.InvariantCulture);
+                    string dedicatedVidMemMb = Math.Round((description.DedicatedVideoMemory / 1024.0) / 1024.0, 2)
+                                                   .ToString(CultureInfo.InvariantCulture);
+                    string dedicatedShrMemMb = Math.Round((description.SharedSystemMemory / 1024.0) / 1024.0, 2)
+                                                   .ToString(CultureInfo.InvariantCulture);
 
-                BackendInfoSection section = new BackendInfoSection($"Adapter [{i}]");
-                section.Contents.Add(("Adapter Description", description.Description));
-                section.Contents.Add(("Revision", description.Revision.ToString()));
-                section.Contents.Add(("PCI Vendor ID", description.VendorId.ToString()));
-                section.Contents.Add(("PCI Device ID", description.DeviceId.ToString()));
-                section.Contents.Add(("PCI Subsystem ID", description.SubsystemId.ToString()));
-                section.Contents.Add(("Locally Unique Identifier", luid.ToString()));
-                section.Contents.Add(("Dedicated System Memory", $"{dedicatedSysMemMb}mb"));
-                section.Contents.Add(("Dedicated Video Memory",  $"{dedicatedVidMemMb}mb"));
-                section.Contents.Add(("Dedicated Shared Memory", $"{dedicatedShrMemMb}mb"));
-                this.InfoSections.Add(section);
+                    BackendInfoSection section = new BackendInfoSection($"Adapter [{i}]");
+                    section.Contents.Add(("Adapter Description", description.Description));
+                    section.Contents.Add(("Revision", description.Revision.ToString()));
+                    section.Contents.Add(("PCI Vendor ID", description.VendorId.ToString()));
+                    section.Contents.Add(("PCI Device ID", description.DeviceId.ToString()));
+                    section.Contents.Add(("PCI Subsystem ID", description.SubsystemId.ToString()));
+                    section.Contents.Add(("Locally Unique Identifier", luid.ToString()));
+                    section.Contents.Add(("Dedicated System Memory", $"{dedicatedSysMemMb}mb"));
+                    section.Contents.Add(("Dedicated Video Memory", $"{dedicatedVidMemMb}mb"));
+                    section.Contents.Add(("Dedicated Shared Memory", $"{dedicatedShrMemMb}mb"));
+                    this.InfoSections.Add(section);
 
-                i++;
+                    i++;
+                }
             }
-        }catch { /* This crashes if you go beyond what adapters it has, instead of sensibly just returning null like it claims to do */ }
+            catch {
+                /* This crashes if you go beyond what adapters it has, instead of sensibly just returning null like it claims to do */
+            }
+        }
 
-        SwapChainDescription swapChainDescription = new SwapChainDescription {
-            BufferDescription = new ModeDescription {
-                Width  = view.FramebufferSize.X,
-                Height = view.FramebufferSize.Y,
-                Format = Format.R8G8B8A8_UNorm,
-            },
+        IntPtr outputWindow = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? view.Handle : view.Native!.Win32!.Value.Hwnd;
+
+        SwapChainDescription1 swapChainDescription = new SwapChainDescription1 {
+            Width = view.FramebufferSize.X,
+            Height = view.FramebufferSize.Y,
+            Format = Format.R8G8B8A8_UNorm,
             SampleDescription = new SampleDescription {
                 Count = 1, Quality = 0
             },
@@ -106,14 +115,13 @@ public class Direct3D11Backend : IGraphicsBackend {
             BufferCount  = 2,
             SwapEffect   = SwapEffect.FlipDiscard,
             Flags        = SwapChainFlags.None,
-            OutputWindow = view.Native.Win32.Value.Hwnd,
-            Windowed     = true
         };
 
-        IDXGISwapChain swapChain = dxgiFactory.CreateSwapChain(this._device, swapChainDescription);
-        this._swapChain = swapChain;
+        SwapChainFullscreenDescription fullscreenDescription = new SwapChainFullscreenDescription {
+            Windowed = true
+        };
 
-        dxgiFactory.MakeWindowAssociation(view.Native.Win32.Value.Hwnd, WindowAssociationFlags.IgnoreAll);
+        this._swapChain = dxgiFactory.CreateSwapChainForHwnd(this._device, outputWindow, swapChainDescription, fullscreenDescription);
 
         this.CreateSwapchainResources();
 
