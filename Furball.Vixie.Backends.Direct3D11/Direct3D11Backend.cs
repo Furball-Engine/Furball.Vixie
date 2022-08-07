@@ -304,6 +304,6 @@ public class Direct3D11Backend : IGraphicsBackend {
     }
 
     public override void SetFullScissorRect() {
-        this._deviceContext.RSSetScissorRect(0, 0, (int) this._viewport.Width, (int) this._viewport.Height);
+        this.ScissorRect = new Rectangle(0, 0, (int)this._viewport.Width, (int)this._viewport.Height);
     }
 }
