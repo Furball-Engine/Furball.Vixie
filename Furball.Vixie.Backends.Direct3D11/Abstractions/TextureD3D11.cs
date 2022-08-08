@@ -214,7 +214,14 @@ internal sealed class TextureD3D11 : Texture {
         image.ProcessPixelRows(accessor => {
             for (int i = 0; i < accessor.Height; i++) {
                 fixed (void* ptr = &accessor.GetRowSpan(i).GetPinnableReference()) {
-                    this._deviceContext.UpdateSubresource(texture, 0, new Box(0, i, 0, accessor.Width, i + 1, 1), (IntPtr)ptr, 4 * accessor.Width, (4 * accessor.Width));
+                    this._deviceContext.UpdateSubresource(
+                    texture,
+                    0,
+                    new Box(0, i, 0, accessor.Width, i + 1, 1),
+                    (IntPtr)ptr,
+                    sizeof(Rgba32) * accessor.Width,
+                    sizeof(Rgba32) * accessor.Width
+                    );
                 }
             }
         });
@@ -233,9 +240,18 @@ internal sealed class TextureD3D11 : Texture {
         DisposeQueue.Enqueue(this);
     }
 
-    public override Texture SetData<pDataType>(int level, pDataType[] data) {
+    public override unsafe Texture SetData <pDataType>(int level, pDataType[] data) {
         this._backend.CheckThread();
-        this._deviceContext.UpdateSubresource(data, this._texture);
+        fixed (void* ptr = data) {
+            this._deviceContext.UpdateSubresource(
+            this._texture,
+            0,
+            new Box(0, 0, 0, this.Width, this.Height, 1),
+            (IntPtr)ptr,
+            sizeof(Rgba32) * this.Width,
+            sizeof(Rgba32) * this.Width
+            );
+        }
 
         return this;
     }
