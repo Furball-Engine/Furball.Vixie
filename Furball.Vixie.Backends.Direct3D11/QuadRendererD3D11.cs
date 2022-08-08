@@ -9,6 +9,7 @@ using Furball.Vixie.Backends.Shared.FontStashSharp;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers;
 using Furball.Vixie.Helpers.Helpers;
+using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
 using Color=Furball.Vixie.Backends.Shared.Color;
@@ -246,7 +247,7 @@ internal sealed unsafe class QuadRendererD3D11 : IQuadRenderer {
         this._instanceData[this._instances].InstancePosition              = position;
         this._instanceData[this._instances].InstanceSize                  = texture.Size * scale;
         this._instanceData[this._instances].InstanceColor                 = colorOverride;
-        this._instanceData[this._instances].InstanceRotation              = rotation;
+        this._instanceData[this._instances].InstanceRotation = -rotation;
         this._instanceData[this._instances].InstanceRotationOrigin        = rotOrigin;
         this._instanceData[this._instances].InstanceTextureId             = this.GetTextureId(textureD3D11);
         this._instanceData[this._instances].InstanceTextureRectPosition.X = 0;
@@ -278,7 +279,7 @@ internal sealed unsafe class QuadRendererD3D11 : IQuadRenderer {
         this._instanceData[this._instances].InstancePosition              = position;
         this._instanceData[this._instances].InstanceSize                  = size;
         this._instanceData[this._instances].InstanceColor                 = colorOverride;
-        this._instanceData[this._instances].InstanceRotation              = rotation;
+        this._instanceData[this._instances].InstanceRotation = -rotation;
         this._instanceData[this._instances].InstanceRotationOrigin        = rotOrigin;
         this._instanceData[this._instances].InstanceTextureId             = this.GetTextureId(textureD3D11);
         this._instanceData[this._instances].InstanceTextureRectPosition.X = (float)sourceRect.X                       / texture.Width;
@@ -398,7 +399,7 @@ internal sealed unsafe class QuadRendererD3D11 : IQuadRenderer {
         this._deviceContext.IASetVertexBuffer(VERTEX_BUFFER_SLOT, this._vertexBuffer, sizeof(VertexData));
         this._deviceContext.IASetVertexBuffer(INSTANCE_BUFFER_SLOT, this._instanceBuffer, sizeof(InstanceData));
         this._deviceContext.IASetIndexBuffer(this._indexBuffer, Format.R16_UInt, 0);
-        this._deviceContext.IASetPrimitiveTopology(Vortice.Direct3D.PrimitiveTopology.TriangleList);
+        this._deviceContext.IASetPrimitiveTopology(PrimitiveTopology.TriangleList);
 
         this._backend.ResetScissorRect();
 
