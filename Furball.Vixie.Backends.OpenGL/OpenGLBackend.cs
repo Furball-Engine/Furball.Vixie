@@ -77,6 +77,18 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
                 Description = "Whether we require the ExtFramebufferObject to run",
                 Value       = false
             }
+        }, {
+            "NeedsCustomMipmapGeneration", new FeatureLevel {
+                Name        = "Require custom mipmap generation",
+                Description = "Whether we require a CPU side mipmap generation",
+                Value       = true
+            }
+        }, {
+            "BindlessMipmapGeneration", new FeatureLevel {
+                Name        = "Use bindless mipmap generation",
+                Description = "Whether we use glGenerateTextureMipmap to generate mipmaps",
+                Value       = false
+            }
         }
     };
 
@@ -86,15 +98,19 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     private readonly FeatureLevel _geometryShaderLinesFeatureLevel;
     private readonly FeatureLevel _glBindTexturesFeatureLevel;
     private readonly FeatureLevel _needsFrameBufferExtensionFeatureLevel;
+    private readonly FeatureLevel _needsCustomMipmapGenerationFeatureLevel;
+    private readonly FeatureLevel _bindlessMipmapGenerationFeatureLevel;
 
     public readonly Backend CreationBackend;
     public OpenGLBackend(Backend backend) {
         this.CreationBackend = backend;
 
-        this._instancedQuadRenderingFeatureLevel    = FeatureLevels["InstancedQuadRendering"];
-        this._geometryShaderLinesFeatureLevel       = FeatureLevels["GeometryShaderLines"];
-        this._glBindTexturesFeatureLevel            = FeatureLevels["glBindTextures"];
-        this._needsFrameBufferExtensionFeatureLevel = FeatureLevels["NeedsFramebufferExtension"];
+        this._instancedQuadRenderingFeatureLevel      = FeatureLevels["InstancedQuadRendering"];
+        this._geometryShaderLinesFeatureLevel         = FeatureLevels["GeometryShaderLines"];
+        this._glBindTexturesFeatureLevel              = FeatureLevels["glBindTextures"];
+        this._needsFrameBufferExtensionFeatureLevel   = FeatureLevels["NeedsFramebufferExtension"];
+        this._needsCustomMipmapGenerationFeatureLevel = FeatureLevels["NeedsCustomMipmapGeneration"];
+        this._bindlessMipmapGenerationFeatureLevel    = FeatureLevels["BindlessMipmapGeneration"];
 
         if (backend == Backend.OpenGLES) {
             if (Global.LatestSupportedGL.GLES.MajorVersion >= 3) {
@@ -107,6 +123,11 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
                 Global.LatestSupportedGL.GLES.MajorVersion > 3) {
                 FeatureLevels["GeometryShaderLines"].Value = true;
                 Logger.Log("Enabling geometry shader lines!", LoggerLevelOpenGL.InstanceInfo);
+            }
+
+            if (Global.LatestSupportedGL.GLES.MajorVersion >= 2) {
+                FeatureLevels["NeedsCustomMipmapGeneration"].Value = false;
+                Logger.Log("Marking that we dont need custom mipmap generation!", LoggerLevelOpenGL.InstanceInfo);
             }
         }
         else {
@@ -136,6 +157,17 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
                 Global.LatestSupportedGL.GL.MajorVersion > 4) {
                 FeatureLevels["glBindTextures"].Value = true;
                 Logger.Log("Enabling multi-texture bind!", LoggerLevelOpenGL.InstanceInfo);
+            }
+
+            if (Global.LatestSupportedGL.GL.MajorVersion >= 3) {
+                FeatureLevels["NeedsCustomMipmapGeneration"].Value = false;
+                Logger.Log("Marking that we dont need custom mipmap generation!", LoggerLevelOpenGL.InstanceInfo);
+            }
+
+            if (Global.LatestSupportedGL.GL.MajorVersion > 4 || Global.LatestSupportedGL.GL.MajorVersion == 4 &&
+                Global.LatestSupportedGL.GL.MinorVersion                                                 >= 5) {
+                FeatureLevels["BindlessMipmapGeneration"].Value = true;
+                Logger.Log("Marking that we can use bindless mipmap generation!", LoggerLevelOpenGL.InstanceInfo);
             }
         }
     }
@@ -245,6 +277,18 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     }
     public void VertexAttribDivisor(uint iOffset, uint currentElementInstanceDivisor) {
         this.gl.VertexAttribDivisor(iOffset, currentElementInstanceDivisor);
+    }
+    void IGLBasedBackend.GenerateMipmaps(TextureGL textureGl) {
+        if (this._needsCustomMipmapGenerationFeatureLevel.Boolean) {
+            //TODO
+        } else {
+            if (this._bindlessMipmapGenerationFeatureLevel.Boolean) {
+                this.gl.GenerateTextureMipmap(textureGl.TextureId);
+            } else {
+                textureGl.Bind();
+                this.gl.GenerateMipmap(TextureTarget.Texture2D);
+            }
+        }
     }
 
     /// <summary>

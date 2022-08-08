@@ -165,7 +165,7 @@ internal sealed class TextureGL : Texture, IDisposable {
         //Bind as we will be working on the Texture
         this._backend.BindTexture(TextureTarget.Texture2D, this.TextureId);
         //Apply Linear filtering, and make Image wrap around and repeat
-        this.FilterType = TextureFilterType.Smooth;
+        this.FilterType = parameters.FilterType;
         this._backend.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS,     (int) GLEnum.Repeat);
         this._backend.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT,                   (int) GLEnum.Repeat);
         //Upload Image Data
@@ -175,8 +175,6 @@ internal sealed class TextureGL : Texture, IDisposable {
         this._backend.CheckError("create blank texture with width + height");
 
         this._size = new Vector2(width, height);
-
-        this.FilterType = parameters.FilterType;
     }
     /// <summary>
     /// Creates a Texture from a Stream which Contains Image Data
@@ -202,6 +200,13 @@ internal sealed class TextureGL : Texture, IDisposable {
         this.FilterType = parameters.FilterType;
     }
 
+    private void GenMipmaps(TextureParameters parameters) {
+        if (!parameters.RequestMipmaps)
+            return;
+
+        this._backend.GenerateMipmaps(this);
+    }
+    
     ~TextureGL() {
         DisposeQueue.Enqueue(this);
     }
@@ -217,6 +222,7 @@ internal sealed class TextureGL : Texture, IDisposable {
                     this._backend.TexSubImage2D(TextureTarget.Texture2D, 0, 0, i, (uint)accessor.Width, 1, PixelFormat.Rgba, PixelType.UnsignedByte, ptr);
             }
         });
+        this._backend.GenerateMipmaps(this);
         this.Unbind();
     }
         
@@ -254,6 +260,8 @@ internal sealed class TextureGL : Texture, IDisposable {
         //Unbind as we have finished
         this._backend.BindTexture(TextureTarget.Texture2D, 0);
         this._backend.CheckError("create tex width+height with data");
+
+        this._backend.GenerateMipmaps(this);
     }
     /// <summary>
     /// Sets the Data of the Texture Directly
@@ -273,6 +281,7 @@ internal sealed class TextureGL : Texture, IDisposable {
             this._backend.TexImage2D(TextureTarget.Texture2D, level, InternalFormat.Rgba, (uint) this.Size.X, (uint) this.Size.Y, 0, PixelFormat.Rgba, PixelType.UnsignedByte, d);
         this._backend.CheckError("set texture data");
 
+        this._backend.GenerateMipmaps(this);
         this.UnlockingUnbind();
 
         return this;
@@ -293,6 +302,7 @@ internal sealed class TextureGL : Texture, IDisposable {
             this._backend.TexSubImage2D(TextureTarget.Texture2D, level, rect.X, rect.Y, (uint) rect.Width, (uint) rect.Height, PixelFormat.Rgba, PixelType.UnsignedByte, d);
         this._backend.CheckError("set texture data with rect");
 
+        this._backend.GenerateMipmaps(this);
         this.UnlockingUnbind();
 
         return this;
@@ -391,7 +401,8 @@ internal sealed class TextureGL : Texture, IDisposable {
         get => this._filterType;
         set {
             TextureMagFilter magFilter = value == TextureFilterType.Smooth ? TextureMagFilter.Linear : TextureMagFilter.Nearest;
-            TextureMinFilter minFilter = value == TextureFilterType.Smooth ? TextureMinFilter.Linear : TextureMinFilter.Nearest;
+            TextureMinFilter minFilter = value == TextureFilterType.Smooth ? TextureMinFilter.LinearMipmapLinear
+                                             : TextureMinFilter.NearestMipmapLinear;
 
             this.Bind();
             

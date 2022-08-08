@@ -119,9 +119,10 @@ internal interface IGLBasedBackend {
 
     public void DeleteVertexArray(uint arrayId);
 
-    public void CheckError(string error);
-    public void GlCheckThread();
-    unsafe void Uniform2(int             getUniformLocation, uint count, float* ptr);
-    unsafe void Uniform1(int             getUniformLocation, uint count, float* ptr);
-    void        VertexAttribDivisor(uint iOffset,            uint currentElementInstanceDivisor);
+    public void   CheckError(string error);
+    public void   GlCheckThread();
+    unsafe void   Uniform2(int              getUniformLocation, uint count, float* ptr);
+    unsafe void   Uniform1(int              getUniformLocation, uint count, float* ptr);
+    void          VertexAttribDivisor(uint  iOffset,            uint currentElementInstanceDivisor);
+    internal void GenerateMipmaps(TextureGL textureGl);
 }
