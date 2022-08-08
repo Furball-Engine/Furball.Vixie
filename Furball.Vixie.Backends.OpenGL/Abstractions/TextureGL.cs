@@ -65,6 +65,8 @@ internal sealed class TextureGL : Texture, IDisposable {
         }
     }
 
+    private readonly bool _mipmaps = false;
+
     internal TextureUnit BoundAt;
 
     /// <summary>
@@ -93,6 +95,7 @@ internal sealed class TextureGL : Texture, IDisposable {
     public TextureGL(IGLBasedBackend backend, byte[] imageData, TextureParameters parameters) {
         this._backend = backend;
         this._backend.GlCheckThread();
+        this._mipmaps = parameters.RequestMipmaps;
 
         Image<Rgba32> image;
 
@@ -160,6 +163,7 @@ internal sealed class TextureGL : Texture, IDisposable {
     public unsafe TextureGL(IGLBasedBackend backend, uint width, uint height, TextureParameters parameters) {
         this._backend = backend;
         this._backend.GlCheckThread();
+        this._mipmaps = parameters.RequestMipmaps;
 
         this.TextureId = this._backend.GenTexture();
         //Bind as we will be working on the Texture
@@ -185,6 +189,7 @@ internal sealed class TextureGL : Texture, IDisposable {
     public TextureGL(IGLBasedBackend backend, Stream stream, TextureParameters parameters) {
         this._backend = backend;
         this._backend.GlCheckThread();
+        this._mipmaps = parameters.RequestMipmaps;
 
         Image<Rgba32> image = Image.Load<Rgba32>(stream);
 
@@ -200,8 +205,8 @@ internal sealed class TextureGL : Texture, IDisposable {
         this.FilterType = parameters.FilterType;
     }
 
-    private void GenMipmaps(TextureParameters parameters) {
-        if (!parameters.RequestMipmaps)
+    private void GenMipmaps() {
+        if (!this._mipmaps)
             return;
 
         this._backend.GenerateMipmaps(this);
@@ -222,7 +227,7 @@ internal sealed class TextureGL : Texture, IDisposable {
                     this._backend.TexSubImage2D(TextureTarget.Texture2D, 0, 0, i, (uint)accessor.Width, 1, PixelFormat.Rgba, PixelType.UnsignedByte, ptr);
             }
         });
-        this._backend.GenerateMipmaps(this);
+        this.GenMipmaps();
         this.Unbind();
     }
         
@@ -261,7 +266,7 @@ internal sealed class TextureGL : Texture, IDisposable {
         this._backend.BindTexture(TextureTarget.Texture2D, 0);
         this._backend.CheckError("create tex width+height with data");
 
-        this._backend.GenerateMipmaps(this);
+        this.GenMipmaps();
     }
     /// <summary>
     /// Sets the Data of the Texture Directly
@@ -281,7 +286,7 @@ internal sealed class TextureGL : Texture, IDisposable {
             this._backend.TexImage2D(TextureTarget.Texture2D, level, InternalFormat.Rgba, (uint) this.Size.X, (uint) this.Size.Y, 0, PixelFormat.Rgba, PixelType.UnsignedByte, d);
         this._backend.CheckError("set texture data");
 
-        this._backend.GenerateMipmaps(this);
+        this.GenMipmaps();
         this.UnlockingUnbind();
 
         return this;
@@ -302,7 +307,7 @@ internal sealed class TextureGL : Texture, IDisposable {
             this._backend.TexSubImage2D(TextureTarget.Texture2D, level, rect.X, rect.Y, (uint) rect.Width, (uint) rect.Height, PixelFormat.Rgba, PixelType.UnsignedByte, d);
         this._backend.CheckError("set texture data with rect");
 
-        this._backend.GenerateMipmaps(this);
+        this.GenMipmaps();
         this.UnlockingUnbind();
 
         return this;
