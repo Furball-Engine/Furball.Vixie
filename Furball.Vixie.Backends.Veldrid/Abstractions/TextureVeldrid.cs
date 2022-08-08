@@ -22,7 +22,8 @@ internal sealed class TextureVeldrid : Texture {
     public static    ResourceLayout[]    ResourceLayouts = new ResourceLayout[VeldridBackend.MAX_TEXTURE_UNITS];
         
     private readonly VeldridBackend _backend;
-    private readonly Image<Rgba32>  _localBuffer;
+
+    private readonly bool _mipmap;
 
     public ResourceSet GetResourceSet(VeldridBackend backend, int i) {
         if (this.FilterTypes[i] != this.FilterType)
@@ -30,33 +31,29 @@ internal sealed class TextureVeldrid : Texture {
         
         return this.ResourceSets[i] ?? (this.ResourceSets[i] = backend.ResourceFactory.CreateResourceSet(new ResourceSetDescription(ResourceLayouts[i], this.Texture, this.FilterType == TextureFilterType.Smooth ? this._backend.GraphicsDevice.Aniso4xSampler : this._backend.GraphicsDevice.PointSampler)));
     }
-        
-    public TextureVeldrid(VeldridBackend backend, string filepath) {
-        this._backend = backend;
+
+    private void Load(Image<Rgba32> image, TextureParameters parameters) {
         this._backend.CheckThread();
-
-        Image<Rgba32> image = (Image<Rgba32>)Image.Load(filepath);
-
-        this._localBuffer = image;
-
-        int width  = image.Width;
-        int height = image.Height;
-
-        this.Load(image);
-
-        this._size = new Vector2(width, height);
-    }
-        
-    private void Load(Image<Rgba32> image) {
-        this._backend.CheckThread();
-        TextureDescription textureDescription = TextureDescription.Texture2D((uint)image.Width, (uint)image.Height, 1, 1, PixelFormat.R8_G8_B8_A8_UNorm, TextureUsage.Sampled | TextureUsage.RenderTarget);
+        uint mipLevels = (uint)(parameters.RequestMipmaps ? this.MipMapCount(image.Width, image.Height) : 1);
+        TextureDescription textureDescription = TextureDescription.Texture2D(
+        (uint)image.Width,
+        (uint)image.Height,
+        mipLevels,
+        1,
+        PixelFormat.R8_G8_B8_A8_UNorm,
+        TextureUsage.Sampled | TextureUsage.RenderTarget |
+        (parameters.RequestMipmaps ? TextureUsage.GenerateMipmaps : 0)
+        );
 
         this.Texture = this._backend.ResourceFactory.CreateTexture(textureDescription);
-            
+
         image.ProcessPixelRows(accessor => {
             for (int i = 0; i < accessor.Height; i++)
                 this._backend.GraphicsDevice.UpdateTexture(this.Texture, accessor.GetRowSpan(i), 0, (uint) i, 0, (uint) image.Width, 1, 1, 0, 0);
         });
+
+        if (parameters.RequestMipmaps)
+            this._backend.CommandList.GenerateMipmaps(this.Texture);
     }
 
     /// <summary>
@@ -68,6 +65,7 @@ internal sealed class TextureVeldrid : Texture {
     public TextureVeldrid(VeldridBackend backend, byte[] imageData, TextureParameters parameters) {
         this._backend = backend;
         this._backend.CheckThread();
+        this._mipmap = parameters.RequestMipmaps;
 
         Image<Rgba32> image;
 
@@ -82,12 +80,10 @@ internal sealed class TextureVeldrid : Texture {
             image = Image.Load<Rgba32>(imageData);
         }
 
-        this._localBuffer = image;
-
         int width  = image.Width;
         int height = image.Height;
 
-        this.Load(image);
+        this.Load(image, parameters);
 
         this._size = new Vector2(width, height);
 
@@ -102,8 +98,7 @@ internal sealed class TextureVeldrid : Texture {
 
         Image<Rgba32> px = new(1, 1, new Rgba32(255, 255, 255, 255));
 
-        this._localBuffer = px;
-        this.Load(px);
+        this.Load(px, default);
             
         this._size = new Vector2(1, 1);
     }
@@ -117,11 +112,11 @@ internal sealed class TextureVeldrid : Texture {
     public TextureVeldrid(VeldridBackend backend, uint width, uint height, TextureParameters parameters) {
         this._backend = backend;
         this._backend.CheckThread();
+        this._mipmap = parameters.RequestMipmaps;
 
         Image<Rgba32> px = new((int)width, (int)height, new Rgba32(0, 0, 0, 0));
 
-        this._localBuffer = px;
-        this.Load(px);
+        this.Load(px, parameters);
 
         this._size = new Vector2(width, height);
 
@@ -136,36 +131,41 @@ internal sealed class TextureVeldrid : Texture {
     public TextureVeldrid(VeldridBackend backend, Stream stream, TextureParameters parameters) {
         this._backend = backend;
         this._backend.CheckThread();
+        this._mipmap = parameters.RequestMipmaps;
 
         Image<Rgba32> image = Image.Load<Rgba32>(stream);
-
-        this._localBuffer = image;
 
         int width  = image.Width;
         int height = image.Height;
 
-        this.Load(image);
+        this.Load(image, parameters);
 
         this._size = new Vector2(width, height);
 
         this.FilterType = parameters.FilterType;
     }
 
-    private TextureFilterType _filterType = TextureFilterType.Smooth;
     public override TextureFilterType FilterType {
-        get => this._filterType;
-        set => this._filterType = value;
-    }
+        get;
+        set;
+    } = TextureFilterType.Smooth;
+    
     public override Texture SetData <pDataType>(int level, pDataType[] data) {
         this._backend.CheckThread();
         this._backend.GraphicsDevice.UpdateTexture(this.Texture, data, 0, 0, 0, this.Texture.Width, this.Texture.Height, 1, 0, (uint)level);
+
+        if (this._mipmap)
+            this._backend.CommandList.GenerateMipmaps(this.Texture);
 
         return this;
     }
     public override Texture SetData <pDataType>(int level, Rectangle rect, pDataType[] data) {
         this._backend.CheckThread();
         this._backend.GraphicsDevice.UpdateTexture(this.Texture, data, (uint)rect.X, (uint)rect.Y, 0, (uint)rect.Width, (uint)rect.Height, 1, 0, (uint)level);
-            
+
+        if (this._mipmap)
+            this._backend.CommandList.GenerateMipmaps(this.Texture);
+
         return this;
     }
 
@@ -177,15 +177,14 @@ internal sealed class TextureVeldrid : Texture {
 
     public override void Dispose() {
         this._backend.CheckThread();
+        
         if (this.IsDisposed) return;
+        
         this.IsDisposed = true;
-            
-        foreach (ResourceSet resourceSet in this.ResourceSets) {
-            if(resourceSet != null)
-                resourceSet.Dispose();
-        }
+
+        foreach (ResourceSet? resourceSet in this.ResourceSets)
+            resourceSet?.Dispose();
+        
         this.Texture.Dispose(); 
-            
-        this._localBuffer.Dispose();
     }
 }
