@@ -22,7 +22,7 @@ internal sealed class TextureRenderTargetVeldrid : TextureRenderTarget {
 
         this.Size = new(width, height);
 
-        this._tex = new TextureVeldrid(backend, width, height);
+        this._tex = new TextureVeldrid(backend, width, height, default);
             
         FramebufferDescription description = new() {
             ColorTargets = new[] {

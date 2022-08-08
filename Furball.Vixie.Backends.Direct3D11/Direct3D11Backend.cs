@@ -102,7 +102,8 @@ public class Direct3D11Backend : IGraphicsBackend {
             }
         }
 
-        IntPtr outputWindow = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? view.Handle : view.Native!.Win32!.Value.Hwnd;
+        IntPtr outputWindow = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? view.Native!.Glfw!.Value
+                                  : view.Native!.Win32!.Value.Hwnd;
 
         SwapChainDescription1 swapChainDescription = new SwapChainDescription1 {
             Width = view.FramebufferSize.X,
@@ -250,21 +251,11 @@ public class Direct3D11Backend : IGraphicsBackend {
         return new TextureRenderTargetD3D11(this, width, height);
     }
 
-    public override Texture CreateTexture(byte[] imageData, bool qoi = false) {
-        return new TextureD3D11(this, imageData, qoi);
-    }
+    public override Texture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default) => new TextureD3D11(this, imageData, parameters);
 
-    public override Texture CreateTexture(Stream stream) {
-        return new TextureD3D11(this, stream);
-    }
+    public override Texture CreateTextureFromStream(Stream stream, TextureParameters parameters = default) => new TextureD3D11(this, stream, parameters);
 
-    public override Texture CreateTexture(uint width, uint height) {
-        return new TextureD3D11(this, width, height);
-    }
-
-    public override Texture CreateTexture(string filepath) {
-        return new TextureD3D11(this, filepath);
-    }
+    public override Texture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default) => new TextureD3D11(this, width, height, parameters);
 
     public override Texture CreateWhitePixelTexture() {
         return new TextureD3D11(this);

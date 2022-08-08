@@ -77,7 +77,7 @@ public abstract class IGraphicsBackend {
     /// </summary>
     public abstract void SetFullScissorRect();
 
-    //Render Targets
+    #region Render Targets
 
     /// <summary>
     /// Used to Create a TextureRenderTarget
@@ -87,41 +87,41 @@ public abstract class IGraphicsBackend {
     /// <returns></returns>
     public abstract TextureRenderTarget CreateRenderTarget(uint width, uint height);
 
-    //Textures
+    #endregion
+
+    #region Textures
 
     /// <summary>
     /// Creates a Texture given some Data
     /// </summary>
     /// <param name="imageData">Image Data</param>
-    /// <param name="qoi">Is the Data in the QOI format?</param>
+    /// <param name="parameters"></param>
     /// <returns>Texture</returns>
-    public abstract Texture CreateTexture(byte[] imageData, bool qoi = false);
+    public abstract Texture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default);
     /// <summary>
     /// Creates a Texture given a Stream
     /// </summary>
     /// <param name="stream">Stream to read from</param>
+    /// <param name="parameters"></param>
     /// <returns>Texture</returns>
-    public abstract Texture CreateTexture(Stream stream);
+    public abstract Texture CreateTextureFromStream(Stream stream, TextureParameters parameters = default);
     /// <summary>
     /// Creates a Empty Texture given a Size
     /// </summary>
     /// <param name="width">Width of Texture</param>
     /// <param name="height">Height of Texture</param>
+    /// <param name="parameters"></param>
     /// <returns>Texture</returns>
-    public abstract Texture CreateTexture(uint width, uint height);
-    /// <summary>
-    /// Creates a Texture from a File
-    /// </summary>
-    /// <param name="filepath">Filepath to Image</param>
-    /// <returns>Texture</returns>
-    public abstract Texture CreateTexture(string filepath);
+    public abstract Texture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default);
     /// <summary>
     /// Used to Create a 1x1 Texture with only a white pixel
     /// </summary>
     /// <returns>White Pixel Texture</returns>
     public abstract Texture CreateWhitePixelTexture();
 
-    //Imgui
+    #endregion
+
+    #region Imgui
 
     /// <summary>
     /// Used to Update the ImGuiController in charge of rendering ImGui on this backend
@@ -133,6 +133,9 @@ public abstract class IGraphicsBackend {
     /// </summary>
     /// <param name="deltaTime">Delta Time</param>
     public abstract void ImGuiDraw(double deltaTime);
+
+    #endregion
+    
     /// <summary>
     /// Presents
     /// </summary>

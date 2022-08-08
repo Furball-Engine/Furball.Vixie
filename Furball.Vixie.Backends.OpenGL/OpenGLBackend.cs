@@ -18,8 +18,8 @@ using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using Rectangle = SixLabors.ImageSharp.Rectangle;
-using Texture = Furball.Vixie.Backends.Shared.Texture;
+using Rectangle=SixLabors.ImageSharp.Rectangle;
+using Texture=Furball.Vixie.Backends.Shared.Texture;
 
 namespace Furball.Vixie.Backends.OpenGL;
 
@@ -363,36 +363,24 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     ///     Creates a Texture given some Data
     /// </summary>
     /// <param name="imageData">Image Data</param>
-    /// <param name="qoi">Is the Data in the QOI format?</param>
+    /// <param name="parameters"></param>
     /// <returns>Texture</returns>
-    public override Texture CreateTexture(byte[] imageData, bool qoi = false) {
-        return new TextureGL(this, imageData, qoi);
-    }
+    public override Texture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default) => new TextureGL(this, imageData, parameters);
     /// <summary>
     ///     Creates a Texture given a Stream
     /// </summary>
     /// <param name="stream">Stream to read from</param>
+    /// <param name="parameters"></param>
     /// <returns>Texture</returns>
-    public override Texture CreateTexture(Stream stream) {
-        return new TextureGL(this, stream);
-    }
+    public override Texture CreateTextureFromStream(Stream stream, TextureParameters parameters = default) => new TextureGL(this, stream, parameters);
     /// <summary>
     ///     Creates a Empty Texture given a Size
     /// </summary>
     /// <param name="width">Width of Texture</param>
     /// <param name="height">Height of Texture</param>
+    /// <param name="parameters"></param>
     /// <returns>Texture</returns>
-    public override Texture CreateTexture(uint width, uint height) {
-        return new TextureGL(this, width, height);
-    }
-    /// <summary>
-    ///     Creates a Texture from a File
-    /// </summary>
-    /// <param name="filepath">Filepath to Image</param>
-    /// <returns>Texture</returns>
-    public override Texture CreateTexture(string filepath) {
-        return new TextureGL(this, filepath);
-    }
+    public override Texture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default) => new TextureGL(this, width, height, parameters);
     /// <summary>
     ///     Used to Create a 1x1 Texture with only a white pixel
     /// </summary>

@@ -58,16 +58,21 @@ internal sealed class TextureVeldrid : Texture {
                 this._backend.GraphicsDevice.UpdateTexture(this.Texture, accessor.GetRowSpan(i), 0, (uint) i, 0, (uint) image.Width, 1, 1, 0, 0);
         });
     }
-        
+
     /// <summary>
     /// Creates a Texture from a byte array which contains Image Data
     /// </summary>
+    /// <param name="backend"></param>
     /// <param name="imageData">Image Data</param>
-    public TextureVeldrid(VeldridBackend backend, byte[] imageData, bool qoi = false) {
+    /// <param name="parameters"></param>
+    public TextureVeldrid(VeldridBackend backend, byte[] imageData, TextureParameters parameters) {
         this._backend = backend;
         this._backend.CheckThread();
 
         Image<Rgba32> image;
+
+        bool qoi = imageData.Length > 3 && imageData[0] == 'q' && imageData[1] == 'o' && imageData[2] == 'i' &&
+                   imageData[3]     == 'f';
 
         if(qoi) {
             (Rgba32[] pixels, QoiLoader.QoiHeader header) data = QoiLoader.Load(imageData);
@@ -85,6 +90,8 @@ internal sealed class TextureVeldrid : Texture {
         this.Load(image);
 
         this._size = new Vector2(width, height);
+
+        this.FilterType = parameters.FilterType;
     }
     /// <summary>
     /// Creates a Texture with a single White Pixel
@@ -103,9 +110,11 @@ internal sealed class TextureVeldrid : Texture {
     /// <summary>
     /// Creates a Empty texture given a width and height
     /// </summary>
+    /// <param name="backend"></param>
     /// <param name="width">Desired Width</param>
     /// <param name="height">Desired Height</param>
-    public TextureVeldrid(VeldridBackend backend, uint width, uint height) {
+    /// <param name="parameters"></param>
+    public TextureVeldrid(VeldridBackend backend, uint width, uint height, TextureParameters parameters) {
         this._backend = backend;
         this._backend.CheckThread();
 
@@ -115,12 +124,16 @@ internal sealed class TextureVeldrid : Texture {
         this.Load(px);
 
         this._size = new Vector2(width, height);
+
+        this.FilterType = parameters.FilterType;
     }
     /// <summary>
     /// Creates a Texture from a Stream which Contains Image Data
     /// </summary>
+    /// <param name="backend"></param>
     /// <param name="stream">Image Data Stream</param>
-    public TextureVeldrid(VeldridBackend backend, Stream stream) {
+    /// <param name="parameters"></param>
+    public TextureVeldrid(VeldridBackend backend, Stream stream, TextureParameters parameters) {
         this._backend = backend;
         this._backend.CheckThread();
 
@@ -134,6 +147,8 @@ internal sealed class TextureVeldrid : Texture {
         this.Load(image);
 
         this._size = new Vector2(width, height);
+
+        this.FilterType = parameters.FilterType;
     }
 
     private TextureFilterType _filterType = TextureFilterType.Smooth;

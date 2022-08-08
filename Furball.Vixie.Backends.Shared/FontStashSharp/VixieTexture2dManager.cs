@@ -14,8 +14,11 @@ public class VixieTexture2dManager : ITexture2DManager {
     }
 
     public object CreateTexture(int width, int height) {
-        Texture tex = this._backend.CreateTexture((uint)width, (uint)height);
-        tex.FilterType = TextureFilterType.Pixelated;
+        Texture tex = this._backend.CreateEmptyTexture(
+        (uint)width,
+        (uint)height,
+        new TextureParameters(true, TextureFilterType.Pixelated)
+        );
 
 #if DEBUG
         Global.TRACKED_TEXTURES.Add(new WeakReference<Texture>(tex));

@@ -9,6 +9,7 @@ using Vortice.Direct3D11;
 using Vortice.DXGI;
 using Vortice.Mathematics;
 using Rectangle=System.Drawing.Rectangle;
+#pragma warning disable CS8618
 
 namespace Furball.Vixie.Backends.Direct3D11.Abstractions; 
 
@@ -32,6 +33,8 @@ internal sealed class TextureD3D11 : Texture {
 
         this._texture    = texture;
         this.TextureView = shaderResourceView;
+
+        this.GenerateMips();
     }
 
     public unsafe TextureD3D11(Direct3D11Backend backend) {
@@ -53,24 +56,29 @@ internal sealed class TextureD3D11 : Texture {
             BindFlags = BindFlags.ShaderResource
         };
 
-        byte[] data = new byte[] {
+        byte* data = stackalloc byte[] {
             255, 255, 255, 255
         };
 
-        fixed (void* ptr = data) {
-            SubresourceData subresourceData = new SubresourceData(ptr, 4);
+        SubresourceData subresourceData = new(data, 4);
 
-            ID3D11Texture2D texture = this._device.CreateTexture2D(textureDescription, new []{ subresourceData} );
-            ID3D11ShaderResourceView textureView = this._device.CreateShaderResourceView(texture);
-
-            this._texture    = texture;
-            this.TextureView = textureView;
+        ID3D11Texture2D texture = this._device.CreateTexture2D(
+        textureDescription,
+        new[] {
+            subresourceData
         }
+        );
+        ID3D11ShaderResourceView textureView = this._device.CreateShaderResourceView(texture);
+
+        this._texture    = texture;
+        this.TextureView = textureView;
+
+        this.GenerateMips();
 
         this._size = Vector2.One;
     }
 
-    public unsafe TextureD3D11(Direct3D11Backend backend, byte[] imageData, bool qoi = false) {
+    public TextureD3D11(Direct3D11Backend backend, byte[] imageData, TextureParameters parameters) {
         backend.CheckThread();
         this._backend       = backend;
         this._device        = backend.GetDevice();
@@ -78,6 +86,9 @@ internal sealed class TextureD3D11 : Texture {
 
         Image<Rgba32> image;
 
+        bool qoi = imageData.Length > 3 && imageData[0] == 'q' && imageData[1] == 'o' && imageData[2] == 'i' &&
+                   imageData[3]     == 'f';
+        
         if(qoi) {
             (Rgba32[] pixels, QoiLoader.QoiHeader header) data = QoiLoader.Load(imageData);
 
@@ -86,40 +97,38 @@ internal sealed class TextureD3D11 : Texture {
             image = Image.Load<Rgba32>(imageData);
         }
 
-        Texture2DDescription textureDescription = new Texture2DDescription {
-            Width     = image.Width,
-            Height    = image.Height,
-            MipLevels = 1,
-            ArraySize = 1,
-            Format    = Format.R8G8B8A8_UNorm,
-            BindFlags = BindFlags.ShaderResource,
-            Usage     = ResourceUsage.Default,
-            SampleDescription = new SampleDescription {
-                Count = 1, Quality = 0
-            },
-        };
+        this.CreateTextureAndView(image.Width, image.Height, parameters);
 
-        ID3D11Texture2D texture = this._device.CreateTexture2D(textureDescription);
+        this.SetData(image);
 
-        image.ProcessPixelRows(accessor => {
-            for (int i = 0; i < accessor.Height; i++) {
-                fixed (void* ptr = &accessor.GetRowSpan(i).GetPinnableReference()) {
-                    this._deviceContext.UpdateSubresource(texture, 0, new Box(0, i, 0, accessor.Width, i + 1, 1), (IntPtr)ptr, 4 * accessor.Width, (4 * accessor.Width));
-                }
-            }
-        });
-
-        ID3D11ShaderResourceView textureView = this._device.CreateShaderResourceView(texture);
-
-        this._texture    = texture;
-        this.TextureView = textureView;
+        this.GenerateMips();
 
         this._size = new Vector2(image.Width, image.Height);
 
         image.Dispose();
+
+        this.FilterType = parameters.FilterType;
     }
 
-    public unsafe TextureD3D11(Direct3D11Backend backend, Stream stream) {
+    private unsafe void SetData(Image<Rgba32> image) {
+        image.ProcessPixelRows(
+        accessor => {
+            for (int i = 0; i < accessor.Height; i++)
+                fixed (void* ptr = &accessor.GetRowSpan(i).GetPinnableReference()) {
+                    this._deviceContext.UpdateSubresource(
+                    this._texture,
+                    0,
+                    new Box(0, i, 0, accessor.Width, i + 1, 1),
+                    (IntPtr)ptr,
+                    4 * accessor.Width,
+                    4 * accessor.Width
+                    );
+                }
+        }
+        );
+    }
+
+    public TextureD3D11(Direct3D11Backend backend, Stream stream, TextureParameters parameters) {
         backend.CheckThread();
         this._backend       = backend;
         this._device        = backend.GetDevice();
@@ -127,53 +136,45 @@ internal sealed class TextureD3D11 : Texture {
 
         Image<Rgba32> image = Image.Load<Rgba32>(stream);
 
-        Texture2DDescription textureDescription = new Texture2DDescription {
-            Width     = image.Width,
-            Height    = image.Height,
-            MipLevels = 1,
-            ArraySize = 1,
-            Format    = Format.R8G8B8A8_UNorm,
-            BindFlags = BindFlags.ShaderResource,
-            Usage     = ResourceUsage.Default,
-            SampleDescription = new SampleDescription {
-                Count = 1, Quality = 0
-            },
-        };
+        this.CreateTextureAndView(image.Width, image.Height, parameters);
 
-        ID3D11Texture2D texture = this._device.CreateTexture2D(textureDescription);
+        this.SetData(image);
 
-        image.ProcessPixelRows(accessor => {
-            for (int i = 0; i < accessor.Height; i++) {
-                fixed (void* ptr = &accessor.GetRowSpan(i).GetPinnableReference()) {
-                    this._deviceContext.UpdateSubresource(texture, 0, new Box(0, i, 0, accessor.Width, i + 1, 1), (IntPtr)ptr, 4 * accessor.Width, (4 * accessor.Width));
-                }
-            }
-        });
-
-        ID3D11ShaderResourceView textureView = this._device.CreateShaderResourceView(texture);
-
-        this._texture    = texture;
-        this.TextureView = textureView;
+        this.GenerateMips();
 
         this._size = new Vector2(image.Width, image.Height);
 
         image.Dispose();
+
+        this.FilterType = parameters.FilterType;
     }
 
-    public TextureD3D11(Direct3D11Backend backend, uint width, uint height) {
+    public TextureD3D11(Direct3D11Backend backend, uint width, uint height, TextureParameters parameters) {
         backend.CheckThread();
         this._backend       = backend;
         this._device        = backend.GetDevice();
         this._deviceContext = backend.GetDeviceContext();
 
+        this.CreateTextureAndView((int)width, (int)height, parameters);
+
+        this.GenerateMips();
+
+        this._size = new Vector2(width, height);
+
+        this.FilterType = parameters.FilterType;
+    }
+
+    private void CreateTextureAndView(int width, int height, TextureParameters parameters) {
         Texture2DDescription textureDescription = new Texture2DDescription {
-            Width     = (int) width,
-            Height    = (int) height,
-            MipLevels = 1,
+            Width     = width,
+            Height    = height,
+            MipLevels = parameters.RequestMipmaps ? this.MipMapCount(width, height) : 1,
             ArraySize = 1,
             Format    = Format.R8G8B8A8_UNorm,
-            BindFlags = BindFlags.ShaderResource,
+            BindFlags = parameters.RequestMipmaps ? BindFlags.ShaderResource | BindFlags.RenderTarget
+                            : BindFlags.ShaderResource,
             Usage     = ResourceUsage.Default,
+            MiscFlags = parameters.RequestMipmaps ? ResourceOptionFlags.GenerateMips : ResourceOptionFlags.None,
             SampleDescription = new SampleDescription {
                 Count = 1, Quality = 0
             },
@@ -184,56 +185,6 @@ internal sealed class TextureD3D11 : Texture {
 
         this._texture    = texture;
         this.TextureView = textureView;
-
-        this._size = new Vector2(width, height);
-    }
-
-    public unsafe TextureD3D11(Direct3D11Backend backend, string filepath) {
-        backend.CheckThread();
-        this._backend       = backend;
-        this._device        = backend.GetDevice();
-        this._deviceContext = backend.GetDeviceContext();
-
-        Image<Rgba32> image = (Image<Rgba32>)Image.Load(filepath);
-
-        Texture2DDescription textureDescription = new Texture2DDescription {
-            Width     = image.Width,
-            Height    = image.Height,
-            MipLevels = 1,
-            ArraySize = 1,
-            Format    = Format.R8G8B8A8_UNorm,
-            BindFlags = BindFlags.ShaderResource,
-            Usage     = ResourceUsage.Default,
-            SampleDescription = new SampleDescription {
-                Count = 1, Quality = 0
-            },
-        };
-
-        ID3D11Texture2D texture = this._device.CreateTexture2D(textureDescription);
-
-        image.ProcessPixelRows(accessor => {
-            for (int i = 0; i < accessor.Height; i++) {
-                fixed (void* ptr = &accessor.GetRowSpan(i).GetPinnableReference()) {
-                    this._deviceContext.UpdateSubresource(
-                    texture,
-                    0,
-                    new Box(0, i, 0, accessor.Width, i + 1, 1),
-                    (IntPtr)ptr,
-                    sizeof(Rgba32) * accessor.Width,
-                    sizeof(Rgba32) * accessor.Width
-                    );
-                }
-            }
-        });
-
-        ID3D11ShaderResourceView textureView = this._device.CreateShaderResourceView(texture);
-
-        this._texture    = texture;
-        this.TextureView = textureView;
-
-        this._size = new Vector2(image.Width, image.Height);
-
-        image.Dispose();
     }
 
     ~TextureD3D11() {
@@ -253,6 +204,8 @@ internal sealed class TextureD3D11 : Texture {
             );
         }
 
+        this.GenerateMips();
+
         return this;
     }
 
@@ -264,7 +217,13 @@ internal sealed class TextureD3D11 : Texture {
 
         this._deviceContext.PSSetShaderResource(0, this.TextureView);
 
+        this.GenerateMips();
+
         return this;
+    }
+
+    private void GenerateMips() {
+        this._deviceContext.GenerateMips(this.TextureView);
     }
 
     private TextureFilterType _filterType = TextureFilterType.Smooth;

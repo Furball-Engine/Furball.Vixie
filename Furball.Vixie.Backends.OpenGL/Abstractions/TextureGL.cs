@@ -85,33 +85,19 @@ internal sealed class TextureGL : Texture, IDisposable {
     }
 
     /// <summary>
-    /// Creates a Texture from a File
-    /// </summary>
-    /// <param name="filepath">Path to an Image</param>
-    public TextureGL(IGLBasedBackend backend, string filepath) {
-        this._backend = backend;
-        this._backend.GlCheckThread();
-
-        Image<Rgba32> image = Image.Load<Rgba32>(filepath);
-
-        this._localBuffer = image;
-
-        int width  = image.Width;
-        int height = image.Height;
-
-        this.Load(image);
-
-        this._size = new Vector2(width, height);
-    }
-    /// <summary>
     /// Creates a Texture from a byte array which contains Image Data
     /// </summary>
+    /// <param name="backend"></param>
     /// <param name="imageData">Image Data</param>
-    public TextureGL(IGLBasedBackend backend, byte[] imageData, bool qoi = false) {
+    /// <param name="parameters"></param>
+    public TextureGL(IGLBasedBackend backend, byte[] imageData, TextureParameters parameters) {
         this._backend = backend;
         this._backend.GlCheckThread();
 
         Image<Rgba32> image;
+
+        bool qoi = imageData.Length > 3 && imageData[0] == 'q' && imageData[1] == 'o' && imageData[2] == 'i' &&
+                   imageData[3]     == 'f';
 
         if(qoi) {
             (Rgba32[] pixels, QoiLoader.QoiHeader header) data = QoiLoader.Load(imageData);
@@ -129,6 +115,8 @@ internal sealed class TextureGL : Texture, IDisposable {
         this.Load(image);
 
         this._size = new Vector2(width, height);
+
+        this.FilterType = parameters.FilterType;
     }
     /// <summary>
     /// Creates a Texture with a single White Pixel
@@ -165,9 +153,11 @@ internal sealed class TextureGL : Texture, IDisposable {
     /// <summary>
     /// Creates a Empty texture given a width and height
     /// </summary>
+    /// <param name="backend"></param>
     /// <param name="width">Desired Width</param>
     /// <param name="height">Desired Height</param>
-    public unsafe TextureGL(IGLBasedBackend backend, uint width, uint height) {
+    /// <param name="parameters"></param>
+    public unsafe TextureGL(IGLBasedBackend backend, uint width, uint height, TextureParameters parameters) {
         this._backend = backend;
         this._backend.GlCheckThread();
 
@@ -185,12 +175,16 @@ internal sealed class TextureGL : Texture, IDisposable {
         this._backend.CheckError("create blank texture with width + height");
 
         this._size = new Vector2(width, height);
+
+        this.FilterType = parameters.FilterType;
     }
     /// <summary>
     /// Creates a Texture from a Stream which Contains Image Data
     /// </summary>
+    /// <param name="backend"></param>
     /// <param name="stream">Image Data Stream</param>
-    public TextureGL(IGLBasedBackend backend, Stream stream) {
+    /// <param name="parameters"></param>
+    public TextureGL(IGLBasedBackend backend, Stream stream, TextureParameters parameters) {
         this._backend = backend;
         this._backend.GlCheckThread();
 
@@ -204,6 +198,8 @@ internal sealed class TextureGL : Texture, IDisposable {
         this.Load(image);
 
         this._size = new Vector2(width, height);
+
+        this.FilterType = parameters.FilterType;
     }
 
     ~TextureGL() {
@@ -302,10 +298,6 @@ internal sealed class TextureGL : Texture, IDisposable {
         return this;
     }
 
-    public TextureGL Bind(Silk.NET.OpenGLES.TextureUnit textureSlot = Silk.NET.OpenGLES.TextureUnit.Texture0) {
-        this._backend.GlCheckThread();
-        return this.Bind((TextureUnit)textureSlot);
-    }
     /// <summary>
     /// Binds the Texture to a certain Texture Slot
     /// </summary>
@@ -401,7 +393,7 @@ internal sealed class TextureGL : Texture, IDisposable {
             TextureMagFilter magFilter = value == TextureFilterType.Smooth ? TextureMagFilter.Linear : TextureMagFilter.Nearest;
             TextureMinFilter minFilter = value == TextureFilterType.Smooth ? TextureMinFilter.Linear : TextureMinFilter.Nearest;
 
-            this.Bind(TextureUnit.Texture0);
+            this.Bind();
             
             this._backend.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)minFilter);
             this._backend.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)magFilter);

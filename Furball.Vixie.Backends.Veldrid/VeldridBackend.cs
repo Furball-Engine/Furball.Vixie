@@ -346,14 +346,15 @@ public class VeldridBackend : IGraphicsBackend {
         this.GraphicsDevice.WaitForIdle();
     }
     public override TextureRenderTarget CreateRenderTarget(uint width, uint height) => new TextureRenderTargetVeldrid(this, width, height);
-        
-    public override Shared.Texture CreateTexture(byte[] imageData, bool qoi = false) => new TextureVeldrid(this, imageData, qoi);
 
-    public override Shared.Texture CreateTexture(Stream stream) => new TextureVeldrid(this, stream);
+    public override Shared.Texture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default)
+        => new TextureVeldrid(this, imageData, parameters);
 
-    public override Shared.Texture CreateTexture(uint width, uint height) => new TextureVeldrid(this, width, height);
+    public override Shared.Texture CreateTextureFromStream(Stream stream, TextureParameters parameters = default)
+        => new TextureVeldrid(this, stream, parameters);
 
-    public override Shared.Texture CreateTexture(string filepath) => new TextureVeldrid(this, filepath);
+    public override Shared.Texture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default)
+        => new TextureVeldrid(this, width, height, parameters);
 
     public override Shared.Texture CreateWhitePixelTexture() => new TextureVeldrid(this);
         

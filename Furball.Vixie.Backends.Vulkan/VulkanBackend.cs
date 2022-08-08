@@ -927,21 +927,11 @@ public unsafe class VulkanBackend : IGraphicsBackend {
         throw new NotImplementedException();
     }
 
-    public override Texture CreateTexture(byte[] imageData, bool qoi = false) {
-        throw new NotImplementedException();
-    }
+    public override Texture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default) => throw new NotImplementedException();
 
-    public override Texture CreateTexture(Stream stream) {
-        throw new NotImplementedException();
-    }
+    public override Texture CreateTextureFromStream(Stream stream, TextureParameters parameters = default) => throw new NotImplementedException();
 
-    public override Texture CreateTexture(uint width, uint height) {
-        throw new NotImplementedException();
-    }
-
-    public override Texture CreateTexture(string filepath) {
-        throw new NotImplementedException();
-    }
+    public override Texture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default) => throw new NotImplementedException();
 
     public override Texture CreateWhitePixelTexture() {
         throw new NotImplementedException();

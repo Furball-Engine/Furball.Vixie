@@ -213,7 +213,10 @@ internal sealed unsafe class QuadRendererD3D11 : IQuadRenderer {
             AddressU           = TextureAddressMode.Wrap,
             AddressV           = TextureAddressMode.Wrap,
             AddressW           = TextureAddressMode.Wrap,
-            ComparisonFunction = ComparisonFunction.Never
+            ComparisonFunction = ComparisonFunction.Never,
+            MinLOD             = 0,
+            MipLODBias         = 0,
+            MaxLOD             = float.MaxValue
         };
 
         this._samplerState = this._device.CreateSamplerState(samplerDescription);
