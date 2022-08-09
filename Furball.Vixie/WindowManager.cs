@@ -158,8 +158,11 @@ public class WindowManager : IDisposable {
         this.GameView.Close();
     }
 
+    public event EventHandler<Vector2> OnFramebufferResize;
+
     private void UpdateWindowSize(int width, int height) {
         this._windowSize = new Vector2(width, height);
+        this.OnFramebufferResize?.Invoke(this, this._windowSize);
     }
 
     internal bool RequestViewOnly = false;
