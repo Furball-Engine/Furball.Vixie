@@ -406,9 +406,13 @@ internal sealed class TextureGL : Texture, IDisposable {
         get => this._filterType;
         set {
             TextureMagFilter magFilter = value == TextureFilterType.Smooth ? TextureMagFilter.Linear : TextureMagFilter.Nearest;
-            TextureMinFilter minFilter = value == TextureFilterType.Smooth ? TextureMinFilter.LinearMipmapLinear
-                                             : TextureMinFilter.NearestMipmapLinear;
+            TextureMinFilter minFilter =
+                value == TextureFilterType.Smooth ? TextureMinFilter.Linear : TextureMinFilter.Nearest;
 
+            if (this._mipmaps)
+                minFilter = value == TextureFilterType.Smooth ? TextureMinFilter.LinearMipmapLinear
+                                : TextureMinFilter.NearestMipmapLinear;
+            
             this.Bind();
             
             this._backend.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)minFilter);
