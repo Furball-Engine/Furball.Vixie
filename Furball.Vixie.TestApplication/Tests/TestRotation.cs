@@ -13,7 +13,7 @@ public class TestRotation : GameComponent {
 
     public override void Initialize() {
         this._quadRendererGl = GraphicsBackend.Current.CreateTextureRenderer();
-        this._whiteTextureGl = Resources.CreateTexture(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
+        this._whiteTextureGl = Resources.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
 
         base.Initialize();
     }

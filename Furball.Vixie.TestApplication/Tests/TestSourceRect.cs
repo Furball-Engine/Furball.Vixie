@@ -15,7 +15,7 @@ public class TestSourceRect : GameComponent {
 
     public override void Initialize() {
         this._quadRenderer = GraphicsBackend.Current.CreateTextureRenderer();
-        this._whiteTexture = Resources.CreateTexture(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
+        this._whiteTexture = Resources.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
 
         base.Initialize();
     }

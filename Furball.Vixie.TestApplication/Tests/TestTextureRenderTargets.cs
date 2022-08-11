@@ -18,7 +18,7 @@ public class TestTextureRenderTargets : GameComponent {
             
         this._quadRenderer = GraphicsBackend.Current.CreateTextureRenderer();
             
-        this._whiteTexture = Resources.CreateTexture();
+        this._whiteTexture = Resources.CreateWhitePixelTexture();
 
         base.Initialize();
     }

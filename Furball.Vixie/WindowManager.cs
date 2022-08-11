@@ -4,9 +4,12 @@ using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Veldrid;
 using Silk.NET.Input;
+using Silk.NET.Input.Glfw;
+using Silk.NET.Input.Sdl;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
 using Silk.NET.Windowing.Extensions.Veldrid;
+using Silk.NET.Windowing.Glfw;
 using Silk.NET.Windowing.Sdl;
 
 namespace Furball.Vixie; 
@@ -171,6 +174,14 @@ public class WindowManager : IDisposable {
     /// Creates the Window and grabs the OpenGL API of Window
     /// </summary>
     public void Create() {
+        #region Silk platform registration (for NativeAOT/No Refection)
+        SdlWindowing.RegisterPlatform();
+        GlfwWindowing.RegisterPlatform();
+        
+        GlfwInput.RegisterPlatform();
+        SdlInput.RegisterPlatform();
+        #endregion
+    
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && this.Backend == Backend.Direct3D11)
             SdlWindowing.Use();
         
