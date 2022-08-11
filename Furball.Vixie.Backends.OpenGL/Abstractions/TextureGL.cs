@@ -310,6 +310,10 @@ internal sealed class TextureGL : Texture, IDisposable {
 
         return this;
     }
+    
+    public override Rgba32[] GetData() {
+        throw new NotImplementedException();
+    }
 
     /// <summary>
     /// Binds the Texture to a certain Texture Slot

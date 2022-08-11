@@ -168,6 +168,10 @@ internal sealed class TextureVeldrid : Texture {
 
         return this;
     }
+    
+    public override Rgba32[] GetData() {
+        throw new System.NotImplementedException();
+    }
 
     ~TextureVeldrid() {
         DisposeQueue.Enqueue(this);

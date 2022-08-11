@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Numerics;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Furball.Vixie.Backends.Shared; 
 
@@ -24,6 +25,11 @@ public abstract class Texture : IDisposable {
     /// <returns></returns>
     public abstract Texture SetData<T>(T[] data) where T : unmanaged;
     public abstract Texture SetData<T>(T[] data, Rectangle rect) where T : unmanaged;
-
+    /// <summary>
+    /// Copies the data of the texture into CPU memory
+    /// </summary>
+    /// <returns>The raw pixels of the texture</returns>
+    public abstract Rgba32[] GetData();
+    
     public virtual  void    Dispose() {}
 }

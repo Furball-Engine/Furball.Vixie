@@ -221,6 +221,10 @@ internal sealed class TextureD3D11 : Texture {
 
         return this;
     }
+    
+    public override Rgba32[] GetData() {
+        throw new NotImplementedException();
+    }
 
     private void GenerateMips() {
         this._deviceContext.GenerateMips(this.TextureView);
