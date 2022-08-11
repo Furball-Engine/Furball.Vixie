@@ -11,7 +11,6 @@ using Silk.NET.Windowing;
 using Silk.NET.Windowing.Extensions.Veldrid;
 using Silk.NET.Windowing.Sdl;
 using Silk.NET.Windowing.Glfw;
-using Silk.NET.Windowing.Sdl;
 
 namespace Furball.Vixie; 
 
@@ -197,7 +196,7 @@ public class WindowManager : IDisposable {
     /// Creates the Window and grabs the OpenGL API of Window
     /// </summary>
     public void Create() {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && this.Backend == Backend.Direct3D11)
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && this.Backend is Backend.Direct3D11 or Backend.Direct3D9)
             SdlWindowing.Use();
 
         ContextAPI api = this.Backend switch {

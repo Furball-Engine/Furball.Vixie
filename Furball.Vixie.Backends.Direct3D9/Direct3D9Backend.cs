@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.Renderers;
@@ -56,10 +57,25 @@ public class Direct3D9Backend : IGraphicsBackend {
         return true;
     }
 
+    private void PrintAdapterInfo() {
+        for (int i = 0; i != this._direct3D.AdapterCount; i++) {
+            AdapterDetails details = this._direct3D.GetAdapterIdentifier(i);
+
+            BackendInfoSection deviceInformation = new($"Device #{i}");
+
+            deviceInformation.Contents.Add(("Driver", details.Driver));
+            deviceInformation.Contents.Add(("Adapter Description", details.Description));
+            deviceInformation.Contents.Add(("Device Name", details.DeviceName));
+            deviceInformation.Contents.Add(("Driver Version", details.DriverVersion.ToString()));
+
+            this.InfoSections.Add(deviceInformation);
+        }
+    }
+
     public override void Initialize(IView view, IInputContext inputContext) {
         this._direct3D = new Direct3D();
 
-        PresentParameters presentParameters = new PresentParameters {
+        PresentParameters presentParameters = new() {
             BackBufferCount  = 1,
             BackBufferWidth  = view.FramebufferSize.X,
             BackBufferHeight = view.FramebufferSize.Y,
@@ -68,36 +84,24 @@ public class Direct3D9Backend : IGraphicsBackend {
             SwapEffect       = SwapEffect.Copy
         };
 
-        for (int i = 0; i != this._direct3D.AdapterCount; i++) {
-            AdapterDetails details = this._direct3D.GetAdapterIdentifier(i);
-
-            BackendInfoSection deviceInformation = new BackendInfoSection($"Device #{i}");
-
-            deviceInformation.Contents.Add( ("Driver", details.Driver) );
-            deviceInformation.Contents.Add( ("Adapter Description", details.Description) );
-            deviceInformation.Contents.Add( ("Device Name", details.DeviceName) );
-            deviceInformation.Contents.Add( ("Driver Version", details.DriverVersion.ToString()) );
-
-            this.InfoSections.Add(deviceInformation);
-        }
+        this.PrintAdapterInfo();
 
         this.InfoSections.ForEach(x => x.Log(LoggerLevelD3D9.InstanceInfo));
 
-        if (DeviceOverride != 0) {
-            if( TryCreateDevice(DeviceType.Hardware, DeviceOverride, view.Native.Win32.Value.Hwnd, presentParameters, out this._device) )
-                goto DeviceCreated;
-            if( TryCreateDevice(DeviceType.Hardware, DeviceOverride, view.Native.Win32.Value.Hwnd, presentParameters, out this._device) )
-                goto DeviceCreated;
-        }
+        IntPtr windowHandle = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? view.Native!.Win32!.Value.Hwnd
+            : view.Handle;
 
-        for (int i = 0; i != this._direct3D.AdapterCount; i++) {
-            if( TryCreateDevice(DeviceType.Hardware, i, view.Native.Win32.Value.Hwnd, presentParameters, out this._device) )
-                goto DeviceCreated;
-            if( TryCreateDevice(DeviceType.Hardware, i, view.Native.Win32.Value.Hwnd, presentParameters, out this._device) )
-                goto DeviceCreated;
-        }
+        if (DeviceOverride != 0)
+            this.TryCreateDevice(DeviceType.Hardware, DeviceOverride, windowHandle, presentParameters, out this._device);
 
-    DeviceCreated: ;
+        int i = 0;
+        while (i != this._direct3D.AdapterCount && this._device == null) {
+            if (this.TryCreateDevice(DeviceType.Hardware, i, windowHandle, presentParameters, out this._device))
+                break;
+
+            i++;
+        }
 
         if (this._device == null)
             throw new Exception("No suitable Direct3D9 Device found which matches Vixie's requirements!");
