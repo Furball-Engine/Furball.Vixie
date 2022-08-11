@@ -15,8 +15,15 @@ public abstract class Texture : IDisposable {
     public          int     Height => (int)this.Size.Y;
 
     public abstract TextureFilterType FilterType { get; set; }
-    
-    public abstract Texture SetData<pDataType>(int level, pDataType[] data) where pDataType : unmanaged;
-    public abstract Texture SetData<pDataType>(int level, Rectangle rect, pDataType[] data) where pDataType : unmanaged;
+
+    /// <summary>
+    /// Sets the data of the whole texture at once
+    /// </summary>
+    /// <param name="data">The data</param>
+    /// <typeparam name="T">The type of data</typeparam>
+    /// <returns></returns>
+    public abstract Texture SetData<T>(T[] data) where T : unmanaged;
+    public abstract Texture SetData<T>(T[] data, Rectangle rect) where T : unmanaged;
+
     public virtual  void    Dispose() {}
 }

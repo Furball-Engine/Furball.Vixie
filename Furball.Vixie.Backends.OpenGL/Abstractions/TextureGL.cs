@@ -271,11 +271,10 @@ internal sealed class TextureGL : Texture, IDisposable {
     /// <summary>
     /// Sets the Data of the Texture Directly
     /// </summary>
-    /// <param name="level">Level of the texture</param>
     /// <param name="data">Data to put there</param>
     /// <typeparam name="pDataType">Type of the Data</typeparam>
     /// <returns>Self, used for chaining methods</returns>
-    public override unsafe Texture SetData<pDataType>(int level, pDataType[] data) {
+    public override unsafe Texture SetData <pDataType>(pDataType[] data) {
         this._backend.GlCheckThread();
         this.LockingBind();
 
@@ -283,7 +282,7 @@ internal sealed class TextureGL : Texture, IDisposable {
             throw new Exception("Data is too small!");
             
         fixed(void* d = data)
-            this._backend.TexImage2D(TextureTarget.Texture2D, level, InternalFormat.Rgba, (uint) this.Size.X, (uint) this.Size.Y, 0, PixelFormat.Rgba, PixelType.UnsignedByte, d);
+            this._backend.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat.Rgba, (uint) this.Size.X, (uint) this.Size.Y, 0, PixelFormat.Rgba, PixelType.UnsignedByte, d);
         this._backend.CheckError("set texture data");
 
         this.GenMipmaps();
@@ -294,17 +293,16 @@ internal sealed class TextureGL : Texture, IDisposable {
     /// <summary>
     /// Sets the Data of the Texture Directly
     /// </summary>
-    /// <param name="level">Level of the Texture</param>
-    /// <param name="rect">Rectangle of Data to Edit</param>
     /// <param name="data">Data to put there</param>
+    /// <param name="rect">Rectangle of Data to Edit</param>
     /// <typeparam name="pDataType">Type of Data to put</typeparam>
     /// <returns>Self, used for chaining methods</returns>
-    public override unsafe Texture SetData<pDataType>(int level, Rectangle rect, pDataType[] data) {
+    public override unsafe Texture SetData <pDataType>(pDataType[] data, Rectangle rect) {
         this._backend.GlCheckThread();
         this.LockingBind();
 
         fixed(void* d = data)
-            this._backend.TexSubImage2D(TextureTarget.Texture2D, level, rect.X, rect.Y, (uint) rect.Width, (uint) rect.Height, PixelFormat.Rgba, PixelType.UnsignedByte, d);
+            this._backend.TexSubImage2D(TextureTarget.Texture2D, 0, rect.X, rect.Y, (uint) rect.Width, (uint) rect.Height, PixelFormat.Rgba, PixelType.UnsignedByte, d);
         this._backend.CheckError("set texture data with rect");
 
         this.GenMipmaps();

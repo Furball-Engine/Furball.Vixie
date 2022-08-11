@@ -150,18 +150,18 @@ internal sealed class TextureVeldrid : Texture {
         set;
     } = TextureFilterType.Smooth;
     
-    public override Texture SetData <pDataType>(int level, pDataType[] data) {
+    public override Texture SetData <pDataType>(pDataType[] data) {
         this._backend.CheckThread();
-        this._backend.GraphicsDevice.UpdateTexture(this.Texture, data, 0, 0, 0, this.Texture.Width, this.Texture.Height, 1, 0, (uint)level);
+        this._backend.GraphicsDevice.UpdateTexture(this.Texture, data, 0, 0, 0, this.Texture.Width, this.Texture.Height, 1, 0, 0);
 
         if (this._mipmap)
             this._backend.CommandList.GenerateMipmaps(this.Texture);
 
         return this;
     }
-    public override Texture SetData <pDataType>(int level, Rectangle rect, pDataType[] data) {
+    public override Texture SetData <pDataType>(pDataType[] data, Rectangle rect) {
         this._backend.CheckThread();
-        this._backend.GraphicsDevice.UpdateTexture(this.Texture, data, (uint)rect.X, (uint)rect.Y, 0, (uint)rect.Width, (uint)rect.Height, 1, 0, (uint)level);
+        this._backend.GraphicsDevice.UpdateTexture(this.Texture, data, (uint)rect.X, (uint)rect.Y, 0, (uint)rect.Width, (uint)rect.Height, 1, 0, 0);
 
         if (this._mipmap)
             this._backend.CommandList.GenerateMipmaps(this.Texture);

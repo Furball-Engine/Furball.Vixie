@@ -191,7 +191,7 @@ internal sealed class TextureD3D11 : Texture {
         DisposeQueue.Enqueue(this);
     }
 
-    public override unsafe Texture SetData <pDataType>(int level, pDataType[] data) {
+    public override unsafe Texture SetData <pDataType>(pDataType[] data) {
         this._backend.CheckThread();
         fixed (void* ptr = data) {
             this._deviceContext.UpdateSubresource(
@@ -209,10 +209,10 @@ internal sealed class TextureD3D11 : Texture {
         return this;
     }
 
-    public override unsafe Texture SetData<pDataType>(int level, Rectangle rect, pDataType[] data) {
+    public override unsafe Texture SetData <pDataType>(pDataType[] data, Rectangle rect) {
         this._backend.CheckThread();
         fixed (void* dataPtr = data) {
-            this._deviceContext.UpdateSubresource(this._texture, level, new Box(rect.X, rect.Y, 0, rect.X + rect.Width, rect.Y + rect.Height, 1), (IntPtr)dataPtr, 4 * rect.Width, (4 * rect.Width) * rect.Height);
+            this._deviceContext.UpdateSubresource(this._texture, 0, new Box(rect.X, rect.Y, 0, rect.X + rect.Width, rect.Y + rect.Height, 1), (IntPtr)dataPtr, 4 * rect.Width, (4 * rect.Width) * rect.Height);
         }
 
         this._deviceContext.PSSetShaderResource(0, this.TextureView);
