@@ -203,6 +203,9 @@ internal sealed class TextureVeldrid : Texture {
             rawData.Slice((int)(i * (mapped.RowPitch / sizeof(Rgba32))), this.Width).CopyTo(data.AsSpan(i * this.Width));
         
         this._backend.GraphicsDevice.Unmap(stagingTexture);
+        
+        cmdList.Dispose();
+        stagingTexture.Dispose();
 
         return data;
     }
