@@ -241,14 +241,14 @@ internal sealed class TextureD3D11 : Texture {
         MappedSubresource mapped = this._deviceContext.Map(texture, 0);
 
         //Copy into array
-        Rgba32[] rawData = mapped.AsSpan<Rgba32>(texture, 0, 0).ToArray();
+        Span<Rgba32> rawData = mapped.AsSpan<Rgba32>(texture, 0, 0);
 
         //Create new array to store the pixels contiguously
         Rgba32[] data = new Rgba32[desc.Width * desc.Height];
 
         //Copy the data into a contiguous array
         for (int i = 0; i < desc.Height; i++)
-            Array.Copy(rawData, i * (mapped.RowPitch / sizeof(Rgba32)), data, i * desc.Width, desc.Width);
+            rawData.Slice(i * (mapped.RowPitch / sizeof(Rgba32)), desc.Width).CopyTo(data.AsSpan(i * desc.Width));
 
         //Unmap & dispose
         this._deviceContext.Unmap(texture, 0, 0);

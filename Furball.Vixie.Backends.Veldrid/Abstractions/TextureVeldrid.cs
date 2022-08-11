@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Numerics;
 using Furball.Vixie.Backends.Shared;
@@ -169,8 +170,41 @@ internal sealed class TextureVeldrid : Texture {
         return this;
     }
     
-    public override Rgba32[] GetData() {
-        throw new System.NotImplementedException();
+    public override unsafe Rgba32[] GetData() {
+        this._backend.CheckThread();
+        
+        TextureDescription textureDescription = TextureDescription.Texture2D(
+            (uint)this.Width,
+            (uint)this.Height,
+            1,
+            1,
+            PixelFormat.R8_G8_B8_A8_UNorm,
+            TextureUsage.Staging
+        );
+
+        global::Veldrid.Texture? stagingTexture = this._backend.ResourceFactory.CreateTexture(textureDescription);
+
+        CommandList cmdList = this._backend.ResourceFactory.CreateCommandList();
+
+        cmdList.Begin();
+        cmdList.CopyTexture(this.Texture, stagingTexture);
+        cmdList.End();
+        
+        this._backend.GraphicsDevice.SubmitCommands(cmdList);
+
+        Rgba32[] data = new Rgba32[this.Width * this.Height];
+        
+        MappedResource mapped = this._backend.GraphicsDevice.Map(stagingTexture, MapMode.Read);
+
+        ReadOnlySpan<Rgba32> rawData = new((void*)mapped.Data, (int)mapped.SizeInBytes);
+        
+        //Copy the data into a contiguous array
+        for (int i = 0; i < this.Height; i++)
+            rawData.Slice((int)(i * (mapped.RowPitch / sizeof(Rgba32))), this.Width).CopyTo(data.AsSpan(i * this.Width));
+        
+        this._backend.GraphicsDevice.Unmap(stagingTexture);
+
+        return data;
     }
 
     ~TextureVeldrid() {
