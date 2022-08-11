@@ -24,6 +24,16 @@ public class Direct3D9Backend : IGraphicsBackend {
 
     public static int DeviceOverride = 0;
 
+    private bool TryCreateDevice(int deviceId, IntPtr hwnd, PresentParameters presentParameters, out Device device) {
+        if (this.TryCreateDevice(DeviceType.Hardware, deviceId, hwnd, presentParameters, out device))
+            return true;
+
+        if (this.TryCreateDevice(DeviceType.Software, deviceId, hwnd, presentParameters, out device))
+            return true;
+
+        return false;
+    }
+    
     private bool TryCreateDevice(DeviceType type, int deviceId, IntPtr hwnd, PresentParameters presentParameters, out Device device) {
         Capabilities caps = this._direct3D.GetDeviceCaps(deviceId, type);
 
@@ -93,11 +103,11 @@ public class Direct3D9Backend : IGraphicsBackend {
             : view.Handle;
 
         if (DeviceOverride != 0)
-            this.TryCreateDevice(DeviceType.Hardware, DeviceOverride, windowHandle, presentParameters, out this._device);
+            this.TryCreateDevice(DeviceOverride, windowHandle, presentParameters, out this._device);
 
         int i = 0;
         while (i != this._direct3D.AdapterCount && this._device == null) {
-            if (this.TryCreateDevice(DeviceType.Hardware, i, windowHandle, presentParameters, out this._device))
+            if (this.TryCreateDevice(i, windowHandle, presentParameters, out this._device))
                 break;
 
             i++;
