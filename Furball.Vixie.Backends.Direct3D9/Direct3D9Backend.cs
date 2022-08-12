@@ -146,9 +146,7 @@ public class Direct3D9Backend : IGraphicsBackend {
         this._currentViewport = new Vector2D<int>(width, height);
     }
 
-    public override IQuadRenderer CreateTextureRenderer() {
-        throw new NotImplementedException();
-    }
+    public override IQuadRenderer CreateTextureRenderer() => new QuadRendererD3D9();
 
     public override int QueryMaxTextureUnits() {
         throw new NotImplementedException();
@@ -178,23 +176,23 @@ public class Direct3D9Backend : IGraphicsBackend {
     }
 
     public override TextureRenderTarget CreateRenderTarget(uint width, uint height) {
-        throw new NotImplementedException();
+        return new RenderTargetD3D9(width, height);
     }
 
     public override Texture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default) {
-        throw new NotImplementedException();
+        return new TextureD3D9(imageData, parameters);
     }
     
     public override Texture CreateTextureFromStream(Stream stream, TextureParameters parameters = default) {
-        throw new NotImplementedException();
+        return new TextureD3D9(stream, parameters);
     }
     
     public override Texture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default) {
-        throw new NotImplementedException();
+        return new TextureD3D9(width, height, parameters);
     }
 
     public override Texture CreateWhitePixelTexture() {
-        throw new NotImplementedException();
+        return new TextureD3D9();
     }
 
     public override void ImGuiUpdate(double deltaTime) {
