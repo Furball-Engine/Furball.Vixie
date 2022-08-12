@@ -56,7 +56,7 @@ public class Direct3D9Backend : IGraphicsBackend {
             (caps.TextureCaps & TextureCaps.SquareOnly)         != 0 ||
             caps.VertexShaderVersion.Major                      < 2  ||
             caps.PixelShaderVersion.Major                       < 2
-           ) {
+            ) {
             device = null;
 
             Logger.Log($"Creating Device [{deviceId}] as {type.ToString()} failed!", LoggerLevelD3D9.InstanceError);
@@ -131,36 +131,7 @@ public class Direct3D9Backend : IGraphicsBackend {
         this._currentViewport = new Vector2D<int>(view.FramebufferSize.X, view.FramebufferSize.Y);
 
         this._imgui = new ImGuiController(view, inputContext);
-
-        this.vbuffer = new VertexBuffer(this._device, sizeof(Vertex) * 6, Usage.None, Vertex.Format, Pool.Managed);
-        
-        DataStream dataStream = this.vbuffer.Lock(0, sizeof(Vertex) * 6, LockFlags.None);
-        Vertex* verts = stackalloc Vertex[] {
-            new Vertex(new Vector4(100.0f, 100.0f, 0f, 1.0f), new Rgba32(255, 0, 0, 255)),
-            new Vertex(new Vector4(200.0f, 100.0f, 0f, 1.0f), new Rgba32(0, 0, 255, 255)),
-            new Vertex(new Vector4(100.0f, 200.0f, 0f, 1.0f), new Rgba32(0, 255, 0, 255)),
-            new Vertex(new Vector4(200.0f, 100.0f, 0f, 1.0f), new Rgba32(0, 0, 255, 255)),
-            new Vertex(new Vector4(200.0f, 200.0f, 0f, 1.0f), new Rgba32(255, 0, 0, 255)),
-            new Vertex(new Vector4(100.0f, 200.0f, 0f, 1.0f), new Rgba32(0, 255, 0, 255)),
-        };
-        dataStream.Write((IntPtr)verts, 0, sizeof(Vertex) * 6);
-        this.vbuffer.Unlock();
     }
-
-    [StructLayout(LayoutKind.Sequential)]
-    struct Vertex {
-        public static VertexFormat Format = VertexFormat.PositionRhw | VertexFormat.Diffuse;
-        
-        Vector4 Position;
-        Rgba32   Color;
-
-        public Vertex(Vector4 position, Rgba32 color) {
-            this.Position = position;
-            this.Color    = color;
-        }
-    }
-    
-    private VertexBuffer vbuffer;
 
     public override void Cleanup() {
         this._device.Dispose();
@@ -182,7 +153,7 @@ public class Direct3D9Backend : IGraphicsBackend {
         this._currentViewport = new Vector2D<int>(width, height);
     }
 
-    public override IQuadRenderer CreateTextureRenderer() => new QuadRendererD3D9();
+    public override IQuadRenderer CreateTextureRenderer() => new QuadRendererD3D9(this._device);
 
     public override int QueryMaxTextureUnits() {
         throw new NotImplementedException();
@@ -244,10 +215,6 @@ public class Direct3D9Backend : IGraphicsBackend {
     }
 
     public override unsafe void EndScene() {
-        this._device.VertexFormat = Vertex.Format;
-        this._device.SetStreamSource(0, this.vbuffer, 0, sizeof(Vertex));
-        this._device.DrawPrimitives(PrimitiveType.TriangleList, 0, 2);
-        
         this._device.EndScene();
     }
 
