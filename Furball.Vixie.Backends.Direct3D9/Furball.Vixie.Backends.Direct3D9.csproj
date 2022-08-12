@@ -3,6 +3,7 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <LangVersion>10</LangVersion>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>
@@ -13,6 +14,12 @@
     <ItemGroup>
       <ProjectReference Include="..\Furball.Vixie.Backends.Shared\Furball.Vixie.Backends.Shared.csproj" />
       <ProjectReference Include="..\Furball.Vixie.Helpers\Furball.Vixie.Helpers.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Silk.NET.Input.Extensions">
+        <HintPath>..\..\..\..\..\.nuget\packages\silk.net.input.extensions\2.16.0\lib\netstandard2.0\Silk.NET.Input.Extensions.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>

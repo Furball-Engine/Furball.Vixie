@@ -10,17 +10,19 @@ using SharpDX.Mathematics.Interop;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
-using Rectangle=SixLabors.ImageSharp.Rectangle;
-using Texture=Furball.Vixie.Backends.Shared.Texture;
+using Rectangle = SixLabors.ImageSharp.Rectangle;
+using Texture = Furball.Vixie.Backends.Shared.Texture;
 
-namespace Furball.Vixie.Backends.Direct3D9; 
+namespace Furball.Vixie.Backends.Direct3D9;
 
 public class Direct3D9Backend : IGraphicsBackend {
-    private Direct3D      _direct3D;
-    private Device        _device;
-    private SwapChain     _swapChain;
-    private RawColorBGRA  _clearColor = new RawColorBGRA(0, 0, 0, 255);
-    private Vector2D<int> _currentViewport;
+    private          Direct3D      _direct3D;
+    private          Device        _device;
+    private          SwapChain     _swapChain;
+    private readonly RawColorBGRA  _clearColor = new(0, 0, 0, 255);
+    private          Vector2D<int> _currentViewport;
+
+    private ImGuiController _imgui;
 
     public static int DeviceOverride = 0;
 
@@ -33,8 +35,9 @@ public class Direct3D9Backend : IGraphicsBackend {
 
         return false;
     }
-    
-    private bool TryCreateDevice(DeviceType type, int deviceId, IntPtr hwnd, PresentParameters presentParameters, out Device device) {
+
+    private bool TryCreateDevice(DeviceType type, int deviceId, IntPtr hwnd, PresentParameters presentParameters,
+                                 out Device device) {
         Capabilities caps = this._direct3D.GetDeviceCaps(deviceId, type);
 
         Logger.Log($"Trying to create Device [{deviceId}] as {type.ToString()}", LoggerLevelD3D9.InstanceInfo);
@@ -43,13 +46,15 @@ public class Direct3D9Backend : IGraphicsBackend {
         if ((caps.TextureCaps & TextureCaps.Pow2)               != 0 ||
             (caps.TextureCaps & TextureCaps.NonPow2Conditional) != 0 ||
             (caps.TextureCaps & TextureCaps.SquareOnly)         != 0 ||
-            (caps.VertexShaderVersion.Major < 2)                     ||
-            (caps.PixelShaderVersion.Major  < 2)
+            caps.VertexShaderVersion.Major                      < 2  ||
+            caps.PixelShaderVersion.Major                       < 2
            ) {
             device = null;
 
             Logger.Log($"Creating Device [{deviceId}] as {type.ToString()} failed!", LoggerLevelD3D9.InstanceError);
-            Logger.Log($"The device either doesn't support NPOT at all times, or non-square textures, or a Vertex or Pixel shader version of at least 2.0", LoggerLevelD3D9.InstanceError);
+            Logger.Log(
+                "The device either doesn't support NPOT at all times, or non-square textures, or a Vertex or Pixel shader version of at least 2.0",
+                LoggerLevelD3D9.InstanceError);
 
             return false;
         }
@@ -117,6 +122,8 @@ public class Direct3D9Backend : IGraphicsBackend {
             throw new Exception("No suitable Direct3D9 Device found which matches Vixie's requirements!");
 
         this._currentViewport = new Vector2D<int>(view.FramebufferSize.X, view.FramebufferSize.Y);
+
+        this._imgui = new ImGuiController(view, inputContext);
     }
 
     public override void Cleanup() {
@@ -125,7 +132,7 @@ public class Direct3D9Backend : IGraphicsBackend {
     }
 
     public override void HandleFramebufferResize(int width, int height) {
-        PresentParameters presentParameters = new PresentParameters {
+        PresentParameters presentParameters = new() {
             BackBufferCount  = 1,
             BackBufferWidth  = width,
             BackBufferHeight = height,
@@ -139,12 +146,16 @@ public class Direct3D9Backend : IGraphicsBackend {
         this._currentViewport = new Vector2D<int>(width, height);
     }
 
-    public override IQuadRenderer CreateTextureRenderer() => throw new NotImplementedException();
+    public override IQuadRenderer CreateTextureRenderer() {
+        throw new NotImplementedException();
+    }
 
-    public override int QueryMaxTextureUnits() => throw new NotImplementedException();
+    public override int QueryMaxTextureUnits() {
+        throw new NotImplementedException();
+    }
 
     public override void Clear() {
-        this._device.Clear(ClearFlags.Target, _clearColor, 0, 0);
+        this._device.Clear(ClearFlags.Target, this._clearColor, 0, 0);
     }
 
     public override void TakeScreenshot() {
@@ -166,27 +177,32 @@ public class Direct3D9Backend : IGraphicsBackend {
         this._device.ScissorRect = new RawRectangle(0, 0, this._currentViewport.X, this._currentViewport.Y);
     }
 
-    public override TextureRenderTarget CreateRenderTarget(uint width, uint height)
-        => throw new NotImplementedException();
-        
+    public override TextureRenderTarget CreateRenderTarget(uint width, uint height) {
+        throw new NotImplementedException();
+    }
+
     public override Texture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default) {
         throw new NotImplementedException();
     }
+    
     public override Texture CreateTextureFromStream(Stream stream, TextureParameters parameters = default) {
         throw new NotImplementedException();
     }
+    
     public override Texture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default) {
         throw new NotImplementedException();
     }
 
-    public override Texture CreateWhitePixelTexture() => throw new NotImplementedException();
-
-    public override void ImGuiUpdate(double deltaTime) {
+    public override Texture CreateWhitePixelTexture() {
         throw new NotImplementedException();
     }
 
+    public override void ImGuiUpdate(double deltaTime) {
+        this._imgui.Update((float)deltaTime);
+    }
+
     public override void ImGuiDraw(double deltaTime) {
-        throw new NotImplementedException();
+        this._imgui.Render();
     }
 
     public override void BeginScene() {
