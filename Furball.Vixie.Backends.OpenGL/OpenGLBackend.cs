@@ -290,6 +290,10 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
             }
         }
     }
+    
+    public unsafe void GetTexImage(TextureTarget target, int level, PixelFormat format, PixelType type, void* ptr) {
+        this.gl.GetTexImage(target, level, format, type, ptr);
+    }
 
     /// <summary>
     ///     Checks for OpenGL errors

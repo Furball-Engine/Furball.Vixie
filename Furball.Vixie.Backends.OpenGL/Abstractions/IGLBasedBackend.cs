@@ -125,4 +125,5 @@ internal interface IGLBasedBackend {
     unsafe void   Uniform1(int              getUniformLocation, uint count, float* ptr);
     void          VertexAttribDivisor(uint  iOffset,            uint currentElementInstanceDivisor);
     internal void GenerateMipmaps(TextureGL textureGl);
+    unsafe   void GetTexImage(TextureTarget target, int level, PixelFormat format, PixelType type, void* ptr);
 }

@@ -44,11 +44,16 @@ public class BaseTestSelector : GameComponent {
             this.BaseGame.Components.Remove(this);
         }
 
+        if (ImGui.Button("Test Texture.GetData")) {
+            this.BaseGame.Components.Add(new TestTextureGetData());
+            this.BaseGame.Components.Remove(this);
+        }
+        
         if (ImGui.Button("Empty Screen")) {
             this.BaseGame.Components.Add(new TestEmptyScreen());
             this.BaseGame.Components.Remove(this);
         }
-
+        
         ImGui.End();
 
         base.Draw(deltaTime);

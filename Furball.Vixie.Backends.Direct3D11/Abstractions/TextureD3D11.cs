@@ -20,6 +20,7 @@ internal sealed class TextureD3D11 : Texture {
 
     private  ID3D11Texture2D          _texture;
     internal ID3D11ShaderResourceView TextureView;
+    private  Texture2DDescription     textureDescription;
 
     internal int UsedId = -1;
 
@@ -177,8 +178,10 @@ internal sealed class TextureD3D11 : Texture {
             MiscFlags = parameters.RequestMipmaps ? ResourceOptionFlags.GenerateMips : ResourceOptionFlags.None,
             SampleDescription = new SampleDescription {
                 Count = 1, Quality = 0
-            },
+            }
         };
+
+        this.textureDescription = textureDescription;
 
         ID3D11Texture2D          texture     = this._device.CreateTexture2D(textureDescription);
         ID3D11ShaderResourceView textureView = this._device.CreateShaderResourceView(texture);
@@ -220,6 +223,38 @@ internal sealed class TextureD3D11 : Texture {
         this.GenerateMips();
 
         return this;
+    }
+    
+    public override unsafe Rgba32[] GetData() {
+        Texture2DDescription desc = this.textureDescription;
+        desc.Usage          = ResourceUsage.Staging;
+        desc.CPUAccessFlags = CpuAccessFlags.Read;
+        desc.Format         = Format.R8G8B8A8_UNorm_SRgb;
+
+        //Create staging texture
+        ID3D11Texture2D texture = this._device.CreateTexture2D(desc);
+
+        //Copy texture to staging texture
+        this._deviceContext.CopyResource(texture, this._texture);
+
+        //Map data
+        MappedSubresource mapped = this._deviceContext.Map(texture, 0);
+
+        //Copy into array
+        Span<Rgba32> rawData = mapped.AsSpan<Rgba32>(texture, 0, 0);
+
+        //Create new array to store the pixels contiguously
+        Rgba32[] data = new Rgba32[desc.Width * desc.Height];
+
+        //Copy the data into a contiguous array
+        for (int i = 0; i < desc.Height; i++)
+            rawData.Slice(i * (mapped.RowPitch / sizeof(Rgba32)), desc.Width).CopyTo(data.AsSpan(i * desc.Width));
+
+        //Unmap & dispose
+        this._deviceContext.Unmap(texture, 0, 0);
+        texture.Dispose();
+        
+        return data;
     }
 
     private void GenerateMips() {

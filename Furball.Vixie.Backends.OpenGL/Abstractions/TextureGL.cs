@@ -310,6 +310,16 @@ internal sealed class TextureGL : Texture, IDisposable {
 
         return this;
     }
+    
+    public override unsafe Rgba32[] GetData() {
+        Rgba32[] arr = new Rgba32[this.Width * this.Height];
+
+        this.Bind();
+        fixed(void* ptr = arr)
+            this._backend.GetTexImage(TextureTarget.Texture2D, 0, PixelFormat.Rgba, PixelType.UnsignedByte, ptr);
+        
+        return arr;
+    }
 
     /// <summary>
     /// Binds the Texture to a certain Texture Slot
