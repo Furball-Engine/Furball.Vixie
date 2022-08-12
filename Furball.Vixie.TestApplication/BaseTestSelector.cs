@@ -8,8 +8,6 @@ namespace Furball.Vixie.TestApplication;
 
 public class BaseTestSelector : GameComponent {
     public override void Draw(double deltaTime) {
-        GraphicsBackend.Current.Clear();
-
 #if USE_IMGUI
         ImGui.Begin("Test Selector");
         
@@ -17,7 +15,7 @@ public class BaseTestSelector : GameComponent {
             this.BaseGame.Components.Add(new TestQuadRendering());
             this.BaseGame.Components.Remove(this);
         }
-
+        
         if (ImGui.Button("TextureRenderTarget Test")) {
             this.BaseGame.Components.Add(new TestRenderTargets());
             this.BaseGame.Components.Remove(this);

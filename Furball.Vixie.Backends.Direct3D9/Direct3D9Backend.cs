@@ -1,15 +1,18 @@
 ﻿using System;
 using System.IO;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Kettu;
+using SharpDX;
 using SharpDX.Direct3D9;
 using SharpDX.Mathematics.Interop;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
+using SixLabors.ImageSharp.PixelFormats;
 using Rectangle = SixLabors.ImageSharp.Rectangle;
 using Texture = Furball.Vixie.Backends.Shared.Texture;
 
@@ -68,7 +71,6 @@ public class Direct3D9Backend : IGraphicsBackend {
             ? CreateFlags.HardwareVertexProcessing
             : CreateFlags.SoftwareVertexProcessing;
 
-
         device = new Device(this._direct3D, deviceId, type, hwnd, createFlags, presentParameters);
 
         if (device == null)
@@ -92,7 +94,7 @@ public class Direct3D9Backend : IGraphicsBackend {
         }
     }
 
-    public override void Initialize(IView view, IInputContext inputContext) {
+    public override unsafe void Initialize(IView view, IInputContext inputContext) {
         this._direct3D = new Direct3D();
 
         PresentParameters presentParameters = new() {
@@ -129,7 +131,36 @@ public class Direct3D9Backend : IGraphicsBackend {
         this._currentViewport = new Vector2D<int>(view.FramebufferSize.X, view.FramebufferSize.Y);
 
         this._imgui = new ImGuiController(view, inputContext);
+
+        this.vbuffer = new VertexBuffer(this._device, sizeof(Vertex) * 6, Usage.None, Vertex.Format, Pool.Managed);
+        
+        DataStream dataStream = this.vbuffer.Lock(0, sizeof(Vertex) * 6, LockFlags.None);
+        Vertex* verts = stackalloc Vertex[] {
+            new Vertex(new Vector4(100.0f, 100.0f, 0f, 1.0f), new Rgba32(255, 0, 0, 255)),
+            new Vertex(new Vector4(200.0f, 100.0f, 0f, 1.0f), new Rgba32(0, 0, 255, 255)),
+            new Vertex(new Vector4(100.0f, 200.0f, 0f, 1.0f), new Rgba32(0, 255, 0, 255)),
+            new Vertex(new Vector4(200.0f, 100.0f, 0f, 1.0f), new Rgba32(0, 0, 255, 255)),
+            new Vertex(new Vector4(200.0f, 200.0f, 0f, 1.0f), new Rgba32(255, 0, 0, 255)),
+            new Vertex(new Vector4(100.0f, 200.0f, 0f, 1.0f), new Rgba32(0, 255, 0, 255)),
+        };
+        dataStream.Write((IntPtr)verts, 0, sizeof(Vertex) * 6);
+        this.vbuffer.Unlock();
     }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct Vertex {
+        public static VertexFormat Format = VertexFormat.PositionRhw | VertexFormat.Diffuse;
+        
+        Vector4 Position;
+        Rgba32   Color;
+
+        public Vertex(Vector4 position, Rgba32 color) {
+            this.Position = position;
+            this.Color    = color;
+        }
+    }
+    
+    private VertexBuffer vbuffer;
 
     public override void Cleanup() {
         this._device.Dispose();
@@ -158,7 +189,7 @@ public class Direct3D9Backend : IGraphicsBackend {
     }
 
     public override void Clear() {
-        this._device.Clear(ClearFlags.Target, this._clearColor, 0, 0);
+        this._device.Clear(ClearFlags.Target, this._clearColor, 1, 0);
     }
 
     public override void TakeScreenshot() {
@@ -177,7 +208,7 @@ public class Direct3D9Backend : IGraphicsBackend {
     }
 
     public override void SetFullScissorRect() {
-        this._device.ScissorRect = new RawRectangle(0, 0, this._currentViewport.X, this._currentViewport.Y);
+        this.ScissorRect = new Rectangle(0, 0, this._currentViewport.X, this._currentViewport.Y);
     }
 
     public override TextureRenderTarget CreateRenderTarget(uint width, uint height) {
@@ -212,7 +243,11 @@ public class Direct3D9Backend : IGraphicsBackend {
         this._device.BeginScene();
     }
 
-    public override void EndScene() {
+    public override unsafe void EndScene() {
+        this._device.VertexFormat = Vertex.Format;
+        this._device.SetStreamSource(0, this.vbuffer, 0, sizeof(Vertex));
+        this._device.DrawPrimitives(PrimitiveType.TriangleList, 0, 2);
+        
         this._device.EndScene();
     }
 

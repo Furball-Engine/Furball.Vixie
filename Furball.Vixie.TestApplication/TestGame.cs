@@ -46,6 +46,8 @@ public class TestGame : Game {
     }
 
     protected override void Draw(double deltaTime) {
+        GraphicsBackend.Current.Clear();
+
 #if USE_IMGUI
         ImGui.Begin("Global Controls");
             
@@ -54,8 +56,9 @@ public class TestGame : Game {
         );
 #endif
 
+        
         this.updateDelta += deltaTime;
-
+        
         if (this.updateDelta > UPDATE_RATE) {
             this.alloccedMemory = GC.GetTotalMemory(true);
             this.updateDelta    = 0;
@@ -67,7 +70,7 @@ public class TestGame : Game {
         if (ImGui.Button("Take Screenshot")) {
             GraphicsBackend.Current.TakeScreenshot();
         }
-
+        
         if (ImGui.Button("Force GC Clear")) {
             GC.Collect();
         }
