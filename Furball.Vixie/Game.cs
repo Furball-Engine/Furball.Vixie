@@ -78,6 +78,9 @@ public abstract class Game : IDisposable {
         Logger.StartLogging();
             
         this.WindowManager.RunWindow();
+        
+        while(this._isRecreated)
+            this.WindowManager.RunWindow();
     }
     
     public void RecreateWindow() {
@@ -153,6 +156,8 @@ public abstract class Game : IDisposable {
             this.WindowRecreation?.Invoke(this, EventArgs.Empty);
             this.OnWindowRecreation();
         }
+
+        this._isRecreated = false;
     }
 
     /// <summary>
@@ -233,8 +238,6 @@ public abstract class Game : IDisposable {
             this.WindowManager.Create();
             this.RehookEvents();
 
-            this.WindowManager.RunWindow();
-            
             return;
         }
         
