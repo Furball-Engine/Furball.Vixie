@@ -27,6 +27,11 @@ public class Direct3D9Backend : IGraphicsBackend {
     public static int DeviceOverride = 0;
 
     private bool TryCreateDevice(int deviceId, IntPtr hwnd, PresentParameters presentParameters, out Device device) {
+#if DEBUG
+        if (this.TryCreateDevice(DeviceType.Reference, deviceId, hwnd, presentParameters, out device))
+            return true;
+#endif
+        
         if (this.TryCreateDevice(DeviceType.Hardware, deviceId, hwnd, presentParameters, out device))
             return true;
 
