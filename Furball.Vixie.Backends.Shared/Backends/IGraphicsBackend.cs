@@ -14,6 +14,8 @@ namespace Furball.Vixie.Backends.Shared.Backends;
 /// Specification for a Graphics Backend
 /// </summary>
 public abstract class IGraphicsBackend {
+    public bool Dropped;
+    
     /// <summary>
     /// Used to Initialize the Backend
     /// </summary>

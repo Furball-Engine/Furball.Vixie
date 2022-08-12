@@ -159,6 +159,7 @@ public class WindowManager : IDisposable {
 
     public void Close() {
         this.GameView.Close();
+        this.GameView.Dispose();
     }
 
     public event EventHandler<Vector2> OnFramebufferResize;
@@ -169,21 +170,25 @@ public class WindowManager : IDisposable {
     }
 
     internal bool RequestViewOnly = false;
+
+    public void Initialize() {
+        #region Silk platform registration (for NativeAOT/No Refection)
+        SdlWindowing.RegisterPlatform();
+        GlfwWindowing.RegisterPlatform();
+        
+        SdlInput.RegisterPlatform();
+        GlfwInput.RegisterPlatform();
+        #endregion
+        
+        GlfwWindowing.Use();
+    }
         
     /// <summary>
     /// Creates the Window and grabs the OpenGL API of Window
     /// </summary>
     public void Create() {
-        #region Silk platform registration (for NativeAOT/No Refection)
-        SdlWindowing.RegisterPlatform();
-        GlfwWindowing.RegisterPlatform();
-        
-        GlfwInput.RegisterPlatform();
-        SdlInput.RegisterPlatform();
-        #endregion
-    
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && this.Backend == Backend.Direct3D11)
-            SdlWindowing.Use();
+            GlfwWindowing.Use();
         
         ContextAPI api = this.Backend switch {
             Backend.OpenGLES   => ContextAPI.OpenGLES,

@@ -28,8 +28,13 @@ public abstract class Game : IDisposable {
     /// </summary>
     public GameComponentCollection Components { get; internal set;}
 
+    public event EventHandler WindowRecreation;
+    
     private bool _doDisplayLoadingScreen;
 
+    private bool _recreateQueued;
+    private bool _isRecreated = false;
+    
     /// <summary>
     /// Creates a Game Window using `options`
     /// </summary>
@@ -53,23 +58,16 @@ public abstract class Game : IDisposable {
 
         if (backend == Backend.None)
             backend = GraphicsBackend.GetReccomendedBackend();
-            
-        this.WindowManager                 = new WindowManager(options, backend);
+
+        this.WindowManager = new WindowManager(options, backend);
+        
         this.WindowManager.RequestViewOnly = requestViewOnly;
+        
+        this.WindowManager.Initialize();
+        
         this.WindowManager.Create();
 
-        this.WindowManager.GameView.Update  += this.Update;
-        this.WindowManager.GameView.Render  += this.VixieDraw;
-        this.WindowManager.GameView.Load    += this.RendererInitialize;
-        this.WindowManager.GameView.Closing += this.RendererOnClosing;
-        if(!this.WindowManager.ViewOnly) {
-            this.WindowManager.GameWindow.FileDrop     += this.OnFileDrop;
-            this.WindowManager.GameWindow.Move         += this.OnViewMove;
-            this.WindowManager.GameWindow.StateChanged += this.EngineOnViewStateChange;
-        }
-        this.WindowManager.GameView.FocusChanged      += this.EngineOnFocusChanged;
-        this.WindowManager.GameView.FramebufferResize += this.EngineFrameBufferResize;
-        this.WindowManager.GameView.Resize            += this.EngineViewResize;
+        this.RehookEvents();
             
         Global.GameInstance = this;
 
@@ -81,7 +79,45 @@ public abstract class Game : IDisposable {
             
         this.WindowManager.RunWindow();
     }
+    
+    public void RecreateWindow() {
+        this._recreateQueued = true;
+    }
 
+    private void RehookEvents() {
+        this.WindowManager.GameView.Update            += this.VixieUpdate;
+        this.WindowManager.GameView.Render            += this.VixieDraw;
+        this.WindowManager.GameView.Closing           += this.RendererOnClosing;
+        this.WindowManager.GameView.FocusChanged      += this.EngineOnFocusChanged;
+        this.WindowManager.GameView.FramebufferResize += this.EngineFrameBufferResize;
+        this.WindowManager.GameView.Resize            += this.EngineViewResize;
+        this.WindowManager.GameView.Load              += this.RendererInitialize;
+        
+        if(!this.WindowManager.ViewOnly) {
+            this.WindowManager.GameWindow.FileDrop     += this.OnFileDrop;
+            this.WindowManager.GameWindow.Move         += this.OnViewMove;
+            this.WindowManager.GameWindow.StateChanged += this.EngineOnViewStateChange;
+        }
+    }
+    
+    private void UnhookEvents() {
+        this.WindowManager.GameView.Update            -= this.VixieUpdate;
+        this.WindowManager.GameView.Render            -= this.VixieDraw;
+        this.WindowManager.GameView.Closing           -= this.RendererOnClosing;
+        this.WindowManager.GameView.FocusChanged      -= this.EngineOnFocusChanged;
+        this.WindowManager.GameView.FramebufferResize -= this.EngineFrameBufferResize;
+        this.WindowManager.GameView.Resize            -= this.EngineViewResize;
+        this.WindowManager.GameView.Load              -= this.RendererInitialize;
+        
+        if(!this.WindowManager.ViewOnly) {
+            this.WindowManager.GameWindow.FileDrop     -= this.OnFileDrop;
+            this.WindowManager.GameWindow.Move         -= this.OnViewMove;
+            this.WindowManager.GameWindow.StateChanged -= this.EngineOnViewStateChange;
+        }
+    }
+
+    protected virtual void OnWindowRecreation() {}
+    
     protected void RunViewOnly(WindowOptions options, Backend backend = Backend.None) {
         this.RunInternal(options, backend, true);
     }
@@ -105,10 +141,18 @@ public abstract class Game : IDisposable {
 
         Global.WindowManager = this.WindowManager;
 
-        this._doDisplayLoadingScreen = true;
-        Global.WindowManager.GameView.DoRender();
+        if(!this._isRecreated) {
+            this._doDisplayLoadingScreen = true;
+            Global.WindowManager.GameView.DoRender();
+        }
 
-        this.Initialize();
+        if(!this._isRecreated)
+            this.Initialize();
+
+        if (this._isRecreated) {
+            this.WindowRecreation?.Invoke(this, EventArgs.Empty);
+            this.OnWindowRecreation();
+        }
     }
 
     /// <summary>
@@ -173,6 +217,29 @@ public abstract class Game : IDisposable {
     /// </summary>
     public virtual void SetApiFeatureLevels() {}
     private double _trackedDelta = 0;
+    private void VixieUpdate(double deltaTime) {
+        if (this._recreateQueued) {
+            this._recreateQueued = false;
+            
+            //Unhook the closing event
+            this.UnhookEvents();
+        
+            this._isRecreated = true;
+        
+            GraphicsBackend.Current.Cleanup();
+            GraphicsBackend.Current.Dropped = true;
+            this.WindowManager.Close();
+        
+            this.WindowManager.Create();
+            this.RehookEvents();
+
+            this.WindowManager.RunWindow();
+            
+            return;
+        }
+        
+        this.Update(deltaTime);
+    }
     /// <summary>
     /// Update Method, Do your Updating work in here
     /// </summary>
@@ -194,7 +261,7 @@ public abstract class Game : IDisposable {
     private readonly Stopwatch _stopwatch          = new();
     private          bool      _isFirstImguiUpdate = true;
     private          double    _lastImguiDrawTime;
-    
+
     /// <summary>
     /// Sets up and ends the scene
     /// </summary>

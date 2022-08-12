@@ -12,7 +12,11 @@ namespace Furball.Vixie.TestApplication;
 public class TestGame : Game {
     public TestGame() {}
 
+    public static TestGame Instance;
+    
     protected override void Initialize() {
+        Instance = this;
+        
         this.Components.Add(new BaseTestSelector());
 
         GraphicsBackend.Current.ScreenshotTaken += delegate(object _, Image image) {
@@ -59,6 +63,10 @@ public class TestGame : Game {
             GC.Collect();
         }
 
+        if (ImGui.Button("Recreate Window")) {
+            this.RecreateWindow();
+        }
+        
         ImGui.End();
             
         base.Draw(deltaTime);

@@ -102,8 +102,9 @@ public class Direct3D11Backend : IGraphicsBackend {
             }
         }
 
-        IntPtr outputWindow = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? view.Native!.Glfw!.Value
-                                  : view.Native!.Win32!.Value.Hwnd;
+        IntPtr outputWindow = RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
+            ? view.Handle
+            : view.Native!.Win32!.Value.Hwnd;
 
         SwapChainDescription1 swapChainDescription = new SwapChainDescription1 {
             Width = view.FramebufferSize.X,

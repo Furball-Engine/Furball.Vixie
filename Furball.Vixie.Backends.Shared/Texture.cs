@@ -7,6 +7,7 @@ namespace Furball.Vixie.Backends.Shared;
 
 public abstract class Texture : IDisposable {
     protected Vector2 _size;
+    public    bool    Useless;
 
     protected int MipMapCount(int width, int height)
         => (int)(Math.Floor(Math.Log(Math.Max(width, height), 2) / 2d) + 1);

@@ -203,6 +203,8 @@ internal sealed class TextureGL : Texture, IDisposable {
         this._size = new Vector2(width, height);
 
         this.FilterType = parameters.FilterType;
+        
+        this._backend.CheckError("create texture");
     }
 
     private void GenMipmaps() {
@@ -229,6 +231,7 @@ internal sealed class TextureGL : Texture, IDisposable {
         });
         this.GenMipmaps();
         this.Unbind();
+        this._backend.CheckError("fill texture");
     }
         
     /// <summary>

@@ -152,7 +152,12 @@ public class InstancedQuadRenderer : IQuadRenderer {
         this._textRenderer = new VixieFontStashRenderer(this._backend, this);
     }
 
+    private bool _isDisposed = false;
     public void Dispose() {
+        if (this._isDisposed) return;
+        
+        this._isDisposed = true;
+        
         this._backend.CheckThread();
         this._shaderGl41.Dispose();
         this._vao.Dispose();
@@ -290,6 +295,7 @@ public class InstancedQuadRenderer : IQuadRenderer {
         this._backend.CheckThread();
         if (this._instances == 0) return;
 
+        this._backend.CheckError("before");
         this._backend.BindTextures(this._boundTextures, (uint) this._usedTextures);
         this._backend.CheckError("bind textures");
         for (var i = 0; i < this._boundTextures.Length; i++) {
