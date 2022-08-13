@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Silk.NET.Windowing;
 
 namespace Furball.Vixie.Backends.Shared; 

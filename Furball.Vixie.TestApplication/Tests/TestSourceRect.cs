@@ -1,8 +1,6 @@
 using System;
 using System.Drawing;
 using System.Numerics;
-using Furball.Vixie.Backends.Shared;
-using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers.Helpers;
 using ImGuiNET;
 using Color=Furball.Vixie.Backends.Shared.Color;
@@ -10,11 +8,11 @@ using Color=Furball.Vixie.Backends.Shared.Color;
 namespace Furball.Vixie.TestApplication.Tests; 
 
 public class TestSourceRect : GameComponent {
-    private IQuadRenderer _quadRenderer;
+    private Renderer _renderer;
     private Texture       _whiteVixieTexture;
 
     public override void Initialize() {
-        this._quadRenderer = GraphicsBackend.Current.CreateTextureRenderer();
+        this._renderer = new Renderer();
         this._whiteVixieTexture = Resources.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
 
         base.Initialize();
@@ -25,9 +23,9 @@ public class TestSourceRect : GameComponent {
     public override void Draw(double deltaTime) {
         GraphicsBackend.Current.Clear();
 
-        this._quadRenderer.Begin();
-        this._quadRenderer.Draw(this._whiteVixieTexture, new Vector2(1280 / 2, 720 / 2), Vector2.One, this._rotation, Color.White, new Rectangle(371 / 2, 0, 371 / 2, 326 / 2));
-        this._quadRenderer.End();
+        this._renderer.Begin();
+        this._renderer.Draw(this._whiteVixieTexture, new Vector2(1280 / 2, 720 / 2), Vector2.One, this._rotation, Color.White, new Rectangle(371 / 2, 0, 371 / 2, 326 / 2));
+        this._renderer.End();
 
         #region ImGui menu
 
@@ -44,7 +42,7 @@ public class TestSourceRect : GameComponent {
     }
 
     public override void Dispose() {
-        this._quadRenderer.Dispose();
+        this._renderer.Dispose();
         this._whiteVixieTexture.Dispose();
 
         base.Dispose();

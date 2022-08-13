@@ -1,21 +1,20 @@
 using System.Numerics;
 using Furball.Vixie.Backends.Shared;
-using Furball.Vixie.Backends.Shared.Renderers;
 using ImGuiNET;
 
 
 namespace Furball.Vixie.TestApplication.Tests; 
 
 public class TestTextureRenderTargets : GameComponent {
-    private RenderTarget  _renderTarget;
-    private IQuadRenderer _quadRenderer;
-    private Texture       _whitePixel;
-    private float         _scale = 1f;
+    private RenderTarget _renderTarget;
+    private Renderer     _quadRenderer;
+    private Texture      _whitePixel;
+    private float        _scale = 1f;
 
     public override void Initialize() {
         this._renderTarget = Resources.CreateTextureRenderTarget(200, 200);
-            
-        this._quadRenderer = GraphicsBackend.Current.CreateTextureRenderer();
+
+        this._quadRenderer = new Renderer();
             
         this._whitePixel = Resources.CreateWhitePixelTexture();
 

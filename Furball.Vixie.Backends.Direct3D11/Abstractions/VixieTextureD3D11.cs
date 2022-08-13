@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Numerics;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Helpers;
 using Silk.NET.Maths;
@@ -118,12 +117,12 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
             for (int i = 0; i < accessor.Height; i++)
                 fixed (void* ptr = &accessor.GetRowSpan(i).GetPinnableReference()) {
                     this._deviceContext.UpdateSubresource(
-                    this._texture,
-                    0,
-                    new Box(0, i, 0, accessor.Width, i + 1, 1),
-                    (IntPtr)ptr,
-                    4 * accessor.Width,
-                    4 * accessor.Width
+                        this._texture,
+                        0,
+                        new Box(0, i, 0, accessor.Width, i + 1, 1),
+                        (IntPtr)ptr,
+                        sizeof(Rgba32) * accessor.Width,
+                        sizeof(Rgba32) * accessor.Width
                     );
                 }
         }
@@ -218,7 +217,10 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
     public override unsafe VixieTexture SetData <pDataType>(pDataType[] data, Rectangle rect) {
         this._backend.CheckThread();
         fixed (void* dataPtr = data) {
-            this._deviceContext.UpdateSubresource(this._texture, 0, new Box(rect.X, rect.Y, 0, rect.X + rect.Width, rect.Y + rect.Height, 1), (IntPtr)dataPtr, 4 * rect.Width, (4 * rect.Width) * rect.Height);
+            this._deviceContext.UpdateSubresource(this._texture, 0,
+                                                  new Box(rect.X, rect.Y, 0, rect.X + rect.Width, rect.Y + rect.Height,
+                                                          1), (IntPtr)dataPtr, sizeof(Rgba32) * rect.Width,
+                                                  sizeof(Rgba32) * rect.Width * rect.Height);
         }
 
         this._deviceContext.PSSetShaderResource(0, this.TextureView);
@@ -233,6 +235,7 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
         desc.Usage          = ResourceUsage.Staging;
         desc.CPUAccessFlags = CpuAccessFlags.Read;
         desc.Format         = Format.R8G8B8A8_UNorm_SRgb;
+        desc.MipLevels      = 1;
 
         //Create staging texture
         ID3D11Texture2D texture = this._device.CreateTexture2D(desc);

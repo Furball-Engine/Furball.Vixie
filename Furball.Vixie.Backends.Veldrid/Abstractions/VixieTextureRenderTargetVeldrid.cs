@@ -1,4 +1,3 @@
-using System.Numerics;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Helpers;
 using Silk.NET.Maths;

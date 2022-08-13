@@ -1,10 +1,8 @@
 using System;
 using System.Drawing;
 using System.Numerics;
-using FontStashSharp;
 using Furball.Vixie.Backends.OpenGL.Abstractions;
 using Furball.Vixie.Backends.Shared;
-using Furball.Vixie.Backends.Shared.FontStashSharp;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers;
 using Furball.Vixie.Helpers.Helpers;
@@ -71,8 +69,6 @@ internal class FakeInstancingQuadRenderer : IQuadRenderer {
         for (int i = 0; i < backend.QueryMaxTextureUnits(); i++) {
             this._program.BindUniformToTexUnit($"tex_{i}", i);
         }
-
-        this._textRenderer = new VixieFontStashRenderer(this._backend, this);
 
         for (ushort i = 0; i < BATCH_COUNT; i++) {
             //Top left
@@ -268,7 +264,6 @@ internal class FakeInstancingQuadRenderer : IQuadRenderer {
     private Vector4[]       BatchedTextureCoordinates = new Vector4[BATCH_COUNT];
 
     private readonly uint[]                 TextureArray = new uint[32];
-    private readonly VixieFontStashRenderer _textRenderer;
 
     private unsafe void Flush() {
         this._backend.CheckThread();
@@ -349,61 +344,5 @@ internal class FakeInstancingQuadRenderer : IQuadRenderer {
         this.Draw(vixieTexture, position, scale, rotation, colorOverride, texFlip, rotOrigin);
     }
 
-    #endregion
-
-    #region text
-
-    /// <summary>
-    ///     Batches Text to the Screen
-    /// </summary>
-    /// <param name="font">Font to Use</param>
-    /// <param name="text">Text to Write</param>
-    /// <param name="position">Where to Draw</param>
-    /// <param name="color">What color to draw</param>
-    /// <param name="rotation">Rotation of the text</param>
-    /// <param name="origin">The rotation origin of the text</param>
-    /// <param name="scale">Scale of the text, leave null to draw at standard scale</param>
-    public void DrawString(DynamicSpriteFont font, string text, Vector2 position, Color color, float rotation = 0f, Vector2? scale = null, Vector2 origin = default) {
-        //Default Scale
-        if (scale == null || scale == Vector2.Zero)
-            scale = Vector2.One;
-
-        //Draw
-        font.DrawText(this._textRenderer, text, position, System.Drawing.Color.FromArgb(color.A, color.R, color.G, color.B), scale.Value, rotation, origin);
-    }
-    /// <summary>
-    /// Batches Text to the Screen
-    /// </summary>
-    /// <param name="font">Font to Use</param>
-    /// <param name="text">Text to Write</param>
-    /// <param name="position">Where to Draw</param>
-    /// <param name="color">What color to draw</param>
-    /// <param name="rotation">Rotation of the text</param>
-    /// <param name="scale">Scale of the text, leave null to draw at standard scale</param>
-    public void DrawString(DynamicSpriteFont font, string text, Vector2 position, System.Drawing.Color color, float rotation = 0f, Vector2? scale = null, Vector2 origin = default) {
-        //Default Scale
-        if (scale == null || scale == Vector2.Zero)
-            scale = Vector2.One;
-
-        //Draw
-        font.DrawText(this._textRenderer, text, position, color, scale.Value, rotation, origin);
-    }
-    /// <summary>
-    /// Batches Colorful text to the Screen
-    /// </summary>
-    /// <param name="font">Font to Use</param>
-    /// <param name="text">Text to Write</param>
-    /// <param name="position">Where to Draw</param>
-    /// <param name="colors">What colors to use</param>
-    /// <param name="rotation">Rotation of the text</param>
-    /// <param name="scale">Scale of the text, leave null to draw at standard scale</param>
-    public void DrawString(DynamicSpriteFont font, string text, Vector2 position, System.Drawing.Color[] colors, float rotation = 0f, Vector2? scale = null, Vector2 origin = default) {
-        //Default Scale
-        if (scale == null || scale == Vector2.Zero)
-            scale = Vector2.One;
-
-        //Draw
-        font.DrawText(this._textRenderer, text, position, colors, scale.Value, rotation, origin);
-    }
     #endregion
 }

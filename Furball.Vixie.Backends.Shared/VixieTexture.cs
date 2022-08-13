@@ -1,5 +1,4 @@
 using System;
-using System.Numerics;
 using Silk.NET.Maths;
 using SixLabors.ImageSharp.PixelFormats;
 using Rectangle = System.Drawing.Rectangle;

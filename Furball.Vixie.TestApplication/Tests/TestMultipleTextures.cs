@@ -1,6 +1,5 @@
 using System.Numerics;
 using Furball.Vixie.Backends.Shared;
-using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers.Helpers;
 using ImGuiNET;
 
@@ -8,7 +7,7 @@ namespace Furball.Vixie.TestApplication.Tests;
 
 public class TestMultipleTextures : GameComponent {
     private Texture[]     _textures = new Texture[32];
-    private IQuadRenderer _quadRenderer;
+    private Renderer _renderer;
 
     private float _scale = 0.5f;
         
@@ -19,7 +18,7 @@ public class TestMultipleTextures : GameComponent {
             else this._textures[i] = Resources.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/test.qoi"));
         }
 
-        this._quadRenderer = GraphicsBackend.Current.CreateTextureRenderer();
+        this._renderer = new();
 
         base.Initialize();
     }
@@ -27,13 +26,13 @@ public class TestMultipleTextures : GameComponent {
     public override void Draw(double deltaTime) {
         GraphicsBackend.Current.Clear();
 
-        this._quadRenderer.Begin();
+        this._renderer.Begin();
 
         int x = 0;
         int y = 0;
 
         for (int i = 0; i != this._textures.Length; i++) {
-            this._quadRenderer.Draw(this._textures[i], new Vector2(x, y), new Vector2(this._scale) * (i % 2 == 0 ? 1f : 0.25f), i % 2 == 0 ? Color.White : new(1f, 1f, 1f, 0.7f), 0, i % 5 == 0 ? TextureFlip.FlipVertical : TextureFlip.FlipHorizontal);
+            this._renderer.Draw(this._textures[i], new Vector2(x, y), new Vector2(this._scale) * (i % 2 == 0 ? 1f : 0.25f), i % 2 == 0 ? Color.White : new(1f, 1f, 1f, 0.7f), 0, i % 5 == 0 ? TextureFlip.FlipVertical : TextureFlip.FlipHorizontal);
             if (i % 3 == 0 && i != 0) {
                 y += 64;
                 x =  0;
@@ -42,7 +41,7 @@ public class TestMultipleTextures : GameComponent {
             x += 256;
         }
 
-        this._quadRenderer.End();
+        this._renderer.End();
 
         #region ImGui menu
 
@@ -62,7 +61,7 @@ public class TestMultipleTextures : GameComponent {
         for(int i = 0; i != this._textures.Length; i++)
             this._textures[i].Dispose();
 
-        this._quadRenderer.Dispose();
+        this._renderer.Dispose();
 
         base.Dispose();
     }

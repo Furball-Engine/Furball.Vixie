@@ -52,6 +52,10 @@ public class Texture : IDisposable {
     ~Texture() {
         DisposeQueue.Enqueue(this);
     }
+
+    internal void DisposeInternal() {
+        this._texture.Dispose();
+    }
     
     internal void SaveDataToCpu() {
         this._dataCache       = this._texture.GetData();
@@ -59,14 +63,18 @@ public class Texture : IDisposable {
         this._filterTypeCache = this._texture.FilterType;
     }
 
-    internal void SaveDataToNewTexture() {
+    internal void LoadDataFromCpuToNewTexture() {
         if (this._dataCache == null)
             throw new InvalidOperationException("Texture data was not saved before the backend switch!");
         
-        Texture newTex = Resources.CreateEmptyTexture((uint)this.Size.X, (uint)this.Size.Y,
+        VixieTexture newTex = GraphicsBackend.Current.CreateEmptyTexture((uint)this.Size.X, (uint)this.Size.Y,
                                                       new TextureParameters(this._mipmapCache, this._filterTypeCache));
         
         newTex.SetData(this._dataCache);
+        
+        this._texture = newTex;
+
+        this._dataCache = null;
     }
 
     public static implicit operator VixieTexture(Texture tex) => tex._texture;

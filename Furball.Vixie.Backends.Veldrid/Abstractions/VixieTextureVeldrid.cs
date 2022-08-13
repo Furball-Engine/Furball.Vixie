@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Numerics;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Helpers;
 using Silk.NET.Maths;

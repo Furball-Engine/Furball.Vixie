@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
-using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Helpers;
 using Kettu;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
-using SixLabors.ImageSharp.PixelFormats;
 
 namespace Furball.Vixie; 
 
@@ -155,6 +153,27 @@ public abstract class Game : IDisposable {
             this.Initialize();
 
         if (this._isRecreated) {
+            foreach (WeakReference<Renderer> rendererRef in Global.TRACKED_RENDERERS) {
+                if (rendererRef.TryGetTarget(out Renderer renderer)) {
+                    renderer.Recreate();
+                    GC.ReRegisterForFinalize(renderer);
+                }
+            }
+            
+            foreach (WeakReference<Texture> texRef in Global.TRACKED_TEXTURES) {
+                if (texRef.TryGetTarget(out Texture tex)) {
+                    tex.LoadDataFromCpuToNewTexture();
+                    GC.ReRegisterForFinalize(tex);
+                }
+            }
+            
+            foreach (WeakReference<RenderTarget> texRef in Global.TRACKED_RENDER_TARGETS) {
+                if (texRef.TryGetTarget(out RenderTarget target)) {
+                    //TODO
+                    GC.ReRegisterForFinalize(target);
+                }
+            }
+            
             this.WindowRecreation?.Invoke(this, EventArgs.Empty);
             this.OnWindowRecreation();
         }
@@ -233,6 +252,28 @@ public abstract class Game : IDisposable {
         
             this._isRecreated = true;
 
+            foreach (WeakReference<Renderer> rendererRef in Global.TRACKED_RENDERERS) {
+                if (rendererRef.TryGetTarget(out Renderer renderer)) {
+                    renderer.InternalDispose();
+                    GC.SuppressFinalize(renderer);
+                }
+            }
+            
+            foreach (WeakReference<Texture> texRef in Global.TRACKED_TEXTURES) {
+                if (texRef.TryGetTarget(out Texture tex)) {
+                    tex.SaveDataToCpu();
+                    tex.DisposeInternal();
+                    GC.SuppressFinalize(tex);
+                }
+            }
+            
+            foreach (WeakReference<RenderTarget> targetRef in Global.TRACKED_RENDER_TARGETS) {
+                if (targetRef.TryGetTarget(out RenderTarget target)) {
+                    GC.SuppressFinalize(target);
+                    //TODO
+                }
+            }
+            
             GraphicsBackend.Current.Cleanup();
             GraphicsBackend.Current.Dropped = true;
             this.WindowManager.Close();
@@ -245,6 +286,7 @@ public abstract class Game : IDisposable {
         
         this.Update(deltaTime);
     }
+    
     /// <summary>
     /// Update Method, Do your Updating work in here
     /// </summary>

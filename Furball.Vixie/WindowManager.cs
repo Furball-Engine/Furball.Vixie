@@ -20,7 +20,8 @@ public class WindowManager : IDisposable {
     /// </summary>
     private WindowOptions _windowOptions;
     public bool    Debug   => this._windowOptions.API.Flags.HasFlag(ContextFlags.Debug);
-    public Backend Backend { get; internal set; }
+    public Backend Backend { get;
+        set; }
     /// <summary>
     /// Actual Game Window
     /// </summary>

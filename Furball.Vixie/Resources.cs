@@ -12,9 +12,7 @@ public static class Resources {
 
         RenderTarget managedTarget = new(target);
         
-#if DEBUG
         Global.TRACKED_RENDER_TARGETS.Add(new WeakReference<RenderTarget>(managedTarget));
-#endif
 
         return managedTarget;
     }
@@ -24,9 +22,8 @@ public static class Resources {
 
         Texture managedTex = new(tex);
         
-#if DEBUG
         Global.TRACKED_TEXTURES.Add(new WeakReference<Texture>(managedTex));
-#endif
+        
         return managedTex;
     }
 
@@ -35,9 +32,7 @@ public static class Resources {
 
         Texture managedTex = new(tex);
 
-#if DEBUG
         Global.TRACKED_TEXTURES.Add(new WeakReference<Texture>(managedTex));
-#endif
 
         return managedTex;
     }
@@ -47,9 +42,7 @@ public static class Resources {
 
         Texture managedTex = new(tex);
 
-#if DEBUG
         Global.TRACKED_TEXTURES.Add(new WeakReference<Texture>(managedTex));
-#endif
 
         return managedTex;
     }
@@ -59,9 +52,7 @@ public static class Resources {
 
         Texture managedTex = new(tex);
 
-#if DEBUG
         Global.TRACKED_TEXTURES.Add(new WeakReference<Texture>(managedTex));
-#endif
 
         return managedTex;
     }

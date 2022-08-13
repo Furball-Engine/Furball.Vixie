@@ -1,6 +1,5 @@
 ﻿using System.Numerics;
 using Furball.Vixie.Backends.Shared;
-using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers.Helpers;
 using ImGuiNET;
 
@@ -10,10 +9,10 @@ public class TestFilteringMode : GameComponent {
     private Texture _pixelatedTexture;
     private Texture _smoothTexture;
 
-    private IQuadRenderer _quadRenderer;
+    private Renderer _renderer;
 
     public override void Initialize() {
-        this._quadRenderer = GraphicsBackend.Current.CreateTextureRenderer(); 
+        this._renderer = new Renderer();
         
         this._pixelatedTexture = Resources.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
         this._pixelatedTexture.FilterType = TextureFilterType.Pixelated;
@@ -26,12 +25,12 @@ public class TestFilteringMode : GameComponent {
     public override void Draw(double deltaTime) {
         GraphicsBackend.Current.Clear();
         
-        this._quadRenderer.Begin();
+        this._renderer.Begin();
         
-        this._quadRenderer.Draw(this._pixelatedTexture, Vector2.Zero, new Vector2(2, 2), 0, Color.White);
-        this._quadRenderer.Draw(this._smoothTexture, new(100, 0), new Vector2(2, 2), 0, Color.White);
+        this._renderer.Draw(this._pixelatedTexture, Vector2.Zero, new Vector2(2, 2), 0, Color.White);
+        this._renderer.Draw(this._smoothTexture, new(100, 0), new Vector2(2, 2), 0, Color.White);
         
-        this._quadRenderer.End();
+        this._renderer.End();
         
         #region ImGui menu
 
