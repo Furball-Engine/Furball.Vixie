@@ -19,7 +19,6 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using Rectangle=SixLabors.ImageSharp.Rectangle;
-using Texture=Furball.Vixie.Backends.Shared.Texture;
 
 namespace Furball.Vixie.Backends.OpenGL;
 
@@ -278,14 +277,14 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     public void VertexAttribDivisor(uint iOffset, uint currentElementInstanceDivisor) {
         this.gl.VertexAttribDivisor(iOffset, currentElementInstanceDivisor);
     }
-    void IGLBasedBackend.GenerateMipmaps(TextureGL textureGl) {
+    void IGLBasedBackend.GenerateMipmaps(VixieTextureGL vixieTextureGl) {
         if (this._needsCustomMipmapGenerationFeatureLevel.Boolean) {
             //TODO
         } else {
             if (this._bindlessMipmapGenerationFeatureLevel.Boolean) {
-                this.gl.GenerateTextureMipmap(textureGl.TextureId);
+                this.gl.GenerateTextureMipmap(vixieTextureGl.TextureId);
             } else {
-                textureGl.Bind();
+                vixieTextureGl.Bind();
                 this.gl.GenerateMipmap(TextureTarget.Texture2D);
             }
         }
@@ -404,8 +403,8 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     /// <param name="width">Width of the Target</param>
     /// <param name="height">Height of the Target</param>
     /// <returns></returns>
-    public override TextureRenderTarget CreateRenderTarget(uint width, uint height) {
-        return new TextureRenderTargetGL(this, width, height);
+    public override VixieTextureRenderTarget CreateRenderTarget(uint width, uint height) {
+        return new VixieTextureRenderTargetGL(this, width, height);
     }
     /// <summary>
     ///     Creates a Texture given some Data
@@ -413,14 +412,14 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     /// <param name="imageData">Image Data</param>
     /// <param name="parameters"></param>
     /// <returns>Texture</returns>
-    public override Texture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default) => new TextureGL(this, imageData, parameters);
+    public override VixieTexture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default) => new VixieTextureGL(this, imageData, parameters);
     /// <summary>
     ///     Creates a Texture given a Stream
     /// </summary>
     /// <param name="stream">Stream to read from</param>
     /// <param name="parameters"></param>
     /// <returns>Texture</returns>
-    public override Texture CreateTextureFromStream(Stream stream, TextureParameters parameters = default) => new TextureGL(this, stream, parameters);
+    public override VixieTexture CreateTextureFromStream(Stream stream, TextureParameters parameters = default) => new VixieTextureGL(this, stream, parameters);
     /// <summary>
     ///     Creates a Empty Texture given a Size
     /// </summary>
@@ -428,13 +427,13 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     /// <param name="height">Height of Texture</param>
     /// <param name="parameters"></param>
     /// <returns>Texture</returns>
-    public override Texture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default) => new TextureGL(this, width, height, parameters);
+    public override VixieTexture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default) => new VixieTextureGL(this, width, height, parameters);
     /// <summary>
     ///     Used to Create a 1x1 Texture with only a white pixel
     /// </summary>
     /// <returns>White Pixel Texture</returns>
-    public override Texture CreateWhitePixelTexture() {
-        return new TextureGL(this);
+    public override VixieTexture CreateWhitePixelTexture() {
+        return new VixieTextureGL(this);
     }
     /// <summary>
     ///     Used to Update the ImGuiController in charge of rendering ImGui on this backend
@@ -517,6 +516,7 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     }
 
     public void DeleteTexture(uint textureId) {
+        Console.WriteLine($"deleting texture: {textureId}");
         this.gl.DeleteTexture(textureId);
     }
 
@@ -579,7 +579,9 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     }
 
     public uint GenTexture() {
-        return this.gl.GenTexture();
+        uint var = this.gl.GenTexture();
+        Console.WriteLine($"making tex: {var}");
+        return var;
     }
 
     public void BindRenderbuffer(RenderbufferTarget target, uint id) {

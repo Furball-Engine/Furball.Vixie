@@ -2,16 +2,16 @@ using System;
 using System.Numerics;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Helpers;
+using Silk.NET.Maths;
 using Silk.NET.OpenGL;
-using Texture=Furball.Vixie.Backends.Shared.Texture;
 
 namespace Furball.Vixie.Backends.OpenGL.Abstractions; 
 
-internal sealed class TextureRenderTargetGL : TextureRenderTarget, IDisposable {
+internal sealed class VixieTextureRenderTargetGL : VixieTextureRenderTarget, IDisposable {
     /// <summary>
     /// Currently Bound TextureRenderTarget
     /// </summary>
-    internal static TextureRenderTargetGL CurrentlyBound;
+    internal static VixieTextureRenderTargetGL CurrentlyBound;
     /// <summary>
     /// Getter for Checking whether this Target is bound
     /// </summary>
@@ -37,14 +37,16 @@ internal sealed class TextureRenderTargetGL : TextureRenderTarget, IDisposable {
     /// <summary>
     /// The RenderTarget Width
     /// </summary>
-    public uint TargetWidth { get; protected set; }
+    public int TargetWidth { get; protected set; }
     /// <summary>
     /// The RenderTarget Height
     /// </summary>
-    public uint TargetHeight { get; protected set; }
+    public int TargetHeight { get; protected set; }
 
-    public override Vector2 Size {
-        get => new Vector2(this.TargetWidth, this.TargetHeight);
+    private VixieTexture _vixieTexture;
+
+    public override Vector2D<int> Size {
+        get => new Vector2D<int>(this.TargetWidth, this.TargetHeight);
         protected set => throw new Exception("Setting the size of TextureRenderTargets is currently unsupported.");
     }
 
@@ -56,7 +58,7 @@ internal sealed class TextureRenderTargetGL : TextureRenderTarget, IDisposable {
     /// <param name="width">Desired Width</param>
     /// <param name="height">Desired Width</param>
     /// <exception cref="Exception">Throws Exception if the Target didn't create properly</exception>
-    public unsafe TextureRenderTargetGL(IGLBasedBackend backend, uint width, uint height) {
+    public unsafe VixieTextureRenderTargetGL(IGLBasedBackend backend, uint width, uint height) {
         this._backend = backend;
         this._backend.GlCheckThread();
             
@@ -107,11 +109,13 @@ internal sealed class TextureRenderTargetGL : TextureRenderTarget, IDisposable {
         this._backend.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
 
         this._oldViewPort = new int[4];
-        this.TargetWidth  = width;
-        this.TargetHeight = height;
+        this.TargetWidth  = (int)width;
+        this.TargetHeight = (int)height;
+
+        this._vixieTexture = new VixieTextureGL(backend, this._textureId, width, height);
     }
 
-    ~TextureRenderTargetGL() {
+    ~VixieTextureRenderTargetGL() {
         DisposeQueue.Enqueue(this);
     }
 
@@ -126,7 +130,7 @@ internal sealed class TextureRenderTargetGL : TextureRenderTarget, IDisposable {
         this._backend.BindFramebuffer(FramebufferTarget.Framebuffer, this._frameBufferId);
         //Store the old viewport for later
         this._backend.GetInteger(GetPName.Viewport, ref this._oldViewPort);
-        this._backend.Viewport(0, 0, this.TargetWidth, this.TargetHeight);
+        this._backend.Viewport(0, 0, (uint)this.TargetWidth, (uint)this.TargetHeight);
         this._backend.CheckError("bind render target");
 
         CurrentlyBound = this;
@@ -143,7 +147,7 @@ internal sealed class TextureRenderTargetGL : TextureRenderTarget, IDisposable {
     /// Binds and sets a Lock so that the Target cannot be unbound/rebound
     /// </summary>
     /// <returns>Self, used for chaining Methods</returns>
-    internal TextureRenderTargetGL LockingBind() {
+    internal VixieTextureRenderTargetGL LockingBind() {
         this._backend.GlCheckThread();
         this.Bind();
         this.Lock();
@@ -154,7 +158,7 @@ internal sealed class TextureRenderTargetGL : TextureRenderTarget, IDisposable {
     /// Locks the Target so that other Targets cannot be bound/unbound/rebound
     /// </summary>
     /// <returns>Self, used for chaining Methods</returns>
-    internal TextureRenderTargetGL Lock() {
+    internal VixieTextureRenderTargetGL Lock() {
         this._backend.GlCheckThread();
         this.Locked = true;
 
@@ -164,7 +168,7 @@ internal sealed class TextureRenderTargetGL : TextureRenderTarget, IDisposable {
     /// Unlocks the Target, so that other Targets can be bound
     /// </summary>
     /// <returns>Self, used for chaining Methods</returns>
-    internal TextureRenderTargetGL Unlock() {
+    internal VixieTextureRenderTargetGL Unlock() {
         this._backend.GlCheckThread();
         this.Locked = false;
 
@@ -174,7 +178,7 @@ internal sealed class TextureRenderTargetGL : TextureRenderTarget, IDisposable {
     /// Uninds and unlocks the Target so that other Targets can be bound/rebound
     /// </summary>
     /// <returns>Self, used for chaining Methods</returns>
-    internal TextureRenderTargetGL UnlockingUnbind() {
+    internal VixieTextureRenderTargetGL UnlockingUnbind() {
         this._backend.GlCheckThread();
         this.Unlock();
         this.Unbind();
@@ -196,14 +200,14 @@ internal sealed class TextureRenderTargetGL : TextureRenderTarget, IDisposable {
 
         CurrentlyBound = null;
     }
+    
     /// <summary>
     /// Retrieves the Texture from this RenderTarget
     /// </summary>
     /// <returns>Texture of this RenderTarget</returns>
-    public override Texture GetTexture() => new TextureGL(this._backend, this._textureId, this.TargetWidth, this.TargetHeight) { IsFramebufferTexture = true };
+    public override VixieTexture GetTexture() => this._vixieTexture;
 
     private bool _isDisposed = false;
-
     public override void Dispose() {
         this._backend.GlCheckThread();
         if (this.Bound)

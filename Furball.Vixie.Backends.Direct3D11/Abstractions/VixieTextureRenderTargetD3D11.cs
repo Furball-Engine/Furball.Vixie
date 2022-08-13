@@ -2,6 +2,7 @@ using System;
 using System.Numerics;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Helpers;
+using Silk.NET.Maths;
 using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
@@ -9,8 +10,8 @@ using Vortice.Mathematics;
 
 namespace Furball.Vixie.Backends.Direct3D11.Abstractions; 
 
-internal sealed class TextureRenderTargetD3D11 : TextureRenderTarget {
-    public override Vector2 Size { get; protected set; }
+internal sealed class VixieTextureRenderTargetD3D11 : VixieTextureRenderTarget {
+    public override Vector2D<int> Size { get; protected set; }
 
     private Direct3D11Backend        _backend;
     private ID3D11Device             _device;
@@ -21,7 +22,7 @@ internal sealed class TextureRenderTargetD3D11 : TextureRenderTarget {
 
     private Viewport[] _viewports;
 
-    public TextureRenderTargetD3D11(Direct3D11Backend backend, uint width, uint height) {
+    public VixieTextureRenderTargetD3D11(Direct3D11Backend backend, uint width, uint height) {
         this._backend = backend;
         this._backend.CheckThread();
         this._deviceContext = backend.GetDeviceContext();
@@ -64,11 +65,11 @@ internal sealed class TextureRenderTargetD3D11 : TextureRenderTarget {
         this._renderTargetTexture = renderTargetTexture;
         this._renderTarget        = renderTarget;
         this._shaderResourceView  = shaderResourceView;
-        this.Size                 = new Vector2(width, height);
+        this.Size                 = new Vector2D<int>((int)width, (int)height);
         this._viewports           = new Viewport[16];
     }
 
-    ~TextureRenderTargetD3D11() {
+    ~VixieTextureRenderTargetD3D11() {
         DisposeQueue.Enqueue(this);
     }
 
@@ -88,7 +89,7 @@ internal sealed class TextureRenderTargetD3D11 : TextureRenderTarget {
         this._deviceContext.RSSetViewports(this._viewports);
     }
 
-    public override Texture GetTexture() => new TextureD3D11(this._backend, this._renderTargetTexture, this._shaderResourceView, this.Size);
+    public override VixieTexture GetTexture() => new VixieTextureD3D11(this._backend, this._renderTargetTexture, this._shaderResourceView, this.Size);
 
     private bool _isDisposed = false;
 

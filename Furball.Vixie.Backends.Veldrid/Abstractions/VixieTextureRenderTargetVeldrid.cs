@@ -1,28 +1,28 @@
 using System.Numerics;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Helpers;
+using Silk.NET.Maths;
 using Veldrid;
-using Texture=Furball.Vixie.Backends.Shared.Texture;
 
 namespace Furball.Vixie.Backends.Veldrid.Abstractions; 
 
-internal sealed class TextureRenderTargetVeldrid : TextureRenderTarget {
+internal sealed class VixieTextureRenderTargetVeldrid : VixieTextureRenderTarget {
     private readonly VeldridBackend _backend;
-    public override Vector2 Size {
+    public override Vector2D<int> Size {
         get;
         protected set;
     }
 
-    private TextureVeldrid _tex;
+    private VixieTextureVeldrid _tex;
     private Framebuffer    _fb;
         
-    public TextureRenderTargetVeldrid(VeldridBackend backend, uint width, uint height) {
+    public VixieTextureRenderTargetVeldrid(VeldridBackend backend, uint width, uint height) {
         this._backend = backend;
         this._backend.CheckThread();
 
-        this.Size = new(width, height);
+        this.Size = new((int)width, (int)height);
 
-        this._tex = new TextureVeldrid(backend, width, height, default);
+        this._tex = new VixieTextureVeldrid(backend, width, height, default);
             
         FramebufferDescription description = new() {
             ColorTargets = new[] {
@@ -68,9 +68,9 @@ internal sealed class TextureRenderTargetVeldrid : TextureRenderTarget {
         DisposeQueue.Enqueue(this._tex);
     }
 
-    ~TextureRenderTargetVeldrid() {
+    ~VixieTextureRenderTargetVeldrid() {
         this.Dispose();
     }
 
-    public override Texture GetTexture() => this._tex;
+    public override VixieTexture GetTexture() => this._tex;
 }

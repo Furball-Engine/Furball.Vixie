@@ -21,4 +21,7 @@ internal static class Global {
             _                  => throw new ArgumentOutOfRangeException(nameof (backend), backend, null)
         };
     }
+    
+    public static readonly List<WeakReference<Texture>>      TRACKED_TEXTURES       = new();
+    public static readonly List<WeakReference<RenderTarget>> TRACKED_RENDER_TARGETS = new();
 }

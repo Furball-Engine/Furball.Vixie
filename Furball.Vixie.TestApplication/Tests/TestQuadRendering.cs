@@ -1,10 +1,10 @@
 using System.Numerics;
+using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers.Helpers;
 using ImGuiNET;
 using SixLabors.ImageSharp;
 using Color=Furball.Vixie.Backends.Shared.Color;
-using Texture=Furball.Vixie.Backends.Shared.Texture;
 
 namespace Furball.Vixie.TestApplication.Tests; 
 

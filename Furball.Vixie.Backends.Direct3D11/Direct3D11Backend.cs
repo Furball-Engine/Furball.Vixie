@@ -43,8 +43,8 @@ public class Direct3D11Backend : IGraphicsBackend {
 
     private ImGuiControllerD3D11 _imGuiController;
 
-    private  TextureD3D11 _privateWhitePixelTexture;
-    internal TextureD3D11 GetPrivateWhitePixelTexture() => this._privateWhitePixelTexture;
+    private  VixieTextureD3D11 _privateWhitePixelVixieTexture;
+    internal VixieTextureD3D11 GetPrivateWhitePixelTexture() => this._privateWhitePixelVixieTexture;
 
     public override void Initialize(IView view, IInputContext inputContext) {
         FeatureLevel        featureLevel = FeatureLevel.Level_11_0;
@@ -167,7 +167,7 @@ public class Direct3D11Backend : IGraphicsBackend {
 
         this._imGuiController = new ImGuiControllerD3D11(this, view, inputContext, null);
 
-        this._privateWhitePixelTexture = (TextureD3D11) this.CreateWhitePixelTexture();
+        this._privateWhitePixelVixieTexture = (VixieTextureD3D11) this.CreateWhitePixelTexture();
 
         this.InfoSections.ForEach(x => x.Log(LoggerLevelD3D11.InstanceInfo));
 
@@ -248,18 +248,18 @@ public class Direct3D11Backend : IGraphicsBackend {
         throw new NotImplementedException();
     }
 
-    public override TextureRenderTarget CreateRenderTarget(uint width, uint height) {
-        return new TextureRenderTargetD3D11(this, width, height);
+    public override VixieTextureRenderTarget CreateRenderTarget(uint width, uint height) {
+        return new VixieTextureRenderTargetD3D11(this, width, height);
     }
 
-    public override Texture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default) => new TextureD3D11(this, imageData, parameters);
+    public override VixieTexture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default) => new VixieTextureD3D11(this, imageData, parameters);
 
-    public override Texture CreateTextureFromStream(Stream stream, TextureParameters parameters = default) => new TextureD3D11(this, stream, parameters);
+    public override VixieTexture CreateTextureFromStream(Stream stream, TextureParameters parameters = default) => new VixieTextureD3D11(this, stream, parameters);
 
-    public override Texture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default) => new TextureD3D11(this, width, height, parameters);
+    public override VixieTexture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default) => new VixieTextureD3D11(this, width, height, parameters);
 
-    public override Texture CreateWhitePixelTexture() {
-        return new TextureD3D11(this);
+    public override VixieTexture CreateWhitePixelTexture() {
+        return new VixieTextureD3D11(this);
     }
 
     public override void ImGuiUpdate(double deltaTime) {

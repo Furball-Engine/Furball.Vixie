@@ -5,54 +5,64 @@ using Furball.Vixie.Backends.Shared;
 namespace Furball.Vixie; 
 
 public static class Resources {
-    public static TextureRenderTarget CreateTextureRenderTarget(
+    public static RenderTarget CreateTextureRenderTarget(
         uint width, uint height, TextureParameters parameters = default
     ) {
-        TextureRenderTarget target = GraphicsBackend.Current.CreateRenderTarget(width, height);
+        VixieTextureRenderTarget target = GraphicsBackend.Current.CreateRenderTarget(width, height);
 
+        RenderTarget managedTarget = new(target);
+        
 #if DEBUG
-        Backends.Shared.Global.TRACKED_RENDER_TARGETS.Add(new WeakReference<TextureRenderTarget>(target));
+        Global.TRACKED_RENDER_TARGETS.Add(new WeakReference<RenderTarget>(managedTarget));
 #endif
 
-        return target;
+        return managedTarget;
     }
 
     public static Texture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default) {
-        Texture tex = GraphicsBackend.Current.CreateTextureFromByteArray(imageData, parameters);
+        VixieTexture tex = GraphicsBackend.Current.CreateTextureFromByteArray(imageData, parameters);
 
+        Texture managedTex = new(tex);
+        
 #if DEBUG
-        Backends.Shared.Global.TRACKED_TEXTURES.Add(new WeakReference<Texture>(tex));
+        Global.TRACKED_TEXTURES.Add(new WeakReference<Texture>(managedTex));
 #endif
-        return tex;
+        return managedTex;
     }
 
     public static Texture CreateWhitePixelTexture() {
-        Texture tex = GraphicsBackend.Current.CreateWhitePixelTexture();
+        VixieTexture tex = GraphicsBackend.Current.CreateWhitePixelTexture();
+
+        Texture managedTex = new(tex);
 
 #if DEBUG
-        Backends.Shared.Global.TRACKED_TEXTURES.Add(new WeakReference<Texture>(tex));
+        Global.TRACKED_TEXTURES.Add(new WeakReference<Texture>(managedTex));
 #endif
 
-        return tex;
+        return managedTex;
     }
 
     public static Texture CreateTextureFromStream(Stream stream, TextureParameters parameters = default) {
-        Texture tex = GraphicsBackend.Current.CreateTextureFromStream(stream, parameters);
+        VixieTexture tex = GraphicsBackend.Current.CreateTextureFromStream(stream, parameters);
+
+        Texture managedTex = new(tex);
 
 #if DEBUG
-        Backends.Shared.Global.TRACKED_TEXTURES.Add(new WeakReference<Texture>(tex));
+        Global.TRACKED_TEXTURES.Add(new WeakReference<Texture>(managedTex));
 #endif
 
-        return tex;
+        return managedTex;
     }
 
     public static Texture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default) {
-        Texture tex = GraphicsBackend.Current.CreateEmptyTexture(width, height, parameters);
+        VixieTexture tex = GraphicsBackend.Current.CreateEmptyTexture(width, height, parameters);
+
+        Texture managedTex = new(tex);
 
 #if DEBUG
-        Backends.Shared.Global.TRACKED_TEXTURES.Add(new WeakReference<Texture>(tex));
+        Global.TRACKED_TEXTURES.Add(new WeakReference<Texture>(managedTex));
 #endif
 
-        return tex;
+        return managedTex;
     }
 }

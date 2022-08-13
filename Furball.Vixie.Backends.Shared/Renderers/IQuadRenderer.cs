@@ -14,18 +14,18 @@ public interface IQuadRenderer : IDisposable {
     /// <summary>
     /// Draws a Texture
     /// </summary>
-    /// <param name="texture">Texture to Draw</param>
+    /// <param name="vixieTexture">Texture to Draw</param>
     /// <param name="position">Where to Draw</param>
     /// <param name="scale">How much to scale it up, Leave null to draw at standard scale</param>
     /// <param name="rotation">Rotation in Radians, leave 0 to not rotate</param>
     /// <param name="colorOverride">Color Tint, leave null to not tint</param>
     /// <param name="texFlip">Horizontally/Vertically flip the Drawn Texture</param>
     /// <param name="rotOrigin">origin of rotation, by default the top left</param>
-    void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default);
+    void Draw(VixieTexture vixieTexture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default);
     /// <summary>
     /// Draws a Texture
     /// </summary>
-    /// <param name="texture">Texture to Draw</param>
+    /// <param name="vixieTexture">Texture to Draw</param>
     /// <param name="position">Where to Draw</param>
     /// <param name="scale">How much to scale it up, Leave null to draw at standard scale</param>
     /// <param name="rotation">Rotation in Radians, leave 0 to not rotate</param>
@@ -33,10 +33,10 @@ public interface IQuadRenderer : IDisposable {
     /// <param name="sourceRect">What part of the texture to draw? Leave null to draw whole texture</param>
     /// <param name="texFlip">Horizontally/Vertically flip the Drawn Texture</param>
     /// <param name="rotOrigin">origin of rotation, by default the top left</param>
-    void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, Rectangle sourceRect, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default);
-    void Draw(Texture texture, Vector2 position, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default);
-    void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default);
-    void Draw(Texture texture, Vector2 position, Vector2 scale, Color colorOverride, float rotation = 0, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default);
+    void Draw(VixieTexture vixieTexture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, Rectangle sourceRect, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default);
+    void Draw(VixieTexture vixieTexture, Vector2 position, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default);
+    void Draw(VixieTexture vixieTexture, Vector2 position, Vector2 scale, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default);
+    void Draw(VixieTexture vixieTexture, Vector2 position, Vector2 scale, Color colorOverride, float rotation = 0, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default);
 
     /// <summary>
     /// Batches Text to the Screen

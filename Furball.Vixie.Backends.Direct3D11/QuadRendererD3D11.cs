@@ -64,7 +64,7 @@ internal sealed unsafe class QuadRendererD3D11 : IQuadRenderer {
     private InstanceData[]             _instanceData;
     private ID3D11ShaderResourceView[] _boundShaderViews;
     private ID3D11ShaderResourceView[] _nullShaderViews;
-    private TextureD3D11[]             _boundTextures;
+    private VixieTextureD3D11[]             _boundTextures;
     private int                        _usedTextures;
 
     private VixieFontStashRenderer _textRenderer;
@@ -198,12 +198,12 @@ internal sealed unsafe class QuadRendererD3D11 : IQuadRenderer {
         this._instanceData     = new InstanceData[INSTANCE_AMOUNT];
         this._boundShaderViews = new ID3D11ShaderResourceView[backend.QueryMaxTextureUnits()];
         this._nullShaderViews  = new ID3D11ShaderResourceView[128];
-        this._boundTextures    = new TextureD3D11[backend.QueryMaxTextureUnits()];
+        this._boundTextures    = new VixieTextureD3D11[backend.QueryMaxTextureUnits()];
 
         for (int i = 0; i != backend.QueryMaxTextureUnits(); i++) {
-            TextureD3D11 texture = backend.GetPrivateWhitePixelTexture();
-            this._boundShaderViews[i] = texture.TextureView;
-            this._boundTextures[i]    = texture;
+            VixieTextureD3D11 vixieTexture = backend.GetPrivateWhitePixelTexture();
+            this._boundShaderViews[i] = vixieTexture.TextureView;
+            this._boundTextures[i]    = vixieTexture;
         }
 
         this._usedTextures = 0;
@@ -234,12 +234,12 @@ internal sealed unsafe class QuadRendererD3D11 : IQuadRenderer {
         this.IsBegun = true;
     }
 
-    public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
+    public void Draw(VixieTexture vixieTexture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
         this._backend.CheckThread();
         if (!IsBegun)
             throw new Exception("Begin() has not been called in QuadRendererD3D11!");
 
-        if (texture == null || texture is not TextureD3D11 textureD3D11)
+        if (vixieTexture == null || vixieTexture is not VixieTextureD3D11 textureD3D11)
             return;
 
         if (this._instances >= INSTANCE_AMOUNT || this._usedTextures == this._backend.QueryMaxTextureUnits()) {
@@ -248,7 +248,7 @@ internal sealed unsafe class QuadRendererD3D11 : IQuadRenderer {
         }
 
         this._instanceData[this._instances].InstancePosition              = position;
-        this._instanceData[this._instances].InstanceSize                  = texture.Size * scale;
+        this._instanceData[this._instances].InstanceSize                  = new Vector2(vixieTexture.Size.X, vixieTexture.Size.Y) * scale;
         this._instanceData[this._instances].InstanceColor                 = colorOverride;
         this._instanceData[this._instances].InstanceRotation = -rotation;
         this._instanceData[this._instances].InstanceRotationOrigin        = rotOrigin;
@@ -260,9 +260,9 @@ internal sealed unsafe class QuadRendererD3D11 : IQuadRenderer {
 
         this._instances++;
     }
-    public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, Rectangle sourceRect, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
+    public void Draw(VixieTexture vixieTexture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, Rectangle sourceRect, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
         this._backend.CheckThread();
-        if (texture == null || texture is not TextureD3D11 textureD3D11)
+        if (vixieTexture == null || vixieTexture is not VixieTextureD3D11 textureD3D11)
             return;
 
         if (!IsBegun)
@@ -285,15 +285,15 @@ internal sealed unsafe class QuadRendererD3D11 : IQuadRenderer {
         this._instanceData[this._instances].InstanceRotation = -rotation;
         this._instanceData[this._instances].InstanceRotationOrigin        = rotOrigin;
         this._instanceData[this._instances].InstanceTextureId             = this.GetTextureId(textureD3D11);
-        this._instanceData[this._instances].InstanceTextureRectPosition.X = (float)sourceRect.X                       / texture.Width;
-        this._instanceData[this._instances].InstanceTextureRectPosition.Y = (float)sourceRect.Y                       / texture.Height;
-        this._instanceData[this._instances].InstanceTextureRectSize.X     = (float)sourceRect.Width  / texture.Width  * (texFlip == TextureFlip.FlipHorizontal ? -1 : 1);
-        this._instanceData[this._instances].InstanceTextureRectSize.Y     = (float)sourceRect.Height / texture.Height * (texFlip == TextureFlip.FlipVertical ? -1 : 1);
+        this._instanceData[this._instances].InstanceTextureRectPosition.X = (float)sourceRect.X                       / vixieTexture.Width;
+        this._instanceData[this._instances].InstanceTextureRectPosition.Y = (float)sourceRect.Y                       / vixieTexture.Height;
+        this._instanceData[this._instances].InstanceTextureRectSize.X     = (float)sourceRect.Width  / vixieTexture.Width  * (texFlip == TextureFlip.FlipHorizontal ? -1 : 1);
+        this._instanceData[this._instances].InstanceTextureRectSize.Y     = (float)sourceRect.Height / vixieTexture.Height * (texFlip == TextureFlip.FlipVertical ? -1 : 1);
 
         this._instances++;
     }
 
-    private int GetTextureId(TextureD3D11 tex) {
+    private int GetTextureId(VixieTextureD3D11 tex) {
         this._backend.CheckThread();
         if(tex.UsedId != -1) return tex.UsedId;
 
@@ -315,16 +315,16 @@ internal sealed unsafe class QuadRendererD3D11 : IQuadRenderer {
         return this._usedTextures - 1;
     }
 
-    public void Draw(Texture texture, Vector2 position, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {
-        this.Draw(texture, position, Vector2.One, rotation, Color.White, flip, rotOrigin);
+    public void Draw(VixieTexture vixieTexture, Vector2 position, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {
+        this.Draw(vixieTexture, position, Vector2.One, rotation, Color.White, flip, rotOrigin);
     }
 
-    public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {
-        this.Draw(texture, position, scale, rotation, Color.White, flip, rotOrigin);
+    public void Draw(VixieTexture vixieTexture, Vector2 position, Vector2 scale, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {
+        this.Draw(vixieTexture, position, scale, rotation, Color.White, flip, rotOrigin);
     }
 
-    public void Draw(Texture texture, Vector2 position, Vector2 scale, Color colorOverride, float rotation = 0, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
-        this.Draw(texture, position, scale, rotation, colorOverride, texFlip, rotOrigin);
+    public void Draw(VixieTexture vixieTexture, Vector2 position, Vector2 scale, Color colorOverride, float rotation = 0, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
+        this.Draw(vixieTexture, position, scale, rotation, colorOverride, texFlip, rotOrigin);
     }
 
     public void DrawString(DynamicSpriteFont font, string text, Vector2 position, Color color, float rotation = 0, Vector2? scale = null, Vector2 origin = default) {

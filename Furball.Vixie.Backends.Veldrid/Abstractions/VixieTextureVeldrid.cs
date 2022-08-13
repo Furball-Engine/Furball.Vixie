@@ -3,15 +3,15 @@ using System.IO;
 using System.Numerics;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Helpers;
+using Silk.NET.Maths;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using Veldrid;
 using Rectangle=System.Drawing.Rectangle;
-using Texture=Furball.Vixie.Backends.Shared.Texture;
 
 namespace Furball.Vixie.Backends.Veldrid.Abstractions; 
 
-internal sealed class TextureVeldrid : Texture {
+internal sealed class VixieTextureVeldrid : VixieTexture {
     public global::Veldrid.Texture Texture;
         
     public bool IsFbAndShouldFlip = false;
@@ -63,7 +63,7 @@ internal sealed class TextureVeldrid : Texture {
     /// <param name="backend"></param>
     /// <param name="imageData">Image Data</param>
     /// <param name="parameters"></param>
-    public TextureVeldrid(VeldridBackend backend, byte[] imageData, TextureParameters parameters) {
+    public VixieTextureVeldrid(VeldridBackend backend, byte[] imageData, TextureParameters parameters) {
         this._backend = backend;
         this._backend.CheckThread();
         this._mipmap = parameters.RequestMipmaps;
@@ -86,14 +86,14 @@ internal sealed class TextureVeldrid : Texture {
 
         this.Load(image, parameters);
 
-        this._size = new Vector2(width, height);
+        this._size = new Vector2D<int>(width, height);
 
         this.FilterType = parameters.FilterType;
     }
     /// <summary>
     /// Creates a Texture with a single White Pixel
     /// </summary>
-    public TextureVeldrid(VeldridBackend backend) {
+    public VixieTextureVeldrid(VeldridBackend backend) {
         this._backend = backend;
         this._backend.CheckThread();
 
@@ -101,7 +101,7 @@ internal sealed class TextureVeldrid : Texture {
 
         this.Load(px, default);
             
-        this._size = new Vector2(1, 1);
+        this._size = new Vector2D<int>(1, 1);
     }
     /// <summary>
     /// Creates a Empty texture given a width and height
@@ -110,7 +110,7 @@ internal sealed class TextureVeldrid : Texture {
     /// <param name="width">Desired Width</param>
     /// <param name="height">Desired Height</param>
     /// <param name="parameters"></param>
-    public TextureVeldrid(VeldridBackend backend, uint width, uint height, TextureParameters parameters) {
+    public VixieTextureVeldrid(VeldridBackend backend, uint width, uint height, TextureParameters parameters) {
         this._backend = backend;
         this._backend.CheckThread();
         this._mipmap = parameters.RequestMipmaps;
@@ -119,7 +119,7 @@ internal sealed class TextureVeldrid : Texture {
 
         this.Load(px, parameters);
 
-        this._size = new Vector2(width, height);
+        this._size = new Vector2D<int>((int)width, (int)height);
 
         this.FilterType = parameters.FilterType;
     }
@@ -129,7 +129,7 @@ internal sealed class TextureVeldrid : Texture {
     /// <param name="backend"></param>
     /// <param name="stream">Image Data Stream</param>
     /// <param name="parameters"></param>
-    public TextureVeldrid(VeldridBackend backend, Stream stream, TextureParameters parameters) {
+    public VixieTextureVeldrid(VeldridBackend backend, Stream stream, TextureParameters parameters) {
         this._backend = backend;
         this._backend.CheckThread();
         this._mipmap = parameters.RequestMipmaps;
@@ -141,7 +141,7 @@ internal sealed class TextureVeldrid : Texture {
 
         this.Load(image, parameters);
 
-        this._size = new Vector2(width, height);
+        this._size = new Vector2D<int>(width, height);
 
         this.FilterType = parameters.FilterType;
     }
@@ -150,8 +150,10 @@ internal sealed class TextureVeldrid : Texture {
         get;
         set;
     } = TextureFilterType.Smooth;
+
+    public override bool Mipmaps => this._mipmap;
     
-    public override Texture SetData <pDataType>(pDataType[] data) {
+    public override VixieTexture SetData <pDataType>(pDataType[] data) {
         this._backend.CheckThread();
         this._backend.GraphicsDevice.UpdateTexture(this.Texture, data, 0, 0, 0, this.Texture.Width, this.Texture.Height, 1, 0, 0);
 
@@ -160,7 +162,7 @@ internal sealed class TextureVeldrid : Texture {
 
         return this;
     }
-    public override Texture SetData <pDataType>(pDataType[] data, Rectangle rect) {
+    public override VixieTexture SetData <pDataType>(pDataType[] data, Rectangle rect) {
         this._backend.CheckThread();
         this._backend.GraphicsDevice.UpdateTexture(this.Texture, data, (uint)rect.X, (uint)rect.Y, 0, (uint)rect.Width, (uint)rect.Height, 1, 0, 0);
 
@@ -210,7 +212,7 @@ internal sealed class TextureVeldrid : Texture {
         return data;
     }
 
-    ~TextureVeldrid() {
+    ~VixieTextureVeldrid() {
         DisposeQueue.Enqueue(this);
     }
         

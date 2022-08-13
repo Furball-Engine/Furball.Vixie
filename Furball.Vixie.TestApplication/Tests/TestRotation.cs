@@ -9,11 +9,11 @@ namespace Furball.Vixie.TestApplication.Tests;
 
 public class TestRotation : GameComponent {
     private IQuadRenderer _quadRendererGl;
-    private Texture       _whiteTextureGl;
+    private Texture       _whiteTexture;
 
     public override void Initialize() {
         this._quadRendererGl = GraphicsBackend.Current.CreateTextureRenderer();
-        this._whiteTextureGl = Resources.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
+        this._whiteTexture = Resources.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
 
         base.Initialize();
     }
@@ -26,7 +26,7 @@ public class TestRotation : GameComponent {
         this._quadRendererGl.Begin();
 
         for(int i = 0; i != 360; i ++)
-            this._quadRendererGl.Draw(this._whiteTextureGl, new Vector2(1280 / 2, 720 / 2), Vector2.One, (float) i * (3.1415f / 180f) + this._rotation);
+            this._quadRendererGl.Draw(this._whiteTexture, new Vector2(1280 / 2, 720 / 2), Vector2.One, (float) i * (3.1415f / 180f) + this._rotation);
 
         this._quadRendererGl.End();
 
@@ -47,7 +47,7 @@ public class TestRotation : GameComponent {
 
     public override void Dispose() {
         this._quadRendererGl.Dispose();
-        this._whiteTextureGl.Dispose();
+        this._whiteTexture.Dispose();
 
         base.Dispose();
     }

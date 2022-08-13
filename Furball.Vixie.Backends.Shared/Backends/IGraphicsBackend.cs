@@ -87,7 +87,7 @@ public abstract class IGraphicsBackend {
     /// <param name="width">Width of the Target</param>
     /// <param name="height">Height of the Target</param>
     /// <returns></returns>
-    public abstract TextureRenderTarget CreateRenderTarget(uint width, uint height);
+    public abstract VixieTextureRenderTarget CreateRenderTarget(uint width, uint height);
 
     #endregion
 
@@ -99,14 +99,14 @@ public abstract class IGraphicsBackend {
     /// <param name="imageData">Image Data</param>
     /// <param name="parameters"></param>
     /// <returns>Texture</returns>
-    public abstract Texture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default);
+    public abstract VixieTexture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default);
     /// <summary>
     /// Creates a Texture given a Stream
     /// </summary>
     /// <param name="stream">Stream to read from</param>
     /// <param name="parameters"></param>
     /// <returns>Texture</returns>
-    public abstract Texture CreateTextureFromStream(Stream stream, TextureParameters parameters = default);
+    public abstract VixieTexture CreateTextureFromStream(Stream stream, TextureParameters parameters = default);
     /// <summary>
     /// Creates a Empty Texture given a Size
     /// </summary>
@@ -114,12 +114,12 @@ public abstract class IGraphicsBackend {
     /// <param name="height">Height of Texture</param>
     /// <param name="parameters"></param>
     /// <returns>Texture</returns>
-    public abstract Texture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default);
+    public abstract VixieTexture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default);
     /// <summary>
     /// Used to Create a 1x1 Texture with only a white pixel
     /// </summary>
     /// <returns>White Pixel Texture</returns>
-    public abstract Texture CreateWhitePixelTexture();
+    public abstract VixieTexture CreateWhitePixelTexture();
 
     #endregion
 

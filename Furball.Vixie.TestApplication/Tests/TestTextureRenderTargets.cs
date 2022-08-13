@@ -7,18 +7,17 @@ using ImGuiNET;
 namespace Furball.Vixie.TestApplication.Tests; 
 
 public class TestTextureRenderTargets : GameComponent {
-    private TextureRenderTarget _renderTarget;
-    private Texture             _resultTexture;
-    private IQuadRenderer       _quadRenderer;
-    private Texture             _whiteTexture;
-    private float               _scale = 1f;
+    private RenderTarget  _renderTarget;
+    private IQuadRenderer _quadRenderer;
+    private Texture       _whitePixel;
+    private float         _scale = 1f;
 
     public override void Initialize() {
         this._renderTarget = Resources.CreateTextureRenderTarget(200, 200);
             
         this._quadRenderer = GraphicsBackend.Current.CreateTextureRenderer();
             
-        this._whiteTexture = Resources.CreateWhitePixelTexture();
+        this._whitePixel = Resources.CreateWhitePixelTexture();
 
         base.Initialize();
     }
@@ -30,15 +29,13 @@ public class TestTextureRenderTargets : GameComponent {
         GraphicsBackend.Current.Clear();
 
         this._quadRenderer.Begin();
-        this._quadRenderer.Draw(this._whiteTexture, new Vector2(5, 5), new Vector2(128, 128), Color.Green);
+        this._quadRenderer.Draw(this._whitePixel, new Vector2(5, 5), new Vector2(128, 128), Color.Green);
         this._quadRenderer.End();
 
         this._renderTarget.Unbind();
-
-        this._resultTexture ??= this._renderTarget.GetTexture();
             
         this._quadRenderer.Begin();
-        this._quadRenderer.Draw(this._resultTexture, Vector2.Zero, new(this._scale), 0, Color.White);
+        this._quadRenderer.Draw(this._renderTarget, Vector2.Zero, new(this._scale), 0, Color.White);
         this._quadRenderer.End();
 
         #region ImGui menu
@@ -58,8 +55,7 @@ public class TestTextureRenderTargets : GameComponent {
     public override void Dispose() {
         this._quadRenderer.Dispose();
         this._renderTarget.Dispose();
-        this._resultTexture.Dispose();
-        this._whiteTexture.Dispose();
+        this._whitePixel.Dispose();
 
         base.Dispose();
     }

@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Diagnostics;
+using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Helpers;
 using Kettu;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Furball.Vixie; 
 
@@ -230,7 +232,7 @@ public abstract class Game : IDisposable {
             this.UnhookEvents();
         
             this._isRecreated = true;
-        
+
             GraphicsBackend.Current.Cleanup();
             GraphicsBackend.Current.Dropped = true;
             this.WindowManager.Close();
@@ -254,8 +256,8 @@ public abstract class Game : IDisposable {
 
         this._trackedDelta += deltaTime;
         if (this._trackedDelta > 5 && this.WindowManager.Debug) {
-            Backends.Shared.Global.TRACKED_TEXTURES.RemoveAll(x => !x.TryGetTarget(out _));
-            Backends.Shared.Global.TRACKED_RENDER_TARGETS.RemoveAll(x => !x.TryGetTarget(out _));
+            Global.TRACKED_TEXTURES.RemoveAll(x => !x.TryGetTarget(out _));
+            Global.TRACKED_RENDER_TARGETS.RemoveAll(x => !x.TryGetTarget(out _));
 
             this._trackedDelta = 0;
         }

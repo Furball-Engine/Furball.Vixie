@@ -3,6 +3,8 @@ using System.Drawing;
 using System.Numerics;
 using FontStashSharp.Interfaces;
 using Furball.Vixie.Backends.Shared.Backends;
+using Silk.NET.Maths;
+using Rectangle = System.Drawing.Rectangle;
 
 namespace Furball.Vixie.Backends.Shared.FontStashSharp; 
 
@@ -14,28 +16,29 @@ public class VixieTexture2dManager : ITexture2DManager {
     }
 
     public object CreateTexture(int width, int height) {
-        Texture tex = this._backend.CreateEmptyTexture(
+        VixieTexture tex = this._backend.CreateEmptyTexture(
         (uint)width,
         (uint)height,
         new TextureParameters(true, TextureFilterType.Pixelated)
         );
 
-#if DEBUG
-        Global.TRACKED_TEXTURES.Add(new WeakReference<Texture>(tex));
-#endif
+        //TODO: readd this support
+// #if DEBUG
+//         Global.TRACKED_TEXTURES.Add(new WeakReference<VixieTexture>(tex));
+// #endif
 
         return tex;
     }
 
     public Point GetTextureSize(object texture) {
         // ReSharper disable once PossibleNullReferenceException
-        Vector2 size = (texture as Texture).Size;
+        Vector2D<int> size = (texture as VixieTexture)!.Size;
 
-        return new Point((int) size.X, (int) size.Y);
+        return new Point(size.X, size.Y);
     }
 
     public void SetTextureData(object texture, Rectangle bounds, byte[] data) {
         // ReSharper disable once PossibleNullReferenceException
-        (texture as Texture).SetData(data, bounds);
+        (texture as VixieTexture).SetData(data, bounds);
     }
 }

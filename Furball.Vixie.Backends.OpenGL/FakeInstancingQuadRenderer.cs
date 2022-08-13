@@ -11,7 +11,6 @@ using Furball.Vixie.Helpers.Helpers;
 using Silk.NET.OpenGL.Legacy;
 using Color=Furball.Vixie.Backends.Shared.Color;
 using ShaderType=Silk.NET.OpenGL.ShaderType;
-using Texture=Furball.Vixie.Backends.Shared.Texture;
 
 namespace Furball.Vixie.Backends.OpenGL; 
 
@@ -153,7 +152,7 @@ internal class FakeInstancingQuadRenderer : IQuadRenderer {
         this._gl.BindBuffer(GLEnum.ArrayBuffer, 0);
     }
 
-    private int GetTextureId(TextureGL tex) {
+    private int GetTextureId(VixieTextureGL tex) {
         this._backend.CheckThread();
         if (this.UsedTextures != 0)
             for (int i = 0; i < this.UsedTextures; i++) {
@@ -168,13 +167,13 @@ internal class FakeInstancingQuadRenderer : IQuadRenderer {
         return this.UsedTextures - 1;
     }
 
-    public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
+    public void Draw(VixieTexture vixieTexture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
         this._backend.CheckThread();
         if (!this.IsBegun)
             throw new Exception("Begin() has not been called!");
 
         //Ignore calls with invalid textures
-        if (texture is not TextureGL textureGl)
+        if (vixieTexture is not VixieTextureGL textureGl)
             return;
 
         if (scale.X == 0 || scale.Y == 0 || colorOverride.A == 0) return;
@@ -186,7 +185,7 @@ internal class FakeInstancingQuadRenderer : IQuadRenderer {
 
         this.BatchedColors[this.BatchedQuads]               = colorOverride;
         this.BatchedPositions[this.BatchedQuads]            = position;
-        this.BatchedSizes[this.BatchedQuads]                = texture.Size * scale;
+        this.BatchedSizes[this.BatchedQuads]                = new Vector2(vixieTexture.Size.X, vixieTexture.Size.Y) * scale;
         this.BatchedRotationOrigins[this.BatchedQuads]      = rotOrigin;
         this.BatchedRotations[this.BatchedQuads]            = rotation;
         this.BatchedTextureIds[this.BatchedQuads]           = this.GetTextureId(textureGl);
@@ -201,13 +200,13 @@ internal class FakeInstancingQuadRenderer : IQuadRenderer {
         this.BatchedQuads++;
     }
 
-    public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, Rectangle sourceRect, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
+    public void Draw(VixieTexture vixieTexture, Vector2 position, Vector2 scale, float rotation, Color colorOverride, Rectangle sourceRect, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
         this._backend.CheckThread();
         if (!this.IsBegun)
             throw new Exception("Begin() has not been called!");
 
         //Ignore calls with invalid textures
-        if (texture is not TextureGL textureGl)
+        if (vixieTexture is not VixieTextureGL textureGl)
             return;
 
         if (scale.X == 0 || scale.Y == 0 || colorOverride.A == 0) return;
@@ -223,7 +222,7 @@ internal class FakeInstancingQuadRenderer : IQuadRenderer {
         //Apply Scale
         size *= scale;
 
-        sourceRect.Y = texture.Height - sourceRect.Y - sourceRect.Height;
+        sourceRect.Y = vixieTexture.Height - sourceRect.Y - sourceRect.Height;
 
         this.BatchedColors[this.BatchedQuads]               = colorOverride;
         this.BatchedPositions[this.BatchedQuads]            = position;
@@ -231,10 +230,10 @@ internal class FakeInstancingQuadRenderer : IQuadRenderer {
         this.BatchedRotationOrigins[this.BatchedQuads]      = rotOrigin;
         this.BatchedRotations[this.BatchedQuads]            = rotation;
         this.BatchedTextureIds[this.BatchedQuads]           = this.GetTextureId(textureGl);
-        this.BatchedTextureCoordinates[this.BatchedQuads].X = (float)sourceRect.X                       / texture.Width;
-        this.BatchedTextureCoordinates[this.BatchedQuads].Y = (float)sourceRect.Y                       / texture.Height;
-        this.BatchedTextureCoordinates[this.BatchedQuads].Z = (float)sourceRect.Width  / texture.Width  * (texFlip == TextureFlip.FlipHorizontal ? -1 : 1);
-        this.BatchedTextureCoordinates[this.BatchedQuads].W = (float)sourceRect.Height / texture.Height * (texFlip == TextureFlip.FlipVertical ? -1 : 1);
+        this.BatchedTextureCoordinates[this.BatchedQuads].X = (float)sourceRect.X                       / vixieTexture.Width;
+        this.BatchedTextureCoordinates[this.BatchedQuads].Y = (float)sourceRect.Y                       / vixieTexture.Height;
+        this.BatchedTextureCoordinates[this.BatchedQuads].Z = (float)sourceRect.Width  / vixieTexture.Width  * (texFlip == TextureFlip.FlipHorizontal ? -1 : 1);
+        this.BatchedTextureCoordinates[this.BatchedQuads].W = (float)sourceRect.Height / vixieTexture.Height * (texFlip == TextureFlip.FlipVertical ? -1 : 1);
 
         this.BatchedQuads++;
     }
@@ -338,16 +337,16 @@ internal class FakeInstancingQuadRenderer : IQuadRenderer {
 
     #region overloads
 
-    public void Draw(Texture texture, Vector2 position, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {
-        this.Draw(texture, position, Vector2.One, rotation, Color.White, flip, rotOrigin);
+    public void Draw(VixieTexture vixieTexture, Vector2 position, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {
+        this.Draw(vixieTexture, position, Vector2.One, rotation, Color.White, flip, rotOrigin);
     }
 
-    public void Draw(Texture texture, Vector2 position, Vector2 scale, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {
-        this.Draw(texture, position, scale, rotation, Color.White, flip, rotOrigin);
+    public void Draw(VixieTexture vixieTexture, Vector2 position, Vector2 scale, float rotation = 0, TextureFlip flip = TextureFlip.None, Vector2 rotOrigin = default) {
+        this.Draw(vixieTexture, position, scale, rotation, Color.White, flip, rotOrigin);
     }
 
-    public void Draw(Texture texture, Vector2 position, Vector2 scale, Color colorOverride, float rotation = 0, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
-        this.Draw(texture, position, scale, rotation, colorOverride, texFlip, rotOrigin);
+    public void Draw(VixieTexture vixieTexture, Vector2 position, Vector2 scale, Color colorOverride, float rotation = 0, TextureFlip texFlip = TextureFlip.None, Vector2 rotOrigin = default) {
+        this.Draw(vixieTexture, position, scale, rotation, colorOverride, texFlip, rotOrigin);
     }
 
     #endregion

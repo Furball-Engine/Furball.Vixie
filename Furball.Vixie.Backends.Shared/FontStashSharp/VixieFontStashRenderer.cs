@@ -17,7 +17,7 @@ public class VixieFontStashRenderer : IFontStashRenderer {
     }
 
     public void Draw(object texture, Vector2 pos, Rectangle? src, System.Drawing.Color color, float rotation, Vector2 scale, float depth) {
-        var tex = (Texture)texture;
+        var tex = (VixieTexture)texture;
 
         this._renderer.Draw(tex, pos, scale, rotation, new Color(color.R, color.G, color.B, color.A), src.Value);
     }

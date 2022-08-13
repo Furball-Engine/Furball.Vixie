@@ -33,7 +33,7 @@ public class VeldridBackend : IGraphicsBackend {
     private  IView           _view;
     private  ImGuiController _imgui;
 
-    internal TextureVeldrid WhitePixel;
+    internal VixieTextureVeldrid WhitePixel;
     internal ResourceSet    WhitePixelResourceSet;
 
     internal  Framebuffer    RenderFramebuffer;
@@ -165,7 +165,7 @@ public class VeldridBackend : IGraphicsBackend {
                 new($"sampler_{i}", ResourceKind.Sampler, ShaderStages.Fragment)
             }));
 
-            TextureVeldrid.ResourceLayouts[i] = layout;
+            VixieTextureVeldrid.ResourceLayouts[i] = layout;
         }
             
         ResourceLayout blankLayout = this.ResourceFactory.CreateResourceLayout(new(new ResourceLayoutElementDescription[] {
@@ -173,7 +173,7 @@ public class VeldridBackend : IGraphicsBackend {
             new($"sampler_blank", ResourceKind.Sampler, ShaderStages.Fragment),
         }));
 
-        this.WhitePixel = (TextureVeldrid)this.CreateWhitePixelTexture();
+        this.WhitePixel = (VixieTextureVeldrid)this.CreateWhitePixelTexture();
             
         this.WhitePixelResourceSet = this.ResourceFactory.CreateResourceSet(new(blankLayout, this.WhitePixel.Texture, this.GraphicsDevice.PointSampler));
 
@@ -345,18 +345,18 @@ public class VeldridBackend : IGraphicsBackend {
         this.GraphicsDevice.SubmitCommands(commandList);
         this.GraphicsDevice.WaitForIdle();
     }
-    public override TextureRenderTarget CreateRenderTarget(uint width, uint height) => new TextureRenderTargetVeldrid(this, width, height);
+    public override VixieTextureRenderTarget CreateRenderTarget(uint width, uint height) => new VixieTextureRenderTargetVeldrid(this, width, height);
 
-    public override Shared.Texture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default)
-        => new TextureVeldrid(this, imageData, parameters);
+    public override Shared.VixieTexture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default)
+        => new VixieTextureVeldrid(this, imageData, parameters);
 
-    public override Shared.Texture CreateTextureFromStream(Stream stream, TextureParameters parameters = default)
-        => new TextureVeldrid(this, stream, parameters);
+    public override Shared.VixieTexture CreateTextureFromStream(Stream stream, TextureParameters parameters = default)
+        => new VixieTextureVeldrid(this, stream, parameters);
 
-    public override Shared.Texture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default)
-        => new TextureVeldrid(this, width, height, parameters);
+    public override Shared.VixieTexture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default)
+        => new VixieTextureVeldrid(this, width, height, parameters);
 
-    public override Shared.Texture CreateWhitePixelTexture() => new TextureVeldrid(this);
+    public override Shared.VixieTexture CreateWhitePixelTexture() => new VixieTextureVeldrid(this);
         
     public override void ImGuiUpdate(double deltaTime) {
         this._imgui.Update((float)deltaTime);

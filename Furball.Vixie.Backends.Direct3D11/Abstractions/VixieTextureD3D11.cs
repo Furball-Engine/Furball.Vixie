@@ -3,6 +3,7 @@ using System.IO;
 using System.Numerics;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Helpers;
+using Silk.NET.Maths;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using Vortice.Direct3D11;
@@ -13,7 +14,7 @@ using Rectangle=System.Drawing.Rectangle;
 
 namespace Furball.Vixie.Backends.Direct3D11.Abstractions; 
 
-internal sealed class TextureD3D11 : Texture {
+internal sealed class VixieTextureD3D11 : VixieTexture {
     private Direct3D11Backend   _backend;
     private ID3D11Device        _device;
     private ID3D11DeviceContext _deviceContext;
@@ -24,7 +25,7 @@ internal sealed class TextureD3D11 : Texture {
 
     internal int UsedId = -1;
 
-    public TextureD3D11(Direct3D11Backend backend, ID3D11Texture2D texture, ID3D11ShaderResourceView shaderResourceView, Vector2 size) {
+    public VixieTextureD3D11(Direct3D11Backend backend, ID3D11Texture2D texture, ID3D11ShaderResourceView shaderResourceView, Vector2D<int> size) {
         backend.CheckThread();
         this._backend       = backend;
         this._deviceContext = backend.GetDeviceContext();
@@ -38,7 +39,7 @@ internal sealed class TextureD3D11 : Texture {
         this.GenerateMips();
     }
 
-    public unsafe TextureD3D11(Direct3D11Backend backend) {
+    public unsafe VixieTextureD3D11(Direct3D11Backend backend) {
         backend.CheckThread();
         this._backend       = backend;
         this._device        = backend.GetDevice();
@@ -76,10 +77,10 @@ internal sealed class TextureD3D11 : Texture {
 
         this.GenerateMips();
 
-        this._size = Vector2.One;
+        this._size = Vector2D<int>.One;
     }
 
-    public TextureD3D11(Direct3D11Backend backend, byte[] imageData, TextureParameters parameters) {
+    public VixieTextureD3D11(Direct3D11Backend backend, byte[] imageData, TextureParameters parameters) {
         backend.CheckThread();
         this._backend       = backend;
         this._device        = backend.GetDevice();
@@ -104,7 +105,7 @@ internal sealed class TextureD3D11 : Texture {
 
         this.GenerateMips();
 
-        this._size = new Vector2(image.Width, image.Height);
+        this._size = new Vector2D<int>(image.Width, image.Height);
 
         image.Dispose();
 
@@ -129,7 +130,7 @@ internal sealed class TextureD3D11 : Texture {
         );
     }
 
-    public TextureD3D11(Direct3D11Backend backend, Stream stream, TextureParameters parameters) {
+    public VixieTextureD3D11(Direct3D11Backend backend, Stream stream, TextureParameters parameters) {
         backend.CheckThread();
         this._backend       = backend;
         this._device        = backend.GetDevice();
@@ -143,14 +144,14 @@ internal sealed class TextureD3D11 : Texture {
 
         this.GenerateMips();
 
-        this._size = new Vector2(image.Width, image.Height);
+        this._size = new Vector2D<int>(image.Width, image.Height);
 
         image.Dispose();
 
         this.FilterType = parameters.FilterType;
     }
 
-    public TextureD3D11(Direct3D11Backend backend, uint width, uint height, TextureParameters parameters) {
+    public VixieTextureD3D11(Direct3D11Backend backend, uint width, uint height, TextureParameters parameters) {
         backend.CheckThread();
         this._backend       = backend;
         this._device        = backend.GetDevice();
@@ -160,7 +161,7 @@ internal sealed class TextureD3D11 : Texture {
 
         this.GenerateMips();
 
-        this._size = new Vector2(width, height);
+        this._size = new Vector2D<int>((int)width, (int)height);
 
         this.FilterType = parameters.FilterType;
     }
@@ -190,11 +191,13 @@ internal sealed class TextureD3D11 : Texture {
         this.TextureView = textureView;
     }
 
-    ~TextureD3D11() {
+    ~VixieTextureD3D11() {
         DisposeQueue.Enqueue(this);
     }
 
-    public override unsafe Texture SetData <pDataType>(pDataType[] data) {
+    public override bool Mipmaps => this.textureDescription.MipLevels != 1;
+        
+    public override unsafe VixieTexture SetData <pDataType>(pDataType[] data) {
         this._backend.CheckThread();
         fixed (void* ptr = data) {
             this._deviceContext.UpdateSubresource(
@@ -212,7 +215,7 @@ internal sealed class TextureD3D11 : Texture {
         return this;
     }
 
-    public override unsafe Texture SetData <pDataType>(pDataType[] data, Rectangle rect) {
+    public override unsafe VixieTexture SetData <pDataType>(pDataType[] data, Rectangle rect) {
         this._backend.CheckThread();
         fixed (void* dataPtr = data) {
             this._deviceContext.UpdateSubresource(this._texture, 0, new Box(rect.X, rect.Y, 0, rect.X + rect.Width, rect.Y + rect.Height, 1), (IntPtr)dataPtr, 4 * rect.Width, (4 * rect.Width) * rect.Height);
@@ -271,7 +274,7 @@ internal sealed class TextureD3D11 : Texture {
         }
     }
     
-    public Texture BindToPixelShader(int slot) {
+    public VixieTexture BindToPixelShader(int slot) {
         this._backend.CheckThread();
         this._deviceContext.PSSetShaderResource(slot, this.TextureView);
 

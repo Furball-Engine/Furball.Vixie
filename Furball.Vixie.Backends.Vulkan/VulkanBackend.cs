@@ -923,17 +923,17 @@ public unsafe class VulkanBackend : IGraphicsBackend {
         throw new NotImplementedException();
     }
 
-    public override TextureRenderTarget CreateRenderTarget(uint width, uint height) {
+    public override VixieTextureRenderTarget CreateRenderTarget(uint width, uint height) {
         throw new NotImplementedException();
     }
 
-    public override Texture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default) => throw new NotImplementedException();
+    public override VixieTexture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default) => throw new NotImplementedException();
 
-    public override Texture CreateTextureFromStream(Stream stream, TextureParameters parameters = default) => throw new NotImplementedException();
+    public override VixieTexture CreateTextureFromStream(Stream stream, TextureParameters parameters = default) => throw new NotImplementedException();
 
-    public override Texture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default) => throw new NotImplementedException();
+    public override VixieTexture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default) => throw new NotImplementedException();
 
-    public override Texture CreateWhitePixelTexture() {
+    public override VixieTexture CreateWhitePixelTexture() {
         throw new NotImplementedException();
     }
 
