@@ -34,7 +34,7 @@ public class TestTextureGetData : GameComponent {
 
         Rgba32[] origPixels = pixels.ToArray();
 
-        Texture tex = Resources.CreateTextureFromByteArray(origData);
+        Texture tex = Texture.CreateTextureFromByteArray(origData);
 
         this._testPassed = true;
         

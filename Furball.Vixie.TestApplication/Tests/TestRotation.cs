@@ -11,7 +11,8 @@ public class TestRotation : GameComponent {
 
     public override void Initialize() {
         this._renderer = new Renderer();
-        this._whiteTexture   = Resources.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
+        this._whiteTexture =
+            Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
 
         base.Initialize();
     }

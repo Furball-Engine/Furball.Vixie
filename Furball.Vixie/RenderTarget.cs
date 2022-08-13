@@ -10,10 +10,10 @@ public class RenderTarget : IDisposable {
 
     public Vector2D<int> Size;
     
-    public RenderTarget(VixieTextureRenderTarget target) {
-        this._target = target;
+    public RenderTarget(uint width, uint height, TextureParameters parameters = default) {
+        this._target = GraphicsBackend.Current.CreateRenderTarget(width, height);
 
-        this.Size = target.Size;
+        Global.TRACKED_RENDER_TARGETS.Add(new WeakReference<RenderTarget>(this));
     }
 
     public void Bind() {
@@ -37,6 +37,6 @@ public class RenderTarget : IDisposable {
         this._target.Dispose();
     }
     
-    public static implicit operator Texture(RenderTarget      target) => new(target._target.GetTexture());
+    public static implicit operator Texture(RenderTarget target) => new(target._target.GetTexture());
     public static implicit operator VixieTexture(RenderTarget target) => target._target.GetTexture();
 }

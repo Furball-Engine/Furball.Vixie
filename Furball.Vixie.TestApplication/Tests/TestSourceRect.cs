@@ -13,7 +13,7 @@ public class TestSourceRect : GameComponent {
 
     public override void Initialize() {
         this._renderer = new Renderer();
-        this._whiteVixieTexture = Resources.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
+        this._whiteVixieTexture = Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
 
         base.Initialize();
     }

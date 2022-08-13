@@ -7,7 +7,7 @@ namespace Furball.Vixie.FontStashSharp;
 
 public class VixieTexture2dManager : ITexture2DManager {
     public object CreateTexture(int width, int height) {
-        Texture tex = Resources.CreateEmptyTexture(
+        Texture tex = Texture.CreateEmptyTexture(
             (uint)width,
             (uint)height
         );

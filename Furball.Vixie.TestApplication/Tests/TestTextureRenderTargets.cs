@@ -12,11 +12,11 @@ public class TestTextureRenderTargets : GameComponent {
     private float        _scale = 1f;
 
     public override void Initialize() {
-        this._renderTarget = Resources.CreateTextureRenderTarget(200, 200);
+        this._renderTarget = new RenderTarget(200, 200);
 
         this._quadRenderer = new Renderer();
             
-        this._whitePixel = Resources.CreateWhitePixelTexture();
+        this._whitePixel = Texture.CreateWhitePixelTexture();
 
         base.Initialize();
     }
