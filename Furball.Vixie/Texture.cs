@@ -13,8 +13,17 @@ public class Texture : IDisposable {
     public string Name = "";
 
     private VixieTexture _texture;
-    
-    public Vector2D<int> Size;
+
+    public Vector2D<int> Size {
+        get;
+    }
+
+    public int Width {
+        get => this.Size.X;
+    }
+    public int Height {
+        get => this.Size.Y;
+    }
 
     public TextureFilterType FilterType {
         get => this._texture.FilterType;
