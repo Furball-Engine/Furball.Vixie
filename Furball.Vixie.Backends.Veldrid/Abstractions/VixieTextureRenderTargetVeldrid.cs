@@ -13,7 +13,8 @@ internal sealed class VixieTextureRenderTargetVeldrid : VixieTextureRenderTarget
     }
 
     private VixieTextureVeldrid _tex;
-    private Framebuffer    _fb;
+
+    private Framebuffer _fb;
         
     public VixieTextureRenderTargetVeldrid(VeldridBackend backend, uint width, uint height) {
         this._backend = backend;

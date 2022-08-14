@@ -19,7 +19,7 @@ public class Renderer {
         Global.TRACKED_RENDERERS.Add(new WeakReference<Renderer>(this));
     }
 
-    internal void InternalDispose() {
+    internal void DisposeInternal() {
         this._quadRenderer.Dispose();
     }
 

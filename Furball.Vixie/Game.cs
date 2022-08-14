@@ -169,7 +169,7 @@ public abstract class Game : IDisposable {
             
             foreach (WeakReference<RenderTarget> texRef in Global.TRACKED_RENDER_TARGETS) {
                 if (texRef.TryGetTarget(out RenderTarget target)) {
-                    //TODO
+                    target.LoadDataFromCpuToNewTexture();
                     GC.ReRegisterForFinalize(target);
                 }
             }
@@ -254,7 +254,7 @@ public abstract class Game : IDisposable {
 
             foreach (WeakReference<Renderer> rendererRef in Global.TRACKED_RENDERERS) {
                 if (rendererRef.TryGetTarget(out Renderer renderer)) {
-                    renderer.InternalDispose();
+                    renderer.DisposeInternal();
                     GC.SuppressFinalize(renderer);
                 }
             }
@@ -269,8 +269,9 @@ public abstract class Game : IDisposable {
             
             foreach (WeakReference<RenderTarget> targetRef in Global.TRACKED_RENDER_TARGETS) {
                 if (targetRef.TryGetTarget(out RenderTarget target)) {
+                    target.SaveDataToCpu();
+                    target.DisposeInternal();
                     GC.SuppressFinalize(target);
-                    //TODO
                 }
             }
             

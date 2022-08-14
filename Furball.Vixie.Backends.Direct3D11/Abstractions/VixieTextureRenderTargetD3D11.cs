@@ -19,6 +19,10 @@ internal sealed class VixieTextureRenderTargetD3D11 : VixieTextureRenderTarget {
     private ID3D11RenderTargetView   _renderTarget;
     private ID3D11ShaderResourceView _shaderResourceView;
 
+    private readonly Texture2DDescription _texDesc;
+
+    private readonly VixieTexture _vixieTexture;
+    
     private Viewport[] _viewports;
 
     public VixieTextureRenderTargetD3D11(Direct3D11Backend backend, uint width, uint height) {
@@ -39,6 +43,8 @@ internal sealed class VixieTextureRenderTargetD3D11 : VixieTextureRenderTarget {
                 Count = 1, Quality = 0
             },
         };
+
+        this._texDesc = renderTargetTextureDescription;
 
         ID3D11Texture2D renderTargetTexture = this._device.CreateTexture2D(renderTargetTextureDescription);
 
@@ -66,6 +72,9 @@ internal sealed class VixieTextureRenderTargetD3D11 : VixieTextureRenderTarget {
         this._shaderResourceView  = shaderResourceView;
         this.Size                 = new Vector2D<int>((int)width, (int)height);
         this._viewports           = new Viewport[16];
+
+        this._vixieTexture = new VixieTextureD3D11(this._backend, this._renderTargetTexture, this._shaderResourceView,
+            this.Size, this._texDesc);
     }
 
     ~VixieTextureRenderTargetD3D11() {
@@ -88,10 +97,9 @@ internal sealed class VixieTextureRenderTargetD3D11 : VixieTextureRenderTarget {
         this._deviceContext.RSSetViewports(this._viewports);
     }
 
-    public override VixieTexture GetTexture() => new VixieTextureD3D11(this._backend, this._renderTargetTexture, this._shaderResourceView, this.Size);
+    public override VixieTexture GetTexture() => this._vixieTexture;
 
     private bool _isDisposed = false;
-
     public override void Dispose() {
         this._backend.CheckThread();
         if (this._isDisposed)
