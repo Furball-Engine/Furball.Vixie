@@ -160,7 +160,6 @@ public class WindowManager : IDisposable {
 
     public void Close() {
         this.GameView.Close();
-        this.GameView.Dispose();
     }
 
     public event EventHandler<Vector2> OnFramebufferResize;
@@ -189,7 +188,7 @@ public class WindowManager : IDisposable {
     /// </summary>
     public void Create() {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && this.Backend == Backend.Direct3D11)
-            GlfwWindowing.Use();
+            SdlWindowing.Use();
         
         ContextAPI api = this.Backend switch {
             Backend.OpenGLES   => ContextAPI.OpenGLES,

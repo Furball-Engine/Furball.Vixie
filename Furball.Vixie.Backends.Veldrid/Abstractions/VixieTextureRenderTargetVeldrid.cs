@@ -57,8 +57,7 @@ internal sealed class VixieTextureRenderTargetVeldrid : VixieTextureRenderTarget
         this._backend.SetProjectionMatrix(this._backend.RenderFramebuffer.Height, this._backend.RenderFramebuffer.Height);
     }
 
-    private bool _isDisposed = false;
-
+    private bool _isDisposed;
     public override void Dispose() {
         this._backend.CheckThread();
         if (this._isDisposed) return;
