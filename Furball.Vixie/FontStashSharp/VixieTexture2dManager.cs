@@ -24,6 +24,6 @@ public class VixieTexture2dManager : ITexture2DManager {
 
     public void SetTextureData(object texture, Rectangle bounds, byte[] data) {
         // ReSharper disable once PossibleNullReferenceException
-        ((Texture)texture).SetData(data, bounds);
+        ((Texture)texture).SetData<byte>(data, bounds);
     }
 }

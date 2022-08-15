@@ -152,7 +152,7 @@ internal sealed class VixieTextureVeldrid : VixieTexture {
 
     public override bool Mipmaps => this._mipmap;
     
-    public override VixieTexture SetData <pDataType>(pDataType[] data) {
+    public override VixieTexture SetData <pDataType>(ReadOnlySpan<pDataType> data) {
         this._backend.CheckThread();
         this._backend.GraphicsDevice.UpdateTexture(this.Texture, data, 0, 0, 0, this.Texture.Width, this.Texture.Height, 1, 0, 0);
 
@@ -161,7 +161,7 @@ internal sealed class VixieTextureVeldrid : VixieTexture {
 
         return this;
     }
-    public override VixieTexture SetData <pDataType>(pDataType[] data, Rectangle rect) {
+    public override VixieTexture SetData <pDataType>(ReadOnlySpan<pDataType> data, Rectangle rect) {
         this._backend.CheckThread();
         this._backend.GraphicsDevice.UpdateTexture(this.Texture, data, (uint)rect.X, (uint)rect.Y, 0, (uint)rect.Width, (uint)rect.Height, 1, 0, 0);
 

@@ -200,7 +200,7 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
 
     public override bool Mipmaps => this.textureDescription.MipLevels != 1;
         
-    public override unsafe VixieTexture SetData <pDataType>(pDataType[] data) {
+    public override unsafe VixieTexture SetData <pDataType>(ReadOnlySpan<pDataType> data) {
         this._backend.CheckThread();
         fixed (void* ptr = data) {
             this._deviceContext.UpdateSubresource(
@@ -218,7 +218,7 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
         return this;
     }
 
-    public override unsafe VixieTexture SetData <pDataType>(pDataType[] data, Rectangle rect) {
+    public override unsafe VixieTexture SetData <pDataType>(ReadOnlySpan<pDataType> data, Rectangle rect) {
         this._backend.CheckThread();
         fixed (void* dataPtr = data) {
             this._deviceContext.UpdateSubresource(this._texture, 0,

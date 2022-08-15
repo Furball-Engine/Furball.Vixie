@@ -275,14 +275,14 @@ internal sealed class VixieTextureGL : VixieTexture, IDisposable {
     }
     
     public override bool Mipmaps => this._mipmaps;
-    
+
     /// <summary>
     /// Sets the Data of the Texture Directly
     /// </summary>
     /// <param name="data">Data to put there</param>
     /// <typeparam name="pDataType">Type of the Data</typeparam>
     /// <returns>Self, used for chaining methods</returns>
-    public override unsafe VixieTexture SetData <pDataType>(pDataType[] data) {
+    public override unsafe VixieTexture SetData <pDataType>(ReadOnlySpan<pDataType> data) {
         this._backend.GlCheckThread();
         this.LockingBind();
 
@@ -305,7 +305,7 @@ internal sealed class VixieTextureGL : VixieTexture, IDisposable {
     /// <param name="rect">Rectangle of Data to Edit</param>
     /// <typeparam name="pDataType">Type of Data to put</typeparam>
     /// <returns>Self, used for chaining methods</returns>
-    public override unsafe VixieTexture SetData <pDataType>(pDataType[] data, Rectangle rect) {
+    public override unsafe VixieTexture SetData <pDataType>(ReadOnlySpan<pDataType> data, Rectangle rect) {
         this._backend.GlCheckThread();
         this.LockingBind();
 

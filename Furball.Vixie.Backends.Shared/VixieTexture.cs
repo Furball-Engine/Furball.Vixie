@@ -20,15 +20,15 @@ public abstract class VixieTexture : IDisposable {
     public abstract TextureFilterType FilterType { get; set; }
 
     public abstract bool Mipmaps { get; }
-    
+
     /// <summary>
     /// Sets the data of the whole texture at once
     /// </summary>
     /// <param name="data">The data</param>
     /// <typeparam name="T">The type of data</typeparam>
     /// <returns></returns>
-    public abstract VixieTexture SetData<T>(T[] data) where T : unmanaged;
-    public abstract VixieTexture SetData<T>(T[] data, Rectangle rect) where T : unmanaged;
+    public abstract VixieTexture SetData <T>(ReadOnlySpan<T> data) where T : unmanaged;
+    public abstract VixieTexture SetData <T>(ReadOnlySpan<T> data, Rectangle rect) where T : unmanaged;
     /// <summary>
     /// Copies the data of the texture into CPU memory
     /// </summary>

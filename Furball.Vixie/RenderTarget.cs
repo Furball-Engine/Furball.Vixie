@@ -38,7 +38,7 @@ public class RenderTarget : IDisposable {
     public void SetData<T>(T[] arr, Rectangle? rect = null) where T : unmanaged {
         rect ??= new Rectangle(0, 0, this.Size.X, this.Size.Y);
         
-        this._texture.SetData(arr, rect.Value);
+        this._texture.SetData<T>(arr, rect.Value);
     }
     
     ~RenderTarget() {
@@ -64,7 +64,7 @@ public class RenderTarget : IDisposable {
         
         VixieTextureRenderTarget newTex = GraphicsBackend.Current.CreateRenderTarget((uint)this.Size.X, (uint)this.Size.Y);
         
-        newTex.GetTexture().SetData(this._dataCache);
+        newTex.GetTexture().SetData<Rgba32>(this._dataCache);
         
         this._target  = newTex;
         this._texture = this._target.GetTexture();

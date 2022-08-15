@@ -4,6 +4,7 @@ using System.IO;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Helpers;
 using Silk.NET.Maths;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using Rectangle = System.Drawing.Rectangle;
 
@@ -80,7 +81,30 @@ public class Texture : IDisposable {
         this.Size = this._texture.Size;
     }
 
-    public void SetData<T>(T[] arr, Rectangle? rect = null) where T : unmanaged {
+    public void SetData(Image<Rgba32> image) {
+        image.ProcessPixelRows(
+        x => {
+            for (int i = 0; i < x.Height; i++) {
+                Span<Rgba32> span = x.GetRowSpan(i);
+                
+                this.SetData<Rgba32>(span, new Rectangle(0, i, x.Width, 1));
+            }
+        });
+    }
+    
+    public void SetData(Image image) {
+        this.SetData(image.CloneAs<Rgba32>());
+    }
+
+    public void SetData <T>(T[] data) where T : unmanaged {
+        this._texture.SetData<T>(data);
+    }
+    
+    public void SetData<T>(ReadOnlySpan<T> data) where T : unmanaged {
+        this._texture.SetData(data);
+    }
+    
+    public void SetData<T>(ReadOnlySpan<T> arr, Rectangle? rect = null) where T : unmanaged {
         rect ??= new Rectangle(0, 0, this.Size.X, this.Size.Y);
         
         this._texture.SetData(arr, rect.Value);
@@ -120,7 +144,7 @@ public class Texture : IDisposable {
         VixieTexture newTex = GraphicsBackend.Current.CreateEmptyTexture((uint)this.Size.X, (uint)this.Size.Y,
                                                       new TextureParameters(this._mipmapCache, this._filterTypeCache));
         
-        newTex.SetData(this._dataCache);
+        newTex.SetData<Rgba32>(this._dataCache);
         
         this._texture = newTex;
 
