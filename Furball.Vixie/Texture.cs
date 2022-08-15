@@ -75,6 +75,18 @@ public class Texture : IDisposable {
         return managedTex;
     }
 
+    public static Texture CreateTextureFromImage(Image image, TextureParameters parameters = default) {
+        VixieTexture tex = GraphicsBackend.Current.CreateEmptyTexture((uint)image.Width, (uint)image.Height, parameters);
+        
+        Texture managedTex = new(tex);
+
+        Global.TRACKED_TEXTURES.Add(new WeakReference<Texture>(managedTex));
+
+        managedTex.SetData(image);
+        
+        return managedTex;
+    }
+
     internal Texture(VixieTexture texture) {
         this._texture = texture;
 
