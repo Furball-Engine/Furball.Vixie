@@ -32,9 +32,8 @@ public class TestRenderTargets : GameComponent {
 
         this._quadRenderer.Begin();
         this._quadRenderer.Draw(this._whitePixel, new Vector2(5, 5), new Vector2(128, 128), Color.Green);
-        this._quadRenderer.End();
-        this._quadRenderer.Begin();
-        this._quadRenderer.Draw(this._don, new Vector2(100, 100), Vector2.One, Color.Red);
+        this._quadRenderer.Draw(this._whitePixel, new Vector2(100, 100), new Vector2(100, 100), Color.Red);
+        this._quadRenderer.Draw(this._whitePixel, new Vector2(150, 150), new Vector2(100, 100), Color.Blue);
         this._quadRenderer.End();
 
         this._renderTarget.Unbind();

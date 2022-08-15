@@ -101,7 +101,7 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     private readonly FeatureLevel _bindlessMipmapGenerationFeatureLevel;
 
     public readonly Backend CreationBackend;
-    private         bool    _flipProjMatrix;
+    private         bool    _isFbProjMatrix;
     public OpenGLBackend(Backend backend) {
         this.CreationBackend = backend;
 
@@ -295,7 +295,7 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
         this.gl.GetTexImage(target, level, format, type, ptr);
     }
     public void SetProjectionMatrixAndViewport(int targetWidth, int targetHeight, bool flip) {
-        this._flipProjMatrix = flip;
+        this._isFbProjMatrix = flip;
         this.HandleFramebufferResize(targetWidth, targetHeight);
     }
 
@@ -332,12 +332,14 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
         this.gl.Viewport(0, 0, (uint)width, (uint)height);
         this.CurrentViewport = new Vector2D<int>(width, height);
 
-        this.VerticalRatio = height / 720f;
+        this.VerticalRatio = this._isFbProjMatrix ? 1 : height / 720f;
 
-        float bottom = this._flipProjMatrix ? 0f : 720f;
-        float top = this._flipProjMatrix ? 720f : 0f;
+        float bottom = this._isFbProjMatrix ? 0f : 720f;
+        float top = this._isFbProjMatrix ? height : 0f;
+
+        float right = this._isFbProjMatrix ? width : width / (float)height * 720f;
         
-        this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width / (float)height * 720f, bottom, top, 1f, 0f);
+        this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, right, bottom, top, 1f, 0f);
     }
 
     public override Rectangle ScissorRect {
