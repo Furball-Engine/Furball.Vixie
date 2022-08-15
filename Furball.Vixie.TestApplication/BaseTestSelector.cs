@@ -15,7 +15,7 @@ public class BaseTestSelector : GameComponent {
         }
 
         if (ImGui.Button("TextureRenderTarget Test")) {
-            this.BaseGame.Components.Add(new TestTextureRenderTargets());
+            this.BaseGame.Components.Add(new TestRenderTargets());
             this.BaseGame.Components.Remove(this);
         }
             

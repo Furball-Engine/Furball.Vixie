@@ -293,6 +293,9 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     public unsafe void GetTexImage(TextureTarget target, int level, PixelFormat format, PixelType type, void* ptr) {
         this.gl.GetTexImage(target, level, format, type, ptr);
     }
+    public void SetProjectionMatrixAndViewport(int targetWidth, int targetHeight) {
+        this.HandleFramebufferResize(targetWidth, targetHeight);
+    }
 
     /// <summary>
     ///     Checks for OpenGL errors
