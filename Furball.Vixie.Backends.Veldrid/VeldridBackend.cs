@@ -229,14 +229,17 @@ public class VeldridBackend : IGraphicsBackend {
             
     }
         
-    internal void SetProjectionMatrix(uint width, uint height) {
-        this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width / (float)height * 720f, 720, 0, 1f, 0f);
+    internal void SetProjectionMatrix(uint width, uint height, bool isFbProj) {
+        float right  = isFbProj ? width : width / (float)height * 720f;
+        float bottom = isFbProj ? height : 720f;
+        
+        this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, right, bottom, 0, 1f, 0f);
     }
 
     public override void HandleFramebufferResize(int width, int height) {
         this.GraphicsDevice.ResizeMainWindow((uint)width, (uint)height);
 
-        this.SetProjectionMatrix((uint)width, (uint)height);
+        this.SetProjectionMatrix((uint)width, (uint)height, false);
 
         this.CreateFramebuffer(this.GraphicsDevice.SwapchainFramebuffer.Width, this.GraphicsDevice.SwapchainFramebuffer.Height);
 
@@ -257,7 +260,7 @@ public class VeldridBackend : IGraphicsBackend {
         this.CommandList.SetFramebuffer(this.RenderFramebuffer);
 
         this.CommandList.SetFullViewports();
-        this.SetProjectionMatrix(this.RenderFramebuffer.Width, this.RenderFramebuffer.Height);
+        this.SetProjectionMatrix(this.RenderFramebuffer.Width, this.RenderFramebuffer.Height, false);
     }
 
     public override void EndScene() {

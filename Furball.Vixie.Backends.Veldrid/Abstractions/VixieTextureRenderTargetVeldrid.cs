@@ -43,7 +43,7 @@ internal sealed class VixieTextureRenderTargetVeldrid : VixieTextureRenderTarget
         this._backend.CommandList.SetFramebuffer(this._fb);
         this._backend.CommandList.SetFullViewports();
             
-        this._backend.SetProjectionMatrix(this._fb.Width, this._fb.Height);
+        this._backend.SetProjectionMatrix(this._fb.Width, this._fb.Height, true);
     }
         
     public override void Unbind() {
@@ -54,7 +54,7 @@ internal sealed class VixieTextureRenderTargetVeldrid : VixieTextureRenderTarget
             
         this._backend.CommandList.SetFullViewports();
 
-        this._backend.SetProjectionMatrix(this._backend.RenderFramebuffer.Height, this._backend.RenderFramebuffer.Height);
+        this._backend.SetProjectionMatrix(this._backend.RenderFramebuffer.Width, this._backend.RenderFramebuffer.Height, false);
     }
 
     private bool _isDisposed;
