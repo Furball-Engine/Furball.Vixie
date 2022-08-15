@@ -82,6 +82,9 @@ public class Texture : IDisposable {
     }
 
     public void SetData(Image<Rgba32> image) {
+        if (image.Width != this.Width || this.Height != image.Height)
+            throw new InvalidImageContentException($"That image does not have the right size! Expected: {Width}x{Height} Got: {image.Width}x{image.Height}");
+        
         image.ProcessPixelRows(
         x => {
             for (int i = 0; i < x.Height; i++) {
