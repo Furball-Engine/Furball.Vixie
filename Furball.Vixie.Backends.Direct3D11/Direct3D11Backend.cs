@@ -229,7 +229,14 @@ public class Direct3D11Backend : IGraphicsBackend {
 
         this.CreateSwapchainResources();
 
-        this._projectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width / (float)height * 720f, 720, 0, 1f, 0f);
+        this.SetProjectionMatrix(width, height, false);
+    }
+
+    public void SetProjectionMatrix(int width, int height, bool fbProjMatrix) {
+        float right  = fbProjMatrix ? width : width / (float)height * 720f;
+        float bottom = fbProjMatrix ? height : 720f;
+
+        this._projectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, right, bottom, 0, 1f, 0f);
     }
 
     public override IQuadRenderer CreateTextureRenderer() {
@@ -281,6 +288,7 @@ public class Direct3D11Backend : IGraphicsBackend {
     }
 
     private Rectangle _currentScissorRect;
+    public  bool      _fbProjMatrix;
 
     public override Rectangle ScissorRect {
         get => this._currentScissorRect;

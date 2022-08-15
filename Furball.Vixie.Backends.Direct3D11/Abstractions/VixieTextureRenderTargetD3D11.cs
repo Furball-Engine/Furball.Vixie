@@ -87,19 +87,25 @@ internal sealed class VixieTextureRenderTargetD3D11 : VixieTextureRenderTarget {
         this._backend.CurrentlyBoundTarget = this._renderTarget;
         this._backend.ResetBlendState();
 
-        this._deviceContext.RSGetViewports(this._viewports);
-        this._deviceContext.RSSetViewport(new Viewport(0, 0, this.Size.X, this.Size.Y, 0, 1));
+        this._startingViewport = this._deviceContext.RSGetViewport();
+
+        Viewport newViewport = new Viewport(0, 0, this.Size.X, this.Size.Y, this._startingViewport.MinDepth, this._startingViewport.MaxDepth);
+        this._deviceContext.RSSetViewport(newViewport);
+        this._backend.SetProjectionMatrix(this.Size.X, this.Size.Y, true);
     }
 
     public override void Unbind() {
         this._backend.CheckThread();
         this._backend.SetDefaultRenderTarget();
-        this._deviceContext.RSSetViewports(this._viewports);
+
+        this._deviceContext.RSSetViewport(this._startingViewport);
+        this._backend.SetProjectionMatrix((int)this._startingViewport.Width, (int)this._startingViewport.Height, false);
     }
 
     public override VixieTexture GetTexture() => this._vixieTexture;
 
-    private bool _isDisposed = false;
+    private bool     _isDisposed = false;
+    private Viewport _startingViewport;
     public override void Dispose() {
         this._backend.CheckThread();
         if (this._isDisposed)
