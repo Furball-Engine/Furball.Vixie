@@ -126,5 +126,5 @@ internal interface IGLBasedBackend {
     void          VertexAttribDivisor(uint  iOffset,            uint currentElementInstanceDivisor);
     internal void GenerateMipmaps(VixieTextureGL vixieTextureGl);
     unsafe   void GetTexImage(TextureTarget target, int level, PixelFormat format, PixelType type, void* ptr);
-    void SetProjectionMatrixAndViewport(int targetWidth, int targetHeight);
+    void SetProjectionMatrixAndViewport(int targetWidth, int targetHeight, bool flip);
 }

@@ -131,7 +131,7 @@ internal sealed class VixieTextureRenderTargetGL : VixieTextureRenderTarget, IDi
         this._backend.GetInteger(GetPName.Viewport, ref this._oldViewPort);
 
         //Set the projection matrix and viewport
-        this._backend.SetProjectionMatrixAndViewport(this.TargetWidth, this.TargetHeight);
+        this._backend.SetProjectionMatrixAndViewport(this.TargetWidth, this.TargetHeight, true);
 
         CurrentlyBound = this;
     }
@@ -197,7 +197,7 @@ internal sealed class VixieTextureRenderTargetGL : VixieTextureRenderTarget, IDi
         this._backend.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
         this._backend.CheckError("unbind rendertarget");
         
-        this._backend.SetProjectionMatrixAndViewport(this._oldViewPort[2], this._oldViewPort[3]);
+        this._backend.SetProjectionMatrixAndViewport(this._oldViewPort[2], this._oldViewPort[3], false);
 
         CurrentlyBound = null;
     }
