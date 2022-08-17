@@ -73,6 +73,7 @@ public class InstancedQuadRenderer : IQuadRenderer {
         this.gl = this._backend.GetModernGL();
 
         this._boundTextures = new uint[this._backend.QueryMaxTextureUnits()];
+        this._texes         = new VixieTextureGL[this._backend.QueryMaxTextureUnits()];
         for (var i = 0; i < this._boundTextures.Length; i++) {
             this._boundTextures[i] = uint.MaxValue;
         }
@@ -150,6 +151,10 @@ public class InstancedQuadRenderer : IQuadRenderer {
         if (this._isDisposed) return;
         
         this._isDisposed = true;
+        
+        for (int i = 0; i < this._texes.Length; i++) {
+            this._texes[i] = null;
+        }
         
         this._backend.CheckThread();
         this._shaderGl41.Dispose();
@@ -258,22 +263,21 @@ public class InstancedQuadRenderer : IQuadRenderer {
         this.Draw(vixieTexture, position, scale, rotation, colorOverride, texFlip, rotOrigin);
     }
 
-    private readonly uint[] _boundTextures;
-    private          int    _usedTextures = 0;
+    private readonly VixieTextureGL[] _texes;
+    private readonly uint[]           _boundTextures;
+    private          int              _usedTextures = 0;
     
-    //TODO: store the tex id in the TextureGL object itself then clear on flush
-    //This will let us skip the iteration if the id is already set
     private int GetTextureId(VixieTextureGL tex) {
         this._backend.CheckThread();
-        if(this._usedTextures != 0)
-            for (int i = 0; i < this._usedTextures; i++) {
-                uint tex2 = this._boundTextures[i];
 
-                if (tex2          == uint.MaxValue) break;
-                if (tex.TextureId == tex2) return i;
-            }
+        if (tex.BoundId != -1)
+            return tex.BoundId;
 
         this._boundTextures[this._usedTextures] = tex.TextureId;
+        this._texes[this._usedTextures]         = tex;
+
+        tex.BoundId = this._usedTextures;
+        
         this._usedTextures++;
 
         return this._usedTextures - 1;
@@ -291,8 +295,11 @@ public class InstancedQuadRenderer : IQuadRenderer {
         this._backend.CheckError("before");
         this._backend.BindTextures(this._boundTextures, (uint) this._usedTextures);
         this._backend.CheckError("bind textures");
-        for (var i = 0; i < this._boundTextures.Length; i++) {
+        for (int i = 0; i < this._boundTextures.Length; i++) {
             this._boundTextures[i] = uint.MaxValue;
+            if(this._texes[i] != null)
+                this._texes[i].BoundId = -1;
+            this._texes[i]         = null;
         }
             
         fixed (void* ptr = this._instanceData)

@@ -51,6 +51,8 @@ internal sealed class VixieTextureGL : VixieTexture, IDisposable {
         { TextureUnit.Texture31, 0 },
     };
 
+    internal int BoundId = -1;
+    
     public bool Bound {
         get {
             this._backend.GlCheckThread();
