@@ -45,8 +45,8 @@ internal class QuadRendererVeldrid : IQuadRenderer {
     private readonly ResourceSet  _projectionBufferResourceSet;
         
     private readonly DeviceBuffer _instanceVertexBuffer;
-    private readonly DeviceBuffer _vertexBuffer; //TODO: maybe this can be static?
-    private readonly DeviceBuffer _indexBuffer;  //TODO: maybe this can be static?
+    private readonly DeviceBuffer _vertexBuffer;
+    private readonly DeviceBuffer _indexBuffer; 
 
     private static ushort[] _Indicies = new ushort[] {
         //Tri 1
