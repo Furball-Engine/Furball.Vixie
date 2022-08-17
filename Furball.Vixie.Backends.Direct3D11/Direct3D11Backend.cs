@@ -12,11 +12,13 @@ using SharpGen.Runtime;
 using Silk.NET.Input;
 using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.Direct3D11.Debug;
 using Vortice.DXGI;
 using Vortice.Mathematics;
+using Configuration=SixLabors.ImageSharp.Configuration;
 using FeatureLevel=Vortice.Direct3D.FeatureLevel;
 
 namespace Furball.Vixie.Backends.Direct3D11; 
@@ -251,8 +253,9 @@ public class Direct3D11Backend : IGraphicsBackend {
         this._deviceContext.ClearRenderTargetView(this.CurrentlyBoundTarget, this._clearColor);
     }
 
+    private bool _takeScreenshot;
     public override void TakeScreenshot() {
-        throw new NotImplementedException();
+        this._takeScreenshot = true;
     }
 
     public override VixieTextureRenderTarget CreateRenderTarget(uint width, uint height) {
@@ -277,7 +280,38 @@ public class Direct3D11Backend : IGraphicsBackend {
         this._imGuiController.Render();
     }
 
-    public override void Present() {
+    public override unsafe void Present() {
+        if (this._takeScreenshot) {
+            this._takeScreenshot = false;
+            
+            Texture2DDescription desc = this._backBuffer.Description;
+            desc.Format         = Format.B8G8R8A8_UNorm_SRgb;
+            desc.Width          = this._backBuffer.Description.Width;
+            desc.Height         = this._backBuffer.Description.Height;
+            desc.Usage          = ResourceUsage.Staging;
+            desc.CPUAccessFlags = CpuAccessFlags.Read;
+            desc.BindFlags      = BindFlags.None;
+
+            ID3D11Texture2D stagingTex = this._device.CreateTexture2D(desc);
+        
+            this._deviceContext.CopyResource(stagingTex, this._backBuffer);
+
+            MappedSubresource mapped  = this._deviceContext.Map(stagingTex, 0);
+            Span<Bgra32>      rawData = mapped.AsSpan<Bgra32>(stagingTex, 0, 0);
+
+            Bgra32[] data = new Bgra32[desc.Width * desc.Height];
+            
+            //Copy the data into a contiguous array
+            for (int i = 0; i < desc.Height; i++)
+                rawData.Slice(i * (mapped.RowPitch / sizeof(Bgra32)), desc.Width).CopyTo(data.AsSpan(i * desc.Width));
+            
+            Image<Bgra32> image = Image.LoadPixelData(Configuration.Default, data, desc.Width, desc.Height);
+            
+            stagingTex.Dispose();
+            
+            this.InvokeScreenshotTaken(image);
+        }
+        
         this._swapChain.Present(0, PresentFlags.None);
     }
 
