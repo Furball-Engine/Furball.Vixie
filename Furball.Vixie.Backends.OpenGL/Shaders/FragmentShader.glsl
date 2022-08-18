@@ -1,9 +1,9 @@
-﻿#version 140
+#version 140
 precision mediump float;
 
-in      vec4 _Color;
-in      vec2 _TextureCoordinate;
-flat in int  _TextureId;
+in vec4 _Color;
+in vec2 _TextureCoordinate;
+flat in int _TextureId;
 
 out vec4 OutputColor;
 

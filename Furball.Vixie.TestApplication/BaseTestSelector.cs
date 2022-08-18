@@ -49,6 +49,11 @@ public class BaseTestSelector : GameComponent {
             this.BaseGame.Components.Remove(this);
         }
         
+        if (ImGui.Button("Test New Renderer")) {
+            this.BaseGame.Components.Add(new TestNewRenderer());
+            this.BaseGame.Components.Remove(this);
+        }
+        
         if (ImGui.Button("Empty Screen")) {
             this.BaseGame.Components.Add(new TestEmptyScreen());
             this.BaseGame.Components.Remove(this);
