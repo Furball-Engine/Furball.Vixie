@@ -55,8 +55,8 @@ internal unsafe class OpenGLRenderer : IRenderer {
     }
     
     public override void Begin() {
-        this._vtxMapper.Reset();
-        this._idxMapper.Reset();
+        this._vtxMapper.Map();
+        this._idxMapper.Map();
 
         this._usedTextures = 0;
         for (int i = 0; i < this._texHandles.Length; i++) {
@@ -65,6 +65,9 @@ internal unsafe class OpenGLRenderer : IRenderer {
     }
     
     public override void End() {
+        this._vtxMapper.Unmap();
+        this._idxMapper.Unmap();
+        
         this._vtxBuffer.SetSubData(this._vtxMapper.Handle, this._vtxMapper.ReservedBytes);
         this._idxBuffer.SetSubData(this._idxMapper.Handle, this._idxMapper.ReservedBytes);
     }

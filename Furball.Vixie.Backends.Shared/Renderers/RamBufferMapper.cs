@@ -12,10 +12,11 @@ public unsafe class RamBufferMapper : BufferMapper {
         this.Handle = (void*)Marshal.AllocHGlobal((int)sizeInBytes);
     }
 
-    public void Reset() {
+    public override void Map() {
         this.ReservedBytes = 0;
     }
-
+    public override void Unmap() {}
+    
     public override void* Reserve(nuint byteCount) {
         nuint ptr = (nuint)this.Handle + this.ReservedBytes;
 

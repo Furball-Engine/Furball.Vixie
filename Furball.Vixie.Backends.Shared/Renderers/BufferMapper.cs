@@ -11,6 +11,9 @@ public abstract unsafe class BufferMapper : IDisposable {
         get;
         protected set;
     }
+
+    public abstract void Map();
+    public abstract void Unmap();
     
     public abstract void* Reserve(nuint byteCount);
 
