@@ -1,7 +1,10 @@
-﻿using System.Numerics;
+﻿using System.Drawing;
+using System.Numerics;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Renderers;
+using Furball.Vixie.Helpers.Helpers;
 using ImGuiNET;
+using Color = Furball.Vixie.Backends.Shared.Color;
 
 namespace Furball.Vixie.TestApplication.Tests; 
 
@@ -9,56 +12,59 @@ public unsafe class TestNewRenderer : GameComponent {
     private Texture  _texture;
     private IRenderer _renderer;
 
-    private float _scale = 0.5f;
-        
+    private float   _scale = 0.5f;
+    private Texture _whitePixel;
+
     public override void Initialize() {
         this._texture =
-            // Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
-            Texture.CreateWhitePixelTexture();
+            Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
+        this._whitePixel = Texture.CreateWhitePixelTexture();
             
         this._renderer = GraphicsBackend.Current.CreateRenderer();
 
         this._renderer.Begin();
 
-        this._renderer.AllocateUnrotatedTexturedQuad(this._texture, new Vector2(200), new Vector2(100));
-        this._renderer.AllocateRotatedTexturedQuad(this._texture, new Vector2(300), new Vector2(100), 1);
+        this._renderer.AllocateUnrotatedTexturedQuad(this._texture, new Vector2(200), new Vector2(1));
+        this._renderer.AllocateRotatedTexturedQuad(this._texture, new Vector2(300), new Vector2(1), 1);
+        this._renderer.AllocateUnrotatedTexturedQuadWithSourceRect(this._texture, new Vector2(500), new Vector2(1), new Rectangle(100, 100, 200, 200));
+        this._renderer.AllocateRotatedTexturedQuadWithSourceRect(this._texture, new Vector2(600), new Vector2(1), 0.5f, new Rectangle(100, 100, 200, 200));
 
         MappedData data = this._renderer.Reserve(6, 15);
 
         data.VertexPtr[0] = new Vertex {
             Position          = new Vector2(100, 0),
             Color             = Color.Red,
-            TexId             = this._renderer.GetTextureId(this._texture),
+            TexId             = this._renderer.GetTextureId(this._whitePixel),
             TextureCoordinate = Vector2.Zero
         };
         data.VertexPtr[1] = new Vertex {
             Position          = new Vector2(200, 100),
             Color             = Color.Blue,
-            TexId             = this._renderer.GetTextureId(this._texture),
+            TexId             = this._renderer.GetTextureId(this._whitePixel),
             TextureCoordinate = new Vector2(1, 0.5f)
         };
         data.VertexPtr[2] = new Vertex {
             Position          = new Vector2(150, 200),
             Color             = Color.Green,
-            TexId             = this._renderer.GetTextureId(this._texture),
+            TexId             = this._renderer.GetTextureId(this._whitePixel),
             TextureCoordinate = new Vector2(0.75f, 1)
         };
         data.VertexPtr[3] = new Vertex {
             Position          = new Vector2(50, 200),
             Color             = Color.Orange,
-            TexId             = this._renderer.GetTextureId(this._texture),
+            TexId             = this._renderer.GetTextureId(this._whitePixel),
             TextureCoordinate = new Vector2(0.25f, 1)
         };
         data.VertexPtr[4] = new Vertex {
             Position          = new Vector2(0, 100),
             Color             = Color.CornflowerBlue,
-            TexId             = this._renderer.GetTextureId(this._texture),
+            TexId             = this._renderer.GetTextureId(this._whitePixel),
             TextureCoordinate = new Vector2(0, 0.5f)
         };
         data.VertexPtr[5] = new Vertex {
             Position          = new Vector2(100, 100),
             Color             = Color.Yellow,
-            TexId             = this._renderer.GetTextureId(this._texture),
+            TexId             = this._renderer.GetTextureId(this._whitePixel),
             TextureCoordinate = new Vector2(0.5f, 0.5f)
         };
         data.IndexPtr[0] = (ushort)(0 + data.IndexOffset);

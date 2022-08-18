@@ -33,6 +33,12 @@ internal unsafe class OpenGLRenderer : IRenderer {
         this._shader.AttachShader(ShaderType.FragmentShader, RendererShaderGenerator.GetFragment(this._backend));
         this._shader.Link();
 
+        this._shader.Bind();
+        for (int i = 0; i < backend.QueryMaxTextureUnits(); i++) {
+            this._shader.BindUniformToTexUnit($"tex_{i}", i);
+        }
+        this._shader.Unbind();
+        
         this._vtxBuffer = new BufferObjectGL(backend, (int)this._vtxMapper.SizeInBytes, BufferTargetARB.ArrayBuffer, BufferUsageARB.DynamicDraw);
         this._idxBuffer = new BufferObjectGL(backend, (int)this._idxMapper.SizeInBytes, BufferTargetARB.ElementArrayBuffer, BufferUsageARB.DynamicDraw);
         
@@ -64,14 +70,19 @@ internal unsafe class OpenGLRenderer : IRenderer {
         }
 
         this._indexCount = 0;
+        this._indexOffset = 0;
     }
     
     public override void End() {
         this._vtxMapper.Unmap();
         this._idxMapper.Unmap();
-        
+
+        this._vtxBuffer.Bind();
+        this._idxBuffer.Bind();
         this._vtxBuffer.SetSubData(this._vtxMapper.Handle, this._vtxMapper.ReservedBytes);
         this._idxBuffer.SetSubData(this._idxMapper.Handle, this._idxMapper.ReservedBytes);
+        this._vtxBuffer.Unbind();
+        this._idxBuffer.Unbind();
     }
 
     private uint _indexOffset;
@@ -125,11 +136,15 @@ internal unsafe class OpenGLRenderer : IRenderer {
         for (int i = 0; i < this._usedTextures; i++) {
             VixieTextureGL tex = this._texHandles[i];
 
+            tex.BoundId = -1;
+
             tex.Bind(TextureUnit.Texture0 + i);
         }
 
         this._gl.DrawElements(PrimitiveType.Triangles, this._indexCount, DrawElementsType.UnsignedShort, null);
 
+        this._shader.Unbind();
+        
         this._idxBuffer.Unbind();
         this._vtxBuffer.Unbind();
         
