@@ -362,6 +362,7 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
 
         return new FakeInstancingQuadRenderer(this);
     }
+    public override IRenderer CreateRenderer() => new OpenGLRenderer(this);
     /// <summary>
     ///     Gets the Amount of Texture Units available for use
     /// </summary>

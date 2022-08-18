@@ -27,6 +27,8 @@
       <EmbeddedResource Include="Shaders\FakeInstancingQuadRenderer\VertexShader.glsl" />
       <EmbeddedResource Include="Shaders\InstancedQuadRenderer\FragmentShader.glsl" />
       <EmbeddedResource Include="Shaders\InstancedQuadRenderer\VertexShader.glsl" />
+      <EmbeddedResource Include="Shaders\VertexShader.glsl" />
+      <EmbeddedResource Include="Shaders\FragmentShader.glsl" />
     </ItemGroup>
 
     <ItemGroup>

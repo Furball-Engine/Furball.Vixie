@@ -905,6 +905,7 @@ public unsafe class VulkanBackend : IGraphicsBackend {
     }
 
     public override IQuadRenderer CreateTextureRenderer() => throw new NotImplementedException();
+    public override IRenderer     CreateRenderer()        => throw new NotImplementedException();
 
 
     public override int QueryMaxTextureUnits() => throw new NotImplementedException();

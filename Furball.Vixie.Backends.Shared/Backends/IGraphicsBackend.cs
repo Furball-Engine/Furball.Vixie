@@ -37,6 +37,7 @@ public abstract class IGraphicsBackend {
     /// </summary>
     /// <returns>A Texture Renderer</returns>
     public abstract IQuadRenderer CreateTextureRenderer();
+    public abstract IRenderer CreateRenderer();
     /// <summary>
     /// Gets the Amount of Texture Units available for use
     /// </summary>
