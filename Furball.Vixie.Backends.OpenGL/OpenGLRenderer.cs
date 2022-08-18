@@ -62,6 +62,8 @@ internal unsafe class OpenGLRenderer : IRenderer {
         for (int i = 0; i < this._texHandles.Length; i++) {
             this._texHandles[i] = null;
         }
+
+        this._indexCount = 0;
     }
     
     public override void End() {
@@ -72,6 +74,8 @@ internal unsafe class OpenGLRenderer : IRenderer {
         this._idxBuffer.SetSubData(this._idxMapper.Handle, this._idxMapper.ReservedBytes);
     }
 
+    private uint _indexOffset;
+    private uint _indexCount;
     public override MappedData Reserve(ushort vertexCount, uint indexCount) {
         void* vertex = this._vtxMapper.Reserve((nuint)(vertexCount * sizeof(Vertex)));
         void* index  = this._idxMapper.Reserve(indexCount * sizeof(ushort));
@@ -80,7 +84,10 @@ internal unsafe class OpenGLRenderer : IRenderer {
             //TODO: handle this by uploading the data into a GPU buffer, then calling RamBufferMapper.Reset
         }
 
-        return new MappedData((Vertex*)vertex, (ushort*)index, vertexCount, indexCount);
+        this._indexCount  += indexCount;
+        this._indexOffset += vertexCount;
+        
+        return new MappedData((Vertex*)vertex, (ushort*)index, vertexCount, indexCount, this._indexOffset - vertexCount);
     }
     
     public override int GetTextureId(VixieTexture tex) {
@@ -121,7 +128,7 @@ internal unsafe class OpenGLRenderer : IRenderer {
             tex.Bind(TextureUnit.Texture0 + i);
         }
 
-        this._gl.DrawElements(PrimitiveType.Triangles, (uint)(this._idxMapper.ReservedBytes / sizeof(ushort)), DrawElementsType.UnsignedShort, null);
+        this._gl.DrawElements(PrimitiveType.Triangles, this._indexCount, DrawElementsType.UnsignedShort, null);
 
         this._idxBuffer.Unbind();
         this._vtxBuffer.Unbind();

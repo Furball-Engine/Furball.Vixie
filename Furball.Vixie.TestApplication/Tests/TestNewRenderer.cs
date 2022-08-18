@@ -14,43 +14,74 @@ public unsafe class TestNewRenderer : GameComponent {
         
     public override void Initialize() {
         this._texture =
-            Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
-        
+            // Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
+            Texture.CreateWhitePixelTexture();
+            
         this._renderer = GraphicsBackend.Current.CreateRenderer();
 
         this._renderer.Begin();
 
-        MappedData mappedData = this._renderer.Reserve(4, 6);
-        mappedData.VertexPtr[0] = new Vertex {
-            Position          = new Vector2(10, 10),
-            Color             = Color.White,
-            TexId             = this._renderer.GetTextureId(this._texture),
-            TextureCoordinate = new Vector2(0, 0)
+        this._renderer.AllocateUnrotatedTexturedQuad(this._texture, new Vector2(200), new Vector2(100));
+        this._renderer.AllocateUnrotatedTexturedQuad(this._texture, new Vector2(300), new Vector2(100));
+
+        MappedData data = this._renderer.Reserve(6, 15);
+
+        data.VertexPtr[0] = new Vertex() {
+            Position = new Vector2(100, 0),
+            Color = Color.Red,
+            TexId = this._renderer.GetTextureId(this._texture),
+            TextureCoordinate = Vector2.Zero
         };
-        mappedData.VertexPtr[1] = new Vertex {
-            Position          = new Vector2(100, 10),
-            Color             = Color.White,
+        data.VertexPtr[1] = new Vertex() {
+            Position          = new Vector2(200, 100),
+            Color             = Color.Blue,
             TexId             = this._renderer.GetTextureId(this._texture),
-            TextureCoordinate = new Vector2(1, 0)
+            TextureCoordinate = new Vector2(1, 0.5f)
         };
-        mappedData.VertexPtr[2] = new Vertex {
+        data.VertexPtr[2] = new Vertex() {
+            Position          = new Vector2(150, 200),
+            Color             = Color.Green,
+            TexId             = this._renderer.GetTextureId(this._texture),
+            TextureCoordinate = new Vector2(0.75f, 1)
+        };
+        data.VertexPtr[3] = new Vertex() {
+            Position          = new Vector2(50, 200),
+            Color             = Color.Orange,
+            TexId             = this._renderer.GetTextureId(this._texture),
+            TextureCoordinate = new Vector2(0.25f, 1)
+        };
+        data.VertexPtr[4] = new Vertex() {
+            Position          = new Vector2(0, 100),
+            Color             = Color.CornflowerBlue,
+            TexId             = this._renderer.GetTextureId(this._texture),
+            TextureCoordinate = new Vector2(0, 0.5f)
+        };
+        data.VertexPtr[5] = new Vertex() {
             Position          = new Vector2(100, 100),
-            Color             = Color.White,
+            Color             = Color.Yellow,
             TexId             = this._renderer.GetTextureId(this._texture),
-            TextureCoordinate = new Vector2(1, 1)
+            TextureCoordinate = new Vector2(0.5f, 0.5f)
         };
-        mappedData.VertexPtr[3] = new Vertex {
-            Position          = new Vector2(10, 100),
-            Color             = Color.White,
-            TexId             = this._renderer.GetTextureId(this._texture),
-            TextureCoordinate = new Vector2(0, 1)
-        };
-        mappedData.IndexPtr[0] = 3;
-        mappedData.IndexPtr[1] = 2;
-        mappedData.IndexPtr[2] = 0;
-        mappedData.IndexPtr[3] = 1;
-        mappedData.IndexPtr[4] = 2;
-        mappedData.IndexPtr[5] = 0;
+        data.IndexPtr[0] = (ushort)(0 + data.IndexOffset);
+        data.IndexPtr[1] = (ushort)(5 + data.IndexOffset);
+        data.IndexPtr[2] = (ushort)(1 + data.IndexOffset);
+        
+        data.IndexPtr[3] = (ushort)(1 + data.IndexOffset);
+        data.IndexPtr[4] = (ushort)(5 + data.IndexOffset);
+        data.IndexPtr[5] = (ushort)(2 + data.IndexOffset);
+
+        data.IndexPtr[6] = (ushort)(2 + data.IndexOffset);
+        data.IndexPtr[7] = (ushort)(5 + data.IndexOffset);
+        data.IndexPtr[8] = (ushort)(3 + data.IndexOffset);
+
+        data.IndexPtr[9]  = (ushort)(3 + data.IndexOffset);
+        data.IndexPtr[10] = (ushort)(5 + data.IndexOffset);
+        data.IndexPtr[11] = (ushort)(4 + data.IndexOffset);
+
+        data.IndexPtr[12] = (ushort)(4 + data.IndexOffset);
+        data.IndexPtr[13] = (ushort)(5 + data.IndexOffset);
+        data.IndexPtr[14] = (ushort)(0 + data.IndexOffset);
+
         
         this._renderer.End();
         
