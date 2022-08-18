@@ -1,7 +1,6 @@
 ﻿using System.Numerics;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Renderers;
-using Furball.Vixie.Helpers.Helpers;
 using ImGuiNET;
 
 namespace Furball.Vixie.TestApplication.Tests; 
@@ -22,41 +21,41 @@ public unsafe class TestNewRenderer : GameComponent {
         this._renderer.Begin();
 
         this._renderer.AllocateUnrotatedTexturedQuad(this._texture, new Vector2(200), new Vector2(100));
-        this._renderer.AllocateUnrotatedTexturedQuad(this._texture, new Vector2(300), new Vector2(100));
+        this._renderer.AllocateRotatedTexturedQuad(this._texture, new Vector2(300), new Vector2(100), 1);
 
         MappedData data = this._renderer.Reserve(6, 15);
 
-        data.VertexPtr[0] = new Vertex() {
-            Position = new Vector2(100, 0),
-            Color = Color.Red,
-            TexId = this._renderer.GetTextureId(this._texture),
+        data.VertexPtr[0] = new Vertex {
+            Position          = new Vector2(100, 0),
+            Color             = Color.Red,
+            TexId             = this._renderer.GetTextureId(this._texture),
             TextureCoordinate = Vector2.Zero
         };
-        data.VertexPtr[1] = new Vertex() {
+        data.VertexPtr[1] = new Vertex {
             Position          = new Vector2(200, 100),
             Color             = Color.Blue,
             TexId             = this._renderer.GetTextureId(this._texture),
             TextureCoordinate = new Vector2(1, 0.5f)
         };
-        data.VertexPtr[2] = new Vertex() {
+        data.VertexPtr[2] = new Vertex {
             Position          = new Vector2(150, 200),
             Color             = Color.Green,
             TexId             = this._renderer.GetTextureId(this._texture),
             TextureCoordinate = new Vector2(0.75f, 1)
         };
-        data.VertexPtr[3] = new Vertex() {
+        data.VertexPtr[3] = new Vertex {
             Position          = new Vector2(50, 200),
             Color             = Color.Orange,
             TexId             = this._renderer.GetTextureId(this._texture),
             TextureCoordinate = new Vector2(0.25f, 1)
         };
-        data.VertexPtr[4] = new Vertex() {
+        data.VertexPtr[4] = new Vertex {
             Position          = new Vector2(0, 100),
             Color             = Color.CornflowerBlue,
             TexId             = this._renderer.GetTextureId(this._texture),
             TextureCoordinate = new Vector2(0, 0.5f)
         };
-        data.VertexPtr[5] = new Vertex() {
+        data.VertexPtr[5] = new Vertex {
             Position          = new Vector2(100, 100),
             Color             = Color.Yellow,
             TexId             = this._renderer.GetTextureId(this._texture),
@@ -82,7 +81,6 @@ public unsafe class TestNewRenderer : GameComponent {
         data.IndexPtr[13] = (ushort)(5 + data.IndexOffset);
         data.IndexPtr[14] = (ushort)(0 + data.IndexOffset);
 
-        
         this._renderer.End();
         
         base.Initialize();
