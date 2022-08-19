@@ -203,6 +203,9 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
         this.CheckError("enable srcalpha");
 
         this.gl.Enable(EnableCap.ScissorTest);
+        
+        this.gl.Enable(EnableCap.CullFace);
+        this.gl.CullFace(CullFaceMode.Back);
 
         if (this.CreationBackend == Backend.OpenGL)
             this._legacyImGuiController =

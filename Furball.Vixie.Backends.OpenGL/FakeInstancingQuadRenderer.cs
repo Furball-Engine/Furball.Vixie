@@ -104,9 +104,9 @@ internal class FakeInstancingQuadRenderer : IQuadRenderer {
             //Top left
             this.BatchedIndicies[i * 6] = (ushort)(0 + i * 4);
             //Top right
-            this.BatchedIndicies[i * 6 + 1] = (ushort)(1 + i * 4);
+            this.BatchedIndicies[i * 6 + 1] = (ushort)(2 + i * 4);
             //Bottom left
-            this.BatchedIndicies[i * 6 + 2] = (ushort)(2 + i * 4);
+            this.BatchedIndicies[i * 6 + 2] = (ushort)(1 + i * 4);
             //Top right
             this.BatchedIndicies[i * 6 + 3] = (ushort)(2 + i * 4);
             //Bottom left

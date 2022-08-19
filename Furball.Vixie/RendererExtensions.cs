@@ -7,47 +7,56 @@ using Color = Furball.Vixie.Backends.Shared.Color;
 namespace Furball.Vixie;
 
 public static class RendererExtensions {
-    public static unsafe void AllocateUnrotatedTexturedQuad(this IRenderer renderer, VixieTexture tex, Vector2 position,
-        Vector2 scale) {
-        Vector2 size = new(tex.Width * scale.X, tex.Height * scale.Y);
-
-        MappedData mappedData = renderer.Reserve(4, 6);
-        mappedData.VertexPtr[0] = new Vertex {
-            Position          = position,
+    private static unsafe void SetQuadVertices(Vertex* ptr, Vector2 pos, Vector2 size, int texId) {
+        ptr[0] = new Vertex {
+            Position          = pos,
             Color             = Color.White,
-            TexId             = renderer.GetTextureId(tex),
-            TextureCoordinate = new Vector2(0, 0)
+            TextureCoordinate = new Vector2(0, 0),
+            TexId = texId
         };
-        mappedData.VertexPtr[1] = new Vertex {
-            Position = position + size with {
+        ptr[1] = new Vertex {
+            Position = pos + size with {
                 Y = 0
             },
             Color             = Color.White,
-            TexId             = renderer.GetTextureId(tex),
-            TextureCoordinate = new Vector2(1, 0)
+            TextureCoordinate = new Vector2(1, 0),
+            TexId             = texId
         };
-        mappedData.VertexPtr[2] = new Vertex {
-            Position          = position + size,
+        ptr[2] = new Vertex {
+            Position          = pos + size,
             Color             = Color.White,
-            TexId             = renderer.GetTextureId(tex),
-            TextureCoordinate = new Vector2(1, 1)
+            TextureCoordinate = new Vector2(1, 1),
+            TexId             = texId
         };
-        mappedData.VertexPtr[3] = new Vertex {
-            Position = position + size with {
+        ptr[3] = new Vertex {
+            Position = pos + size with {
                 X = 0
             },
             Color             = Color.White,
-            TexId             = renderer.GetTextureId(tex),
-            TextureCoordinate = new Vector2(0, 1)
+            TextureCoordinate = new Vector2(0, 1),
+            TexId             = texId
         };
+    }
+
+    private static unsafe void SetQuadIndices(MappedData mappedData) {
         //Tri 1
         mappedData.IndexPtr[0] = (ushort)(3 + mappedData.IndexOffset);
         mappedData.IndexPtr[1] = (ushort)(2 + mappedData.IndexOffset);
         mappedData.IndexPtr[2] = (ushort)(0 + mappedData.IndexOffset);
         //Tri 2
-        mappedData.IndexPtr[3] = (ushort)(1 + mappedData.IndexOffset);
-        mappedData.IndexPtr[4] = (ushort)(2 + mappedData.IndexOffset);
+        mappedData.IndexPtr[3] = (ushort)(2 + mappedData.IndexOffset);
+        mappedData.IndexPtr[4] = (ushort)(1 + mappedData.IndexOffset);
         mappedData.IndexPtr[5] = (ushort)(0 + mappedData.IndexOffset);
+    }
+    
+    public static unsafe void AllocateUnrotatedTexturedQuad(this IRenderer renderer, VixieTexture tex, Vector2 position,
+        Vector2 scale) {
+        Vector2 size = new(tex.Width * scale.X, tex.Height * scale.Y);
+
+        MappedData mappedData = renderer.Reserve(4, 6);
+        
+        SetQuadVertices(mappedData.VertexPtr, position, size, renderer.GetTextureId(tex));
+        SetQuadIndices(mappedData);
     }
 
     public static unsafe void AllocateUnrotatedTexturedQuadWithSourceRect(this IRenderer renderer, VixieTexture tex,
@@ -56,48 +65,17 @@ public static class RendererExtensions {
         Vector2 size = new(sourceRect.Width * scale.X, sourceRect.Height * scale.Y);
 
         MappedData mappedData = renderer.Reserve(4, 6);
-        mappedData.VertexPtr[0] = new Vertex {
-            Position          = Vector2.Zero,
-            Color             = Color.White,
-            TexId             = renderer.GetTextureId(tex),
-            TextureCoordinate = new Vector2(sourceRect.X / (float)tex.Width, sourceRect.Y / (float)tex.Height)
-        };
-        mappedData.VertexPtr[1] = new Vertex {
-            Position = size with {
-                Y = 0
-            },
-            Color             = Color.White,
-            TexId             = renderer.GetTextureId(tex),
-            TextureCoordinate = new Vector2(sourceRect.Right / (float)tex.Width, sourceRect.Y / (float)tex.Height)
-        };
-        mappedData.VertexPtr[2] = new Vertex {
-            Position          = size,
-            Color             = Color.White,
-            TexId             = renderer.GetTextureId(tex),
-            TextureCoordinate = new Vector2(sourceRect.Right / (float)tex.Width, sourceRect.Bottom / (float)tex.Height)
-        };
-        mappedData.VertexPtr[3] = new Vertex {
-            Position = size with {
-                X = 0
-            },
-            Color             = Color.White,
-            TexId             = renderer.GetTextureId(tex),
-            TextureCoordinate = new Vector2(sourceRect.X / (float)tex.Width, sourceRect.Bottom / (float)tex.Height)
-        };
+        SetQuadVertices(mappedData.VertexPtr, position, size, renderer.GetTextureId(tex));
+        mappedData.VertexPtr[0].TextureCoordinate =
+            new Vector2(sourceRect.X / (float)tex.Width, sourceRect.Y / (float)tex.Height);
+        mappedData.VertexPtr[1].TextureCoordinate =
+            new Vector2(sourceRect.Right / (float)tex.Width, sourceRect.Y / (float)tex.Height);
+        mappedData.VertexPtr[2].TextureCoordinate =
+            new Vector2(sourceRect.Right / (float)tex.Width, sourceRect.Bottom / (float)tex.Height);
+        mappedData.VertexPtr[3].TextureCoordinate =
+            new Vector2(sourceRect.X / (float)tex.Width, sourceRect.Bottom / (float)tex.Height);
 
-        mappedData.VertexPtr[0].Position += position;
-        mappedData.VertexPtr[1].Position += position;
-        mappedData.VertexPtr[2].Position += position;
-        mappedData.VertexPtr[3].Position += position;
-
-        //Tri 1
-        mappedData.IndexPtr[0] = (ushort)(3 + mappedData.IndexOffset);
-        mappedData.IndexPtr[1] = (ushort)(2 + mappedData.IndexOffset);
-        mappedData.IndexPtr[2] = (ushort)(0 + mappedData.IndexOffset);
-        //Tri 2
-        mappedData.IndexPtr[3] = (ushort)(1 + mappedData.IndexOffset);
-        mappedData.IndexPtr[4] = (ushort)(2 + mappedData.IndexOffset);
-        mappedData.IndexPtr[5] = (ushort)(0 + mappedData.IndexOffset);
+        SetQuadIndices(mappedData);
     }
 
     public static unsafe void AllocateRotatedTexturedQuad(this IRenderer renderer, VixieTexture tex, Vector2 position,
@@ -146,14 +124,7 @@ public static class RendererExtensions {
         mappedData.VertexPtr[2].Position += position;
         mappedData.VertexPtr[3].Position += position;
 
-        //Tri 1
-        mappedData.IndexPtr[0] = (ushort)(3 + mappedData.IndexOffset);
-        mappedData.IndexPtr[1] = (ushort)(2 + mappedData.IndexOffset);
-        mappedData.IndexPtr[2] = (ushort)(0 + mappedData.IndexOffset);
-        //Tri 2
-        mappedData.IndexPtr[3] = (ushort)(1 + mappedData.IndexOffset);
-        mappedData.IndexPtr[4] = (ushort)(2 + mappedData.IndexOffset);
-        mappedData.IndexPtr[5] = (ushort)(0 + mappedData.IndexOffset);
+        SetQuadIndices(mappedData);
     }
     
     public static unsafe void AllocateRotatedTexturedQuadWithSourceRect(this IRenderer renderer, VixieTexture tex,
@@ -203,13 +174,6 @@ public static class RendererExtensions {
         mappedData.VertexPtr[2].Position += position;
         mappedData.VertexPtr[3].Position += position;
 
-        //Tri 1
-        mappedData.IndexPtr[0] = (ushort)(3 + mappedData.IndexOffset);
-        mappedData.IndexPtr[1] = (ushort)(2 + mappedData.IndexOffset);
-        mappedData.IndexPtr[2] = (ushort)(0 + mappedData.IndexOffset);
-        //Tri 2
-        mappedData.IndexPtr[3] = (ushort)(1 + mappedData.IndexOffset);
-        mappedData.IndexPtr[4] = (ushort)(2 + mappedData.IndexOffset);
-        mappedData.IndexPtr[5] = (ushort)(0 + mappedData.IndexOffset);
+        SetQuadIndices(mappedData);
     }
 }

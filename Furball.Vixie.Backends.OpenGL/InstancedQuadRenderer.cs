@@ -39,7 +39,7 @@ public class InstancedQuadRenderer : IQuadRenderer {
     };
     private static ushort[] _indicies = {
         //Tri 1
-        0, 1, 2,
+        0, 2, 1,
         //Tri 2
         2, 3, 0
     };
