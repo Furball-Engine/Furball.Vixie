@@ -1,9 +1,9 @@
 #version 140
 
-in vec2 VertexPosition;
-in vec2 TextureCoordinate;
-in vec4 VertexColor;
-in int  TextureId;
+layout(location = 0) in vec2 VertexPosition;
+layout(location = 1) in vec2 TextureCoordinate;
+layout(location = 2) in vec4 VertexColor;
+layout(location = 3) in int  TextureId;
 
 out      vec4 _Color;
 out      vec2 _TextureCoordinate;
