@@ -9,7 +9,8 @@ using Color = Furball.Vixie.Backends.Shared.Color;
 namespace Furball.Vixie.TestApplication.Tests; 
 
 public unsafe class TestNewRenderer : GameComponent {
-    private Texture  _texture;
+    private Texture   _texture;
+    private Texture[] _textureArr;
     private IRenderer _renderer;
 
     private float   _scale = 0.5f;
@@ -19,7 +20,13 @@ public unsafe class TestNewRenderer : GameComponent {
         this._texture =
             Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
         this._whitePixel = Texture.CreateWhitePixelTexture();
-            
+
+        this._textureArr = new Texture[64];
+        for (int i = 0; i < this._textureArr.Length; i++) {
+            this._textureArr[i] =
+                Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
+        }
+
         this._renderer = GraphicsBackend.Current.CreateRenderer();
 
         this._renderer.Begin();
@@ -30,7 +37,7 @@ public unsafe class TestNewRenderer : GameComponent {
         this._renderer.AllocateRotatedTexturedQuadWithSourceRect(this._texture, new Vector2(600), new Vector2(1), 0.5f, new Rectangle(100, 100, 200, 200));
 
         for (int i = 0; i < 2000; i++) {
-            this._renderer.AllocateUnrotatedTexturedQuad(this._texture, new Vector2(i*9 % 1000, i % 12.2f), new Vector2(1));
+            this._renderer.AllocateUnrotatedTexturedQuad(this._textureArr[i % 64], new Vector2(i*9 % 1000), new Vector2(1));
         }
         
         MappedData data = this._renderer.Reserve(6, 15);
