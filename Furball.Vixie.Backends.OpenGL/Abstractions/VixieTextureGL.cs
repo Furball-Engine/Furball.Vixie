@@ -229,7 +229,7 @@ internal sealed class VixieTextureGL : VixieTexture, IDisposable {
         image.ProcessPixelRows(accessor =>
         {
             for (int i = 0; i < accessor.Height; i++) {
-                fixed(void* ptr = &accessor.GetRowSpan(i).GetPinnableReference())
+                fixed(void* ptr = accessor.GetRowSpan(i))
                     this._backend.TexSubImage2D(TextureTarget.Texture2D, 0, 0, i, (uint)accessor.Width, 1, PixelFormat.Rgba, PixelType.UnsignedByte, ptr);
             }
         });

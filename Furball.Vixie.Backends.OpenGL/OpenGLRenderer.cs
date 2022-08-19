@@ -171,15 +171,15 @@ internal unsafe class OpenGLRenderer : IRenderer {
         
         void* vertex = this._vtxMapper.Reserve((nuint)(vertexCount * sizeof(Vertex)));
         void* index  = this._idxMapper.Reserve(indexCount * sizeof(ushort));
-
-        this._indexCount  += indexCount;
-        this._indexOffset += vertexCount;
         
         if (vertex == null || index == null) {
             this.DumpToBuffers();
 
             return this.Reserve(vertexCount, indexCount);
         }
+        
+        this._indexCount  += indexCount;
+        this._indexOffset += vertexCount;
 
         return new MappedData((Vertex*)vertex, (ushort*)index, vertexCount, indexCount, this._indexOffset - vertexCount);
     }
