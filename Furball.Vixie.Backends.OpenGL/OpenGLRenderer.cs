@@ -25,8 +25,7 @@ internal unsafe class OpenGLRenderer : IRenderer {
         public BufferObjectGL      Idx;
         public uint                IndexCount;
 
-        public VixieTextureGL[] TexArray;
-        public int              UsedTextures;
+        public VixieTextureGL Texture;
         
         private bool _isDisposed = false;
         public void Dispose() {
@@ -39,7 +38,7 @@ internal unsafe class OpenGLRenderer : IRenderer {
             this.Idx?.Dispose();
             this.Vao?.Dispose();
 
-            this.TexArray = null;
+            this.Texture = null;
         }
 
         ~BufferData() {
@@ -64,12 +63,8 @@ internal unsafe class OpenGLRenderer : IRenderer {
         this._shader.Link();
 
         this._shader.Bind();
-        for (int i = 0; i < backend.QueryMaxTextureUnits(); i++) {
-            this._shader.BindUniformToTexUnit($"tex_{i}", i);
-        }
+        this._shader.BindUniformToTexUnit("tex", 0);
         this._shader.Unbind();
-
-        this._texHandles = new VixieTextureGL[this._backend.QueryMaxTextureUnits()];
     }
 
     private BufferObjectGL CreateNewVertexBuffer(VertexArrayObjectGL vao) {
@@ -81,7 +76,7 @@ internal unsafe class OpenGLRenderer : IRenderer {
         layout.AddElement<float>(2); //Position
         layout.AddElement<float>(2); //Texture Coordinate
         layout.AddElement<float>(4); //Color
-        layout.AddElement<int>(1);   //Texture id
+        layout.AddElement<int>(2);   //Texture id
 
         vao.AddBuffer(buffer, layout);
 
@@ -115,26 +110,17 @@ internal unsafe class OpenGLRenderer : IRenderer {
         vtx.Unbind();
         idx.Unbind();
         
-        BufferData buf;
-        this._bufferList.Add(buf = new BufferData {
-            Vtx          = vtx, Idx = idx, IndexCount = this._indexCount, Vao = vao, TexArray = new VixieTextureGL[this._texHandles.Length],
-            UsedTextures = this._usedTextures
+        this._bufferList.Add(new BufferData {
+            Vtx = vtx, Idx = idx, IndexCount = this._indexCount, Vao = vao, Texture = this._currentTexture
         });
-        Array.Copy(this._texHandles, buf.TexArray, this._usedTextures);
-        
+
         this._indexCount   = 0;
         this._indexOffset  = 0;
         
         this._vtxMapper.Reset();
         this._idxMapper.Reset();
 
-        //Clear the `boundat` stuff
-        for (int i = 0; i < this._usedTextures; i++) {
-            VixieTextureGL tex = this._texHandles[i];
-
-            tex.BoundId = -1;
-        }
-        this._usedTextures = 0;
+        this._currentTexture = null;
     }
     
     public override void Begin() {
@@ -144,10 +130,7 @@ internal unsafe class OpenGLRenderer : IRenderer {
         this._vtxMapper.Map();
         this._idxMapper.Map();
 
-        this._usedTextures = 0;
-        for (int i = 0; i < this._texHandles.Length; i++) {
-            this._texHandles[i] = null;
-        }
+        this._currentTexture = null;
 
         this._indexCount = 0;
         this._indexOffset = 0;
@@ -162,12 +145,21 @@ internal unsafe class OpenGLRenderer : IRenderer {
 
     private uint _indexOffset;
     private uint _indexCount;
-    public override MappedData Reserve(ushort vertexCount, uint indexCount) {
+    public override MappedData Reserve(ushort vertexCount, uint indexCount, VixieTexture texture) {
         Debug.Assert(vertexCount != 0, "vertexCount != 0");
         Debug.Assert(indexCount  != 0, "indexCount != 0");
         
         Debug.Assert(vertexCount * sizeof(Vertex) < (int)this._vtxMapper.SizeInBytes, "vertexCount * sizeof(Vertex) < this._vtxMapper.SizeInBytes");
         Debug.Assert(indexCount * sizeof(ushort) < (int)this._idxMapper.SizeInBytes, "indexCount * sizeof(ushort) < (int)this._idxMapper.SizeInBytes");
+
+        if (this._currentTexture == null)
+            this._currentTexture = (VixieTextureGL)texture;
+
+        if (this._currentTexture != texture) {
+            this.DumpToBuffers();
+            
+            return this.Reserve(vertexCount, indexCount, texture);
+        }
         
         void* vertex = this._vtxMapper.Reserve((nuint)(vertexCount * sizeof(Vertex)));
         void* index  = this._idxMapper.Reserve(indexCount * sizeof(ushort));
@@ -175,38 +167,16 @@ internal unsafe class OpenGLRenderer : IRenderer {
         if (vertex == null || index == null) {
             this.DumpToBuffers();
 
-            return this.Reserve(vertexCount, indexCount);
+            return this.Reserve(vertexCount, indexCount, texture);
         }
         
         this._indexCount  += indexCount;
         this._indexOffset += vertexCount;
 
-        return new MappedData((Vertex*)vertex, (ushort*)index, vertexCount, indexCount, this._indexOffset - vertexCount);
+        return new MappedData((Vertex*)vertex, (ushort*)index, vertexCount, indexCount, this._indexOffset - vertexCount, 0);
     }
     
-    public override int GetTextureId(VixieTexture tex) {
-        if (tex is not VixieTextureGL texGl)
-            throw new InvalidOperationException($"You must pass a {typeof(VixieTextureGL)} into this function!");
-
-        if (texGl.BoundId != -1)
-            return texGl.BoundId;
-
-        texGl.BoundId = this._usedTextures;
-        
-        this._texHandles[this._usedTextures] = texGl;
-
-        this._usedTextures++;
-
-        if (this._usedTextures >= this._backend.QueryMaxTextureUnits()) {
-            this.DumpToBuffers();
-            return this.GetTextureId(tex);
-        }
-        
-        return this._usedTextures - 1;
-    }
-
-    private int              _usedTextures;
-    private VixieTextureGL[] _texHandles;
+    private VixieTextureGL _currentTexture;
     public override void Draw() {
         this._shader.Bind();
         this._shader.SetUniform("ProjectionMatrix", this._backend.ProjectionMatrix);
@@ -218,28 +188,26 @@ internal unsafe class OpenGLRenderer : IRenderer {
             buf.Vtx.Bind();
             buf.Idx.Bind();
 
-            for (int i2 = 0; i2 < buf.UsedTextures; i2++) {
-                VixieTextureGL tex = buf.TexArray[i2];
-
-                tex.Bind(TextureUnit.Texture0 + i2);
-            }
-
+            buf.Texture.Bind();
+            
             this._gl.DrawElements(PrimitiveType.Triangles, buf.IndexCount, DrawElementsType.UnsignedShort, null);
 
+#if DEBUG
             buf.Idx.Unbind();
             buf.Vtx.Unbind();
 
             buf.Vao.Unbind();
+#endif
         }
 
+#if DEBUG
         this._shader.Unbind();
+#endif
     }
     
     protected override void DisposeInternal() {
         //Clear all the references
-        for (int i = 0; i < this._texHandles.Length; i++) {
-            this._texHandles[i] = null;
-        }
+        this._currentTexture = null;
         
         this._vtxMapper.Dispose();
         this._idxMapper.Dispose();

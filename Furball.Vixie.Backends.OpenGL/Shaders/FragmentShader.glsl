@@ -8,8 +8,8 @@ flat in int _TextureId;
 out vec4 OutputColor;
 
 //These are the bound textures
-${UNIFORMS}
+uniform sampler2D tex;
 
 void main() {
-${IF}
+    OutputColor = texture(tex, _TextureCoordinate) * _Color;
 }

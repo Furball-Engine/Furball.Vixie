@@ -21,11 +21,11 @@ public unsafe class TestNewRenderer : GameComponent {
             Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
         this._whitePixel = Texture.CreateWhitePixelTexture();
 
-        this._textureArr = new Texture[64];
-        for (int i = 0; i < this._textureArr.Length; i++) {
-            this._textureArr[i] =
-                Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
-        }
+        // this._textureArr = new Texture[64];
+        // for (int i = 0; i < this._textureArr.Length; i++) {
+            // this._textureArr[i] =
+                // Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
+        // }
 
         this._renderer = GraphicsBackend.Current.CreateRenderer();
 
@@ -37,45 +37,45 @@ public unsafe class TestNewRenderer : GameComponent {
         this._renderer.AllocateRotatedTexturedQuadWithSourceRect(this._texture, new Vector2(600), new Vector2(1), 0.5f, new Rectangle(100, 100, 200, 200));
 
         for (int i = 0; i < 2000; i++) {
-            this._renderer.AllocateUnrotatedTexturedQuad(this._textureArr[i % 64], new Vector2(i*9 % 1000), new Vector2(1));
+            this._renderer.AllocateUnrotatedTexturedQuad(this._texture, new Vector2(i*9 % 500), new Vector2(1));
         }
         
-        MappedData data = this._renderer.Reserve(6, 15);
+        MappedData data = this._renderer.Reserve(6, 15, this._whitePixel);
 
         data.VertexPtr[0] = new Vertex {
             Position          = new Vector2(100, 0),
             Color             = Color.Red,
-            TexId             = this._renderer.GetTextureId(this._whitePixel),
+            TexId             = data.TextureId,
             TextureCoordinate = Vector2.Zero
         };
         data.VertexPtr[1] = new Vertex {
             Position          = new Vector2(200, 100),
             Color             = Color.Blue,
-            TexId             = this._renderer.GetTextureId(this._whitePixel),
+            TexId             = data.TextureId,
             TextureCoordinate = new Vector2(1, 0.5f)
         };
         data.VertexPtr[2] = new Vertex {
             Position          = new Vector2(150, 200),
             Color             = Color.Green,
-            TexId             = this._renderer.GetTextureId(this._whitePixel),
+            TexId             = data.TextureId,
             TextureCoordinate = new Vector2(0.75f, 1)
         };
         data.VertexPtr[3] = new Vertex {
             Position          = new Vector2(50, 200),
             Color             = Color.Orange,
-            TexId             = this._renderer.GetTextureId(this._whitePixel),
+            TexId             = data.TextureId,
             TextureCoordinate = new Vector2(0.25f, 1)
         };
         data.VertexPtr[4] = new Vertex {
             Position          = new Vector2(0, 100),
             Color             = Color.CornflowerBlue,
-            TexId             = this._renderer.GetTextureId(this._whitePixel),
+            TexId             = data.TextureId,
             TextureCoordinate = new Vector2(0, 0.5f)
         };
         data.VertexPtr[5] = new Vertex {
             Position          = new Vector2(100, 100),
             Color             = Color.Yellow,
-            TexId             = this._renderer.GetTextureId(this._whitePixel),
+            TexId             = data.TextureId,
             TextureCoordinate = new Vector2(0.5f, 0.5f)
         };
         data.IndexPtr[0] = (ushort)(0 + data.IndexOffset);
