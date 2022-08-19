@@ -29,6 +29,10 @@ public unsafe class TestNewRenderer : GameComponent {
         this._renderer.AllocateUnrotatedTexturedQuadWithSourceRect(this._texture, new Vector2(500), new Vector2(1), new Rectangle(100, 100, 200, 200));
         this._renderer.AllocateRotatedTexturedQuadWithSourceRect(this._texture, new Vector2(600), new Vector2(1), 0.5f, new Rectangle(100, 100, 200, 200));
 
+        for (int i = 0; i < 2000; i++) {
+            this._renderer.AllocateUnrotatedTexturedQuad(this._texture, new Vector2(i*9 % 1000, i % 12.2f), new Vector2(1));
+        }
+        
         MappedData data = this._renderer.Reserve(6, 15);
 
         data.VertexPtr[0] = new Vertex {
