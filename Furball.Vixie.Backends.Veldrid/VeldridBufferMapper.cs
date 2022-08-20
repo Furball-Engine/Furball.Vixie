@@ -7,7 +7,7 @@ namespace Furball.Vixie.Backends.Veldrid;
 public class VeldridBufferMapper : BufferMapper {
     private readonly VeldridBackend _backend;
     private readonly BufferUsage    Usage;
-    private          DeviceBuffer   _buffer;
+    private          DeviceBuffer?  _buffer;
 
     public unsafe void* Ptr;
 
@@ -21,17 +21,22 @@ public class VeldridBufferMapper : BufferMapper {
         this.SizeInBytes = byteSize;
     }
 
-    public DeviceBuffer Reset() {
-        DeviceBuffer old = this._buffer;
+    public unsafe DeviceBuffer? Reset() {
+        DeviceBuffer? old = this._buffer;
         
         BufferDescription desc = new((uint)this.SizeInBytes, BufferUsage.Dynamic | this.Usage);
         this._buffer = this._backend.ResourceFactory.CreateBuffer(ref desc);
+        MappedResource map = this._backend.GraphicsDevice.Map(this._buffer, MapMode.Write);
 
+        this.Ptr = (void*)map.Data;
+        
+        if(old != null)
+            this._backend.GraphicsDevice.Unmap(old);
         return old;
     }
     
     public override unsafe void Map() {
-        this.Reset().Dispose();
+        this.Reset()?.Dispose();
 
         MappedResource map = this._backend.GraphicsDevice.Map(this._buffer, MapMode.Write);
 
@@ -55,6 +60,6 @@ public class VeldridBufferMapper : BufferMapper {
     }
     
     protected override void DisposeInternal() {
-        this._buffer.Dispose();
+        this._buffer?.Dispose();
     }
 }

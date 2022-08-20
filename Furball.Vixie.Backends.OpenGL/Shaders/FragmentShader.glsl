@@ -1,9 +1,9 @@
 #version 330
 precision mediump float;
 
-in vec4 _Color;
-in vec2 _TextureCoordinate;
-flat in int _TextureId;
+layout(location = 0) in vec4 _Color;
+layout(location = 1) in vec2 _TextureCoordinate;
+layout(location = 2) flat in int _TextureId;
 
 out vec4 OutputColor;
 

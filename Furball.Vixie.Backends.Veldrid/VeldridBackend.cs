@@ -46,7 +46,7 @@ public class VeldridBackend : IGraphicsBackend {
 
     public override void Initialize(IView view, IInputContext inputContext) {
         this._view = view;
-            
+
         GraphicsDeviceOptions options = new() {
             SyncToVerticalBlank               = view.VSync,
             Debug                             = view.API.Flags.HasFlag(ContextFlags.Debug),

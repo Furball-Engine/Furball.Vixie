@@ -6,9 +6,9 @@ layout(location = 2) in vec4 VertexColor;
 layout(location = 3) in int  TextureId2;
 layout(location = 4) in int  TextureId;
 
-out      vec4 _Color;
-out      vec2 _TextureCoordinate;
-flat out int  _TextureId;
+layout(location = 0) out      vec4 _Color;
+layout(location = 1) out      vec2 _TextureCoordinate;
+layout(location = 2) flat out int  _TextureId;
 
 uniform mat4 ProjectionMatrix;
 
