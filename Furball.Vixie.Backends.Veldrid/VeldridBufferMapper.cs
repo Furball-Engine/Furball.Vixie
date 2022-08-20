@@ -22,12 +22,14 @@ public class VeldridBufferMapper : BufferMapper {
     }
 
     public unsafe DeviceBuffer? Reset() {
+        this.ReservedBytes = 0;
+        
         DeviceBuffer? old = this._buffer;
         
         BufferDescription desc = new((uint)this.SizeInBytes, BufferUsage.Dynamic | this.Usage);
         this._buffer = this._backend.ResourceFactory.CreateBuffer(ref desc);
         MappedResource map = this._backend.GraphicsDevice.Map(this._buffer, MapMode.Write);
-
+        
         this.Ptr = (void*)map.Data;
         
         if(old != null)
