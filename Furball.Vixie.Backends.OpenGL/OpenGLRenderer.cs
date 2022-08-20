@@ -49,7 +49,7 @@ internal unsafe class OpenGLRenderer : IRenderer {
 
     private readonly List<BufferData> _bufferList = new();
 
-    private const int QUAD_COUNT = 1024;
+    private const int QUAD_COUNT = 256;
     
     public OpenGLRenderer(OpenGLBackend backend) {
         this._backend = backend;
