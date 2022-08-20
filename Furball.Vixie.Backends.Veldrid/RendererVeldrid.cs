@@ -29,8 +29,12 @@ public unsafe class RendererVeldrid : IRenderer {
         this._vtxMapper.Unmap();
         this._idxMapper.Unmap();
     }
-    
-    public override MappedData Reserve(ushort vertexCount, uint indexCount, VixieTexture tex) {
+
+    public override long GetTextureId(VixieTexture tex) {
+        return 0;
+    }
+
+    public override MappedData Reserve(ushort vertexCount, uint indexCount) {
         Debug.Assert(vertexCount != 0, "vertexCount != 0");
         Debug.Assert(indexCount  != 0, "indexCount != 0");
         

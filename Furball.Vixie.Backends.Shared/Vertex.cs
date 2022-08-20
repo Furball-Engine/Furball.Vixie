@@ -6,5 +6,5 @@ public struct Vertex {
     public Vector2 Position;
     public Vector2 TextureCoordinate;
     public Color   Color;
-    public int     TexId;
+    public long    TexId;
 }

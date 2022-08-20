@@ -80,6 +80,7 @@ internal unsafe class OpenGLRenderer : IRenderer {
         layout.AddElement<float>(2); //Position
         layout.AddElement<float>(2); //Texture Coordinate
         layout.AddElement<float>(4); //Color
+        layout.AddElement<int>(1);   //Texture id2
         layout.AddElement<int>(1);   //Texture id
 
         vao.AddBuffer(buffer, layout);
@@ -200,7 +201,7 @@ internal unsafe class OpenGLRenderer : IRenderer {
         return new MappedData((Vertex*)vertex, (ushort*)index, vertexCount, indexCount, this._indexOffset - vertexCount);
     }
     
-    public override int GetTextureId(VixieTexture tex) {
+    public override long GetTextureId(VixieTexture tex) {
         if (tex is not VixieTextureGL texGl)
             throw new InvalidOperationException($"You must pass a {typeof(VixieTextureGL)} into this function!");
 

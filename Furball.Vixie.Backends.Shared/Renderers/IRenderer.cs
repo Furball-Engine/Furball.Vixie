@@ -9,7 +9,7 @@ public abstract class IRenderer : IDisposable {
 
     public abstract MappedData Reserve(ushort vertexCount, uint indexCount);
 
-    public abstract int GetTextureId(VixieTexture tex);
+    public abstract long GetTextureId(VixieTexture tex);
     
     public abstract void Draw();
 

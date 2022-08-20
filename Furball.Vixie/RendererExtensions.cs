@@ -7,7 +7,7 @@ using Color = Furball.Vixie.Backends.Shared.Color;
 namespace Furball.Vixie;
 
 public static class RendererExtensions {
-    private static unsafe void SetQuadVertices(Vertex* ptr, Vector2 pos, Vector2 size, int texId) {
+    private static unsafe void SetQuadVertices(Vertex* ptr, Vector2 pos, Vector2 size, long texId) {
         ptr[0] = new Vertex {
             Position          = pos,
             Color             = Color.White,
