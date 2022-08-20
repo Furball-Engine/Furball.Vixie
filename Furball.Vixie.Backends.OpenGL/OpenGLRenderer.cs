@@ -19,6 +19,9 @@ internal unsafe class OpenGLRenderer : IRenderer {
 
     private readonly ShaderGL _shader;
 
+    private Stack<BufferObjectGL> _vtxQueue = new();
+    private Stack<BufferObjectGL> _idxQueue = new();
+
     private class BufferData : IDisposable {
         public VertexArrayObjectGL Vao;
         public BufferObjectGL      Vtx;
@@ -34,8 +37,6 @@ internal unsafe class OpenGLRenderer : IRenderer {
 
             this._isDisposed = true;
             
-            this.Vtx?.Dispose();
-            this.Idx?.Dispose();
             this.Vao?.Dispose();
 
             this.Texture = null;
@@ -67,9 +68,7 @@ internal unsafe class OpenGLRenderer : IRenderer {
         this._shader.Unbind();
     }
 
-    private BufferObjectGL CreateNewVertexBuffer(VertexArrayObjectGL vao) {
-        BufferObjectGL buffer = new(this._backend, (int)this._vtxMapper.SizeInBytes, BufferTargetARB.ArrayBuffer, BufferUsageARB.StaticDraw);
-
+    private void SetVtxBufferToVao(VertexArrayObjectGL vao, BufferObjectGL buffer) {
         vao.Bind();
 
         VertexBufferLayoutGL layout = new();
@@ -83,6 +82,10 @@ internal unsafe class OpenGLRenderer : IRenderer {
         buffer.Unbind();
 
         vao.Unbind();
+    }
+    
+    private BufferObjectGL CreateNewVertexBuffer() {
+        BufferObjectGL buffer = new(this._backend, (int)this._vtxMapper.SizeInBytes, BufferTargetARB.ArrayBuffer, BufferUsageARB.StaticDraw);
 
         return buffer;
     }
@@ -100,8 +103,18 @@ internal unsafe class OpenGLRenderer : IRenderer {
         //TODO: make VAOs optional (for pre GL3.0)
         VertexArrayObjectGL vao = new VertexArrayObjectGL(this._backend);
         
-        BufferObjectGL vtx = this.CreateNewVertexBuffer(vao);
-        BufferObjectGL idx = this.CreateNewIndexBuffer();
+        BufferObjectGL vtx;
+        BufferObjectGL idx;
+        if (this._vtxQueue.Count == 0) {
+            vtx = this.CreateNewVertexBuffer();
+            idx = this.CreateNewIndexBuffer();
+        }
+        else {
+            vtx = this._vtxQueue.Pop();
+            idx = this._idxQueue.Pop();
+        }
+        
+        this.SetVtxBufferToVao(vao, vtx);
 
         vtx.Bind();
         idx.Bind();
@@ -124,7 +137,10 @@ internal unsafe class OpenGLRenderer : IRenderer {
     }
     
     public override void Begin() {
-        this._bufferList.ForEach(x => x.Dispose());
+        this._bufferList.ForEach(x => {
+            this._vtxQueue.Push(x.Vtx);
+            this._idxQueue.Push(x.Idx);
+        }); 
         this._bufferList.Clear();
 
         this._vtxMapper.Map();
@@ -211,5 +227,10 @@ internal unsafe class OpenGLRenderer : IRenderer {
         
         this._vtxMapper.Dispose();
         this._idxMapper.Dispose();
+        
+        this._vtxQueue.Clear();
+        this._idxQueue.Clear();
+        
+        this._shader.Dispose();
     }
 }
