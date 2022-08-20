@@ -8,15 +8,12 @@ public unsafe class MappedData {
     public readonly uint   IndexCount;
 
     public readonly uint IndexOffset;
-
-    public readonly long TextureId;
     
-    public MappedData(Vertex* vertexPtr, ushort* indexPtr, ushort vertexCount, uint indexCount, uint indexOffset, long textureId) {
+    public MappedData(Vertex* vertexPtr, ushort* indexPtr, ushort vertexCount, uint indexCount, uint indexOffset) {
         this.VertexPtr   = vertexPtr;
         this.IndexPtr    = indexPtr;
         this.VertexCount = vertexCount;
         this.IndexCount  = indexCount;
         this.IndexOffset = indexOffset;
-        this.TextureId   = textureId;
     }
 }

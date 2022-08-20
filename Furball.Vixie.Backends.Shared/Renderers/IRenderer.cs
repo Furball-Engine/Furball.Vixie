@@ -7,8 +7,10 @@ public abstract class IRenderer : IDisposable {
     public abstract void Begin();
     public abstract void End();
 
-    public abstract MappedData Reserve(ushort vertexCount, uint indexCount, VixieTexture tex);
+    public abstract MappedData Reserve(ushort vertexCount, uint indexCount);
 
+    public abstract int GetTextureId(VixieTexture tex);
+    
     public abstract void Draw();
 
     private bool _isDisposed;

@@ -7,7 +7,7 @@ using Color = Furball.Vixie.Backends.Shared.Color;
 namespace Furball.Vixie;
 
 public static class RendererExtensions {
-    private static unsafe void SetQuadVertices(Vertex* ptr, Vector2 pos, Vector2 size, long texId) {
+    private static unsafe void SetQuadVertices(Vertex* ptr, Vector2 pos, Vector2 size, int texId) {
         ptr[0] = new Vertex {
             Position          = pos,
             Color             = Color.White,
@@ -53,9 +53,9 @@ public static class RendererExtensions {
         Vector2 scale) {
         Vector2 size = new(tex.Width * scale.X, tex.Height * scale.Y);
 
-        MappedData mappedData = renderer.Reserve(4, 6, tex);
+        MappedData mappedData = renderer.Reserve(4, 6);
         
-        SetQuadVertices(mappedData.VertexPtr, position, size, mappedData.TextureId);
+        SetQuadVertices(mappedData.VertexPtr, position, size, renderer.GetTextureId(tex));
         SetQuadIndices(mappedData);
     }
 
@@ -64,8 +64,8 @@ public static class RendererExtensions {
         Vector2 scale, Rectangle sourceRect) {
         Vector2 size = new(sourceRect.Width * scale.X, sourceRect.Height * scale.Y);
 
-        MappedData mappedData = renderer.Reserve(4, 6, tex);
-        SetQuadVertices(mappedData.VertexPtr, position, size, mappedData.TextureId);
+        MappedData mappedData = renderer.Reserve(4, 6);
+        SetQuadVertices(mappedData.VertexPtr, position, size, renderer.GetTextureId(tex));
         mappedData.VertexPtr[0].TextureCoordinate =
             new Vector2(sourceRect.X / (float)tex.Width, sourceRect.Y / (float)tex.Height);
         mappedData.VertexPtr[1].TextureCoordinate =
@@ -82,11 +82,11 @@ public static class RendererExtensions {
         Vector2 scale, float rotation) {
         Vector2 size = new(tex.Width * scale.X, tex.Height * scale.Y);
 
-        MappedData mappedData = renderer.Reserve(4, 6, tex);
+        MappedData mappedData = renderer.Reserve(4, 6);
         mappedData.VertexPtr[0] = new Vertex {
             Position          = Vector2.Zero,
             Color             = Color.White,
-            TexId             = mappedData.TextureId,
+            TexId             = renderer.GetTextureId(tex),
             TextureCoordinate = new Vector2(0, 0)
         };
         mappedData.VertexPtr[1] = new Vertex {
@@ -94,13 +94,13 @@ public static class RendererExtensions {
                 Y = 0
             },
             Color             = Color.White,
-            TexId             = mappedData.TextureId,
+            TexId             = renderer.GetTextureId(tex),
             TextureCoordinate = new Vector2(1, 0)
         };
         mappedData.VertexPtr[2] = new Vertex {
             Position          = size,
             Color             = Color.White,
-            TexId             = mappedData.TextureId,
+            TexId             = renderer.GetTextureId(tex),
             TextureCoordinate = new Vector2(1, 1)
         };
         mappedData.VertexPtr[3] = new Vertex {
@@ -108,7 +108,7 @@ public static class RendererExtensions {
                 X = 0
             },
             Color             = Color.White,
-            TexId             = mappedData.TextureId,
+            TexId             = renderer.GetTextureId(tex),
             TextureCoordinate = new Vector2(0, 1)
         };
 
@@ -132,11 +132,11 @@ public static class RendererExtensions {
         Vector2 scale, float rotation, Rectangle sourceRect) {
         Vector2 size = new(sourceRect.Width * scale.X, sourceRect.Height * scale.Y);
 
-        MappedData mappedData = renderer.Reserve(4, 6, tex);
+        MappedData mappedData = renderer.Reserve(4, 6);
         mappedData.VertexPtr[0] = new Vertex {
             Position          = Vector2.Zero,
             Color             = Color.White,
-            TexId             = mappedData.TextureId,
+            TexId             = renderer.GetTextureId(tex),
             TextureCoordinate = new Vector2(sourceRect.X / (float)tex.Width, sourceRect.Y / (float)tex.Height)
         };
         mappedData.VertexPtr[1] = new Vertex {
@@ -144,13 +144,13 @@ public static class RendererExtensions {
                 Y = 0
             },
             Color             = Color.White,
-            TexId             = mappedData.TextureId,
+            TexId             = renderer.GetTextureId(tex),
             TextureCoordinate = new Vector2(sourceRect.Right / (float)tex.Width, sourceRect.Y / (float)tex.Height)
         };
         mappedData.VertexPtr[2] = new Vertex {
             Position          = size,
             Color             = Color.White,
-            TexId             = mappedData.TextureId,
+            TexId             = renderer.GetTextureId(tex),
             TextureCoordinate = new Vector2(sourceRect.Right / (float)tex.Width, sourceRect.Bottom / (float)tex.Height)
         };
         mappedData.VertexPtr[3] = new Vertex {
@@ -158,7 +158,7 @@ public static class RendererExtensions {
                 X = 0
             },
             Color             = Color.White,
-            TexId             = mappedData.TextureId,
+            TexId             = renderer.GetTextureId(tex),
             TextureCoordinate = new Vector2(sourceRect.X / (float)tex.Width, sourceRect.Bottom / (float)tex.Height)
         };
 
