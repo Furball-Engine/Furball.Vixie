@@ -39,8 +39,8 @@ public unsafe class RendererVeldrid : IRenderer {
     public RendererVeldrid(VeldridBackend backend) {
         this._backend = backend;
 
-        this._vtxMapper = new VeldridBufferMapper(backend, QUAD_COUNT * 4, BufferUsage.VertexBuffer);
-        this._idxMapper = new VeldridBufferMapper(backend, QUAD_COUNT * 6, BufferUsage.IndexBuffer);
+        this._vtxMapper = new VeldridBufferMapper(backend, (uint)(QUAD_COUNT * 4 * sizeof(Vertex)), BufferUsage.VertexBuffer);
+        this._idxMapper = new VeldridBufferMapper(backend, QUAD_COUNT * 6 * sizeof(ushort), BufferUsage.IndexBuffer);
 
         string vertexSource   = ResourceHelpers.GetStringResource("Shaders/VertexShader.glsl");
         string fragmentSource = ResourceHelpers.GetStringResource("Shaders/FragmentShader.glsl");
