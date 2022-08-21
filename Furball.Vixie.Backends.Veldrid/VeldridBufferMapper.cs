@@ -48,12 +48,9 @@ public class VeldridBufferMapper : BufferMapper {
         return old;
     }
 
-    private int i = 0;
     public DeviceBuffer? ResetFromFreshBuffer() {
         BufferDescription desc = new((uint)this.SizeInBytes, BufferUsage.Dynamic | this.Usage);
         DeviceBuffer buf = this._backend.ResourceFactory.CreateBuffer(ref desc);
-
-        buf.Name = this.i++.ToString();
     
         return this.ResetFromExistingBuffer(buf);
     }

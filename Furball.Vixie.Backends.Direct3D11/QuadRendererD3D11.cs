@@ -80,24 +80,24 @@ internal sealed unsafe class QuadRendererD3D11 : IQuadRenderer {
         this._vertexShader = vertexShader;
         this._pixelShader  = pixelShader;
 
-        InputElementDescription[] inputLayoutDescription = new InputElementDescription[] {
-            new InputElementDescription("POSITION",                 0, Format.R32G32_Float,       (int) Marshal.OffsetOf<VertexData>("Position"),                      VERTEX_BUFFER_SLOT,   InputClassification.PerVertexData,   0),
-            new InputElementDescription("TEXCOORD",                 0, Format.R32G32_Float,       (int) Marshal.OffsetOf<VertexData>("TexCoord"),                      VERTEX_BUFFER_SLOT,   InputClassification.PerVertexData,   0),
-            new InputElementDescription("INSTANCE_POSITION",        0, Format.R32G32_Float,       (int) Marshal.OffsetOf<InstanceData>("InstancePosition"),            INSTANCE_BUFFER_SLOT, InputClassification.PerInstanceData, 1),
-            new InputElementDescription("INSTANCE_SIZE",            0, Format.R32G32_Float,       (int) Marshal.OffsetOf<InstanceData>("InstanceSize"),                INSTANCE_BUFFER_SLOT, InputClassification.PerInstanceData, 1),
-            new InputElementDescription("INSTANCE_COLOR",           0, Format.R32G32B32A32_Float, (int) Marshal.OffsetOf<InstanceData>("InstanceColor"),               INSTANCE_BUFFER_SLOT, InputClassification.PerInstanceData, 1),
-            new InputElementDescription("INSTANCE_TEXRECTPOSITION", 0, Format.R32G32_Float,       (int) Marshal.OffsetOf<InstanceData>("InstanceTextureRectPosition"), INSTANCE_BUFFER_SLOT, InputClassification.PerInstanceData, 1),
-            new InputElementDescription("INSTANCE_TEXRECTSIZE",     0, Format.R32G32_Float,       (int) Marshal.OffsetOf<InstanceData>("InstanceTextureRectSize"),     INSTANCE_BUFFER_SLOT, InputClassification.PerInstanceData, 1),
-            new InputElementDescription("INSTANCE_ROTORIGIN",       0, Format.R32G32_Float,       (int) Marshal.OffsetOf<InstanceData>("InstanceRotationOrigin"),      INSTANCE_BUFFER_SLOT, InputClassification.PerInstanceData, 1),
-            new InputElementDescription("INSTANCE_ROTATION",        0, Format.R32_Float,          (int) Marshal.OffsetOf<InstanceData>("InstanceRotation"),            INSTANCE_BUFFER_SLOT, InputClassification.PerInstanceData, 1),
-            new InputElementDescription("INSTANCE_TEXID",           0, Format.R32G32_SInt,        (int) Marshal.OffsetOf<InstanceData>("InstanceTextureId"),           INSTANCE_BUFFER_SLOT, InputClassification.PerInstanceData, 1),
+        InputElementDescription[] inputLayoutDescription = {
+            new("POSITION",                 0, Format.R32G32_Float,       (int) Marshal.OffsetOf<VertexData>("Position"),                      VERTEX_BUFFER_SLOT,   InputClassification.PerVertexData,   0),
+            new("TEXCOORD",                 0, Format.R32G32_Float,       (int) Marshal.OffsetOf<VertexData>("TexCoord"),                      VERTEX_BUFFER_SLOT,   InputClassification.PerVertexData,   0),
+            new("INSTANCE_POSITION",        0, Format.R32G32_Float,       (int) Marshal.OffsetOf<InstanceData>("InstancePosition"),            INSTANCE_BUFFER_SLOT, InputClassification.PerInstanceData, 1),
+            new("INSTANCE_SIZE",            0, Format.R32G32_Float,       (int) Marshal.OffsetOf<InstanceData>("InstanceSize"),                INSTANCE_BUFFER_SLOT, InputClassification.PerInstanceData, 1),
+            new("INSTANCE_COLOR",           0, Format.R32G32B32A32_Float, (int) Marshal.OffsetOf<InstanceData>("InstanceColor"),               INSTANCE_BUFFER_SLOT, InputClassification.PerInstanceData, 1),
+            new("INSTANCE_TEXRECTPOSITION", 0, Format.R32G32_Float,       (int) Marshal.OffsetOf<InstanceData>("InstanceTextureRectPosition"), INSTANCE_BUFFER_SLOT, InputClassification.PerInstanceData, 1),
+            new("INSTANCE_TEXRECTSIZE",     0, Format.R32G32_Float,       (int) Marshal.OffsetOf<InstanceData>("InstanceTextureRectSize"),     INSTANCE_BUFFER_SLOT, InputClassification.PerInstanceData, 1),
+            new("INSTANCE_ROTORIGIN",       0, Format.R32G32_Float,       (int) Marshal.OffsetOf<InstanceData>("InstanceRotationOrigin"),      INSTANCE_BUFFER_SLOT, InputClassification.PerInstanceData, 1),
+            new("INSTANCE_ROTATION",        0, Format.R32_Float,          (int) Marshal.OffsetOf<InstanceData>("InstanceRotation"),            INSTANCE_BUFFER_SLOT, InputClassification.PerInstanceData, 1),
+            new("INSTANCE_TEXID",           0, Format.R32G32_SInt,        (int) Marshal.OffsetOf<InstanceData>("InstanceTextureId"),           INSTANCE_BUFFER_SLOT, InputClassification.PerInstanceData, 1),
         };
 
         ID3D11InputLayout inputLayout = this._device.CreateInputLayout(inputLayoutDescription, vertexShaderData);
         this._inputLayout = inputLayout;
         //this._inputLayout.DebugName = "QuadRendererD3D11 Input Layout";
 
-        BufferDescription constantBufferDescription = new BufferDescription {
+        BufferDescription constantBufferDescription = new() {
             BindFlags      = BindFlags.ConstantBuffer,
             ByteWidth      = sizeof(ConstantBufferData),
             CPUAccessFlags = CpuAccessFlags.Write,
@@ -108,7 +108,7 @@ internal sealed unsafe class QuadRendererD3D11 : IQuadRenderer {
         this._constantBuffer = constantBuffer;
         //this._constantBuffer.DebugName = "QuadRendererD3D11 Constant Buffer";
 
-        BufferDescription vertexBufferDescription = new BufferDescription {
+        BufferDescription vertexBufferDescription = new() {
             BindFlags      = BindFlags.VertexBuffer,
             ByteWidth      = sizeof(VertexData) * 4,
             CPUAccessFlags = CpuAccessFlags.Write,
@@ -119,7 +119,7 @@ internal sealed unsafe class QuadRendererD3D11 : IQuadRenderer {
         this._vertexBuffer = vertexBuffer;
         //this._vertexBuffer.DebugName = "QuadRendererD3D11 Vertex Buffer";
 
-        BufferDescription instanceBufferDesription = new BufferDescription {
+        BufferDescription instanceBufferDesription = new() {
             BindFlags      = BindFlags.VertexBuffer,
             ByteWidth      = sizeof(InstanceData) * INSTANCE_AMOUNT,
             CPUAccessFlags = CpuAccessFlags.Write,
@@ -130,7 +130,7 @@ internal sealed unsafe class QuadRendererD3D11 : IQuadRenderer {
         this._instanceBuffer = instanceBuffer;
         //this._vertexBuffer.DebugName = "QuadRendererD3D11 Instance Buffer";
 
-        BufferDescription indexBufferDescription = new BufferDescription {
+        BufferDescription indexBufferDescription = new() {
             BindFlags      = BindFlags.IndexBuffer,
             ByteWidth      = sizeof(ushort) * 6,
             CPUAccessFlags = CpuAccessFlags.Write,
@@ -204,7 +204,7 @@ internal sealed unsafe class QuadRendererD3D11 : IQuadRenderer {
 
         this._usedTextures = 0;
 
-        SamplerDescription samplerDescription = new SamplerDescription {
+        SamplerDescription samplerDescription = new() {
             Filter             = Filter.MinMagMipLinear,
             AddressU           = TextureAddressMode.Wrap,
             AddressV           = TextureAddressMode.Wrap,

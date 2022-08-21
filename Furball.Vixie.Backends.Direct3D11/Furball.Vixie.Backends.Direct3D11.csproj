@@ -35,16 +35,14 @@
       <EmbeddedResource Include="Shaders\Compiled\QuadRenderer\VertexShader.dxc" />
       <EmbeddedResource Include="Shaders\ImGui\Shaders.hlsl" />
       <EmbeddedResource Include="Shaders\QuadRenderer\Shaders.hlsl" />
+      <EmbeddedResource Include="Shaders\VertexShader.obj" />
+      <EmbeddedResource Include="Shaders\PixelShader.obj" />
       <None Remove="Shaders\Compiled\ImGuiController_PixelShader.fx" />
       <None Remove="Shaders\Compiled\ImGuiController_VertexShader.fx" />
       <None Remove="Shaders\Compiled\LineRenderer_PixelShader.fx" />
       <None Remove="Shaders\Compiled\LineRenderer_VertexShader.fx" />
       <None Remove="Shaders\Compiled\QuadRenderer_PixelShader.fx" />
       <None Remove="Shaders\Compiled\QuadRenderer_VertexShader.fx" />
-      <None Remove="Shaders\VertexShader.obj" />
-      <EmbeddedResource Include="Shaders\VertexShader.obj" />
-      <None Remove="Shaders\PixelShader.obj" />
-      <EmbeddedResource Include="Shaders\PixelShader.obj" />
     </ItemGroup>
 
     <ItemGroup>

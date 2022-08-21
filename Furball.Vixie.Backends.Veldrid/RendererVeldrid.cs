@@ -46,6 +46,8 @@ public unsafe class RendererVeldrid : IRenderer {
 
             this.Vtx?.Dispose();
             this.Idx?.Dispose();
+            
+            this.Textures = null;
         }
 
         ~RenderBuffer() {
