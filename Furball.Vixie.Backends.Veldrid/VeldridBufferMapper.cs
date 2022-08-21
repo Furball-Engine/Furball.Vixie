@@ -39,10 +39,6 @@ public class VeldridBufferMapper : BufferMapper {
     
     public override unsafe void Map() {
         this.Reset()?.Dispose();
-
-        MappedResource map = this._backend.GraphicsDevice.Map(this._buffer, MapMode.Write);
-
-        this.Ptr = (void*)map.Data;
     }
     
     public override void Unmap() {

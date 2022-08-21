@@ -52,9 +52,9 @@ public unsafe class RendererVeldrid : IRenderer {
 
         VertexLayoutDescription vtxLayout = new() {
             Elements = new[] {
-                new VertexElementDescription("Position", VertexElementFormat.Float2, VertexElementSemantic.TextureCoordinate),
+                new VertexElementDescription("VertexPosition", VertexElementFormat.Float2, VertexElementSemantic.TextureCoordinate),
                 new VertexElementDescription("TextureCoordinate", VertexElementFormat.Float2, VertexElementSemantic.TextureCoordinate),
-                new VertexElementDescription("Color", VertexElementFormat.Float4, VertexElementSemantic.TextureCoordinate),
+                new VertexElementDescription("VertexColor", VertexElementFormat.Float4, VertexElementSemantic.TextureCoordinate),
                 new VertexElementDescription("TextureId2", VertexElementFormat.Int1, VertexElementSemantic.TextureCoordinate),
                 new VertexElementDescription("TextureId", VertexElementFormat.Int1, VertexElementSemantic.TextureCoordinate),
             },
