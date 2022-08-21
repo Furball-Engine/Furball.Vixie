@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Furball.Vixie.Helpers; 
 
@@ -13,6 +14,7 @@ public static class Guard {
     /// <param name="obj">Object to check</param>
     /// <param name="valueExpression">The expression </param>
     /// <exception cref="ArgumentNullException">When the object is null</exception>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void EnsureNonNull(object? obj, string valueExpression = "") {
 #if DEBUG
         _ = obj ?? throw new ArgumentNullException(nameof (obj), valueExpression);
@@ -25,6 +27,7 @@ public static class Guard {
     /// <param name="obj">Object to check</param>
     /// <param name="msg">The message to display in the exception</param>
     /// <exception cref="ArgumentException">When the object is non-null</exception>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void EnsureNull(object? obj, string msg) {
 #if DEBUG
         if(obj != null)
@@ -38,6 +41,7 @@ public static class Guard {
     /// <param name="value">The value to assert</param>
     /// <param name="valueExpression">The expression that evaluated the bool</param>
     /// <exception cref="ArgumentException">When the value is false</exception>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Assert(bool value, string valueExpression = "") {
 #if DEBUG
         if (!value)
@@ -46,6 +50,7 @@ public static class Guard {
     }
     
     [Conditional("DEBUG")]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Fail(string message) {
         throw new Exception(message);
     }
