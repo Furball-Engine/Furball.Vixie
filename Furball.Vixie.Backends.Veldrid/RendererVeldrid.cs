@@ -6,6 +6,7 @@ using System.Text;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Backends.Veldrid.Abstractions;
+using Furball.Vixie.Helpers;
 using Furball.Vixie.Helpers.Helpers;
 using Veldrid;
 using Veldrid.SPIRV;
@@ -24,17 +25,35 @@ public unsafe class RendererVeldrid : IRenderer {
     
     private const int QUAD_COUNT = 256;
 
-    private class BufferData {
-        public DeviceBuffer Vtx;
-        public DeviceBuffer Idx;
+    private Queue<DeviceBuffer> _vtxBufferQueue = new();
+    private Queue<DeviceBuffer> _idxBufferQueue = new();
+    
+    private class RenderBuffer : IDisposable {
+        public DeviceBuffer? Vtx;
+        public DeviceBuffer? Idx;
 
-        public int                   UsedTextures;
-        public VixieTextureVeldrid[] Textures;
+        public int                    UsedTextures;
+        public VixieTextureVeldrid[]? Textures;
         
         public uint IndexCount;
+
+        private bool _isDisposed;
+        public void Dispose() {
+            if(this._isDisposed)
+                return;
+
+            this._isDisposed = true;
+
+            this.Vtx?.Dispose();
+            this.Idx?.Dispose();
+        }
+
+        ~RenderBuffer() {
+            DisposeQueue.Enqueue(this);
+        }
     }
 
-    private List<BufferData> _buffers = new();
+    private List<RenderBuffer> _renderBuffers = new();
     
     public RendererVeldrid(VeldridBackend backend) {
         this._backend = backend;
@@ -103,12 +122,41 @@ public unsafe class RendererVeldrid : IRenderer {
 
         this._pipeline = backend.ResourceFactory.CreateGraphicsPipeline(ref pipelineDesc);
     }
-    
+
+    private bool _isFirst = true;
     public override void Begin() {
-        this._buffers.Clear();
+        //Save all the buffers from the render queue
+        this._renderBuffers.ForEach(x => {
+            Guard.EnsureNonNull(x.Vtx, "x.Vtx");
+            Guard.EnsureNonNull(x.Idx, "x.Idx");
+
+            this._vtxBufferQueue.Enqueue(x.Vtx!);
+            this._idxBufferQueue.Enqueue(x.Idx!);
+
+            //We set these to null to ensure that they dont get disposed when `RenderBuffer.Dispose` is called by the
+            //destructor
+            x.Vtx = null;
+            x.Idx = null;
+        });
+        //Clear the render buffer queue
+        this._renderBuffers.Clear();
         
-        this._vtxMapper.Map();
-        this._idxMapper.Map();
+        if (this._vtxBufferQueue.Count > 0) {
+            this._vtxMapper.ResetFromExistingBuffer(this._vtxBufferQueue.Dequeue());
+            this._idxMapper.ResetFromExistingBuffer(this._idxBufferQueue.Dequeue());
+        }
+        else {
+            Guard.Assert(this._isFirst);
+            
+            //These should be null, because this code path should only run on the *first* time these are mapped.
+            //If it is not the first time these are mapped, then it *will* have a buffer to pull from, and will instead
+            //use the `true` condition of the above if statement, while this should be covered by the `Guard.Assert()`
+            //above, these `Guard` checks act as an extra barrier against shenanigans
+            Guard.EnsureNull(this._vtxMapper.ResetFromFreshBuffer(), "this._vtxMapper.ResetFromFreshBuffer()");
+            Guard.EnsureNull(this._idxMapper.ResetFromFreshBuffer(), "this._idxMapper.ResetFromFreshBuffer()");
+            
+            this._isFirst = false;
+        }
     }
     
     public override void End() {
@@ -145,13 +193,24 @@ public unsafe class RendererVeldrid : IRenderer {
     private void DumpToBuffers() {
         if (this._indexCount == 0)
             return;
-        
-        DeviceBuffer vtx = this._vtxMapper.Reset();
-        DeviceBuffer idx = this._idxMapper.Reset();
 
-        BufferData buf;
-        this._buffers.Add(buf = new BufferData {
-            Vtx      = vtx, Idx = idx, IndexCount = this._indexCount, UsedTextures = this._usedTextures,
+        DeviceBuffer? vtx;
+        DeviceBuffer? idx;
+        if (this._vtxBufferQueue.Count > 0) {
+            vtx = this._vtxMapper.ResetFromExistingBuffer(this._vtxBufferQueue.Dequeue());
+            idx = this._idxMapper.ResetFromExistingBuffer(this._idxBufferQueue.Dequeue());
+        }
+        else {
+            vtx = this._vtxMapper.ResetFromFreshBuffer();
+            idx = this._idxMapper.ResetFromFreshBuffer();
+        }
+        
+        Guard.Assert(vtx != null);
+        Guard.Assert(idx != null);
+
+        RenderBuffer buf;
+        this._renderBuffers.Add(buf = new RenderBuffer {
+            Vtx      = vtx!, Idx = idx!, IndexCount = this._indexCount, UsedTextures = this._usedTextures,
             Textures = new VixieTextureVeldrid[this._textures.Length]
         });
         Array.Copy(this._textures, buf.Textures, this._usedTextures);
@@ -165,26 +224,34 @@ public unsafe class RendererVeldrid : IRenderer {
         this._indexCount   = 0;
     }
     
-    private          ushort       _indexOffset;
-    private          uint         _indexCount;
+    private int _reserveRecursionCount;
+
+    private ushort _indexOffset;
+    private uint   _indexCount;
     public override MappedData Reserve(ushort vertexCount, uint indexCount) {
-        Debug.Assert(vertexCount != 0, "vertexCount != 0");
-        Debug.Assert(indexCount  != 0, "indexCount != 0");
+        Guard.Assert(vertexCount != 0, "vertexCount != 0");
+        Guard.Assert(indexCount  != 0, "indexCount != 0");
         
-        Debug.Assert(vertexCount * sizeof(Vertex) < (int)this._vtxMapper.SizeInBytes, "vertexCount * sizeof(Vertex) < this._vtxMapper.SizeInBytes");
-        Debug.Assert(indexCount * sizeof(ushort) < (int)this._idxMapper.SizeInBytes, "indexCount * sizeof(ushort) < (int)this._idxMapper.SizeInBytes");
+        Guard.Assert(vertexCount * sizeof(Vertex) < (int)this._vtxMapper.SizeInBytes, "vertexCount * sizeof(Vertex) < this._vtxMapper.SizeInBytes");
+        Guard.Assert(indexCount * sizeof(ushort) < (int)this._idxMapper.SizeInBytes, "indexCount * sizeof(ushort) < (int)this._idxMapper.SizeInBytes");
 
         void* vtx = this._vtxMapper.Reserve((nuint)(vertexCount * sizeof(Vertex)));
         void* idx = this._idxMapper.Reserve(indexCount * sizeof(ushort));
 
         if (vtx == null || idx == null) {
+            //We should *never* recurse multiple times in this function, if we do, that indicates that for some reason,
+            //even after dumping to a buffer to draw, we still are unable to reserve memory.
+            Guard.Assert(this._reserveRecursionCount == 0, "this._reserveRecursionCount == 0");
+            
             this.DumpToBuffers();
+            this._reserveRecursionCount++;
             return this.Reserve(vertexCount, indexCount);
         }
 
         this._indexOffset += vertexCount;
         this._indexCount  += indexCount;
 
+        this._reserveRecursionCount = 0;
         return new MappedData((Vertex*)vtx, (ushort*)idx, vertexCount, indexCount, (uint)(this._indexOffset - vertexCount));
     }
     
@@ -198,8 +265,8 @@ public unsafe class RendererVeldrid : IRenderer {
             this._backend.CommandList.SetGraphicsResourceSet(i + 1, this._backend.WhitePixelResourceSet);
         }
         
-        for (int i = 0; i < this._buffers.Count; i++) {
-            BufferData buf = this._buffers[i];
+        for (int i = 0; i < this._renderBuffers.Count; i++) {
+            RenderBuffer buf = this._renderBuffers[i];
             this._backend.CommandList.InsertDebugMarker($"begin draw buf {i}");
 
             for (uint j = 0; j < buf.UsedTextures; j++) {
@@ -213,6 +280,16 @@ public unsafe class RendererVeldrid : IRenderer {
         }
     }
     protected override void DisposeInternal() {
-        this._buffers.Clear();
+        //Get rid of all buffers in the queues
+        while (this._vtxBufferQueue.Count > 0)
+            this._vtxBufferQueue.Dequeue().Dispose();
+        while (this._idxBufferQueue.Count > 0)
+            this._idxBufferQueue.Dequeue().Dispose();
+        
+        //Dispose all the stored render buffers
+        this._renderBuffers.ForEach(x => x.Dispose());
+        
+        //Clear the array to make sure the memory gets cleared incase the `Dispose` misses anything
+        this._renderBuffers.Clear();
     }
 }
