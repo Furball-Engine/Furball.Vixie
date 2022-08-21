@@ -244,7 +244,7 @@ public class Direct3D11Backend : IGraphicsBackend {
     public override IQuadRenderer CreateTextureRenderer() {
         return new QuadRendererD3D11(this);
     }
-    public override IRenderer CreateRenderer() => throw new NotImplementedException();
+    public override IRenderer CreateRenderer() => new Direct3D11Renderer(this);
 
     public override int QueryMaxTextureUnits() {
         return 128;

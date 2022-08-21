@@ -41,6 +41,14 @@
       <None Remove="Shaders\Compiled\LineRenderer_VertexShader.fx" />
       <None Remove="Shaders\Compiled\QuadRenderer_PixelShader.fx" />
       <None Remove="Shaders\Compiled\QuadRenderer_VertexShader.fx" />
+      <None Remove="Shaders\VertexShader.obj" />
+      <EmbeddedResource Include="Shaders\VertexShader.obj" />
+      <None Remove="Shaders\PixelShader.obj" />
+      <EmbeddedResource Include="Shaders\PixelShader.obj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ClCompile Include="Shaders\Shader.hlsl" />
     </ItemGroup>
 
 </Project>
