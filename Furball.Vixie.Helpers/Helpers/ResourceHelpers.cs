@@ -57,12 +57,11 @@ public static class ResourceHelpers {
         string   actualName = assembly.GetName().Name + "." + path.Replace("/", ".");
 
         MemoryStream stream    = new MemoryStream();
-        Stream       resStream = assembly.GetManifestResourceStream(actualName);
+        Stream?       resStream = assembly.GetManifestResourceStream(actualName);
+        
+        Guard.EnsureNonNull(resStream, "resStream");
 
-        if (resStream == null)
-            return null;
-
-        resStream.CopyTo(stream);
+        resStream!.CopyTo(stream);
 
         return stream.ToArray();
     }
