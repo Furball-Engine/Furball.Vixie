@@ -46,7 +46,7 @@ public class Direct3D11BufferMapper : BufferMapper {
             this._deviceContext.Unmap(old);
 
         //Map the new buffer
-        MappedSubresource map = this._deviceContext.Map(this._buffer, MapMode.Write);
+        MappedSubresource map = this._deviceContext.Map(this._buffer, MapMode.WriteDiscard);
         
         //Set the data ptr
         this.Ptr = (void*)map.DataPointer;
