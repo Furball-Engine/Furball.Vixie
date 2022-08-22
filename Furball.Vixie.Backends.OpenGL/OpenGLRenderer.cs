@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.OpenGL.Abstractions;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Renderers;
@@ -90,7 +91,23 @@ internal unsafe class OpenGLRenderer : IRenderer {
         layout.AddElement<int>(1);   //Texture id2
         layout.AddElement<int>(1);   //Texture id
 
-        vao.AddBuffer(buffer, layout);
+        this._backend.EnableVertexAttribArray(0);
+        this._backend.EnableVertexAttribArray(1);
+        this._backend.EnableVertexAttribArray(2);
+        this._backend.EnableVertexAttribArray(3);
+        this._backend.EnableVertexAttribArray(4);
+
+        //TODO: dont do this auto casting bs if we dont have to, detect supported OpenGL and GLSL versions, and use native
+        //attribute floats where possible
+        this._backend.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, (uint)sizeof(Vertex), null);
+        this._backend.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, (uint)sizeof(Vertex),
+                                          (void*)Marshal.OffsetOf<Vertex>(nameof (Vertex.TextureCoordinate)));
+        this._backend.VertexAttribPointer(2, 4, VertexAttribPointerType.Float, false, (uint)sizeof(Vertex),
+                                          (void*)Marshal.OffsetOf<Vertex>(nameof (Vertex.Color)));
+        this._backend.VertexAttribPointer(3, 1, VertexAttribPointerType.Int, false, (uint)sizeof(Vertex),
+                                          (void*)Marshal.OffsetOf<Vertex>(nameof (Vertex.TexId)));
+        this._backend.VertexAttribPointer(4, 1, VertexAttribPointerType.Int, false, (uint)sizeof(Vertex),
+                                          (void*)(Marshal.OffsetOf<Vertex>(nameof (Vertex.TexId)) + sizeof(int)));
 
         buffer.Unbind();
 

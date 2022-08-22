@@ -1,10 +1,10 @@
 #version 110
 
-in vec2 VertexPosition;
-in vec2 TextureCoordinate;
-in vec4 VertexColor;
-in int  TextureId2;
-in int  TextureId;
+attribute vec2 VertexPosition;
+attribute vec2 TextureCoordinate;
+attribute vec4 VertexColor;
+attribute float  TextureId2;
+attribute float  TextureId;
 
 varying vec4  _Color;
 varying vec2  _TextureCoordinate;
@@ -17,5 +17,5 @@ void main() {
 
     _Color = VertexColor;
     _TextureCoordinate = TextureCoordinate;
-    _TextureId = float(TextureId + TextureId2);
+    _TextureId = TextureId + TextureId2;
 }
