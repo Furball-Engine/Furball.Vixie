@@ -4,6 +4,7 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.Direct3D11.Abstractions;
 using Furball.Vixie.Backends.Shared;
+using Furball.Vixie.Backends.Shared.FontStashSharp;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers;
 using Furball.Vixie.Helpers.Helpers;
@@ -14,7 +15,7 @@ using Vortice.DXGI;
 
 namespace Furball.Vixie.Backends.Direct3D11; 
 
-public class Direct3D11Renderer : IRenderer {
+public class Direct3D11Renderer : Renderer {
     private readonly Direct3D11Backend   _backend;
     private readonly ID3D11DeviceContext _deviceContext;
     private readonly ID3D11Device        _device;
@@ -147,6 +148,8 @@ public class Direct3D11Renderer : IRenderer {
         };
 
         this._samplerState = this._device.CreateSamplerState(samplerDescription);
+
+        this.FontRenderer = new VixieFontStashRenderer(backend, this);
     }
 
     private unsafe void UpdateProjectionMatrixBuffer() {

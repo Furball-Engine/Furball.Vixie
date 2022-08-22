@@ -1,4 +1,5 @@
 using System.Numerics;
+using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers.Helpers;
 using ImGuiNET;
 using SixLabors.ImageSharp;
@@ -11,7 +12,7 @@ public class TestQuadRendering : GameComponent {
     private Texture       _texture;
 
     public override void Initialize() {
-        this._renderer = new Renderer();
+        this._renderer = GraphicsBackend.Current.CreateRenderer();
 
         //Load the Texture
         this._texture = Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
@@ -34,10 +35,12 @@ public class TestQuadRendering : GameComponent {
         this._renderer.Begin();
 
         for (int i = 0; i != this._cirnoDons; i++) {
-            this._renderer.Draw(this._texture, new Vector2(i % 1024, i % 2 == 0 ? 0 : 200), new Vector2(0.5f), 0, new Color(1f, 1f, 1f, 0.5f));
+            this._renderer.AllocateUnrotatedTexturedQuad(this._texture, new Vector2(i % 1024, i % 2 == 0 ? 0 : 200), new Vector2(0.5f), new Color(1f, 1f, 1f, 0.5f));
         }
 
         this._renderer.End();
+        
+        this._renderer.Draw();
             
         GraphicsBackend.Current.SetFullScissorRect();
 

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Numerics;
 using System.Text;
 using Furball.Vixie.Backends.Shared;
+using Furball.Vixie.Backends.Shared.FontStashSharp;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Backends.Veldrid.Abstractions;
 using Furball.Vixie.Helpers;
@@ -13,7 +14,7 @@ using Veldrid.SPIRV;
 
 namespace Furball.Vixie.Backends.Veldrid; 
 
-public unsafe class RendererVeldrid : IRenderer {
+public unsafe class RendererVeldrid : Renderer {
     private readonly VeldridBackend _backend;
     
     private readonly VeldridBufferMapper _vtxMapper;
@@ -123,6 +124,8 @@ public unsafe class RendererVeldrid : IRenderer {
         };
 
         this._pipeline = backend.ResourceFactory.CreateGraphicsPipeline(ref pipelineDesc);
+        
+        this.FontRenderer = new VixieFontStashRenderer(backend, this);
     }
 
     private bool _isFirst = true;

@@ -24,5 +24,4 @@ public static class Global {
     
     public static readonly List<WeakReference<Texture>>      TRACKED_TEXTURES       = new();
     public static readonly List<WeakReference<RenderTarget>> TRACKED_RENDER_TARGETS = new();
-    public static          List<WeakReference<Renderer>>     TRACKED_RENDERERS      = new();
 }

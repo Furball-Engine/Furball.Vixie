@@ -11,7 +11,7 @@ namespace Furball.Vixie.TestApplication.Tests;
 public unsafe class TestNewRenderer : GameComponent {
     private Texture   _texture;
     private Texture[] _textureArr;
-    private IRenderer _renderer;
+    private Renderer _renderer;
 
     private float   _scale = 0.5f;
     private Texture _whitePixel;

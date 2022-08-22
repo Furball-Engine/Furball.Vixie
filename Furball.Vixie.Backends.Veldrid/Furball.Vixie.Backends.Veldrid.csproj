@@ -77,9 +77,6 @@
         
       <EmbeddedResource Include="Shaders\FullScreenQuad\FragmentShader.glsl" />
       <EmbeddedResource Include="Shaders\FullScreenQuad\VertexShader.glsl" />
-      
-      <EmbeddedResource Include="Shaders\QuadRenderer\FragmentShader.glsl" />
-      <EmbeddedResource Include="Shaders\QuadRenderer\VertexShader.glsl" />
       <None Remove="Shaders\FragmentShader.glsl" />
       <EmbeddedResource Include="Shaders\FragmentShader.glsl" />
       <None Remove="Shaders\VertexShader.glsl" />

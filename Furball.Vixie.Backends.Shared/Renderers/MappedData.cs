@@ -1,6 +1,6 @@
 ﻿namespace Furball.Vixie.Backends.Shared.Renderers;
 
-public unsafe class MappedData {
+public unsafe struct MappedData {
     public readonly Vertex* VertexPtr;
     public readonly ushort* IndexPtr;
 

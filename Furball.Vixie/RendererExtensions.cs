@@ -1,11 +1,15 @@
 ﻿using System.Drawing;
 using System.Numerics;
+using FontStashSharp;
+using FontStashSharp.Interfaces;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Renderers;
+using Furball.Vixie.Helpers;
 using Color = Furball.Vixie.Backends.Shared.Color;
 
 namespace Furball.Vixie;
 
+//TODO: Reimplement `TextureFlip`
 public static class RendererExtensions {
     private static unsafe void SetQuadVertices(Vertex* ptr, Vector2 pos, Vector2 size, long texId, Color color) {
         ptr[0] = new Vertex {
@@ -49,7 +53,7 @@ public static class RendererExtensions {
         mappedData.IndexPtr[5] = (ushort)(0 + mappedData.IndexOffset);
     }
 
-    public static unsafe void AllocateUnrotatedTexturedQuad(this IRenderer renderer, VixieTexture tex, Vector2 position,
+    public static unsafe void AllocateUnrotatedTexturedQuad(this Renderer renderer, VixieTexture tex, Vector2 position,
                                                             Vector2        scale,    Color        color) {
         Vector2 size = new(tex.Width * scale.X, tex.Height * scale.Y);
 
@@ -59,7 +63,7 @@ public static class RendererExtensions {
         SetQuadIndices(mappedData);
     }
 
-    public static unsafe void AllocateUnrotatedTexturedQuadWithSourceRect(this IRenderer renderer, VixieTexture tex,
+    public static unsafe void AllocateUnrotatedTexturedQuadWithSourceRect(this Renderer renderer, VixieTexture tex,
                                                                           Vector2        position,
                                                                           Vector2        scale, Rectangle sourceRect,
                                                                           Color          color) {
@@ -79,7 +83,7 @@ public static class RendererExtensions {
         SetQuadIndices(mappedData);
     }
 
-    public static unsafe void AllocateRotatedTexturedQuad(this IRenderer renderer, VixieTexture tex, Vector2 position,
+    public static unsafe void AllocateRotatedTexturedQuad(this Renderer renderer, VixieTexture tex, Vector2 position,
                                                           Vector2        scale, float rotation, Vector2 rotationOrigin,
                                                           Color          color) {
         Vector2 size = new(tex.Width * scale.X, tex.Height * scale.Y);
@@ -134,7 +138,7 @@ public static class RendererExtensions {
         SetQuadIndices(mappedData);
     }
 
-    public static unsafe void AllocateRotatedTexturedQuadWithSourceRect(this IRenderer renderer, VixieTexture tex,
+    public static unsafe void AllocateRotatedTexturedQuadWithSourceRect(this Renderer renderer, VixieTexture tex,
                                                                         Vector2        position,
                                                                         Vector2        scale, float rotation,
                                                                         Vector2        rotationOrigin,
@@ -189,5 +193,21 @@ public static class RendererExtensions {
         mappedData.VertexPtr[3].Position += position;
 
         SetQuadIndices(mappedData);
+    }
+
+    public static void DrawString(this Renderer renderer, DynamicSpriteFont font,
+                                  string        text,     Vector2           position, Color   color,
+                                  float         rotation, Vector2           scale,    Vector2 origin = default) {
+        Guard.EnsureNonNull(renderer.FontRenderer, "renderer.FontRenderer");
+
+        font.DrawText(renderer.FontRenderer, text, position,
+                      System.Drawing.Color.FromArgb(color.A, color.R, color.G, color.B),
+                      scale, rotation, origin);
+    }
+    public static void DrawString(this Renderer renderer, DynamicSpriteFont font, string text, Vector2 position, Color color) {
+        Guard.EnsureNonNull(renderer.FontRenderer, "renderer.FontRenderer");
+        
+        font.DrawText((IFontStashRenderer2)renderer.FontRenderer, text, position,
+                      System.Drawing.Color.FromArgb(color.A, color.R, color.G, color.B));
     }
 }

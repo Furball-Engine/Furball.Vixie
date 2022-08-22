@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.OpenGL.Abstractions;
 using Furball.Vixie.Backends.Shared;
+using Furball.Vixie.Backends.Shared.FontStashSharp;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers;
 using Furball.Vixie.Helpers.Helpers;
@@ -11,7 +12,7 @@ using Silk.NET.OpenGL;
 
 namespace Furball.Vixie.Backends.OpenGL; 
 
-internal unsafe class OpenGLRenderer : IRenderer {
+internal unsafe class OpenGLRenderer : Renderer {
     private readonly OpenGLBackend _backend;
     private readonly GL            _gl;
 
@@ -79,6 +80,8 @@ internal unsafe class OpenGLRenderer : IRenderer {
         this._shader.Unbind();
 
         this._texHandles = new VixieTextureGL[this._backend.QueryMaxTextureUnits()];
+        
+        this.FontRenderer = new VixieFontStashRenderer(backend, this);
     }
 
     private void SetVtxBufferToVao(VertexArrayObjectGL vao, BufferObjectGL buffer) {
@@ -91,6 +94,8 @@ internal unsafe class OpenGLRenderer : IRenderer {
         layout.AddElement<int>(1);   //Texture id2
         layout.AddElement<int>(1);   //Texture id
 
+        buffer.Bind();
+        
         this._backend.EnableVertexAttribArray(0);
         this._backend.EnableVertexAttribArray(1);
         this._backend.EnableVertexAttribArray(2);
