@@ -1,10 +1,10 @@
 struct VS_Input
 {
-    float2 Position : POSITION;
-    float2 TexCoord : TEXCOORD;
-    float4 Color    : COLOR;
-    int    InstanceTextureId2 : TEXID;
-    int    InstanceTextureId1 : TEXID;
+                    float2  Position : POSITION;
+                    float2  TexCoord : TEXCOORD;
+                    float4  Color    : COLOR;
+    nointerpolation uint    InstanceTextureId2 : TEXID;
+    nointerpolation uint    InstanceTextureId1 : TEXID1;
 };
 
 struct VS_Output
@@ -12,7 +12,7 @@ struct VS_Output
     float4              Position  : SV_Position;
     float2              TexCoord  : TEXCOORD;
     float4              Color     : COLOR;
-    nointerpolation int TextureId : TEXID;
+    nointerpolation uint TextureId : TEXID;
 };
 
 cbuffer VS_ConstantBuffer : register(b0) {
