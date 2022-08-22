@@ -317,7 +317,8 @@ public class Direct3D11Renderer : IRenderer {
         this._deviceContext.VSSetConstantBuffer(0, this._projectionMatrixBuffer);
         
         this._deviceContext.PSSetShader(this._pixelShader);
-
+        this._deviceContext.PSSetSampler(0, this._samplerState);
+        
         this._deviceContext.IASetInputLayout(this._inputLayout);
         this._deviceContext.IASetPrimitiveTopology(PrimitiveTopology.TriangleList);
 

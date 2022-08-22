@@ -73,8 +73,11 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
         );
         ID3D11ShaderResourceView textureView = this._device.CreateShaderResourceView(texture);
 
+        
         this._texture    = texture;
         this.TextureView = textureView;
+        
+        this.TextureView.DebugName = "white pixel";
 
         this.textureDescription = textureDescription;
 
