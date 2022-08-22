@@ -33,7 +33,7 @@ public class TestMultipleTextures : GameComponent {
         int y = 0;
 
         for (int i = 0; i != this._textures.Length; i++) {
-            this._renderer.AllocateUnrotatedTexturedQuad(this._textures[i], new Vector2(x, y), new Vector2(this._scale), i % 2 == 0 ? Color.White : new(1f, 1f, 1f, 0.7f));
+            this._renderer.AllocateUnrotatedTexturedQuad(this._textures[i], new Vector2(x, y), new Vector2(this._scale), i % 2 == 0 ? Color.White : new(1f, 1f, 1f, 0.7f), i % 4 == 0 ? TextureFlip.FlipHorizontal : TextureFlip.FlipVertical);
             
             if (i % 3 == 0 && i != 0) {
                 y += 64;
