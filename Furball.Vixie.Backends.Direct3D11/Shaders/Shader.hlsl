@@ -3,7 +3,7 @@ struct VS_Input
     float2 Position : POSITION;
     float2 TexCoord : TEXCOORD;
     float4 Color    : COLOR;
-    int    InstanceTextureId2 : TEXID2;
+    int    InstanceTextureId2 : TEXID;
     int    InstanceTextureId1 : TEXID;
 };
 

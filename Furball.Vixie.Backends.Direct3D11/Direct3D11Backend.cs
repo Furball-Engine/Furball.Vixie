@@ -45,7 +45,7 @@ public class Direct3D11Backend : IGraphicsBackend {
 
     private ImGuiControllerD3D11 _imGuiController;
 
-    private  VixieTextureD3D11 _privateWhitePixelVixieTexture;
+    private  VixieTextureD3D11 _privateWhitePixelVixieTexture = null!;
     internal VixieTextureD3D11 GetPrivateWhitePixelTexture() => this._privateWhitePixelVixieTexture;
 
     public override void Initialize(IView view, IInputContext inputContext) {

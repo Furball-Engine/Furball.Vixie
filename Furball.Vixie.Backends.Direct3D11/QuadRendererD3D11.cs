@@ -62,7 +62,7 @@ internal sealed unsafe class QuadRendererD3D11 : IQuadRenderer {
     private InstanceData[]             _instanceData;
     private ID3D11ShaderResourceView[] _boundShaderViews;
     private ID3D11ShaderResourceView[] _nullShaderViews;
-    private VixieTextureD3D11[]             _boundTextures;
+    private VixieTextureD3D11?[]       _boundTextures;
     private int                        _usedTextures;
 
     public QuadRendererD3D11(Direct3D11Backend backend) {
@@ -194,10 +194,10 @@ internal sealed unsafe class QuadRendererD3D11 : IQuadRenderer {
         this._instanceData     = new InstanceData[INSTANCE_AMOUNT];
         this._boundShaderViews = new ID3D11ShaderResourceView[backend.QueryMaxTextureUnits()];
         this._nullShaderViews  = new ID3D11ShaderResourceView[128];
-        this._boundTextures    = new VixieTextureD3D11[backend.QueryMaxTextureUnits()];
+        this._boundTextures    = new VixieTextureD3D11?[backend.QueryMaxTextureUnits()];
 
         for (int i = 0; i != backend.QueryMaxTextureUnits(); i++) {
-            VixieTextureD3D11 vixieTexture = backend.GetPrivateWhitePixelTexture();
+            VixieTextureD3D11? vixieTexture = backend.GetPrivateWhitePixelTexture();
             this._boundShaderViews[i] = vixieTexture.TextureView;
             this._boundTextures[i]    = vixieTexture;
         }
@@ -287,7 +287,7 @@ internal sealed unsafe class QuadRendererD3D11 : IQuadRenderer {
         this._instances++;
     }
 
-    private int GetTextureId(VixieTextureD3D11 tex) {
+    private int GetTextureId(VixieTextureD3D11? tex) {
         this._backend.CheckThread();
         if(tex.UsedId != -1) return tex.UsedId;
 

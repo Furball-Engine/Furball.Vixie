@@ -31,7 +31,7 @@ public class Direct3D11Renderer : IRenderer {
     
     private ID3D11ShaderResourceView?[] _boundShaderViews;
     private ID3D11ShaderResourceView[]  _nullShaderViews;
-    private VixieTextureD3D11[]         _boundTextures;
+    private VixieTextureD3D11?[]        _boundTextures;
     private int                         _usedTextures;
     
     private readonly ID3D11SamplerState _samplerState;
@@ -98,12 +98,12 @@ public class Direct3D11Renderer : IRenderer {
             new("COLOR", 0, Format.R32G32B32A32_Float,
                 (int)Marshal.OffsetOf<Vertex>(nameof (Vertex.Color)), 0,
                 InputClassification.PerVertexData, 0),
-            new("TEXID2", 0, Format.R32_UInt,
+            new("TEXID", 0, Format.R32_UInt,
                 (int)Marshal.OffsetOf<Vertex>(nameof (Vertex.TexId)), 0,
                 InputClassification.PerVertexData, 0),
             //Note: the reason we add `sizeof(int)` is because in the actual vertex definition it is a long, but HLSL
             //does not have a `long` type, so we just split it into 2 32bit integers
-            new("TEXID", 0, Format.R32_UInt,
+            new("TEXID", 1, Format.R32_UInt,
                 (int)Marshal.OffsetOf<Vertex>(nameof (Vertex.TexId)) + sizeof(int), 0,
                 InputClassification.PerVertexData, 0)
         };
@@ -126,10 +126,11 @@ public class Direct3D11Renderer : IRenderer {
         
         this._boundShaderViews = new ID3D11ShaderResourceView[backend.QueryMaxTextureUnits()];
         this._nullShaderViews  = new ID3D11ShaderResourceView[128];
-        this._boundTextures    = new VixieTextureD3D11[backend.QueryMaxTextureUnits()];
+        this._boundTextures    = new VixieTextureD3D11?[backend.QueryMaxTextureUnits()];
         
         for (int i = 0; i != backend.QueryMaxTextureUnits(); i++) {
             VixieTextureD3D11 vixieTexture = backend.GetPrivateWhitePixelTexture();
+            
             this._boundShaderViews[i] = vixieTexture.TextureView;
             this._boundTextures[i]    = vixieTexture;
         }
@@ -195,6 +196,10 @@ public class Direct3D11Renderer : IRenderer {
             
             this._isFirst = false;
         }
+
+        this._usedTextures = 0;
+        this._indexCount   = 0;
+        this._indexOffset  = 0;
     }
     
     public override void End() {
@@ -230,6 +235,10 @@ public class Direct3D11Renderer : IRenderer {
         Array.Copy(this._boundShaderViews, buf.Textures, this._usedTextures);
         
         for (int i = 0; i < this._boundShaderViews.Length; i++) {
+            if(this._boundTextures[i] != null && this._boundTextures[i] != this._backend.GetPrivateWhitePixelTexture())
+                this._boundTextures[i]!.UsedId = -1;
+
+            this._boundTextures[i]    = null;
             this._boundShaderViews[i] = null;
         }
         
@@ -272,6 +281,8 @@ public class Direct3D11Renderer : IRenderer {
     public override long GetTextureId(VixieTexture texOrig) {
         this._backend.CheckThread();
 
+        Guard.EnsureNonNull(texOrig, "texOrig");
+        
         VixieTextureD3D11 tex = (VixieTextureD3D11)texOrig;
         
         if(tex.UsedId != -1) return tex.UsedId;
