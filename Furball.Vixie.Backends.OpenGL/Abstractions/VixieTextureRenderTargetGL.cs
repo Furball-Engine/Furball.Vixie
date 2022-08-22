@@ -42,7 +42,7 @@ internal sealed class VixieTextureRenderTargetGL : VixieTextureRenderTarget, IDi
     /// </summary>
     public int TargetHeight { get; private set; }
 
-    private VixieTexture _vixieTexture;
+    private VixieTextureGL _vixieTexture;
 
     public override Vector2D<int> Size {
         get => new Vector2D<int>(this.TargetWidth, this.TargetHeight);
@@ -112,6 +112,7 @@ internal sealed class VixieTextureRenderTargetGL : VixieTextureRenderTarget, IDi
         this.TargetHeight = (int)height;
 
         this._vixieTexture = new VixieTextureGL(backend, this._textureId, width, height);
+        this._vixieTexture.SetFlip();
     }
 
     ~VixieTextureRenderTargetGL() {
