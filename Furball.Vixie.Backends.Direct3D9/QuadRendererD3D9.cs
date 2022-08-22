@@ -5,16 +5,15 @@ using System.Runtime.InteropServices;
 using FontStashSharp;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Renderers;
-using SharpDX;
-using SharpDX.Direct3D9;
 using SixLabors.ImageSharp.PixelFormats;
+using Vortice.Direct3D9;
 using Color = Furball.Vixie.Backends.Shared.Color;
 using Texture = Furball.Vixie.Backends.Shared.Texture;
 
 namespace Furball.Vixie.Backends.Direct3D9; 
 
 public unsafe class QuadRendererD3D9 : IQuadRenderer {
-    private readonly Device _device;
+    private readonly IDirect3DDevice9 _device;
 
     private const int BATCH_COUNT = 128;
     
@@ -23,8 +22,8 @@ public unsafe class QuadRendererD3D9 : IQuadRenderer {
 
     private int _batchedQuads;
     
-    private readonly IndexBuffer  _indexBuffer;
-    private readonly VertexBuffer _vertexBuffer;
+    private readonly IDirect3DIndexBuffer9  _indexBuffer;
+    private readonly IDirect3DVertexBuffer9 _vertexBuffer;
     
     [StructLayout(LayoutKind.Sequential)]
     struct Vertex {
@@ -39,11 +38,11 @@ public unsafe class QuadRendererD3D9 : IQuadRenderer {
         }
     }
     
-    public QuadRendererD3D9(Device device) {
+    public QuadRendererD3D9(IDirect3DDevice9 device) {
         this._device = device;
         
-        this._vertexBuffer = new VertexBuffer(this._device, sizeof(Vertex) * this._vertexArray.Length, Usage.None, Vertex.Format, Pool.Managed);
-        this._indexBuffer = new IndexBuffer(this._device, 10, Usage.Dynamic, Pool.Managed, true);
+        this._vertexBuffer = device.CreateVertexBuffer(sizeof(Vertex) * this._vertexArray.Length, Usage.None, Vertex.Format, Pool.Managed);
+        this._indexBuffer  = device.CreateIndexBuffer(10, Usage.None, true, Pool.Managed);
     }
     
     public void Dispose() {
@@ -65,18 +64,21 @@ public unsafe class QuadRendererD3D9 : IQuadRenderer {
         if (this._batchedQuads == 0)
             return;
         
-        DataStream dataStream = this._vertexBuffer.Lock(0, sizeof(Vertex) * this._vertexArray.Length, LockFlags.None);
+        var dataStream = this._vertexBuffer.LockToPointer(0, sizeof(Vertex) * this._vertexArray.Length);
+
         fixed(void* ptr = this._vertexArray)
-            dataStream.Write((IntPtr)ptr, 0, sizeof(Vertex) * this._vertexArray.Length);
+            Buffer.MemoryCopy(ptr, (void*)dataStream, sizeof(Vertex) * this._vertexArray.Length, sizeof(Vertex) * this._vertexArray.Length);
+
         this._vertexBuffer.Unlock();
         
-        dataStream = this._indexBuffer.Lock(0, sizeof(ushort) * this._indexArray.Length, LockFlags.None);
+        dataStream = this._indexBuffer.LockToPointer(0, sizeof(ushort) * this._indexArray.Length);
+
         fixed(void* ptr = this._indexArray)
-            dataStream.Write((IntPtr)ptr, 0, sizeof(ushort) * this._indexArray.Length);
+            Buffer.MemoryCopy(ptr, (void*) dataStream, sizeof(ushort) * this._indexArray.Length, sizeof(ushort) * this._indexArray.Length);
+
         this._indexBuffer.Unlock();
 
-        this._device.DrawIndexedPrimitive(PrimitiveType.TriangleList, 0, 0, this._batchedQuads * 6, 0,
-                                          this._batchedQuads                                   * 2);
+        this._device.DrawIndexedPrimitive(PrimitiveType.TriangleList, 0, 0, this._batchedQuads * 6, 0, this._batchedQuads * 2);
 
         this._batchedQuads = 0;
     }

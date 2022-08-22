@@ -6,30 +6,30 @@ using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Kettu;
-using SharpDX;
-using SharpDX.Direct3D9;
-using SharpDX.Mathematics.Interop;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
 using SixLabors.ImageSharp.PixelFormats;
+using Vortice.Direct3D9;
+using Vortice.Mathematics;
+using Color=Vortice.Mathematics.Color;
 using Rectangle = SixLabors.ImageSharp.Rectangle;
 using Texture = Furball.Vixie.Backends.Shared.Texture;
 
 namespace Furball.Vixie.Backends.Direct3D9;
 
 public class Direct3D9Backend : IGraphicsBackend {
-    private          Direct3D      _direct3D;
-    private          Device        _device;
-    private          SwapChain     _swapChain;
-    private readonly RawColorBGRA  _clearColor = new(0, 0, 0, 255);
-    private          Vector2D<int> _currentViewport;
+    private          IDirect3D9 _direct3D;
+    private          IDirect3DDevice9           _device;
+    private          IDirect3DSwapChain9        _swapChain;
+    private readonly Color     _clearColor = new(0, 0, 0, 255);
+    private          Vector2D<int>    _currentViewport;
 
     private ImGuiController _imgui;
 
     public static int DeviceOverride = 0;
 
-    private bool TryCreateDevice(int deviceId, IntPtr hwnd, PresentParameters presentParameters, out Device device) {
+    private bool TryCreateDevice(int deviceId, IntPtr hwnd, PresentParameters presentParameters, out IDirect3DDevice9 device) {
 #if DEBUG
         if (this.TryCreateDevice(DeviceType.Reference, deviceId, hwnd, presentParameters, out device))
             return true;
@@ -44,9 +44,16 @@ public class Direct3D9Backend : IGraphicsBackend {
         return false;
     }
 
-    private bool TryCreateDevice(DeviceType type, int deviceId, IntPtr hwnd, PresentParameters presentParameters,
-                                 out Device device) {
+    private unsafe bool TryCreateDevice(DeviceType type, int deviceId, IntPtr hwnd, PresentParameters presentParameters,
+                                 out IDirect3DDevice9 device) {
+
         Capabilities caps = this._direct3D.GetDeviceCaps(deviceId, type);
+
+        int* capPtr = (int*) &caps + 49;
+        int vertexShaderVersionMajor = (*capPtr >> 8) & 0xFF;
+
+        capPtr += 2;
+        int pixelShaderVersionMajor = (*capPtr >> 8)      & 0xFF;
 
         Logger.Log($"Trying to create Device [{deviceId}] as {type.ToString()}", LoggerLevelD3D9.InstanceInfo);
 
@@ -54,8 +61,8 @@ public class Direct3D9Backend : IGraphicsBackend {
         if ((caps.TextureCaps & TextureCaps.Pow2)               != 0 ||
             (caps.TextureCaps & TextureCaps.NonPow2Conditional) != 0 ||
             (caps.TextureCaps & TextureCaps.SquareOnly)         != 0 ||
-            caps.VertexShaderVersion.Major                      < 2  ||
-            caps.PixelShaderVersion.Major                       < 2
+            vertexShaderVersionMajor                            < 2  ||
+            pixelShaderVersionMajor                             < 2
             ) {
             device = null;
 
@@ -71,7 +78,7 @@ public class Direct3D9Backend : IGraphicsBackend {
             ? CreateFlags.HardwareVertexProcessing
             : CreateFlags.SoftwareVertexProcessing;
 
-        device = new Device(this._direct3D, deviceId, type, hwnd, createFlags, presentParameters);
+        device = this._direct3D.CreateDevice(deviceId, type, hwnd, createFlags, presentParameters);
 
         if (device == null)
             return false;
@@ -81,7 +88,7 @@ public class Direct3D9Backend : IGraphicsBackend {
 
     private void PrintAdapterInfo() {
         for (int i = 0; i != this._direct3D.AdapterCount; i++) {
-            AdapterDetails details = this._direct3D.GetAdapterIdentifier(i);
+            AdapterIdentifier details = this._direct3D.GetAdapterIdentifier(i);
 
             BackendInfoSection deviceInformation = new($"Device #{i}");
 
@@ -95,7 +102,7 @@ public class Direct3D9Backend : IGraphicsBackend {
     }
 
     public override unsafe void Initialize(IView view, IInputContext inputContext) {
-        this._direct3D = new Direct3D();
+        this._direct3D = D3D9.Direct3DCreate9();
 
         PresentParameters presentParameters = new() {
             BackBufferCount  = 1,
@@ -148,7 +155,7 @@ public class Direct3D9Backend : IGraphicsBackend {
             SwapEffect       = SwapEffect.Copy
         };
 
-        this._device.Reset(presentParameters);
+        this._device.Reset(ref presentParameters);
 
         this._currentViewport = new Vector2D<int>(width, height);
     }
@@ -174,7 +181,7 @@ public class Direct3D9Backend : IGraphicsBackend {
         set {
             this._lastScissor = value;
 
-            this._device.ScissorRect = new RawRectangle(value.Left, value.Top, value.Right, value.Bottom);
+            this._device.ScissorRect = new Vortice.Direct3D9.Rect(value.Left, value.Top, value.Right, value.Bottom);
         }
     }
 

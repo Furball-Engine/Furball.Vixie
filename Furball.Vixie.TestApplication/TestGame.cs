@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Helpers.Helpers;
+using Furball.Vixie.TestApplication.Tests;
 #if USE_IMGUI
 using ImGuiNET;
 #endif

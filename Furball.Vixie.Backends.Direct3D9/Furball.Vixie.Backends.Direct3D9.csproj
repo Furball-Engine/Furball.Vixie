@@ -8,7 +8,8 @@
 
     <ItemGroup>
       <PackageReference Include="ImGui.NET.DirectX" Version="1.75.1" />
-      <PackageReference Include="SharpDX.Direct3D9" Version="4.2.0" />
+      <PackageReference Include="Silk.NET.Input.Extensions" Version="2.16.0" />
+      <PackageReference Include="Vortice.Direct3D9" Version="2.1.26-beta" />
     </ItemGroup>
 
     <ItemGroup>
