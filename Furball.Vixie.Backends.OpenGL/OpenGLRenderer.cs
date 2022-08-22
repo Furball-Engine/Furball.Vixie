@@ -68,6 +68,13 @@ internal unsafe class OpenGLRenderer : IRenderer {
         for (int i = 0; i < backend.QueryMaxTextureUnits(); i++) {
             this._shader.BindUniformToTexUnit($"tex_{i}", i);
         }
+        
+        this._gl.BindAttribLocation(this._shader.ProgramId, 0, "VertexPosition");
+        this._gl.BindAttribLocation(this._shader.ProgramId, 1, "TextureCoordinate");
+        this._gl.BindAttribLocation(this._shader.ProgramId, 2, "VertexColor");
+        this._gl.BindAttribLocation(this._shader.ProgramId, 3, "TextureId2");
+        this._gl.BindAttribLocation(this._shader.ProgramId, 4, "TextureId");
+        
         this._shader.Unbind();
 
         this._texHandles = new VixieTextureGL[this._backend.QueryMaxTextureUnits()];

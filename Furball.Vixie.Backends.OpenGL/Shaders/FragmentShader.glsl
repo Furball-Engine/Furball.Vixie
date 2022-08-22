@@ -1,11 +1,8 @@
-#version 330
-precision mediump float;
+#version 110
 
-in vec4 _Color;
-in vec2 _TextureCoordinate;
-flat in int _TextureId;
-
-out vec4 OutputColor;
+varying vec4  _Color;
+varying vec2  _TextureCoordinate;
+varying float _TextureId;
 
 //These are the bound textures
 ${UNIFORMS}

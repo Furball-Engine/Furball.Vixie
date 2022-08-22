@@ -16,8 +16,8 @@ public static class RendererShaderGenerator {
 
             if (i != 0) ifBuilder.Append("else ");
 
-            ifBuilder.AppendLine(@$"if(_TextureId == {i}) {{ 
-    OutputColor = texture(tex_{i}, _TextureCoordinate) * _Color; 
+            ifBuilder.AppendLine(@$"if(_TextureId == {i}.0) {{ 
+    gl_FragColor = texture2D(tex_{i}, _TextureCoordinate) * _Color; 
 }}");
         }
 
