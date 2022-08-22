@@ -31,13 +31,13 @@ public unsafe class TestNewRenderer : GameComponent {
 
         this._renderer.Begin();
 
-        this._renderer.AllocateUnrotatedTexturedQuad(this._texture, new Vector2(200), new Vector2(1));
-        this._renderer.AllocateRotatedTexturedQuad(this._texture, new Vector2(300), new Vector2(1), 1);
-        this._renderer.AllocateUnrotatedTexturedQuadWithSourceRect(this._texture, new Vector2(500), new Vector2(1), new Rectangle(100, 100, 200, 200));
-        this._renderer.AllocateRotatedTexturedQuadWithSourceRect(this._texture, new Vector2(600), new Vector2(1), 0.5f, new Rectangle(100, 100, 200, 200));
+        this._renderer.AllocateUnrotatedTexturedQuad(this._texture, new Vector2(200), new Vector2(1), Color.White);
+        this._renderer.AllocateRotatedTexturedQuad(this._texture, new Vector2(300), new Vector2(1), 1, Vector2.Zero, Color.LightBlue);
+        this._renderer.AllocateUnrotatedTexturedQuadWithSourceRect(this._texture, new Vector2(500), new Vector2(1), new Rectangle(100, 100, 200, 200), Color.GreenYellow);
+        this._renderer.AllocateRotatedTexturedQuadWithSourceRect(this._texture, new Vector2(600), new Vector2(1), 0.5f, Vector2.Zero, new Rectangle(100, 100, 200, 200), Color.Brown);
 
         for (int i = 0; i < 2000; i++) {
-            this._renderer.AllocateUnrotatedTexturedQuad(this._texture, new Vector2(i*9 % 1200, 0), new Vector2(0.05f));
+            this._renderer.AllocateUnrotatedTexturedQuad(this._texture, new Vector2(i*9 % 1200, 0), new Vector2(0.05f), Color.Orange);
         }
         
         MappedData data = this._renderer.Reserve(6, 15);
