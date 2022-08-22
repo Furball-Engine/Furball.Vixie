@@ -11,11 +11,12 @@ namespace Furball.Vixie;
 
 //TODO: Reimplement `TextureFlip`
 public static class RendererExtensions {
-    private static unsafe void SetQuadVertices(Vertex* ptr, Vector2 pos, Vector2 size, long texId, Color color) {
+    private static unsafe void SetQuadVertices(Renderer renderer, Vertex* ptr, Vector2 pos, Vector2 size, VixieTexture tex, Color color) {
+        long texId = renderer.GetTextureId(tex);
         ptr[0] = new Vertex {
             Position          = pos,
             Color             = color,
-            TextureCoordinate = new Vector2(0, 0),
+            TextureCoordinate = new Vector2(0, tex.InternalFlip ? 1 : 0),
             TexId             = texId
         };
         ptr[1] = new Vertex {
@@ -23,13 +24,13 @@ public static class RendererExtensions {
                 Y = 0
             },
             Color             = color,
-            TextureCoordinate = new Vector2(1, 0),
+            TextureCoordinate = new Vector2(1, tex.InternalFlip ? 1 : 0),
             TexId             = texId
         };
         ptr[2] = new Vertex {
             Position          = pos + size,
             Color             = color,
-            TextureCoordinate = new Vector2(1, 1),
+            TextureCoordinate = new Vector2(1, tex.InternalFlip ? 0 : 1),
             TexId             = texId
         };
         ptr[3] = new Vertex {
@@ -37,7 +38,7 @@ public static class RendererExtensions {
                 X = 0
             },
             Color             = color,
-            TextureCoordinate = new Vector2(0, 1),
+            TextureCoordinate = new Vector2(0, tex.InternalFlip ? 0 : 1),
             TexId             = texId
         };
     }
@@ -59,7 +60,7 @@ public static class RendererExtensions {
 
         MappedData mappedData = renderer.Reserve(4, 6);
 
-        SetQuadVertices(mappedData.VertexPtr, position, size, renderer.GetTextureId(tex), color);
+        SetQuadVertices(renderer, mappedData.VertexPtr, position, size, tex, color);
         SetQuadIndices(mappedData);
     }
 
@@ -69,8 +70,11 @@ public static class RendererExtensions {
                                                                           Color          color) {
         Vector2 size = new(sourceRect.Width * scale.X, sourceRect.Height * scale.Y);
 
+        if (tex.InternalFlip)
+            sourceRect.Height *= -1;
+        
         MappedData mappedData = renderer.Reserve(4, 6);
-        SetQuadVertices(mappedData.VertexPtr, position, size, renderer.GetTextureId(tex), color);
+        SetQuadVertices(renderer, mappedData.VertexPtr, position, size, tex, color);
         mappedData.VertexPtr[0].TextureCoordinate =
             new Vector2(sourceRect.X / (float)tex.Width, sourceRect.Y / (float)tex.Height);
         mappedData.VertexPtr[1].TextureCoordinate =
@@ -144,6 +148,9 @@ public static class RendererExtensions {
                                                                         Vector2        rotationOrigin,
                                                                         Rectangle      sourceRect, Color color) {
         Vector2 size = new(sourceRect.Width * scale.X, sourceRect.Height * scale.Y);
+        
+        if (tex.InternalFlip)
+            sourceRect.Height *= -1;
 
         MappedData mappedData = renderer.Reserve(4, 6);
         mappedData.VertexPtr[0] = new Vertex {
