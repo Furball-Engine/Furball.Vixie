@@ -55,8 +55,10 @@ public class Direct3D11BufferMapper : BufferMapper {
     }
 
     public ID3D11Buffer? ResetFromFreshBuffer() {
-        BufferDescription desc = new((int)this.SizeInBytes, this.Usage, ResourceUsage.Dynamic);
-        ID3D11Buffer      buf  = this._device.CreateBuffer(desc);
+        BufferDescription desc = new((int)this.SizeInBytes, this.Usage, ResourceUsage.Dynamic) {
+            CPUAccessFlags = CpuAccessFlags.Write
+        };
+        ID3D11Buffer buf = this._device.CreateBuffer(desc);
 
         return this.ResetFromExistingBuffer(buf);
     }
