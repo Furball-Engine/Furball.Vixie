@@ -16,6 +16,8 @@ internal sealed class VixieTextureRenderTargetGL : VixieTextureRenderTarget, IDi
     /// </summary>
     public bool Bound => CurrentlyBound == this;
 
+    private GL _gl;
+    
     /// <summary>
     /// Unique ID of this FrameBuffer
     /// </summary>
@@ -60,7 +62,9 @@ internal sealed class VixieTextureRenderTargetGL : VixieTextureRenderTarget, IDi
     public unsafe VixieTextureRenderTargetGL(IGLBasedBackend backend, uint width, uint height) {
         this._backend = backend;
         this._backend.GlCheckThread();
-            
+
+        this._gl = backend.GetModernGL();
+        
         //Generate and bind a FrameBuffer
         this._frameBufferId = this._backend.GenFramebuffer();
         this._backend.CheckError("gen framebuffer");
@@ -112,7 +116,6 @@ internal sealed class VixieTextureRenderTargetGL : VixieTextureRenderTarget, IDi
         this.TargetHeight = (int)height;
 
         this._vixieTexture = new VixieTextureGL(backend, this._textureId, width, height);
-        this._vixieTexture.SetFlip();
     }
 
     ~VixieTextureRenderTargetGL() {
@@ -133,6 +136,8 @@ internal sealed class VixieTextureRenderTargetGL : VixieTextureRenderTarget, IDi
 
         //Set the projection matrix and viewport
         this._backend.SetProjectionMatrixAndViewport(this.TargetWidth, this.TargetHeight, true);
+
+        this._gl.Disable(EnableCap.CullFace);
 
         CurrentlyBound = this;
     }
@@ -199,6 +204,8 @@ internal sealed class VixieTextureRenderTargetGL : VixieTextureRenderTarget, IDi
         this._backend.CheckError("unbind rendertarget");
         
         this._backend.SetProjectionMatrixAndViewport(this._oldViewPort[2], this._oldViewPort[3], false);
+
+        this._gl.Enable(EnableCap.CullFace);
 
         CurrentlyBound = null;
     }
