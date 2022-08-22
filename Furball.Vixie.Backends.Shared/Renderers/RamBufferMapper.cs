@@ -15,9 +15,11 @@ public unsafe class RamBufferMapper : BufferMapper {
     public void Reset() {
         this.ReservedBytes = 0;
     }
+    
     public override void Map() {
         this.Reset();
     }
+    
     public override void Unmap() {}
     
     public override void* Reserve(nuint byteCount) {

@@ -66,6 +66,7 @@ public class Direct3D11BufferMapper : BufferMapper {
     public override void Map() {
         Guard.Fail("We should not be here! Use the `Reset*` methods!");
     }
+    
     public override void Unmap() {
         Guard.EnsureNonNull(this._buffer);
         
@@ -75,6 +76,7 @@ public class Direct3D11BufferMapper : BufferMapper {
         //Say we no longer are using any buffers
         this._buffer = null;
     }
+    
     public override unsafe void* Reserve(nuint byteCount) {
         nuint ptr = (nuint)this.Ptr + this.ReservedBytes;
 

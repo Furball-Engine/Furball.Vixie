@@ -26,5 +26,6 @@ public abstract unsafe class BufferMapper : IDisposable {
         
         this.DisposeInternal();
     }
+    
     protected abstract void DisposeInternal();
 }

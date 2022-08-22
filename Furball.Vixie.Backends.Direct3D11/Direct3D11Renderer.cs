@@ -90,23 +90,13 @@ public class Direct3D11Renderer : Renderer {
         this._pixelShader  = this._device.CreatePixelShader(pixelShaderData);
 
         InputElementDescription[] inputLayoutDescription = {
-            new("POSITION", 0, Format.R32G32_Float,
-                InputElementDescription.AppendAligned, 0,
-                InputClassification.PerVertexData, 0),
-            new("TEXCOORD", 0, Format.R32G32_Float,
-                InputElementDescription.AppendAligned, 0,
-                InputClassification.PerVertexData, 0),
-            new("COLOR", 0, Format.R32G32B32A32_Float,
-                InputElementDescription.AppendAligned, 0,
-                InputClassification.PerVertexData, 0),
-            new("TEXID", 0, Format.R32_UInt,
-                InputElementDescription.AppendAligned, 0,
-                InputClassification.PerVertexData, 0),
+            new("POSITION", 0, Format.R32G32_Float, InputElementDescription.AppendAligned, 0, InputClassification.PerVertexData, 0),
+            new("TEXCOORD", 0, Format.R32G32_Float, InputElementDescription.AppendAligned, 0, InputClassification.PerVertexData, 0),
+            new("COLOR", 0, Format.R32G32B32A32_Float, InputElementDescription.AppendAligned, 0, InputClassification.PerVertexData, 0),
+            new("TEXID", 0, Format.R32_UInt, InputElementDescription.AppendAligned, 0, InputClassification.PerVertexData, 0),
             //Note: the reason we add `sizeof(int)` is because in the actual vertex definition it is a long, but HLSL
             //does not have a `long` type, so we just split it into 2 32bit integers
-            new("TEXID", 1, Format.R32_UInt,
-                InputElementDescription.AppendAligned, 0,
-                InputClassification.PerVertexData, 0)
+            new("TEXID", 1, Format.R32_UInt, InputElementDescription.AppendAligned, 0, InputClassification.PerVertexData, 0)
         };
 
         //Create the input layout for the shader
