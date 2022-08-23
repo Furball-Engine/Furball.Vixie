@@ -129,10 +129,10 @@ public static class RendererExtensions {
 
         Matrix4x4 rotMat = Matrix4x4.CreateRotationZ(rotation);
 
-        mappedData.VertexPtr[0].Position += rotationOrigin;
-        mappedData.VertexPtr[1].Position += rotationOrigin;
-        mappedData.VertexPtr[2].Position += rotationOrigin;
-        mappedData.VertexPtr[3].Position += rotationOrigin;
+        mappedData.VertexPtr[0].Position -= rotationOrigin;
+        mappedData.VertexPtr[1].Position -= rotationOrigin;
+        mappedData.VertexPtr[2].Position -= rotationOrigin;
+        mappedData.VertexPtr[3].Position -= rotationOrigin;
 
         mappedData.VertexPtr[0].Position = Vector2.Transform(mappedData.VertexPtr[0].Position, rotMat);
         mappedData.VertexPtr[1].Position = Vector2.Transform(mappedData.VertexPtr[1].Position, rotMat);
@@ -189,10 +189,10 @@ public static class RendererExtensions {
 
         Matrix4x4 rotMat = Matrix4x4.CreateRotationZ(rotation);
 
-        mappedData.VertexPtr[0].Position += rotationOrigin;
-        mappedData.VertexPtr[1].Position += rotationOrigin;
-        mappedData.VertexPtr[2].Position += rotationOrigin;
-        mappedData.VertexPtr[3].Position += rotationOrigin;
+        mappedData.VertexPtr[0].Position -= rotationOrigin;
+        mappedData.VertexPtr[1].Position -= rotationOrigin;
+        mappedData.VertexPtr[2].Position -= rotationOrigin;
+        mappedData.VertexPtr[3].Position -= rotationOrigin;
 
         mappedData.VertexPtr[0].Position = Vector2.Transform(mappedData.VertexPtr[0].Position, rotMat);
         mappedData.VertexPtr[1].Position = Vector2.Transform(mappedData.VertexPtr[1].Position, rotMat);
@@ -219,7 +219,12 @@ public static class RendererExtensions {
     public static void DrawString(this Renderer renderer, DynamicSpriteFont font, string text, Vector2 position, Color color) {
         Guard.EnsureNonNull(renderer.FontRenderer, "renderer.FontRenderer");
         
-        font.DrawText((IFontStashRenderer2)renderer.FontRenderer, text, position,
+        font.DrawText(renderer.FontRenderer, text, position,
                       System.Drawing.Color.FromArgb(color.A, color.R, color.G, color.B));
+    }
+    public static void DrawString(this Renderer renderer, DynamicSpriteFont font, string text, Vector2 position, System.Drawing.Color[] colors, float rotation, Vector2? scale, Vector2 origin) {
+        Guard.EnsureNonNull(renderer.FontRenderer, "renderer.FontRenderer");
+
+        font.DrawText(renderer.FontRenderer, text, position, colors, scale, rotation, origin);
     }
 }
