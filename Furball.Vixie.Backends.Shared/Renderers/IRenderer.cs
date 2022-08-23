@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Numerics;
-using FontStashSharp;
 using Furball.Vixie.Backends.Shared.FontStashSharp;
 using Furball.Vixie.Helpers;
 

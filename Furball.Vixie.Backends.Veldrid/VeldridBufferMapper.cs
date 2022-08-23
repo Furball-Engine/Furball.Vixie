@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using Furball.Vixie.Backends.Shared.Renderers;
+﻿using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers;
 using Veldrid;
 
