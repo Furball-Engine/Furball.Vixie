@@ -33,10 +33,10 @@ public abstract class IGraphicsBackend {
     /// <param name="height">New height</param>
     public abstract void HandleFramebufferResize(int width, int height);
     /// <summary>
-    /// Used to Create a Texture Renderer
+    /// Creates a new renderer from the backend
     /// </summary>
-    /// <returns>A Texture Renderer</returns>
-    public abstract IQuadRenderer CreateTextureRenderer();
+    /// <returns>Returns the new renderer</returns>
+    public abstract Renderer CreateRenderer();
     /// <summary>
     /// Gets the Amount of Texture Units available for use
     /// </summary>

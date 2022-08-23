@@ -1,4 +1,6 @@
 using System.Numerics;
+using Furball.Vixie.Backends.Shared;
+using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers.Helpers;
 using ImGuiNET;
 
@@ -10,7 +12,7 @@ public class TestRotation : GameComponent {
     private Texture       _whiteTexture;
 
     public override void Initialize() {
-        this._renderer = new Renderer();
+        this._renderer = GraphicsBackend.Current.CreateRenderer();
         this._whiteTexture =
             Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
 
@@ -25,10 +27,11 @@ public class TestRotation : GameComponent {
         this._renderer.Begin();
 
         for(int i = 0; i != 360; i ++)
-            this._renderer.Draw(this._whiteTexture, new Vector2(1280 / 2, 720 / 2), Vector2.One, (float) i * (3.1415f / 180f) + this._rotation);
+            this._renderer.AllocateRotatedTexturedQuad(this._whiteTexture, new Vector2(1280f / 2f, 720f / 2f), Vector2.One, (float) i * (3.1415f / 180f) + this._rotation, Vector2.Zero, Color.White);
 
         this._renderer.End();
-
+        
+        this._renderer.Draw();
 
         #region ImGui menu
 

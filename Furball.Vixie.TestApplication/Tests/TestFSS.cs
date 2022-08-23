@@ -2,6 +2,7 @@ using System;
 using System.Numerics;
 using FontStashSharp;
 using Furball.Vixie.Backends.Shared;
+using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers.Helpers;
 using ImGuiNET;
 
@@ -22,7 +23,7 @@ public class TestFSS : GameComponent {
         this._defaultFont.AddFont(ResourceHelpers.GetByteResource("Resources/font.ttf"));
         this._font = this._defaultFont.GetFont(48);
 
-        this._renderer = new();
+        this._renderer = GraphicsBackend.Current.CreateRenderer();
 
         base.Initialize();
     }
@@ -34,10 +35,12 @@ public class TestFSS : GameComponent {
         GraphicsBackend.Current.Clear();
 
         this._renderer.Begin();
-        this._renderer.DrawString(this._font, "VixieFontStashSharpRenderer Testing",                new Vector2(10,  100), Color.White,      this._rotation,                         new Vector2(_scale), new(-50));
+        this._renderer.DrawString(this._font, "VixieFontStashSharpRenderer Testing",                new Vector2(10,  100), Color.White,      this._rotation,                         new Vector2(_scale), new Vector2(-50));
         this._renderer.DrawString(this._font, "More Quite Long Text, Foxes Are Cute",               new Vector2(10,  200), Color.LightBlue,  (float)(2f * Math.PI - this._rotation), new Vector2(_scale));
         this._renderer.DrawString(this._font, "Did You Know That A Bee Should Not Be Able To Fly?", new Vector2(500, 300), Color.LightGreen, (float)(Math.PI - this._rotation),       new Vector2(_scale));
         this._renderer.End();
+        
+        this._renderer.Draw();
 
         #region ImGui menu
 

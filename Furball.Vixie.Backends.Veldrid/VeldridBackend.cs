@@ -46,7 +46,7 @@ public class VeldridBackend : IGraphicsBackend {
 
     public override void Initialize(IView view, IInputContext inputContext) {
         this._view = view;
-            
+
         GraphicsDeviceOptions options = new() {
             SyncToVerticalBlank               = view.VSync,
             Debug                             = view.API.Flags.HasFlag(ContextFlags.Debug),
@@ -245,7 +245,7 @@ public class VeldridBackend : IGraphicsBackend {
 
         this.SetFullScissorRect();
     }
-    public override IQuadRenderer CreateTextureRenderer() => new QuadRendererVeldrid(this);
+    public override Renderer CreateRenderer() => new RendererVeldrid(this);
 
     public const int MAX_TEXTURE_UNITS = 4;
         

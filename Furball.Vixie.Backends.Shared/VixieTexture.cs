@@ -9,6 +9,8 @@ public abstract class VixieTexture : IDisposable {
     protected Vector2D<int> _size;
     public    bool          Useless;
 
+    public bool InternalFlip { get; protected set; }
+    
     protected int MipMapCount(int width, int height)
         => (int)(Math.Floor(Math.Log(Math.Max(width, height), 2) / 2d) + 1);
 

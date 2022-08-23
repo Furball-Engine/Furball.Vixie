@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Numerics;
 using FontStashSharp;
+using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers.Helpers;
 using ImGuiNET;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using Color = Furball.Vixie.Backends.Shared.Color;
 
 namespace Furball.Vixie.TestApplication.Tests; 
 
@@ -49,15 +51,17 @@ public class TestTextureGetData : GameComponent {
         this._defaultFont.AddFont(ResourceHelpers.GetByteResource("Resources/font.ttf"));
         this._font = this._defaultFont.GetFont(48);
 
-        this._renderer = new Renderer();
+        this._renderer = GraphicsBackend.Current.CreateRenderer();
+        
+        this._renderer.Begin();
+        this._renderer.DrawString(this._font, $"Result: {this._testPassed}", new Vector2(10), this._testPassed ? Color.LightGreen : Color.Red);
+        this._renderer.End();
     }
 
     public override void Draw(double deltaTime) {
         GraphicsBackend.Current.Clear();
 
-        this._renderer.Begin();
-        this._renderer.DrawString(this._font, $"Result: {this._testPassed}", new Vector2(10), this._testPassed ? System.Drawing.Color.LightGreen : System.Drawing.Color.Red);
-        this._renderer.End();
+        this._renderer.Draw();
         
         #region ImGui menu
 

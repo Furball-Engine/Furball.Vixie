@@ -153,12 +153,13 @@ public abstract class Game : IDisposable {
             this.Initialize();
 
         if (this._isRecreated) {
-            foreach (WeakReference<Renderer> rendererRef in Global.TRACKED_RENDERERS) {
-                if (rendererRef.TryGetTarget(out Renderer renderer)) {
-                    renderer.Recreate();
-                    GC.ReRegisterForFinalize(renderer);
-                }
-            }
+            //TODO: live backend switching for new renderer
+            // foreach (WeakReference<Renderer> rendererRef in Global.TRACKED_RENDERERS) {
+            //     if (rendererRef.TryGetTarget(out Renderer renderer)) {
+            //         renderer.Recreate();
+            //         GC.ReRegisterForFinalize(renderer);
+            //     }
+            // }
             
             foreach (WeakReference<Texture> texRef in Global.TRACKED_TEXTURES) {
                 if (texRef.TryGetTarget(out Texture tex)) {
@@ -252,12 +253,12 @@ public abstract class Game : IDisposable {
         
             this._isRecreated = true;
 
-            foreach (WeakReference<Renderer> rendererRef in Global.TRACKED_RENDERERS) {
-                if (rendererRef.TryGetTarget(out Renderer renderer)) {
-                    renderer.DisposeInternal();
-                    GC.SuppressFinalize(renderer);
-                }
-            }
+            // foreach (WeakReference<Renderer> rendererRef in Global.TRACKED_RENDERERS) {
+            //     if (rendererRef.TryGetTarget(out Renderer renderer)) {
+            //         renderer.DisposeInternal();
+            //         GC.SuppressFinalize(renderer);
+            //     }
+            // }
             
             foreach (WeakReference<Texture> texRef in Global.TRACKED_TEXTURES) {
                 if (texRef.TryGetTarget(out Texture tex)) {

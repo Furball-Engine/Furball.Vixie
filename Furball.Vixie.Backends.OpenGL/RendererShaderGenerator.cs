@@ -1,12 +1,12 @@
-using System.Text;
+﻿using System.Text;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Helpers.Helpers;
 
 namespace Furball.Vixie.Backends.OpenGL; 
 
-public static class InstancedQuadShaderGenerator {
+public static class RendererShaderGenerator {
     public static string GetFragment(IGraphicsBackend backend) {
-        string orig = ResourceHelpers.GetStringResource("Shaders/InstancedQuadRenderer/FragmentShader.glsl");
+        string orig = ResourceHelpers.GetStringResource("Shaders/FragmentShader.glsl");
 
         StringBuilder uniformBuilder = new();
         StringBuilder ifBuilder      = new();
@@ -16,11 +16,13 @@ public static class InstancedQuadShaderGenerator {
 
             if (i != 0) ifBuilder.Append("else ");
 
-            ifBuilder.Append($"if(fs_in_texid == {i}) {{ OutputColor = texture(tex_{i}, fs_in_tex) * fs_in_col; }}");
+            ifBuilder.AppendLine(@$"if(_TextureId == {i}.0) {{ 
+    gl_FragColor = texture2D(tex_{i}, _TextureCoordinate) * _Color; 
+}}");
         }
 
         return orig
               .Replace("${UNIFORMS}", uniformBuilder.ToString())
-              .Replace("${IF}", ifBuilder.ToString());
+              .Replace("${IF}",       ifBuilder.ToString());
     }
 }

@@ -1,5 +1,6 @@
 using System.Numerics;
 using Furball.Vixie.Backends.Shared;
+using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers.Helpers;
 using ImGuiNET;
 
@@ -18,7 +19,7 @@ public class TestMultipleTextures : GameComponent {
             else this._textures[i] = Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/test.qoi"));
         }
 
-        this._renderer = new();
+        this._renderer = GraphicsBackend.Current.CreateRenderer();
 
         base.Initialize();
     }
@@ -32,7 +33,8 @@ public class TestMultipleTextures : GameComponent {
         int y = 0;
 
         for (int i = 0; i != this._textures.Length; i++) {
-            this._renderer.Draw(this._textures[i], new Vector2(x, y), new Vector2(this._scale) * (i % 2 == 0 ? 1f : 0.25f), i % 2 == 0 ? Color.White : new(1f, 1f, 1f, 0.7f), 0, i % 5 == 0 ? TextureFlip.FlipVertical : TextureFlip.FlipHorizontal);
+            this._renderer.AllocateUnrotatedTexturedQuad(this._textures[i], new Vector2(x, y), new Vector2(this._scale), i % 2 == 0 ? Color.White : new(1f, 1f, 1f, 0.7f), i % 4 == 0 ? TextureFlip.FlipHorizontal : TextureFlip.FlipVertical);
+            
             if (i % 3 == 0 && i != 0) {
                 y += 64;
                 x =  0;
@@ -42,6 +44,8 @@ public class TestMultipleTextures : GameComponent {
         }
 
         this._renderer.End();
+        
+        this._renderer.Draw();
 
         #region ImGui menu
 

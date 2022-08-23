@@ -31,16 +31,19 @@
     <ItemGroup>
       <EmbeddedResource Include="Shaders\Compiled\ImGuiController\PixelShader.dxc" />
       <EmbeddedResource Include="Shaders\Compiled\ImGuiController\VertexShader.dxc" />
-      <EmbeddedResource Include="Shaders\Compiled\QuadRenderer\PixelShader.dxc" />
-      <EmbeddedResource Include="Shaders\Compiled\QuadRenderer\VertexShader.dxc" />
       <EmbeddedResource Include="Shaders\ImGui\Shaders.hlsl" />
-      <EmbeddedResource Include="Shaders\QuadRenderer\Shaders.hlsl" />
+      <EmbeddedResource Include="Shaders\VertexShader.obj" />
+      <EmbeddedResource Include="Shaders\PixelShader.obj" />
       <None Remove="Shaders\Compiled\ImGuiController_PixelShader.fx" />
       <None Remove="Shaders\Compiled\ImGuiController_VertexShader.fx" />
       <None Remove="Shaders\Compiled\LineRenderer_PixelShader.fx" />
       <None Remove="Shaders\Compiled\LineRenderer_VertexShader.fx" />
       <None Remove="Shaders\Compiled\QuadRenderer_PixelShader.fx" />
       <None Remove="Shaders\Compiled\QuadRenderer_VertexShader.fx" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ClCompile Include="Shaders\Shader.hlsl" />
     </ItemGroup>
 
 </Project>

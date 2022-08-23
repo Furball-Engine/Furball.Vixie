@@ -203,6 +203,9 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
         this.CheckError("enable srcalpha");
 
         this.gl.Enable(EnableCap.ScissorTest);
+        
+        this.gl.Enable(EnableCap.CullFace);
+        this.gl.CullFace(CullFaceMode.Back);
 
         if (this.CreationBackend == Backend.OpenGL)
             this._legacyImGuiController =
@@ -352,16 +355,7 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     public override void SetFullScissorRect() {
         this.ScissorRect = new(0, 0, this.CurrentViewport.X, this.CurrentViewport.Y);
     }
-    /// <summary>
-    ///     Used to Create a Texture Renderer
-    /// </summary>
-    /// <returns>A Texture Renderer</returns>
-    public override IQuadRenderer CreateTextureRenderer() {
-        if (this._instancedQuadRenderingFeatureLevel.Boolean)
-            return new InstancedQuadRenderer(this);
-
-        return new FakeInstancingQuadRenderer(this);
-    }
+    public override Renderer CreateRenderer() => new OpenGLRenderer(this);
     /// <summary>
     ///     Gets the Amount of Texture Units available for use
     /// </summary>

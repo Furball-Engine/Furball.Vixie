@@ -59,6 +59,13 @@ public struct Color {
         this.Af = a / 255f;
     }
 
+    public Color(uint packedColor) {
+        this.Af = ((packedColor & 0xFF000000) >> 24) / 255f;
+        this.Rf = ((packedColor & 0x00FF0000) >> 16) / 255f;
+        this.Gf = ((packedColor & 0x0000FF00) >> 8)  / 255f;
+        this.Bf = ((packedColor & 0x000000FF) >> 0)  / 255f;
+    }
+    
     [Pure]
     public Vector4 ToVector4B() => new(this.R, this.G, this.B, this.A);
     [Pure]

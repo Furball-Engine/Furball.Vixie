@@ -264,6 +264,8 @@ public class WindowManager : IDisposable {
             this._windowOptions.ShouldSwapAutomatically = false;
         }
 
+        this._windowOptions.PreferredDepthBufferBits = 0;
+        
         if (this.RequestViewOnly) {
             this.GameView = Window.GetView(new ViewOptions(this._windowOptions));
             this.ViewOnly = true;

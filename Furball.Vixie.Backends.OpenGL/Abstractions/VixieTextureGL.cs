@@ -70,6 +70,10 @@ internal sealed class VixieTextureGL : VixieTexture, IDisposable {
 
     internal TextureUnit BoundAt;
 
+    public void SetFlip() {
+        this.InternalFlip = true;
+    }
+    
     /// <summary>
     /// Unique ID which identifies this Texture
     /// </summary>
@@ -81,14 +85,6 @@ internal sealed class VixieTextureGL : VixieTexture, IDisposable {
     /// Local Image, possibly useful to Sample on the CPU Side if necessary
     /// </summary>
     private Image<Rgba32> _localBuffer;
-
-    /// <summary>
-    /// Used for determening whether or not to Flip it internally because it's a framebuffer
-    /// </summary>
-    public bool IsFramebufferTexture {
-        get;
-        internal set;
-    }
 
     /// <summary>
     /// Creates a Texture from a byte array which contains Image Data
@@ -229,7 +225,7 @@ internal sealed class VixieTextureGL : VixieTexture, IDisposable {
         image.ProcessPixelRows(accessor =>
         {
             for (int i = 0; i < accessor.Height; i++) {
-                fixed(void* ptr = &accessor.GetRowSpan(i).GetPinnableReference())
+                fixed(void* ptr = accessor.GetRowSpan(i))
                     this._backend.TexSubImage2D(TextureTarget.Texture2D, 0, 0, i, (uint)accessor.Width, 1, PixelFormat.Rgba, PixelType.UnsignedByte, ptr);
             }
         });

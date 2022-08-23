@@ -45,7 +45,7 @@ public class Direct3D11Backend : IGraphicsBackend {
 
     private ImGuiControllerD3D11 _imGuiController;
 
-    private  VixieTextureD3D11 _privateWhitePixelVixieTexture;
+    private  VixieTextureD3D11 _privateWhitePixelVixieTexture = null!;
     internal VixieTextureD3D11 GetPrivateWhitePixelTexture() => this._privateWhitePixelVixieTexture;
 
     public override void Initialize(IView view, IInputContext inputContext) {
@@ -241,9 +241,7 @@ public class Direct3D11Backend : IGraphicsBackend {
         this._projectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, right, bottom, 0, 1f, 0f);
     }
 
-    public override IQuadRenderer CreateTextureRenderer() {
-        return new QuadRendererD3D11(this);
-    }
+    public override Renderer CreateRenderer() => new Direct3D11Renderer(this);
 
     public override int QueryMaxTextureUnits() {
         return 128;
