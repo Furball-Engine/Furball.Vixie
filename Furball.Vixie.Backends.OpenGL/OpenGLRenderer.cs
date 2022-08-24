@@ -211,11 +211,11 @@ internal unsafe class OpenGLRenderer : Renderer {
     private uint _indexOffset;
     private uint _indexCount;
     public override MappedData Reserve(ushort vertexCount, uint indexCount) {
-        Debug.Assert(vertexCount != 0, "vertexCount != 0");
-        Debug.Assert(indexCount  != 0, "indexCount != 0");
+        Guard.Assert(vertexCount != 0, "vertexCount != 0");
+        Guard.Assert(indexCount  != 0, "indexCount != 0");
         
-        Debug.Assert(vertexCount * sizeof(Vertex) < (int)this._vtxMapper.SizeInBytes, "vertexCount * sizeof(Vertex) < this._vtxMapper.SizeInBytes");
-        Debug.Assert(indexCount * sizeof(ushort) < (int)this._idxMapper.SizeInBytes, "indexCount * sizeof(ushort) < (int)this._idxMapper.SizeInBytes");
+        Guard.Assert(vertexCount * sizeof(Vertex) < (int)this._vtxMapper.SizeInBytes, "vertexCount * sizeof(Vertex) < this._vtxMapper.SizeInBytes");
+        Guard.Assert(indexCount * sizeof(ushort) < (int)this._idxMapper.SizeInBytes, "indexCount * sizeof(ushort) < (int)this._idxMapper.SizeInBytes");
         
         void* vertex = this._vtxMapper.Reserve((nuint)(vertexCount * sizeof(Vertex)));
         void* index  = this._idxMapper.Reserve(indexCount * sizeof(ushort));
