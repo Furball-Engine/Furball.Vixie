@@ -181,6 +181,8 @@ internal unsafe class OpenGLRenderer : Renderer {
     }
     
     public override void Begin() {
+        this._texDict.Clear();
+        
         this._bufferList.ForEach(x => {
             this._vtxQueue.Push(x.Vtx);
             this._idxQueue.Push(x.Idx);
@@ -229,17 +231,17 @@ internal unsafe class OpenGLRenderer : Renderer {
 
         return new MappedData((Vertex*)vertex, (ushort*)index, vertexCount, indexCount, this._indexOffset - vertexCount);
     }
-    
+
+    private readonly Dictionary<VixieTexture, long> _texDict = new();
     public override long GetTextureId(VixieTexture tex) {
         if (tex is not VixieTextureGL texGl)
             throw new InvalidOperationException($"You must pass a {typeof(VixieTextureGL)} into this function!");
 
-        if (texGl.BoundId != -1)
-            return texGl.BoundId;
+        if (this._texDict.TryGetValue(tex, out long id))
+            return id;
 
-        texGl.BoundId = this._usedTextures;
-        
         this._texHandles[this._usedTextures] = texGl;
+        this._texDict.Add(tex, this._usedTextures);
 
         this._usedTextures++;
 
@@ -287,6 +289,8 @@ internal unsafe class OpenGLRenderer : Renderer {
             this._texHandles[i] = null;
         }
         
+        this._texDict.Clear();
+ 
         this._vtxMapper.Dispose();
         this._idxMapper.Dispose();
         
