@@ -62,10 +62,10 @@ public class Direct3D11Renderer : Renderer {
         }
     }
 
-    private List<RenderBuffer> _renderBuffers = new();
+    private readonly List<RenderBuffer> _renderBuffers = new();
 
-    private Queue<ID3D11Buffer> _vtxBufferQueue = new();
-    private Queue<ID3D11Buffer> _idxBufferQueue = new();
+    private readonly Queue<ID3D11Buffer> _vtxBufferQueue = new();
+    private readonly Queue<ID3D11Buffer> _idxBufferQueue = new();
     
     private const int QUAD_AMOUNT = 256;
 
@@ -155,8 +155,13 @@ public class Direct3D11Renderer : Renderer {
     
     private bool _isFirst = true;
     public override void Begin() {
+        Guard.EnsureNull(this._vtxMapper.Buffer, "this._vtxMapper._buffer");
+        Guard.EnsureNull(this._idxMapper.Buffer, "this._idxMapper._buffer");
+
+        bool wasLastEmpty = this._renderBuffers.Count == 0;
+
         //Save all the buffers from the render queue
-        this._renderBuffers.ForEach(x => {
+        foreach (RenderBuffer? x in this._renderBuffers) {
             Guard.EnsureNonNull(x.Vtx, "x.Vtx");
             Guard.EnsureNonNull(x.Idx, "x.Idx");
 
@@ -167,25 +172,30 @@ public class Direct3D11Renderer : Renderer {
             //destructor
             x.Vtx = null;
             x.Idx = null;
-        });
+        }
         //Clear the render buffer queue
         this._renderBuffers.Clear();
-        
-        if (this._vtxBufferQueue.Count > 0) {
-            this._vtxMapper.ResetFromExistingBuffer(this._vtxBufferQueue.Dequeue());
-            this._idxMapper.ResetFromExistingBuffer(this._idxBufferQueue.Dequeue());
-        }
-        else {
-            Guard.Assert(this._isFirst);
+
+        if (this._vtxBufferQueue.Count == 0 || wasLastEmpty) {
+            Guard.Assert(this._isFirst || wasLastEmpty);
             
-            //These should be null, because this code path should only run on the *first* time these are mapped.
-            //If it is not the first time these are mapped, then it *will* have a buffer to pull from, and will instead
-            //use the `true` condition of the above if statement, while this should be covered by the `Guard.Assert()`
-            //above, these `Guard` checks act as an extra barrier against shenanigans
-            Guard.EnsureNull(this._vtxMapper.ResetFromFreshBuffer(), "this._vtxMapper.ResetFromFreshBuffer()");
-            Guard.EnsureNull(this._idxMapper.ResetFromFreshBuffer(), "this._idxMapper.ResetFromFreshBuffer()");
+            ID3D11Buffer? vtxBuf = this._vtxMapper.ResetFromFreshBuffer();
+            ID3D11Buffer? idxBuf = this._idxMapper.ResetFromFreshBuffer();
+
+            if (vtxBuf != null && idxBuf != null) {
+                this._vtxBufferQueue.Enqueue(vtxBuf);
+                this._idxBufferQueue.Enqueue(idxBuf);
+            }
             
             this._isFirst = false;
+        } else {
+            ID3D11Buffer? vtxBuf = this._vtxMapper.ResetFromExistingBuffer(this._vtxBufferQueue.Dequeue());
+            ID3D11Buffer? idxBuf = this._idxMapper.ResetFromExistingBuffer(this._idxBufferQueue.Dequeue());
+            
+            if (vtxBuf != null && idxBuf != null) {
+                this._vtxBufferQueue.Enqueue(vtxBuf);
+                this._idxBufferQueue.Enqueue(idxBuf);
+            }
         }
 
         this._usedTextures = 0;
@@ -195,6 +205,15 @@ public class Direct3D11Renderer : Renderer {
     
     public override void End() {
         this.DumpToBuffers();
+
+        // Guard.EnsureNonNull(this._vtxMapper.Buffer, "this._vtxMapper._buffer");
+        // Guard.EnsureNonNull(this._idxMapper.Buffer, "this._idxMapper._buffer");
+
+        // this._vtxMapper.Buffer!.Dispose();
+        // this._idxMapper.Buffer!.Dispose();
+
+        // this._vtxMapper.Buffer = null;
+        // this._idxMapper.Buffer = null;
         
         this._vtxMapper.Unmap();
         this._idxMapper.Unmap();

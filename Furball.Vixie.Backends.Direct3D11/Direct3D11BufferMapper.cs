@@ -11,7 +11,7 @@ public class Direct3D11BufferMapper : BufferMapper {
 
     private readonly BindFlags Usage;
 
-    private ID3D11Buffer? _buffer;
+    internal ID3D11Buffer? Buffer;
     
     public unsafe void* Ptr;
 
@@ -31,7 +31,7 @@ public class Direct3D11BufferMapper : BufferMapper {
         this.ReservedBytes = 0;
         
         //Get the current buffer
-        ID3D11Buffer? old = this._buffer;
+        ID3D11Buffer? old = this.Buffer;
         
         //Ensure the buffer is dynamic
         Guard.Assert(buffer.Description.Usage.HasFlag(ResourceUsage.Dynamic), "buffer.Description.Usage.HasFlag(ResourceUsage.Dynamic)");
@@ -39,14 +39,14 @@ public class Direct3D11BufferMapper : BufferMapper {
         Guard.Assert(buffer.Description.BindFlags == this.Usage, "buffer.Description.BindFlags == this.Usage");
         
         //Set the current buffer to the new one
-        this._buffer = buffer;
+        this.Buffer = buffer;
     
         //Unmap the old buffer
         if (old != null)
             this._deviceContext.Unmap(old);
 
         //Map the new buffer
-        MappedSubresource map = this._deviceContext.Map(this._buffer, MapMode.WriteDiscard);
+        MappedSubresource map = this._deviceContext.Map(this.Buffer, MapMode.WriteDiscard);
         
         //Set the data ptr
         this.Ptr = (void*)map.DataPointer;
@@ -68,13 +68,15 @@ public class Direct3D11BufferMapper : BufferMapper {
     }
     
     public override void Unmap() {
-        Guard.EnsureNonNull(this._buffer);
+        Guard.EnsureNonNull(this.Buffer);
         
         //Unmap the buffer
-        this._deviceContext.Unmap(this._buffer!);
+        this._deviceContext.Unmap(this.Buffer!);
+        
+        this.Buffer!.Dispose();
         
         //Say we no longer are using any buffers
-        this._buffer = null;
+        this.Buffer = null;
     }
     
     public override unsafe void* Reserve(nuint byteCount) {
@@ -90,6 +92,6 @@ public class Direct3D11BufferMapper : BufferMapper {
     }
     
     protected override void DisposeInternal() {
-        this._buffer?.Dispose();
+        this.Buffer?.Dispose();
     }
 }
