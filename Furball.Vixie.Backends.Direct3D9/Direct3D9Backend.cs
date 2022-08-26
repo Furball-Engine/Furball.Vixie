@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Numerics;
 using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
@@ -9,42 +8,41 @@ using Kettu;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
-using SixLabors.ImageSharp.PixelFormats;
 using Vortice.Direct3D9;
-using Vortice.Mathematics;
 using Color=Vortice.Mathematics.Color;
 using Rectangle = SixLabors.ImageSharp.Rectangle;
-using Texture = Furball.Vixie.Backends.Shared.Texture;
 
 namespace Furball.Vixie.Backends.Direct3D9;
 
 public class Direct3D9Backend : IGraphicsBackend {
-    private          IDirect3D9 _direct3D;
-    private          IDirect3DDevice9           _device;
-    private          IDirect3DSwapChain9        _swapChain;
-    private readonly Color     _clearColor = new(0, 0, 0, 255);
-    private          Vector2D<int>    _currentViewport;
+    private          IDirect3D9          _direct3D;
+    private          IDirect3DDevice9    _device;
+    private          IDirect3DSwapChain9 _swapChain;
+    private readonly Color               _clearColor = new(0, 0, 0, 255);
+    private          Vector2D<int>       _currentViewport;
+
+    internal Capabilities DeviceCapabilities;
 
     private ImGuiController _imgui;
 
     public static int DeviceOverride = 0;
 
-    private bool TryCreateDevice(int deviceId, IntPtr hwnd, PresentParameters presentParameters, out IDirect3DDevice9 device) {
+    private bool TryCreateDevice(int deviceId, IntPtr hwnd, PresentParameters presentParameters, out IDirect3DDevice9 device, out Capabilities deviceCaps) {
 #if DEBUG
-        if (this.TryCreateDevice(DeviceType.Reference, deviceId, hwnd, presentParameters, out device))
+        if (this.TryCreateDevice(DeviceType.Reference, deviceId, hwnd, presentParameters, out device, out deviceCaps))
             return true;
 #endif
         
-        if (this.TryCreateDevice(DeviceType.Hardware, deviceId, hwnd, presentParameters, out device))
+        if (this.TryCreateDevice(DeviceType.Hardware, deviceId, hwnd, presentParameters, out device, out deviceCaps))
             return true;
 
-        if (this.TryCreateDevice(DeviceType.Software, deviceId, hwnd, presentParameters, out device))
+        if (this.TryCreateDevice(DeviceType.Software, deviceId, hwnd, presentParameters, out device, out deviceCaps))
             return true;
 
         return false;
     }
 
-    private unsafe bool TryCreateDevice(DeviceType type, int deviceId, IntPtr hwnd, PresentParameters presentParameters, out IDirect3DDevice9 device) {
+    private unsafe bool TryCreateDevice(DeviceType type, int deviceId, IntPtr hwnd, PresentParameters presentParameters, out IDirect3DDevice9 device, out Capabilities deviceCaps) {
         Capabilities caps = this._direct3D.GetDeviceCaps(deviceId, type);
 
         //Get to the 49th element int he D3DCAPS struct, this is where VertexShaderVersion lies
@@ -66,6 +64,7 @@ public class Direct3D9Backend : IGraphicsBackend {
             pixelShaderVersionMajor                             < 2
             ) {
             device = null;
+            deviceCaps   = new Capabilities();
 
             Logger.Log($"Creating Device [{deviceId}] as {type.ToString()} failed!", LoggerLevelD3D9.InstanceError);
             Logger.Log(
@@ -79,7 +78,8 @@ public class Direct3D9Backend : IGraphicsBackend {
             ? CreateFlags.HardwareVertexProcessing
             : CreateFlags.SoftwareVertexProcessing;
 
-        device = this._direct3D.CreateDevice(deviceId, type, hwnd, createFlags, presentParameters);
+        device     = this._direct3D.CreateDevice(deviceId, type, hwnd, createFlags, presentParameters);
+        deviceCaps = caps;
 
         if (device == null)
             return false;
@@ -123,11 +123,11 @@ public class Direct3D9Backend : IGraphicsBackend {
             : view.Handle;
 
         if (DeviceOverride != 0)
-            this.TryCreateDevice(DeviceOverride, windowHandle, presentParameters, out this._device);
+            this.TryCreateDevice(DeviceOverride, windowHandle, presentParameters, out this._device, out this.DeviceCapabilities);
 
         int i = 0;
         while (i != this._direct3D.AdapterCount && this._device == null) {
-            if (this.TryCreateDevice(i, windowHandle, presentParameters, out this._device))
+            if (this.TryCreateDevice(i, windowHandle, presentParameters, out this._device, out this.DeviceCapabilities))
                 break;
 
             i++;
@@ -160,8 +160,7 @@ public class Direct3D9Backend : IGraphicsBackend {
 
         this._currentViewport = new Vector2D<int>(width, height);
     }
-
-    public override IQuadRenderer CreateTextureRenderer() => new QuadRendererD3D9(this._device);
+    public override Renderer CreateRenderer() => throw new NotImplementedException();
 
     public override int QueryMaxTextureUnits() {
         throw new NotImplementedException();
@@ -190,24 +189,24 @@ public class Direct3D9Backend : IGraphicsBackend {
         this.ScissorRect = new Rectangle(0, 0, this._currentViewport.X, this._currentViewport.Y);
     }
 
-    public override TextureRenderTarget CreateRenderTarget(uint width, uint height) {
+    public override VixieTextureRenderTarget CreateRenderTarget(uint width, uint height) {
         return new RenderTargetD3D9(width, height);
     }
 
-    public override Texture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default) {
-        return new TextureD3D9(imageData, parameters);
+    public override VixieTexture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default) {
+        return new TextureD3D9(this._device, imageData, parameters);
     }
     
-    public override Texture CreateTextureFromStream(Stream stream, TextureParameters parameters = default) {
-        return new TextureD3D9(stream, parameters);
+    public override VixieTexture CreateTextureFromStream(Stream stream, TextureParameters parameters = default) {
+        return new TextureD3D9(this._device, stream, parameters);
     }
     
-    public override Texture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default) {
-        return new TextureD3D9(width, height, parameters);
+    public override VixieTexture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default) {
+        return new TextureD3D9(this._device, width, height, parameters);
     }
 
-    public override Texture CreateWhitePixelTexture() {
-        return new TextureD3D9();
+    public override VixieTexture CreateWhitePixelTexture() {
+        return new TextureD3D9(this._device);
     }
 
     public override void ImGuiUpdate(double deltaTime) {
