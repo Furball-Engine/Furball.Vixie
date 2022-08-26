@@ -44,16 +44,17 @@ public class Direct3D9Backend : IGraphicsBackend {
         return false;
     }
 
-    private unsafe bool TryCreateDevice(DeviceType type, int deviceId, IntPtr hwnd, PresentParameters presentParameters,
-                                 out IDirect3DDevice9 device) {
-
+    private unsafe bool TryCreateDevice(DeviceType type, int deviceId, IntPtr hwnd, PresentParameters presentParameters, out IDirect3DDevice9 device) {
         Capabilities caps = this._direct3D.GetDeviceCaps(deviceId, type);
 
+        //Get to the 49th element int he D3DCAPS struct, this is where VertexShaderVersion lies
+        //all this is done cuz vortice has both shader versions as internal :))))))
         int* capPtr = (int*) &caps + 49;
         int vertexShaderVersionMajor = (*capPtr >> 8) & 0xFF;
 
+        //2 fields later is the Pixel Shader Version
         capPtr += 2;
-        int pixelShaderVersionMajor = (*capPtr >> 8)      & 0xFF;
+        int pixelShaderVersionMajor = (*capPtr >> 8) & 0xFF;
 
         Logger.Log($"Trying to create Device [{deviceId}] as {type.ToString()}", LoggerLevelD3D9.InstanceInfo);
 
