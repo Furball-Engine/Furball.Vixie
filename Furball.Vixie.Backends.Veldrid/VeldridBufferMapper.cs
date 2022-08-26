@@ -7,7 +7,7 @@ namespace Furball.Vixie.Backends.Veldrid;
 public class VeldridBufferMapper : BufferMapper {
     private readonly VeldridBackend _backend;
     private readonly BufferUsage    Usage;
-    private          DeviceBuffer?  _buffer;
+    internal         DeviceBuffer?  Buffer;
 
     public unsafe void* Ptr;
 
@@ -25,19 +25,19 @@ public class VeldridBufferMapper : BufferMapper {
         this.ReservedBytes = 0;
         
         //Get the current buffer
-        DeviceBuffer? old = this._buffer;
+        DeviceBuffer? old = this.Buffer;
         
         Guard.Assert(buffer.Usage == (BufferUsage.Dynamic | this.Usage), "buffer.Usage == (BufferUsage.Dynamic | this.Usage)");
         
         //Set the current buffer to the new one
-        this._buffer = buffer;
+        this.Buffer = buffer;
     
         //Unmap the old buffer
         if (old != null)
             this._backend.GraphicsDevice.Unmap(old);
 
         //Map the new buffer
-        MappedResource map = this._backend.GraphicsDevice.Map(this._buffer, MapMode.Write);
+        MappedResource map = this._backend.GraphicsDevice.Map(this.Buffer, MapMode.Write);
         
         //Set the data ptr
         this.Ptr = (void*)map.Data;
@@ -57,11 +57,15 @@ public class VeldridBufferMapper : BufferMapper {
     }
     
     public override void Unmap() {
+        Guard.EnsureNonNull(this.Buffer, "this.Buffer");
+
         //Unmap the buffer
-        this._backend.GraphicsDevice.Unmap(this._buffer);
+        this._backend.GraphicsDevice.Unmap(this.Buffer);
         
+        this.Buffer!.Dispose();
+
         //Say we no longer are using any buffers
-        this._buffer = null;
+        this.Buffer = null;
     }
     
     public override unsafe void* Reserve(nuint byteCount) {
@@ -77,6 +81,6 @@ public class VeldridBufferMapper : BufferMapper {
     }
     
     protected override void DisposeInternal() {
-        this._buffer?.Dispose();
+        this.Buffer?.Dispose();
     }
 }

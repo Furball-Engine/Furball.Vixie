@@ -49,10 +49,6 @@ public unsafe class RendererVeldrid : Renderer {
             
             this.Textures = null;
         }
-
-        ~RenderBuffer() {
-            DisposeQueue.Enqueue(this);
-        }
     }
 
     private List<RenderBuffer> _renderBuffers = new();
@@ -129,8 +125,13 @@ public unsafe class RendererVeldrid : Renderer {
 
     private bool _isFirst = true;
     public override void Begin() {
+        Guard.EnsureNull(this._vtxMapper.Buffer, "this._vtxMapper._buffer");
+        Guard.EnsureNull(this._idxMapper.Buffer, "this._idxMapper._buffer");
+
+        bool wasLastEmpty = this._renderBuffers.Count == 0;
+
         //Save all the buffers from the render queue
-        this._renderBuffers.ForEach(x => {
+        foreach (RenderBuffer? x in this._renderBuffers) {
             Guard.EnsureNonNull(x.Vtx, "x.Vtx");
             Guard.EnsureNonNull(x.Idx, "x.Idx");
 
@@ -141,26 +142,37 @@ public unsafe class RendererVeldrid : Renderer {
             //destructor
             x.Vtx = null;
             x.Idx = null;
-        });
+            
+            x.Dispose();
+        }
         //Clear the render buffer queue
         this._renderBuffers.Clear();
-        
-        if (this._vtxBufferQueue.Count > 0) {
-            this._vtxMapper.ResetFromExistingBuffer(this._vtxBufferQueue.Dequeue());
-            this._idxMapper.ResetFromExistingBuffer(this._idxBufferQueue.Dequeue());
-        }
-        else {
-            Guard.Assert(this._isFirst);
+
+        if (this._vtxBufferQueue.Count == 0 || wasLastEmpty) {
+            Guard.Assert(this._isFirst || wasLastEmpty);
             
-            //These should be null, because this code path should only run on the *first* time these are mapped.
-            //If it is not the first time these are mapped, then it *will* have a buffer to pull from, and will instead
-            //use the `true` condition of the above if statement, while this should be covered by the `Guard.Assert()`
-            //above, these `Guard` checks act as an extra barrier against shenanigans
-            Guard.EnsureNull(this._vtxMapper.ResetFromFreshBuffer(), "this._vtxMapper.ResetFromFreshBuffer()");
-            Guard.EnsureNull(this._idxMapper.ResetFromFreshBuffer(), "this._idxMapper.ResetFromFreshBuffer()");
+            DeviceBuffer? vtxBuf = this._vtxMapper.ResetFromFreshBuffer();
+            DeviceBuffer? idxBuf = this._idxMapper.ResetFromFreshBuffer();
+
+            if (vtxBuf != null && idxBuf != null) {
+                this._vtxBufferQueue.Enqueue(vtxBuf);
+                this._idxBufferQueue.Enqueue(idxBuf);
+            }
             
             this._isFirst = false;
+        } else {
+            DeviceBuffer? vtxBuf = this._vtxMapper.ResetFromExistingBuffer(this._vtxBufferQueue.Dequeue());
+            DeviceBuffer? idxBuf = this._idxMapper.ResetFromExistingBuffer(this._idxBufferQueue.Dequeue());
+            
+            if (vtxBuf != null && idxBuf != null) {
+                this._vtxBufferQueue.Enqueue(vtxBuf);
+                this._idxBufferQueue.Enqueue(idxBuf);
+            }
         }
+
+        this._usedTextures = 0;
+        this._indexCount   = 0;
+        this._indexOffset  = 0;
     }
     
     public override void End() {

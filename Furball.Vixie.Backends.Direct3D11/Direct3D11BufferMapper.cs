@@ -68,7 +68,7 @@ public class Direct3D11BufferMapper : BufferMapper {
     }
     
     public override void Unmap() {
-        Guard.EnsureNonNull(this.Buffer);
+        Guard.EnsureNonNull(this.Buffer, "this.Buffer");
         
         //Unmap the buffer
         this._deviceContext.Unmap(this.Buffer!);
