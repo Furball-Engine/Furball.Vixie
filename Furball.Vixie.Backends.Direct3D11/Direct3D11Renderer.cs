@@ -40,7 +40,7 @@ public class Direct3D11Renderer : Renderer {
         public ID3D11Buffer? Idx;
 
         public int                         UsedTextures;
-        public ID3D11ShaderResourceView[]? Textures; //TODO
+        public ID3D11ShaderResourceView[]? Textures;
         
         public uint IndexCount;
 
@@ -54,11 +54,8 @@ public class Direct3D11Renderer : Renderer {
             this.Vtx?.Dispose();
             this.Idx?.Dispose();
 
-            this.Textures = null;
-        }
-
-        ~RenderBuffer() {
-            DisposeQueue.Enqueue(this);
+            this.Textures     = null;
+            this.UsedTextures = 0;
         }
     }
 
@@ -172,6 +169,8 @@ public class Direct3D11Renderer : Renderer {
             //destructor
             x.Vtx = null;
             x.Idx = null;
+            
+            x.Dispose();
         }
         //Clear the render buffer queue
         this._renderBuffers.Clear();
@@ -362,7 +361,9 @@ public class Direct3D11Renderer : Renderer {
         
         this._pixelShader.Dispose();
         this._vertexShader.Dispose();
-        
+
+        this._renderBuffers.Clear();
+
         this._projectionMatrixBuffer.Dispose();
     }
 }
