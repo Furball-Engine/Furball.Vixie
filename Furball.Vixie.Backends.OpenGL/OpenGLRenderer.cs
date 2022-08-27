@@ -44,10 +44,6 @@ internal unsafe class OpenGLRenderer : Renderer {
 
             this.TexArray = null;
         }
-
-        ~BufferData() {
-            DisposeQueue.Enqueue(this);
-        }
     }
 
     private readonly List<BufferData> _bufferList = new();
@@ -186,6 +182,14 @@ internal unsafe class OpenGLRenderer : Renderer {
         this._bufferList.ForEach(x => {
             this._vtxQueue.Push(x.Vtx);
             this._idxQueue.Push(x.Idx);
+
+            x.Vtx = null;
+            x.Idx = null;
+
+            x.Vao.Dispose();
+            x.Vao = null;
+            
+            x.Dispose();
         }); 
         this._bufferList.Clear();
 

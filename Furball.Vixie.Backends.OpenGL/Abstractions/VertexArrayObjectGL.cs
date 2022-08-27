@@ -173,5 +173,7 @@ internal sealed class VertexArrayObjectGL : IDisposable {
         catch {
 
         }
+        
+        GC.SuppressFinalize(this);
     }
 }
