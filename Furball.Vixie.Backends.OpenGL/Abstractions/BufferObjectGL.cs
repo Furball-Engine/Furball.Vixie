@@ -245,12 +245,8 @@ internal sealed class BufferObjectGL : IDisposable {
 
         this._isDisposed = true;
 
-        try {
-            this._backend.DeleteBuffer(this.BufferId);
-        }
-        catch {
-
-        }
+        this._backend.DeleteBuffer(this.BufferId);
         this._backend.CheckError("dispose buffer");
+        GC.SuppressFinalize(this);
     }
 }

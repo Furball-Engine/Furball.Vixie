@@ -1,3 +1,4 @@
+using System;
 using Furball.Vixie.Helpers;
 using Furball.Vixie.Helpers.Helpers;
 using Veldrid;
@@ -93,5 +94,6 @@ internal class FullScreenQuad {
         DisposeQueue.Enqueue(this._pipeline);
         DisposeQueue.Enqueue(this._ib);
         DisposeQueue.Enqueue(this._vb);
+        GC.SuppressFinalize(this);
     }
 }

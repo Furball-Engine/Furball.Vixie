@@ -81,10 +81,6 @@ internal sealed class VixieTextureGL : VixieTexture, IDisposable {
         get;
         private set;
     }
-    /// <summary>
-    /// Local Image, possibly useful to Sample on the CPU Side if necessary
-    /// </summary>
-    private Image<Rgba32> _localBuffer;
 
     /// <summary>
     /// Creates a Texture from a byte array which contains Image Data
@@ -109,8 +105,6 @@ internal sealed class VixieTextureGL : VixieTexture, IDisposable {
         } else {
             image = Image.Load<Rgba32>(imageData);
         }
-
-        this._localBuffer = image;
 
         int width  = image.Width;
         int height = image.Height;
@@ -192,8 +186,6 @@ internal sealed class VixieTextureGL : VixieTexture, IDisposable {
         this._mipmaps = parameters.RequestMipmaps;
 
         Image<Rgba32> image = Image.Load<Rgba32>(stream);
-
-        this._localBuffer = image;
 
         int width  = image.Width;
         int height = image.Height;
@@ -451,13 +443,8 @@ internal sealed class VixieTextureGL : VixieTexture, IDisposable {
 
         this._isDisposed = true;
 
-        try {
-            this._backend.DeleteTexture(this.TextureId);
-            this._localBuffer.Dispose();
-        }
-        catch {
-
-        }
+        this._backend.DeleteTexture(this.TextureId);
         this._backend.CheckError("dispose texture");
+        GC.SuppressFinalize(this);
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Helpers;
 using Silk.NET.Maths;
@@ -65,6 +66,7 @@ internal sealed class VixieTextureRenderTargetVeldrid : VixieTextureRenderTarget
             
         DisposeQueue.Enqueue(this._fb);
         DisposeQueue.Enqueue(this._tex);
+        GC.SuppressFinalize(this);
     }
 
     ~VixieTextureRenderTargetVeldrid() {

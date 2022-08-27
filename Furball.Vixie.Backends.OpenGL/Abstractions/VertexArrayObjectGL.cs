@@ -166,13 +166,8 @@ internal sealed class VertexArrayObjectGL : IDisposable {
 
         this._isDisposed = true;
 
-        try {
-            this._backend.DeleteVertexArray(this.ArrayId);
-            this._backend.CheckError("dispose VAO");
-        }
-        catch {
-
-        }
+        this._backend.DeleteVertexArray(this.ArrayId);
+        this._backend.CheckError("dispose VAO");
         
         GC.SuppressFinalize(this);
     }

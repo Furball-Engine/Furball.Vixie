@@ -320,13 +320,9 @@ internal sealed class ShaderGL : IDisposable {
 
         this._isDisposed = true;
 
-        try {
-            this._backend.DeleteProgram(this.ProgramId);
-        }
-        catch {
-
-        }
+        this._backend.DeleteProgram(this.ProgramId);
         this._backend.CheckError("dispose shader");
+        GC.SuppressFinalize(this);
     }
         
     /// <summary>

@@ -228,5 +228,6 @@ internal sealed class VixieTextureVeldrid : VixieTexture {
             resourceSet?.Dispose();
         
         this.Texture.Dispose(); 
+        GC.SuppressFinalize(this);
     }
 }

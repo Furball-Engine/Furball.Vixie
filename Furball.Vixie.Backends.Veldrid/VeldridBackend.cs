@@ -226,7 +226,6 @@ public class VeldridBackend : IGraphicsBackend {
         this.CommandList.Dispose();
 
         this.GraphicsDevice.Dispose();
-            
     }
         
     internal void SetProjectionMatrix(uint width, uint height, bool isFbProj) {

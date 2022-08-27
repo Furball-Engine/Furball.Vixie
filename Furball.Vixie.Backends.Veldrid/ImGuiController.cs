@@ -428,6 +428,7 @@ public class ImGuiController : IDisposable {
         }
 
         ImGui.DestroyContext(this._context);
+        GC.SuppressFinalize(this);
     }
 
     private struct ResourceSetInfo {
