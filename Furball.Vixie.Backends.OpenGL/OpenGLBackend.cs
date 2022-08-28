@@ -42,8 +42,6 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     /// <summary>
     ///     ImGui Controller
     /// </summary>
-    private ImGuiController _esImGuiController;
-    private Silk.NET.OpenGL.Legacy.Extensions.ImGui.ImGuiController _legacyImGuiController;
 
     private  bool          _runImGui = true;
     internal IView         View;
@@ -100,8 +98,9 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     private readonly FeatureLevel _needsCustomMipmapGenerationFeatureLevel;
     private readonly FeatureLevel _bindlessMipmapGenerationFeatureLevel;
 
-    public readonly Backend CreationBackend;
-    private         bool    _isFbProjMatrix;
+    public readonly Backend               CreationBackend;
+    private         bool                  _isFbProjMatrix;
+    private         OpenGlImGuiController _imgui;
     public OpenGLBackend(Backend backend) {
         this.CreationBackend = backend;
 
@@ -207,12 +206,15 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
         this.gl.Enable(EnableCap.CullFace);
         this.gl.CullFace(CullFaceMode.Back);
 
-        if (this.CreationBackend == Backend.OpenGL)
-            this._legacyImGuiController =
-                new Silk.NET.OpenGL.Legacy.Extensions.ImGui.ImGuiController(this.legacyGl, view, inputContext);
-        if (this.CreationBackend == Backend.OpenGLES)
-            this._esImGuiController =
-                new ImGuiController(this.gles, view, inputContext);
+        OpenGLType type = this.CreationBackend switch {
+            Backend.OpenGL when Global.LatestSupportedGL.GL.MajorVersion < 3 => OpenGLType.Legacy,
+            Backend.OpenGLES                                                 => OpenGLType.ES,
+            _                                                                => OpenGLType.Modern
+        };
+
+        this._imgui = new OpenGlImGuiController(this.gl, type, view, inputContext);
+        this._imgui.Initialize();
+
         this.CheckError("create imguicontroller");
 
         BackendInfoSection mainSection = new("OpenGL Info");
@@ -448,8 +450,7 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
         if (!this._runImGui)
             return;
 
-        this._esImGuiController?.Update((float)deltaTime);
-        this._legacyImGuiController?.Update((float)deltaTime);
+        this._imgui.Update((float)deltaTime);
     }
     /// <summary>
     ///     Used to Draw the ImGuiController in charge of rendering ImGui on this backend
@@ -459,8 +460,7 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
         if (!this._runImGui)
             return;
 
-        this._esImGuiController?.Render();
-        this._legacyImGuiController?.Render();
+        this._imgui.Render();
     }
     /// <summary>
     ///     Debug Callback
