@@ -16,7 +16,6 @@ public abstract class ImGuiController : IDisposable {
     private readonly ImGuiFontConfig? _imGuiFontConfig;
     private readonly Action?          _onConfigureIo;
     private          bool             _frameBegun;
-    private readonly List<char>       _pressedChars = new();
     private          IKeyboard        _keyboard;
 
     private int _windowWidth;
@@ -36,18 +35,17 @@ public abstract class ImGuiController : IDisposable {
     }
 
     public void Initialize() {
-        this.Init(_view, _input);
+        this.Init(this._view, this._input);
 
         ImGuiIOPtr io = ImGui.GetIO();
-        if (_imGuiFontConfig is not null)
-            io.Fonts.AddFontFromFileTTF(_imGuiFontConfig.Value.FontPath, _imGuiFontConfig.Value.FontSize);
+        if (this._imGuiFontConfig is not null)
+            io.Fonts.AddFontFromFileTTF(this._imGuiFontConfig.Value.FontPath, this._imGuiFontConfig.Value.FontSize);
 
-        _onConfigureIo?.Invoke();
+        this._onConfigureIo?.Invoke();
 
         io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;
 
         this.CreateDeviceResources();
-        SetKeyMappings();
 
         this.SetPerFrameImGuiData(1f / 60f);
 
@@ -75,10 +73,47 @@ public abstract class ImGuiController : IDisposable {
         this._keyboard         =  this._input.Keyboards[0];
         this._view.Resize      += this.WindowResized;
         this._keyboard.KeyChar += this.OnKeyChar;
+        this._keyboard.KeyDown += this.OnKeyDown;
+        this._keyboard.KeyUp += this.OnKeyUp;
+        foreach (IMouse inputMouse in this._input.Mice) {
+            inputMouse.MouseDown += this.OnMouseDown;
+            inputMouse.MouseUp   += this.OnMouseUp;
+            inputMouse.MouseMove += this.OnMouseMove;
+            inputMouse.Scroll    += this.OnScroll;
+        }
+    }
+    private void OnScroll(IMouse arg1, ScrollWheel arg2) {
+        this.MakeCurrent();
+        ImGui.GetIO().AddMouseWheelEvent(arg2.X, arg2.Y);
+    }
+    private void OnMouseMove(IMouse arg1, Vector2 arg2) {
+        this.MakeCurrent();
+        ImGui.GetIO().AddMousePosEvent(arg2.X, arg2.Y);
+    }
+    private void OnMouseDown(IMouse arg1, MouseButton arg2) {
+        this.MakeCurrent();
+        int idx = arg2.ToImGuiButton();
+        if(idx != -1)
+            ImGui.GetIO().AddMouseButtonEvent(idx, true);
+    }
+    private void OnMouseUp(IMouse arg1, MouseButton arg2) {
+        this.MakeCurrent();
+        int idx = arg2.ToImGuiButton();
+        if(idx != -1)
+            ImGui.GetIO().AddMouseButtonEvent(idx, false);
+    }
+    private void OnKeyDown(IKeyboard arg1, Key arg2, int arg3) {
+        this.MakeCurrent();
+        ImGui.GetIO().AddKeyEvent(arg2.ToImGuiKey(), true);
+    }
+    private void OnKeyUp(IKeyboard arg1, Key arg2, int arg3) {
+        this.MakeCurrent();
+        ImGui.GetIO().AddKeyEvent(arg2.ToImGuiKey(), false);
     }
 
-    private void OnKeyChar(IKeyboard arg1, char arg2) {
-        this._pressedChars.Add(arg2);
+    private void OnKeyChar(IKeyboard kb, char c) {
+        this.MakeCurrent();
+        ImGui.GetIO().AddInputCharacter(c);
     }
 
     private void WindowResized(Vector2D<int> size) {
@@ -121,7 +156,6 @@ public abstract class ImGuiController : IDisposable {
             ImGui.Render();
 
         this.SetPerFrameImGuiData(deltaSeconds);
-        this.UpdateImGuiInput();
 
         this._frameBegun = true;
         ImGui.NewFrame();
@@ -143,68 +177,6 @@ public abstract class ImGuiController : IDisposable {
                                                      this._view.FramebufferSize.Y / this._windowHeight);
 
         io.DeltaTime = deltaSeconds; // DeltaTime is in seconds.
-    }
-
-    private static readonly Key[] keyEnumArr = (Key[])Enum.GetValues(typeof(Key));
-    private void UpdateImGuiInput() {
-        ImGuiIOPtr io = ImGui.GetIO();
-
-        MouseState? mouseState    = this._input.Mice[0].CaptureState();
-        IKeyboard?  keyboardState = this._input.Keyboards[0];
-
-        io.MouseDown[0] = mouseState.IsButtonPressed(MouseButton.Left);
-        io.MouseDown[1] = mouseState.IsButtonPressed(MouseButton.Right);
-        io.MouseDown[2] = mouseState.IsButtonPressed(MouseButton.Middle);
-
-        Point point = new((int)mouseState.Position.X, (int)mouseState.Position.Y);
-        io.MousePos = new Vector2(point.X, point.Y);
-
-        ScrollWheel wheel = mouseState.GetScrollWheels()[0];
-        io.MouseWheel  = wheel.Y;
-        io.MouseWheelH = wheel.X;
-
-        foreach (Key key in keyEnumArr) {
-            if (key == Key.Unknown)
-                continue;
-            io.KeysDown[(int)key] = keyboardState.IsKeyPressed(key);
-        }
-
-        foreach (char c in this._pressedChars)
-            io.AddInputCharacter(c);
-
-        this._pressedChars.Clear();
-
-        io.KeyCtrl  = keyboardState.IsKeyPressed(Key.ControlLeft) || keyboardState.IsKeyPressed(Key.ControlRight);
-        io.KeyAlt   = keyboardState.IsKeyPressed(Key.AltLeft)     || keyboardState.IsKeyPressed(Key.AltRight);
-        io.KeyShift = keyboardState.IsKeyPressed(Key.ShiftLeft)   || keyboardState.IsKeyPressed(Key.ShiftRight);
-        io.KeySuper = keyboardState.IsKeyPressed(Key.SuperLeft)   || keyboardState.IsKeyPressed(Key.SuperRight);
-    }
-
-    internal void PressChar(char keyChar) {
-        this._pressedChars.Add(keyChar);
-    }
-
-    private static void SetKeyMappings() {
-        ImGuiIOPtr io = ImGui.GetIO();
-        io.KeyMap[(int)ImGuiKey.Tab]        = (int)Key.Tab;
-        io.KeyMap[(int)ImGuiKey.LeftArrow]  = (int)Key.Left;
-        io.KeyMap[(int)ImGuiKey.RightArrow] = (int)Key.Right;
-        io.KeyMap[(int)ImGuiKey.UpArrow]    = (int)Key.Up;
-        io.KeyMap[(int)ImGuiKey.DownArrow]  = (int)Key.Down;
-        io.KeyMap[(int)ImGuiKey.PageUp]     = (int)Key.PageUp;
-        io.KeyMap[(int)ImGuiKey.PageDown]   = (int)Key.PageDown;
-        io.KeyMap[(int)ImGuiKey.Home]       = (int)Key.Home;
-        io.KeyMap[(int)ImGuiKey.End]        = (int)Key.End;
-        io.KeyMap[(int)ImGuiKey.Delete]     = (int)Key.Delete;
-        io.KeyMap[(int)ImGuiKey.Backspace]  = (int)Key.Backspace;
-        io.KeyMap[(int)ImGuiKey.Enter]      = (int)Key.Enter;
-        io.KeyMap[(int)ImGuiKey.Escape]     = (int)Key.Escape;
-        io.KeyMap[(int)ImGuiKey.A]          = (int)Key.A;
-        io.KeyMap[(int)ImGuiKey.C]          = (int)Key.C;
-        io.KeyMap[(int)ImGuiKey.V]          = (int)Key.V;
-        io.KeyMap[(int)ImGuiKey.X]          = (int)Key.X;
-        io.KeyMap[(int)ImGuiKey.Y]          = (int)Key.Y;
-        io.KeyMap[(int)ImGuiKey.Z]          = (int)Key.Z;
     }
 
     protected abstract void SetupRenderState(ImDrawDataPtr drawDataPtr, int framebufferWidth, int framebufferHeight);
@@ -250,7 +222,15 @@ public abstract class ImGuiController : IDisposable {
         
         this._view.Resize      -= this.WindowResized;
         this._keyboard.KeyChar -= this.OnKeyChar;
-
+        this._keyboard.KeyDown -= this.OnKeyDown;
+        this._keyboard.KeyUp   -= this.OnKeyUp;
+        foreach (IMouse inputMouse in this._input.Mice) {
+            inputMouse.MouseDown -= this.OnMouseDown;
+            inputMouse.MouseUp   -= this.OnMouseUp;
+            inputMouse.MouseMove -= this.OnMouseMove;
+            inputMouse.Scroll    -= this.OnScroll;
+        }
+        
         this.DisposeInternal();
 
         ImGui.DestroyContext(this.Context);
