@@ -1,6 +1,6 @@
 <Project>
     <PropertyGroup>
-        <UseImGui>false</UseImGui>
+        <UseImGui>true</UseImGui>
     </PropertyGroup>
     
     <PropertyGroup Condition="'$(UseImGui)'=='true'">
