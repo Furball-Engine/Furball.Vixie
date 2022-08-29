@@ -100,12 +100,6 @@ public unsafe class VulkanBackend : IGraphicsBackend {
     internal Device GetDevice() => this._device;
     internal Vk GetVk() => this._vk;
 
-    private string[] _validationLayers = new string[] {
-        "VK_LAYER_KHRONOS_validation"
-    };
-
-    private static readonly unsafe PfnDebugUtilsMessengerCallbackEXT _DebugCallback = new(DebugCallback);
-
     private ExtensionSet GetInstanceExtensions() {
         List<string> requiredExtensions = new List<string>();
         List<string> optionalExtensions = new List<string>();
@@ -207,34 +201,10 @@ public unsafe class VulkanBackend : IGraphicsBackend {
             ApiVersion         = Vk.Version11
         };
 
-        int      validationLayerCount = 0;
-        string[] validationLayerNames = Array.Empty<string>();
-
-#if DEBUG
-        uint layerCount;
-
-        this._vk.EnumerateInstanceLayerProperties(&layerCount, null);
-
-        LayerProperties[]     propertiesArray = new LayerProperties[layerCount];
-        Span<LayerProperties> properties      = new Span<LayerProperties>(propertiesArray);
-
-        this._vk.EnumerateInstanceLayerProperties(&layerCount, properties);
-
-        if (!VerifyRequestedValidationLayersSupported(propertiesArray, out validationLayerCount,
-                out validationLayerNames)) {
-            Logger.Log("Validation layers requested, but not all were available! Validation layers may not work.",
-                LoggerLevelVulkan.InstanceWarning);
-        }
-#endif
-
-        GlobalMemory? layerNameMemory = SilkMarshal.StringArrayToMemory(validationLayerNames);
-
         InstanceCreateInfo createInfo = new InstanceCreateInfo {
             SType                   = StructureType.InstanceCreateInfo, PApplicationInfo = &appInfo,
             EnabledExtensionCount   = (uint)extensionCount,
             PpEnabledExtensionNames = (byte**)(extensionMemory?.Handle ?? 0),
-            EnabledLayerCount       = (uint)validationLayerCount,
-            PpEnabledLayerNames     = (byte**)(layerNameMemory?.Handle ?? 0)
         };
 
         Result result = this._vk.CreateInstance(&createInfo, null, out instance);
@@ -402,9 +372,6 @@ public unsafe class VulkanBackend : IGraphicsBackend {
 
         _debug = window.API.Flags.HasFlag(ContextFlags.Debug);
 
-        if (_debug)
-            Logger.Log("Using Vulkan debug tools, this may hurt performance", LoggerLevelVulkan.InstanceWarning);
-
         if (!TryCreateInstance(out _instance)) {
             Logger.Log("Failed to create instance", LoggerLevelVulkan.InstanceFatal);
             return;
@@ -421,9 +388,6 @@ public unsafe class VulkanBackend : IGraphicsBackend {
         this._vk.TryGetInstanceExtension(this._instance, out this._vkToolingInfo);
 
         this._surface = this._view.VkSurface!.Create<AllocationCallbacks>(_instance.ToHandle(), null).ToSurface();
-
-        if (_debug)
-            this.CreateDebugMessenger();
 
         ExtensionSet deviceExtensionSet = this.GetDeviceExtensions();
 
@@ -663,35 +627,6 @@ public unsafe class VulkanBackend : IGraphicsBackend {
         return details;
     }
 
-    private bool VerifyRequestedValidationLayersSupported(LayerProperties[] properties, out int foundLayers,
-        out string[] foundLayerNames) {
-        bool allLayersFound = true;
-
-        List<string> layerNames = new List<string>();
-
-        foreach (string validationLayer in this._validationLayers) {
-            bool layerFound = false;
-
-            foreach (LayerProperties property in properties) {
-                string layerName = SilkMarshal.PtrToString((nint)property.LayerName)!;
-
-                if (validationLayer == layerName) {
-                    layerFound = true;
-                    layerNames.Add(validationLayer);
-                }
-            }
-
-            if (layerFound == false) {
-                allLayersFound = false;
-            }
-        }
-
-        foundLayers     = layerNames.Count;
-        foundLayerNames = layerNames.ToArray();
-
-        return allLayersFound;
-    }
-
     private bool TryGetPresentationQueue(out QueueInfo? presentationQueueInfo) {
         ReadOnlySpan<QueueInfo> physicalQueues = this._physicalDeviceInfo.Queues.Span;
 
@@ -709,62 +644,7 @@ public unsafe class VulkanBackend : IGraphicsBackend {
 
         return false;
     }
-
-    #region Debug Stuff
-
-    private unsafe void CreateDebugMessenger() {
-        DebugUtilsMessengerCreateInfoEXT createInfo = new() {
-            SType = StructureType.DebugUtilsMessengerCreateInfoExt,
-
-            MessageSeverity = DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityVerboseBitExt |
-                              DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityInfoBitExt    |
-                              DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityWarningBitExt |
-                              DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityErrorBitExt,
-
-            MessageType = DebugUtilsMessageTypeFlagsEXT.DebugUtilsMessageTypeGeneralBitExt     |
-                          DebugUtilsMessageTypeFlagsEXT.DebugUtilsMessageTypePerformanceBitExt |
-                          DebugUtilsMessageTypeFlagsEXT.DebugUtilsMessageTypeValidationBitExt,
-
-            PfnUserCallback = _DebugCallback
-        };
-
-        DebugUtilsMessengerEXT messenger;
-
-        Result result =
-            this._extDebugUtils.CreateDebugUtilsMessenger(this._instance, &createInfo, null, &messenger);
-
-        if (result != Result.Success)
-            throw new Exception($"Creating debug messenger failed! err {result}");
-
-        this._messenger = messenger;
-    }
-
-    private static unsafe uint DebugCallback(
-        DebugUtilsMessageSeverityFlagsEXT severity,
-        DebugUtilsMessageTypeFlagsEXT type,
-        DebugUtilsMessengerCallbackDataEXT* callbackData,
-        void* userData
-    ) {
-        LoggerLevel? level = severity switch {
-            DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityVerboseBitExt => null,
-            DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityInfoBitExt => LoggerLevelVulkan
-                .InstanceCallbackInfo,
-            DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityWarningBitExt => LoggerLevelVulkan
-                .InstanceCallbackWarning,
-            DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityErrorBitExt => LoggerLevelVulkan
-                .InstanceCallbackError,
-            _ => throw new ArgumentOutOfRangeException(nameof(severity), severity, null)
-        };
-
-        if (level is null) return 0;
-
-        Logger.Log($"{SilkMarshal.PtrToString((nint)callbackData->PMessage)}", level);
-
-        return 0;
-    }
-
-    #endregion
-
+    
     public override unsafe void Cleanup() {
         this._presentationQueueInfo.Dispose();
         this._queuePool.Dispose();
