@@ -31,7 +31,9 @@ public class VeldridBackend : IGraphicsBackend {
         
     internal Matrix4x4       ProjectionMatrix;
     private  IView           _view;
+#if USE_IMGUI
     private  ImGuiController _imgui;
+#endif
 
     internal VixieTextureVeldrid WhitePixel;
     internal ResourceSet    WhitePixelResourceSet;
@@ -157,7 +159,9 @@ public class VeldridBackend : IGraphicsBackend {
 
         this.CreateFramebuffer(this.GraphicsDevice.SwapchainFramebuffer.Width, this.GraphicsDevice.SwapchainFramebuffer.Height);
 
+#if USE_IMGUI
         this._imgui = new ImGuiController(this.GraphicsDevice, this.RenderFramebuffer.OutputDescription, view, inputContext);
+#endif
 
         for (int i = 0; i < MAX_TEXTURE_UNITS; i++) {
             ResourceLayout layout = this.ResourceFactory.CreateResourceLayout(new(new ResourceLayoutElementDescription[] {
@@ -222,7 +226,9 @@ public class VeldridBackend : IGraphicsBackend {
     public override void Cleanup() {
         this.WhitePixelResourceSet.Dispose();
         this.WhitePixel.Dispose();
+#if USE_IMGUI
         this._imgui.Dispose();
+#endif
         this.CommandList.Dispose();
 
         this.GraphicsDevice.Dispose();
@@ -359,11 +365,13 @@ public class VeldridBackend : IGraphicsBackend {
         => new VixieTextureVeldrid(this, width, height, parameters);
 
     public override Shared.VixieTexture CreateWhitePixelTexture() => new VixieTextureVeldrid(this);
-        
+
+#if USE_IMGUI
     public override void ImGuiUpdate(double deltaTime) {
         this._imgui.Update((float)deltaTime);
     }
     public override void ImGuiDraw(double deltaTime) {
         this._imgui.Render(this.GraphicsDevice, this.CommandList);
     }
+#endif
 }

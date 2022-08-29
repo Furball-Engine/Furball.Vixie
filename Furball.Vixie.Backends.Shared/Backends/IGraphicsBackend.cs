@@ -123,8 +123,8 @@ public abstract class IGraphicsBackend {
 
     #endregion
 
+    #if USE_IMGUI
     #region Imgui
-
     /// <summary>
     /// Used to Update the ImGuiController in charge of rendering ImGui on this backend
     /// </summary>
@@ -135,8 +135,8 @@ public abstract class IGraphicsBackend {
     /// </summary>
     /// <param name="deltaTime">Delta Time</param>
     public abstract void ImGuiDraw(double deltaTime);
-
     #endregion
+    #endif
     
     /// <summary>
     /// Presents

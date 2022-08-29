@@ -42,8 +42,10 @@ public class Direct3D11Backend : IGraphicsBackend {
     internal ID3D11Device        GetDevice()           => this._device;
     internal ID3D11DeviceContext GetDeviceContext()    => this._deviceContext;
     internal Matrix4x4           GetProjectionMatrix() => this._projectionMatrix;
-
+    
+#if USE_IMGUI
     private ImGuiControllerD3D11 _imGuiController;
+#endif
 
     private  VixieTextureD3D11 _privateWhitePixelVixieTexture = null!;
     internal VixieTextureD3D11 GetPrivateWhitePixelTexture() => this._privateWhitePixelVixieTexture;
@@ -167,7 +169,9 @@ public class Direct3D11Backend : IGraphicsBackend {
 
         this._defaultBlendState = blendState;
 
+#if USE_IMGUI
         this._imGuiController = new ImGuiControllerD3D11(this, view, inputContext, null);
+#endif
 
         this._privateWhitePixelVixieTexture = (VixieTextureD3D11) this.CreateWhitePixelTexture();
 
@@ -269,7 +273,8 @@ public class Direct3D11Backend : IGraphicsBackend {
     public override VixieTexture CreateWhitePixelTexture() {
         return new VixieTextureD3D11(this);
     }
-
+    
+#if USE_IMGUI
     public override void ImGuiUpdate(double deltaTime) {
         this._imGuiController.Update((float) deltaTime);
     }
@@ -277,6 +282,7 @@ public class Direct3D11Backend : IGraphicsBackend {
     public override void ImGuiDraw(double deltaTime) {
         this._imGuiController.Render();
     }
+#endif
 
     public override unsafe void Present() {
         if (this._takeScreenshot) {

@@ -2,7 +2,9 @@ using System;
 using System.Globalization;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Helpers.Helpers;
+#if USE_IMGUI
 using ImGuiNET;
+#endif
 using Kettu;
 using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
@@ -40,11 +42,13 @@ public class TestGame : Game {
     }
         
     protected override void Draw(double deltaTime) {
+#if USE_IMGUI
         ImGui.Begin("Global Controls");
             
         ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
                    $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
         );
+#endif
 
         this.updateDelta += deltaTime;
 
@@ -52,7 +56,8 @@ public class TestGame : Game {
             this.alloccedMemory = GC.GetTotalMemory(true);
             this.updateDelta    = 0;
         }
-            
+    
+#if USE_IMGUI
         ImGui.Text($"RAM Usage: {this.alloccedMemory}");
             
         if (ImGui.Button("Take Screenshot")) {
@@ -69,6 +74,7 @@ public class TestGame : Game {
         }
         
         ImGui.End();
+#endif
             
         base.Draw(deltaTime);
     }
