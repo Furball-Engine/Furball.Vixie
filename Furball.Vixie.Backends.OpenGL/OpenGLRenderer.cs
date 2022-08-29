@@ -18,7 +18,6 @@ internal unsafe class OpenGLRenderer : Renderer {
     private RamBufferMapper _vtxMapper;
     private RamBufferMapper _idxMapper;
 
-    private readonly ShaderGL _shader;
 
     private Stack<BufferObjectGL> _vtxQueue = new();
     private Stack<BufferObjectGL> _idxQueue = new();
@@ -55,24 +54,6 @@ internal unsafe class OpenGLRenderer : Renderer {
         
         this._vtxMapper = new RamBufferMapper((nuint)(sizeof(Vertex) * QUAD_COUNT * 4));
         this._idxMapper = new RamBufferMapper(sizeof(ushort) * QUAD_COUNT * 6);
-
-        this._shader = new ShaderGL(backend);
-        this._shader.AttachShader(ShaderType.VertexShader, ResourceHelpers.GetStringResource("Shaders/VertexShader.glsl"));
-        this._shader.AttachShader(ShaderType.FragmentShader, RendererShaderGenerator.GetFragment(this._backend));
-        this._shader.Link();
-
-        this._shader.Bind();
-        for (int i = 0; i < backend.QueryMaxTextureUnits(); i++) {
-            this._shader.BindUniformToTexUnit($"tex_{i}", i);
-        }
-        
-        this._gl.BindAttribLocation(this._shader.ProgramId, 0, "VertexPosition");
-        this._gl.BindAttribLocation(this._shader.ProgramId, 1, "TextureCoordinate");
-        this._gl.BindAttribLocation(this._shader.ProgramId, 2, "VertexColor");
-        this._gl.BindAttribLocation(this._shader.ProgramId, 3, "TextureId2");
-        this._gl.BindAttribLocation(this._shader.ProgramId, 4, "TextureId");
-        
-        this._shader.Unbind();
 
         this._texHandles = new VixieTextureGL[this._backend.QueryMaxTextureUnits()];
         
@@ -261,8 +242,8 @@ internal unsafe class OpenGLRenderer : Renderer {
     private int              _usedTextures;
     private VixieTextureGL[] _texHandles;
     public override void Draw() {
-        this._shader.Bind();
-        this._shader.SetUniform("ProjectionMatrix", this._backend.ProjectionMatrix);
+        this._backend.Shader.Bind();
+        this._backend.Shader.SetUniform("ProjectionMatrix", this._backend.ProjectionMatrix);
 
         for (int i = 0; i < this._bufferList.Count; i++) {
             BufferData buf = this._bufferList[i];
@@ -285,7 +266,7 @@ internal unsafe class OpenGLRenderer : Renderer {
             buf.Vao.Unbind();
         }
 
-        this._shader.Unbind();
+        this._backend.Shader.Unbind();
     }
     
     protected override void DisposeInternal() {
@@ -301,7 +282,5 @@ internal unsafe class OpenGLRenderer : Renderer {
         
         this._vtxQueue.Clear();
         this._idxQueue.Clear();
-        
-        this._shader.Dispose();
     }
 }

@@ -7,6 +7,7 @@ using Furball.Vixie.Backends.OpenGL.Abstractions;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.Renderers;
+using Furball.Vixie.Helpers.Helpers;
 using Kettu;
 using Silk.NET.Core.Native;
 using Silk.NET.Input;
@@ -42,6 +43,8 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     /// <summary>
     ///     ImGui Controller
     /// </summary>
+
+    internal ShaderGL Shader;
 
     private  bool          _runImGui = true;
     internal IView         View;
@@ -266,6 +269,27 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
         };
         this.CurrentViewport    = new Vector2D<int>(view.FramebufferSize.X, view.FramebufferSize.Y);
         this._lastScissor = new(0, 0, view.FramebufferSize.X, view.FramebufferSize.Y);
+
+        this.CreateShaders();
+    }
+    private void CreateShaders() {
+        this.Shader = new ShaderGL(this);
+        this.Shader.AttachShader(ShaderType.VertexShader, ResourceHelpers.GetStringResource("Shaders/VertexShader.glsl"));
+        this.Shader.AttachShader(ShaderType.FragmentShader, RendererShaderGenerator.GetFragment(this));
+        this.Shader.Link();
+
+        this.Shader.Bind();
+        for (int i = 0; i < this.QueryMaxTextureUnits(); i++) {
+            this.Shader.BindUniformToTexUnit($"tex_{i}", i);
+        }
+        
+        this.gl.BindAttribLocation(this.Shader.ProgramId, 0, "VertexPosition");
+        this.gl.BindAttribLocation(this.Shader.ProgramId, 1, "TextureCoordinate");
+        this.gl.BindAttribLocation(this.Shader.ProgramId, 2, "VertexColor");
+        this.gl.BindAttribLocation(this.Shader.ProgramId, 3, "TextureId2");
+        this.gl.BindAttribLocation(this.Shader.ProgramId, 4, "TextureId");
+        
+        this.Shader.Unbind();
     }
 
     public void CheckError(string message) {
