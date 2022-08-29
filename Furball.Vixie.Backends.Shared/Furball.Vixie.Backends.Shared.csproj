@@ -16,14 +16,6 @@
         <PackageReference Include="Silk.NET.Windowing.Common" Version="2.16.0" />
     </ItemGroup>
 
-    <PropertyGroup Condition="'$(UseImGui)'=='true'">
-        <DefineConstants>$(DefineConstants);USE_IMGUI</DefineConstants>
-    </PropertyGroup>
-
-    <ItemGroup Condition="'$(UseImGui)'=='true'">
-        <PackageReference Include="ImGui.NET" Version="1.87.3" />
-    </ItemGroup>
-
     <ItemGroup>
       <ProjectReference Include="..\Furball.Vixie.Helpers\Furball.Vixie.Helpers.csproj" />
     </ItemGroup>
