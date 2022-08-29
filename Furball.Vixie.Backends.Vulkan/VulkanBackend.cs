@@ -17,9 +17,9 @@ using Silk.NET.Vulkan.Extensions.EXT;
 using Silk.NET.Vulkan.Extensions.KHR;
 using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
-using Image=Silk.NET.Vulkan.Image;
+using Image = Silk.NET.Vulkan.Image;
 
-namespace Furball.Vixie.Backends.Vulkan; 
+namespace Furball.Vixie.Backends.Vulkan;
 
 public unsafe class VulkanBackend : IGraphicsBackend {
     private static ulong RateDeviceInfo(PhysicalDeviceInfo info) {
@@ -58,9 +58,9 @@ public unsafe class VulkanBackend : IGraphicsBackend {
             this._vk.GetPhysicalDeviceQueueFamilyProperties(handle, ref queueFamilyCount, pQueueFamilyProperties);
 
         QueueInfo[] queueInfos = queueFamilyProperties
-                                .SelectMany((x, i) => Enumerable.Range(0, (int)x.QueueCount)
-                                                                .Select(j => new QueueInfo(i, j, default, x)))
-                                .ToArray();
+            .SelectMany((x, i) => Enumerable.Range(0, (int)x.QueueCount)
+                .Select(j => new QueueInfo(i, j, default, x)))
+            .ToArray();
 
         string? name = SilkMarshal.PtrToString((nint)properties.DeviceName);
 
@@ -98,7 +98,7 @@ public unsafe class VulkanBackend : IGraphicsBackend {
     private ExtToolingInfo _vkToolingInfo;
 
     internal Device GetDevice() => this._device;
-    internal Vk     GetVk()     => this._vk;
+    internal Vk GetVk() => this._vk;
 
     private string[] _validationLayers = new string[] {
         "VK_LAYER_KHRONOS_validation"
@@ -112,9 +112,9 @@ public unsafe class VulkanBackend : IGraphicsBackend {
 
         Debug.Assert(this._view.VkSurface is not null);
         requiredExtensions.AddRange(SilkMarshal.PtrToStringArray(
-                                        (nint)this._view.VkSurface!.GetRequiredExtensions(
-                                            out uint windowExtensionCount),
-                                        (int)windowExtensionCount));
+            (nint)this._view.VkSurface!.GetRequiredExtensions(
+                out uint windowExtensionCount),
+            (int)windowExtensionCount));
 
         requiredExtensions.Add(KhrSurface.ExtensionName);
 
@@ -139,9 +139,9 @@ public unsafe class VulkanBackend : IGraphicsBackend {
     }
 
     private static bool TryExtractUsedExtensions(
-        ExtensionSet       extensionSet,
+        ExtensionSet extensionSet,
         Func<string, bool> verifyExtension,
-        out int            count,
+        out int count,
         /* [NotNullWhen(true)] */
         out GlobalMemory? memory
     ) {
@@ -152,9 +152,10 @@ public unsafe class VulkanBackend : IGraphicsBackend {
         foreach (string? required in extensionSet.RequiredExtensions) {
             if (!verifyExtension(required)) {
                 Logger.Log("Required Extension not Present: \"" + required + "\"",
-                           LoggerLevelVulkan.InstanceWarning);
+                    LoggerLevelVulkan.InstanceWarning);
                 allRequiredPresent = false;
-            } else {
+            }
+            else {
                 usedExtensions.Add(required);
             }
         }
@@ -167,7 +168,8 @@ public unsafe class VulkanBackend : IGraphicsBackend {
         foreach (string? optional in extensionSet.OptionalExtensions) {
             if (!verifyExtension(optional)) {
                 Logger.Log("Optional Extension not Present: \"" + optional + "\"", LoggerLevelVulkan.InstanceInfo);
-            } else {
+            }
+            else {
                 usedExtensions.Add(optional);
             }
         }
@@ -184,9 +186,9 @@ public unsafe class VulkanBackend : IGraphicsBackend {
         ExtensionSet extensionSet = GetInstanceExtensions();
 
         if (!TryExtractUsedExtensions(extensionSet,
-                                      this._vk.IsInstanceExtensionPresent,
-                                      out int extensionCount,
-                                      out GlobalMemory? extensionMemory)) {
+                this._vk.IsInstanceExtensionPresent,
+                out int extensionCount,
+                out GlobalMemory? extensionMemory)) {
             Logger.Log("Could not extract instance extensions", LoggerLevelVulkan.InstanceError);
             instance = default;
             return false;
@@ -218,8 +220,10 @@ public unsafe class VulkanBackend : IGraphicsBackend {
 
         this._vk.EnumerateInstanceLayerProperties(&layerCount, properties);
 
-        if (!VerifyRequestedValidationLayersSupported(propertiesArray, out validationLayerCount, out validationLayerNames)) {
-            Logger.Log("Validation layers requested, but not all were available! Validation layers may not work.", LoggerLevelVulkan.InstanceWarning);
+        if (!VerifyRequestedValidationLayersSupported(propertiesArray, out validationLayerCount,
+                out validationLayerNames)) {
+            Logger.Log("Validation layers requested, but not all were available! Validation layers may not work.",
+                LoggerLevelVulkan.InstanceWarning);
         }
 #endif
 
@@ -258,36 +262,40 @@ public unsafe class VulkanBackend : IGraphicsBackend {
         this._vk.EnumeratePhysicalDevices(this._instance, &deviceCount, devices);
 
         IEnumerable<PhysicalDeviceInfo> infos = devices.Take((int)deviceCount)
-                                                       .Select(this.QueryPhysicalDeviceInfos)
-                                                       .Where(x => {
-                                                            foreach (string? e in extensionSet.RequiredExtensions) {
-                                                                if (!this._vk.IsDeviceExtensionPresent(x.Handle, e)) {
-                                                                    Logger.Log($"Rejecting {x.Name} as it does not support required extension {e}",
-                                                                               LoggerLevelVulkan.InstanceInfo);
-                                                                    return false;
-                                                                }
-                                                            }
+            .Select(this.QueryPhysicalDeviceInfos)
+            .Where(x => {
+                foreach (string? e in extensionSet.RequiredExtensions) {
+                    if (!this._vk.IsDeviceExtensionPresent(x.Handle, e)) {
+                        Logger.Log($"Rejecting {x.Name} as it does not support required extension {e}",
+                            LoggerLevelVulkan.InstanceInfo);
+                        return false;
+                    }
+                }
 
-                                                            return true;
-                                                        })
-                                                       .Where(x => {
-                                                            foreach (QueueInfo? v in x.Queues.Span) {
-                                                                this._vkSurface.GetPhysicalDeviceSurfaceSupport(x.Handle, (uint)v.QueueFamilyIndex, this._surface, out Bool32 supported);
+                return true;
+            })
+            .Where(x => {
+                foreach (QueueInfo? v in x.Queues.Span) {
+                    this._vkSurface.GetPhysicalDeviceSurfaceSupport(x.Handle, (uint)v.QueueFamilyIndex, this._surface,
+                        out Bool32 supported);
 
-                                                                if (supported)
-                                                                    return true;
-                                                            }
-                                                            Logger.Log($"Rejecting {x.Name} as it does not support presentation",
-                                                                       LoggerLevelVulkan.InstanceInfo);
+                    if (supported)
+                        return true;
+                }
+                Logger.Log($"Rejecting {x.Name} as it does not support presentation",
+                    LoggerLevelVulkan.InstanceInfo);
 
-                                                            return false;
-                                                        });
+                return false;
+            });
 
         PhysicalDeviceInfo? bestInfo = null;
         try {
             //Get device rating, aswell as add 100 points for every extension we use and the device supports
-            (PhysicalDeviceInfo x, ulong)[] rated = infos.Select(x => (x, RateDeviceInfo(x) + (ulong)extensionSet.OptionalExtensions.Sum(e => this._vk.IsDeviceExtensionPresent(x.Handle, e) ? 100 : 0)))
-                                                         .ToArray();
+            (PhysicalDeviceInfo x, ulong)[] rated = infos
+                .Select(x => (x,
+                    RateDeviceInfo(x) + (ulong)extensionSet.OptionalExtensions.Sum(e =>
+                        this._vk.IsDeviceExtensionPresent(x.Handle, e) ? 100 : 0)))
+                .ToArray();
 
             ulong maxV = ulong.MinValue;
 
@@ -315,9 +323,9 @@ public unsafe class VulkanBackend : IGraphicsBackend {
     }
 
     private bool TryCreateLogicalDevice(
-        ExtensionSet                  extensionSet,
-        out Device                    device,
-        out QueuePool?                queuePool,
+        ExtensionSet extensionSet,
+        out Device device,
+        out QueuePool? queuePool,
         out ReadOnlyMemory<QueueInfo> queueInfos
     ) {
 
@@ -346,9 +354,9 @@ public unsafe class VulkanBackend : IGraphicsBackend {
         PhysicalDeviceFeatures enabledFeature = new PhysicalDeviceFeatures() {};
 
         if (!TryExtractUsedExtensions(extensionSet,
-                                      e => _vk.IsDeviceExtensionPresent(this._physicalDeviceInfo.Handle, e),
-                                      out int enabledExtensionCount,
-                                      out GlobalMemory? extensionMem)) {
+                e => _vk.IsDeviceExtensionPresent(this._physicalDeviceInfo.Handle, e),
+                out int enabledExtensionCount,
+                out GlobalMemory? extensionMem)) {
             device     = default;
             queuePool  = null;
             queueInfos = default;
@@ -356,26 +364,26 @@ public unsafe class VulkanBackend : IGraphicsBackend {
         }
 
         this._vk.CreateDevice(this._physicalDeviceInfo.Handle,
-                              new DeviceCreateInfo(queueCreateInfoCount: (uint)(queueCreateCount + 1),
-                                                   pQueueCreateInfos: queueCreates,
-                                                   enabledExtensionCount: (uint)enabledExtensionCount,
-                                                   ppEnabledExtensionNames: (byte**)extensionMem.Handle,
-                                                   pEnabledFeatures: &enabledFeature),
-                              null,
-                              out device);
+            new DeviceCreateInfo(queueCreateInfoCount: (uint)(queueCreateCount + 1),
+                pQueueCreateInfos: queueCreates,
+                enabledExtensionCount: (uint)enabledExtensionCount,
+                ppEnabledExtensionNames: (byte**)extensionMem.Handle,
+                pEnabledFeatures: &enabledFeature),
+            null,
+            out device);
 
         QueueInfo[] newQueueInfos = new QueueInfo[this._physicalDeviceInfo.Queues.Length];
 
         for (int i = 0; i < newQueueInfos.Length; i++) {
             this._vk.GetDeviceQueue(device,
-                                    (uint)physicalQueues[i].QueueFamilyIndex,
-                                    (uint)physicalQueues[i].QueueIndex,
-                                    out Queue queue);
+                (uint)physicalQueues[i].QueueFamilyIndex,
+                (uint)physicalQueues[i].QueueIndex,
+                out Queue queue);
 
             newQueueInfos[i] = new QueueInfo(physicalQueues[i].QueueFamilyIndex,
-                                             physicalQueues[i].QueueIndex,
-                                             queue,
-                                             physicalQueues[i].FamilyProperties);
+                physicalQueues[i].QueueIndex,
+                queue,
+                physicalQueues[i].FamilyProperties);
         }
 
         queueInfos = newQueueInfos;
@@ -424,22 +432,23 @@ public unsafe class VulkanBackend : IGraphicsBackend {
             return;
         }
 
-        PhysicalDeviceProperties physicalDeviceProperties = this._physicalDeviceInfo.Properties; // to access fixed-size buffers
+        PhysicalDeviceProperties
+            physicalDeviceProperties = this._physicalDeviceInfo.Properties; // to access fixed-size buffers
         Logger.Log($"Picked vulkan device {SilkMarshal.PtrToString((nint)physicalDeviceProperties.DeviceName)}",
-                   LoggerLevelVulkan.InstanceInfo);
+            LoggerLevelVulkan.InstanceInfo);
 
         if (this._vkToolingInfo is not null) {
             uint toolCount = 0;
             this._vkToolingInfo.GetPhysicalDeviceToolProperties(this._physicalDeviceInfo.Handle,
-                                                                ref toolCount,
-                                                                null);
+                ref toolCount,
+                null);
 
             PhysicalDeviceToolProperties* toolingProperties = stackalloc PhysicalDeviceToolProperties[(int)toolCount];
 
-                
+
             this._vkToolingInfo.GetPhysicalDeviceToolProperties(this._physicalDeviceInfo.Handle,
-                                                                ref toolCount,
-                                                                toolingProperties);
+                ref toolCount,
+                toolingProperties);
 
             for (int i = 0; i < toolCount; i++) {
                 PhysicalDeviceToolProperties tool = toolingProperties[i];
@@ -451,20 +460,20 @@ public unsafe class VulkanBackend : IGraphicsBackend {
         }
 
         if (!TryCreateLogicalDevice(deviceExtensionSet,
-                                    out this._device,
-                                    out this._queuePool!,
-                                    out ReadOnlyMemory<QueueInfo> queueInfos)) {
+                out this._device,
+                out this._queuePool!,
+                out ReadOnlyMemory<QueueInfo> queueInfos)) {
             Logger.Log("Failed to create logical device", LoggerLevelVulkan.InstanceFatal);
             return;
         }
 
         // Copy, add final queue infos with handles
         this._physicalDeviceInfo = new PhysicalDeviceInfo(this._physicalDeviceInfo.Handle,
-                                                          this._physicalDeviceInfo.Name,
-                                                          this._physicalDeviceInfo.Features,
-                                                          this._physicalDeviceInfo.Properties,
-                                                          queueInfos,
-                                                          this._physicalDeviceInfo.MemoryProperties);
+            this._physicalDeviceInfo.Name,
+            this._physicalDeviceInfo.Features,
+            this._physicalDeviceInfo.Properties,
+            queueInfos,
+            this._physicalDeviceInfo.MemoryProperties);
 
         Logger.Log(
             $"Created Physical Device {this._device} with associated queue pool. Using {queueInfos.Length} queues.",
@@ -479,9 +488,11 @@ public unsafe class VulkanBackend : IGraphicsBackend {
 
         this._presentationQueueInfo = this._queuePool!.GetReferenceTo(presentQueue!);
 
-        Logger.Log($"Picked Presentation Queue from queue family {presentQueue!.QueueFamilyIndex} and registered with pool", LoggerLevelVulkan.InstanceInfo);
+        Logger.Log(
+            $"Picked Presentation Queue from queue family {presentQueue!.QueueFamilyIndex} and registered with pool",
+            LoggerLevelVulkan.InstanceInfo);
 
-        if(!TryCreateSwapchain())
+        if (!TryCreateSwapchain())
             throw new Exception("Failed to create SwapChain!");
 
         this.TryCreateSwapchainImageViews();
@@ -519,12 +530,15 @@ public unsafe class VulkanBackend : IGraphicsBackend {
 
         extent = new Extent2D((uint)this._view.FramebufferSize.X, (uint)this._view.FramebufferSize.Y);
 
-        extent.Width  = extent.Width.Clamp(swapChainSupportDetails.SurfaceCapabilities.MinImageExtent.Width, swapChainSupportDetails.SurfaceCapabilities.MaxImageExtent.Width);
-        extent.Height = extent.Height.Clamp(swapChainSupportDetails.SurfaceCapabilities.MinImageExtent.Height, swapChainSupportDetails.SurfaceCapabilities.MaxImageExtent.Height);
+        extent.Width = extent.Width.Clamp(swapChainSupportDetails.SurfaceCapabilities.MinImageExtent.Width,
+            swapChainSupportDetails.SurfaceCapabilities.MaxImageExtent.Width);
+        extent.Height = extent.Height.Clamp(swapChainSupportDetails.SurfaceCapabilities.MinImageExtent.Height,
+            swapChainSupportDetails.SurfaceCapabilities.MaxImageExtent.Height);
 
         uint bufferCount = swapChainSupportDetails.SurfaceCapabilities.MinImageCount + 1;
 
-        if (swapChainSupportDetails.SurfaceCapabilities.MaxImageCount > 0 && bufferCount > swapChainSupportDetails.SurfaceCapabilities.MaxImageCount)
+        if (swapChainSupportDetails.SurfaceCapabilities.MaxImageCount > 0 &&
+            bufferCount > swapChainSupportDetails.SurfaceCapabilities.MaxImageCount)
             bufferCount = swapChainSupportDetails.SurfaceCapabilities.MaxImageCount;
 
         SwapchainCreateInfoKHR swapchainCreateInfo = new SwapchainCreateInfoKHR {
@@ -533,7 +547,7 @@ public unsafe class VulkanBackend : IGraphicsBackend {
             MinImageCount    = bufferCount,
             ImageFormat      = surfaceFormat.Format,
             ImageColorSpace  = surfaceFormat.ColorSpace,
-            ImageExtent      =  extent,
+            ImageExtent      = extent,
             ImageArrayLayers = 1,
             ImageUsage       = ImageUsageFlags.ImageUsageColorAttachmentBit
         };
@@ -548,7 +562,8 @@ public unsafe class VulkanBackend : IGraphicsBackend {
             swapchainCreateInfo.ImageSharingMode      = SharingMode.Concurrent;
             swapchainCreateInfo.QueueFamilyIndexCount = 2;
             swapchainCreateInfo.PQueueFamilyIndices   = queueFamilyIndicies;
-        } else {
+        }
+        else {
             swapchainCreateInfo.ImageSharingMode      = SharingMode.Exclusive;
             swapchainCreateInfo.QueueFamilyIndexCount = 0;
             swapchainCreateInfo.PQueueFamilyIndices   = null;
@@ -609,7 +624,8 @@ public unsafe class VulkanBackend : IGraphicsBackend {
                 }
             };
 
-            if (this._vk.CreateImageView(this._device, imageViewCreateInfo, null, out swapchainImageViews[i]) != Result.Success)
+            if (this._vk.CreateImageView(this._device, imageViewCreateInfo, null, out swapchainImageViews[i]) !=
+                Result.Success)
                 throw new Exception("Failed to create SwapChain Image Views!");
         }
 
@@ -640,13 +656,15 @@ public unsafe class VulkanBackend : IGraphicsBackend {
             details.PresentModes = new PresentModeKHR[presentModeCount];
             Span<PresentModeKHR> spanPresentModes = new Span<PresentModeKHR>(details.PresentModes);
 
-            this._vkSurface.GetPhysicalDeviceSurfacePresentModes(device, this._surface, &presentModeCount, spanPresentModes);
+            this._vkSurface.GetPhysicalDeviceSurfacePresentModes(device, this._surface, &presentModeCount,
+                spanPresentModes);
         }
 
         return details;
     }
 
-    private bool VerifyRequestedValidationLayersSupported(LayerProperties[] properties, out int foundLayers, out string[] foundLayerNames) {
+    private bool VerifyRequestedValidationLayersSupported(LayerProperties[] properties, out int foundLayers,
+        out string[] foundLayerNames) {
         bool allLayersFound = true;
 
         List<string> layerNames = new List<string>();
@@ -679,9 +697,9 @@ public unsafe class VulkanBackend : IGraphicsBackend {
 
         foreach (QueueInfo? q in physicalQueues) {
             this._vkSurface.GetPhysicalDeviceSurfaceSupport(this._physicalDeviceInfo.Handle,
-                                                            (uint)q.QueueFamilyIndex,
-                                                            this._surface,
-                                                            out Bool32 supported);
+                (uint)q.QueueFamilyIndex,
+                this._surface,
+                out Bool32 supported);
             if (supported) {
                 presentationQueueInfo = q;
                 return true;
@@ -729,10 +747,13 @@ public unsafe class VulkanBackend : IGraphicsBackend {
     ) {
         LoggerLevel? level = severity switch {
             DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityVerboseBitExt => null,
-            DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityInfoBitExt    => LoggerLevelVulkan.InstanceCallbackInfo,
-            DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityWarningBitExt => LoggerLevelVulkan.InstanceCallbackWarning,
-            DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityErrorBitExt   => LoggerLevelVulkan.InstanceCallbackError,
-            _                                                                        => throw new ArgumentOutOfRangeException(nameof(severity), severity, null)
+            DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityInfoBitExt => LoggerLevelVulkan
+                .InstanceCallbackInfo,
+            DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityWarningBitExt => LoggerLevelVulkan
+                .InstanceCallbackWarning,
+            DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityErrorBitExt => LoggerLevelVulkan
+                .InstanceCallbackError,
+            _ => throw new ArgumentOutOfRangeException(nameof(severity), severity, null)
         };
 
         if (level is null) return 0;
@@ -770,8 +791,12 @@ public unsafe class VulkanBackend : IGraphicsBackend {
     private PipelineLayout _pipelineLayout;
 
     private void TestStuff() {
-        this._vertexShader   = new Shader(this, ResourceHelpers.GetByteResource("ShaderCode/Compiled/HardcodedTriangle/VertexShader.spv"),   ShaderStageFlags.ShaderStageVertexBit,   "main");
-        this._fragmentShader = new Shader(this, ResourceHelpers.GetByteResource("ShaderCode/Compiled/HardcodedTriangle/FragmentShader.spv"), ShaderStageFlags.ShaderStageFragmentBit, "main");
+        this._vertexShader = new Shader(this,
+            ResourceHelpers.GetByteResource("ShaderCode/Compiled/HardcodedTriangle/VertexShader.spv"),
+            ShaderStageFlags.ShaderStageVertexBit, "main");
+        this._fragmentShader = new Shader(this,
+            ResourceHelpers.GetByteResource("ShaderCode/Compiled/HardcodedTriangle/FragmentShader.spv"),
+            ShaderStageFlags.ShaderStageFragmentBit, "main");
 
         ShaderStagePipelineCreateInfo vertCreateInfo = this._vertexShader.GetPipelineCreateInfo();
         ShaderStagePipelineCreateInfo fragCreateInfo = this._fragmentShader.GetPipelineCreateInfo();
@@ -779,27 +804,29 @@ public unsafe class VulkanBackend : IGraphicsBackend {
             vertCreateInfo.Info, fragCreateInfo.Info
         };
 
-        PipelineVertexInputStateCreateInfo vertexInputInfo = new PipelineVertexInputStateCreateInfo {
+        PipelineVertexInputStateCreateInfo vertexInputInfo = new() {
             SType                           = StructureType.PipelineVertexInputStateCreateInfo,
             VertexBindingDescriptionCount   = 0,
             PVertexBindingDescriptions      = null,
             VertexAttributeDescriptionCount = 0,
-            PVertexAttributeDescriptions    = null, };
-
-        PipelineInputAssemblyStateCreateInfo inputAssembler = new PipelineInputAssemblyStateCreateInfo {
-            SType = StructureType.PipelineInputAssemblyStateCreateInfo, Topology = PrimitiveTopology.TriangleList, PrimitiveRestartEnable = false,
+            PVertexAttributeDescriptions    = null,
         };
 
-        Viewport viewport = new Viewport {
+        PipelineInputAssemblyStateCreateInfo inputAssembler = new() {
+            SType = StructureType.PipelineInputAssemblyStateCreateInfo, Topology = PrimitiveTopology.TriangleList,
+            PrimitiveRestartEnable = false,
+        };
+
+        Viewport viewport = new() {
             X        = 0,
             Y        = 0,
-            Width    = (float)this._swapchainExtent.Width,
-            Height   = (float)this._swapchainExtent.Height,
+            Width    = this._swapchainExtent.Width,
+            Height   = this._swapchainExtent.Height,
             MinDepth = 0,
             MaxDepth = 1
         };
 
-        Rect2D scissorRectangle = new Rect2D {
+        Rect2D scissorRectangle = new() {
             Offset = new Offset2D(0, 0), Extent = this._swapchainExtent
         };
 
@@ -807,19 +834,20 @@ public unsafe class VulkanBackend : IGraphicsBackend {
             DynamicState.Viewport, DynamicState.Scissor
         };
 
-        PipelineDynamicStateCreateInfo dynamicState = new PipelineDynamicStateCreateInfo {
+        PipelineDynamicStateCreateInfo dynamicState = new() {
             SType = StructureType.PipelineDynamicStateCreateInfo, DynamicStateCount = 2, PDynamicStates = dynamicStates
         };
 
-        PipelineViewportStateCreateInfo viewportState = new PipelineViewportStateCreateInfo {
+        PipelineViewportStateCreateInfo viewportState = new() {
             SType         = StructureType.PipelineViewportStateCreateInfo,
             ViewportCount = 1,
             ScissorCount  = 1,
             PViewports    = &viewport,
-            PScissors     = &scissorRectangle, };
+            PScissors     = &scissorRectangle,
+        };
 
-        PipelineRasterizationStateCreateInfo rasterizerState = new PipelineRasterizationStateCreateInfo {
-            SType                   = StructureType.PipelineRasterizationProvokingVertexStateCreateInfoExt,
+        PipelineRasterizationStateCreateInfo rasterizerState = new() {
+            SType                   = StructureType.PipelineRasterizationStateCreateInfo,
             RasterizerDiscardEnable = false,
             PolygonMode             = PolygonMode.Fill,
             LineWidth               = 1.0f,
@@ -831,85 +859,97 @@ public unsafe class VulkanBackend : IGraphicsBackend {
             DepthBiasSlopeFactor    = 0.0f,
         };
 
-        PipelineMultisampleStateCreateInfo multisampleState = new PipelineMultisampleStateCreateInfo {
-            SType                 = StructureType.PipelineMultisampleStateCreateInfo,
-            SampleShadingEnable   = false,
-            RasterizationSamples  = SampleCountFlags.SampleCount1Bit,
-            MinSampleShading      = 1.0f,
-            PSampleMask           = null,
-            AlphaToCoverageEnable = false,
-            AlphaToOneEnable      = false,
-        };
+        PipelineMultisampleStateCreateInfo multisampleState = new(
+            sampleShadingEnable: false,
+            rasterizationSamples: SampleCountFlags.SampleCount1Bit,
+            minSampleShading: 1.0f,
+            pSampleMask: null,
+            alphaToCoverageEnable: false,
+            alphaToOneEnable: false
+        );
 
-        PipelineColorBlendAttachmentState blendState = new PipelineColorBlendAttachmentState {
-            ColorWriteMask = ColorComponentFlags.ColorComponentRBit |
-                             ColorComponentFlags.ColorComponentGBit |
-                             ColorComponentFlags.ColorComponentBBit |
-                             ColorComponentFlags.ColorComponentABit,
-            BlendEnable         = true,
-            SrcColorBlendFactor = BlendFactor.SrcAlpha,
-            DstColorBlendFactor = BlendFactor.OneMinusSrcAlpha,
-            ColorBlendOp        = BlendOp.Add,
-            SrcAlphaBlendFactor = BlendFactor.One,
-            DstAlphaBlendFactor = BlendFactor.OneMinusSrcAlpha,
-            AlphaBlendOp        = BlendOp.Add
-        };
+        PipelineColorBlendAttachmentState blendState = new(
+            colorWriteMask: ColorComponentFlags.ColorComponentRBit |
+                            ColorComponentFlags.ColorComponentGBit |
+                            ColorComponentFlags.ColorComponentBBit |
+                            ColorComponentFlags.ColorComponentABit,
+            blendEnable: true,
+            srcColorBlendFactor: BlendFactor.SrcAlpha,
+            dstColorBlendFactor: BlendFactor.OneMinusSrcAlpha,
+            colorBlendOp: BlendOp.Add,
+            srcAlphaBlendFactor: BlendFactor.One,
+            dstAlphaBlendFactor: BlendFactor.OneMinusSrcAlpha,
+            alphaBlendOp: BlendOp.Add
+        );
 
         float* blendConstantArray = stackalloc float[] {
             0.0f, 0.0f, 0.0f, 0.0f
         };
 
-        PipelineColorBlendStateCreateInfo colorBlendState = new PipelineColorBlendStateCreateInfo {
-            SType           = StructureType.PipelineColorBlendStateCreateInfo,
-            LogicOp         = LogicOp.Copy,
-            AttachmentCount = 1,
-            LogicOpEnable   = true,
-            PAttachments    = &blendState,
-        };
+        PipelineColorBlendStateCreateInfo colorBlendState = new(
+            // logicOp: LogicOp.Copy,
+            attachmentCount: 1,
+            // logicOpEnable: true,
+            pAttachments: &blendState
+        );
         //todo: figure out why the normal way of doing it causes weird compile errors
         colorBlendState.BlendConstants[0] = blendConstantArray[0];
         colorBlendState.BlendConstants[1] = blendConstantArray[1];
         colorBlendState.BlendConstants[2] = blendConstantArray[2];
         colorBlendState.BlendConstants[3] = blendConstantArray[3];
 
-        PipelineLayoutCreateInfo pipelineLayoutInfo = new PipelineLayoutCreateInfo {
-            SType                  = StructureType.PipelineLayoutCreateInfo,
-            SetLayoutCount         = 0,
-            PSetLayouts            = null,
-            PushConstantRangeCount = 0,
-            PPushConstantRanges    = null
-        };
+        PipelineLayoutCreateInfo pipelineLayoutInfo = new(
+            setLayoutCount: 0,
+            pSetLayouts: null,
+            pushConstantRangeCount: 0,
+            pPushConstantRanges: null
+        );
 
-        Result result = this._vk.CreatePipelineLayout(this._device, &pipelineLayoutInfo, null, out this._pipelineLayout);
+        Result result =
+            this._vk.CreatePipelineLayout(this._device, &pipelineLayoutInfo, null, out this._pipelineLayout);
 
         if (result != Result.Success)
             throw new Exception("Failed to create Pipeline layout!");
 
-        GraphicsPipelineCreateInfo pipelineInfo = new GraphicsPipelineCreateInfo {
-            SType               = StructureType.GraphicsPipelineCreateInfo,
-            StageCount          = 2,
-            PStages             = shaderStages,
-            PVertexInputState   = &vertexInputInfo,
-            PInputAssemblyState = &inputAssembler,
-            PViewportState      = &viewportState,
-            PRasterizationState = &rasterizerState,
-            PMultisampleState   = &multisampleState,
-            PDepthStencilState  = null,
-            PColorBlendState    = &colorBlendState,
-            PDynamicState       = &dynamicState,
-            Layout              = this._pipelineLayout,
-        };
+        AttachmentReference attachmentReference = new(0, ImageLayout.ColorAttachmentOptimal);
+        SubpassDescription subpass = new(SubpassDescriptionFlags.None, PipelineBindPoint.Graphics, 0,
+            null, 1, &attachmentReference);
+        
+        AttachmentDescription attachmentDescription = new(AttachmentDescriptionFlags.None, Format.R8G8B8A8Unorm, SampleCountFlags.Count1Bit, AttachmentLoadOp.DontCare, AttachmentStoreOp.DontCare, AttachmentLoadOp.DontCare, AttachmentStoreOp.DontCare, ImageLayout.ColorAttachmentOptimal, ImageLayout.ColorAttachmentOptimal);
+        RenderPassCreateInfo passCreateInfo = new(
+            flags: RenderPassCreateFlags.None,
+            attachmentCount: 1, 
+            pAttachments: &attachmentDescription,
+            subpassCount: 1,
+            pSubpasses: &subpass
+        );
 
-        PipelineCacheCreateInfo cacheCreateInfo = new PipelineCacheCreateInfo();
-        cacheCreateInfo.Flags = PipelineCacheCreateFlags.None;
-        cacheCreateInfo.SType = StructureType.PipelineCacheCreateInfo;
+        RenderPass pass = new();
+        result = this._vk.CreateRenderPass(this._device, &passCreateInfo, null, &pass);
+        
+        GraphicsPipelineCreateInfo pipelineInfo = new(
+            stageCount: 2,
+            pStages: shaderStages,
+            pVertexInputState: &vertexInputInfo,
+            pInputAssemblyState: &inputAssembler,
+            pViewportState: &viewportState,
+            pRasterizationState: &rasterizerState,
+            pMultisampleState: &multisampleState,
+            pDepthStencilState: null,
+            pColorBlendState: &colorBlendState,
+            pDynamicState: &dynamicState,
+            layout: this._pipelineLayout,
+            renderPass: pass
+        );
+
+        PipelineCacheCreateInfo cacheCreateInfo = new(flags: PipelineCacheCreateFlags.None);
 
         PipelineCache cache = new();
         result = this._vk.CreatePipelineCache(this._device, &cacheCreateInfo, null, &cache);
 
         if (result != Result.Success)
             throw new Exception("Unable to create pipeline cache!");
-        
+
         Pipeline pipeline = new();
         result = this._vk.CreateGraphicsPipelines(this._device, cache, 1, &pipelineInfo, null, &pipeline);
 
@@ -918,9 +958,7 @@ public unsafe class VulkanBackend : IGraphicsBackend {
     }
 
 
-    public override void HandleFramebufferResize(int width, int height) {
-
-    }
+    public override void HandleFramebufferResize(int width, int height) {}
 
     public override Renderer CreateRenderer() => throw new NotImplementedException();
 
@@ -945,11 +983,14 @@ public unsafe class VulkanBackend : IGraphicsBackend {
         throw new NotImplementedException();
     }
 
-    public override VixieTexture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default) => throw new NotImplementedException();
+    public override VixieTexture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default) =>
+        throw new NotImplementedException();
 
-    public override VixieTexture CreateTextureFromStream(Stream stream, TextureParameters parameters = default) => throw new NotImplementedException();
+    public override VixieTexture CreateTextureFromStream(Stream stream, TextureParameters parameters = default) =>
+        throw new NotImplementedException();
 
-    public override VixieTexture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default) => throw new NotImplementedException();
+    public override VixieTexture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default) =>
+        throw new NotImplementedException();
 
     public override VixieTexture CreateWhitePixelTexture() {
         throw new NotImplementedException();
