@@ -205,8 +205,6 @@ public unsafe class VulkanBackend : IGraphicsBackend {
             SType                   = StructureType.InstanceCreateInfo, PApplicationInfo = &appInfo,
             EnabledExtensionCount   = (uint)extensionCount,
             PpEnabledExtensionNames = (byte**)(extensionMemory?.Handle ?? 0),
-            EnabledLayerCount       = 0,
-            PpEnabledLayerNames     = null
         };
 
         Result result = this._vk.CreateInstance(&createInfo, null, out instance);
