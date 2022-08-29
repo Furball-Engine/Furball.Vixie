@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.OpenGL.Abstractions;
 using Furball.Vixie.Backends.Shared;
@@ -174,6 +173,8 @@ internal unsafe class OpenGLRenderer : Renderer {
             tex.BoundId = -1;
         }
         this._usedTextures = 0;
+
+        this._texDict.Clear();
     }
     
     public override void Begin() {
