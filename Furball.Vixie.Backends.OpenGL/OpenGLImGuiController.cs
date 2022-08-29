@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if USE_IMGUI
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
@@ -464,3 +465,4 @@ void main()
         this._gl.DeleteTexture(this._fontTexture);
     }
 }
+#endif

@@ -1,3 +1,4 @@
+#if USE_IMGUI
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -652,3 +653,4 @@ public class ImGuiControllerD3D11 : IDisposable {
         this.InvalidateDeviceObjects();
     }
 }
+#endif

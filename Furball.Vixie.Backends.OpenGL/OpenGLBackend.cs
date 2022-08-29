@@ -46,7 +46,9 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
 
     internal ShaderGL Shader;
 
+#if USE_IMGUI
     private  bool          _runImGui = true;
+#endif
     internal IView         View;
     private  bool          _screenshotQueued;
     internal Vector2D<int> CurrentViewport;
@@ -103,7 +105,10 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
 
     public readonly Backend               CreationBackend;
     private         bool                  _isFbProjMatrix;
+#if USE_IMGUI
     private         OpenGlImGuiController _imgui;
+#endif
+
     public OpenGLBackend(Backend backend) {
         this.CreationBackend = backend;
 
@@ -209,6 +214,7 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
         this.gl.Enable(EnableCap.CullFace);
         this.gl.CullFace(CullFaceMode.Back);
 
+#if USE_IMGUI
         OpenGLType type = this.CreationBackend switch {
             Backend.OpenGL when Global.LatestSupportedGL.GL.MajorVersion < 3 => OpenGLType.Legacy,
             Backend.OpenGLES                                                 => OpenGLType.ES,
@@ -217,8 +223,8 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
 
         this._imgui = new OpenGlImGuiController(this.gl, type, view, inputContext);
         this._imgui.Initialize();
-
         this.CheckError("create imguicontroller");
+#endif
 
         BackendInfoSection mainSection = new("OpenGL Info");
         mainSection.Contents.Add(("OpenGL Version", this.gl.GetStringS(StringName.Version)));
@@ -265,7 +271,9 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
         this.InfoSections.ForEach(x => x.Log(LoggerLevelOpenGL.InstanceInfo));
 
         view.Closing += delegate {
+#if USE_IMGUI
             this._runImGui = false;
+#endif
         };
         this.CurrentViewport    = new Vector2D<int>(view.FramebufferSize.X, view.FramebufferSize.Y);
         this._lastScissor = new(0, 0, view.FramebufferSize.X, view.FramebufferSize.Y);
@@ -469,6 +477,8 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     public override VixieTexture CreateWhitePixelTexture() {
         return new VixieTextureGL(this);
     }
+    
+#if USE_IMGUI
     /// <summary>
     ///     Used to Update the ImGuiController in charge of rendering ImGui on this backend
     /// </summary>
@@ -489,6 +499,7 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
 
         this._imgui.Render();
     }
+#endif
     /// <summary>
     ///     Debug Callback
     /// </summary>

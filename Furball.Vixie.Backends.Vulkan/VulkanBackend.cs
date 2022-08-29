@@ -996,11 +996,13 @@ public unsafe class VulkanBackend : IGraphicsBackend {
         throw new NotImplementedException();
     }
 
+#if USE_IMGUI
     public override void ImGuiUpdate(double deltaTime) {
-        // throw new NotImplementedException();
+        throw new NotImplementedException();
     }
 
     public override void ImGuiDraw(double deltaTime) {
-        // throw new NotImplementedException();
+        throw new NotImplementedException();
     }
+#endif
 }

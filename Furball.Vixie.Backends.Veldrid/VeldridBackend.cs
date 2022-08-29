@@ -359,11 +359,13 @@ public class VeldridBackend : IGraphicsBackend {
         => new VixieTextureVeldrid(this, width, height, parameters);
 
     public override Shared.VixieTexture CreateWhitePixelTexture() => new VixieTextureVeldrid(this);
-        
+
+#if USE_IMGUI
     public override void ImGuiUpdate(double deltaTime) {
         this._imgui.Update((float)deltaTime);
     }
     public override void ImGuiDraw(double deltaTime) {
         this._imgui.Render(this.GraphicsDevice, this.CommandList);
     }
+#endif
 }
