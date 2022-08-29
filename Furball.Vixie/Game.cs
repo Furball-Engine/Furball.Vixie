@@ -308,8 +308,10 @@ public abstract class Game : IDisposable {
     }
 
     private readonly Stopwatch _stopwatch          = new();
+#if USE_IMGUI
     private          bool      _isFirstImguiUpdate = true;
     private          double    _lastImguiDrawTime;
+#endif
 
     /// <summary>
     /// Sets up and ends the scene
@@ -326,7 +328,7 @@ public abstract class Game : IDisposable {
             this.Draw(deltaTime);
             this.PostDraw(deltaTime);
         }
-
+#if USE_IMGUI
         if (!this._isFirstImguiUpdate)
             GraphicsBackend.Current.ImGuiDraw(deltaTime);
 
@@ -336,6 +338,7 @@ public abstract class Game : IDisposable {
         GraphicsBackend.Current.ImGuiUpdate(finalDelta);
         this._lastImguiDrawTime  = this._stopwatch.Elapsed.TotalSeconds;
         this._isFirstImguiUpdate = false;
+#endif
 
         GraphicsBackend.Current.EndScene();
 

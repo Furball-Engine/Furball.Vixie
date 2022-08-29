@@ -4,7 +4,9 @@ using FontStashSharp;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers.Helpers;
+#if USE_IMGUI
 using ImGuiNET;
+#endif
 
 namespace Furball.Vixie.TestApplication.Tests; 
 
@@ -43,7 +45,7 @@ public class TestFSS : GameComponent {
         this._renderer.Draw();
 
         #region ImGui menu
-
+        #if USE_IMGUI
         ImGui.SliderFloat("Scale",    ref this._scale,    0f, 5f);
         ImGui.SliderFloat("Rotation", ref this._rotation, 0f, (float)(Math.PI * 2f));
 
@@ -51,7 +53,7 @@ public class TestFSS : GameComponent {
             this.BaseGame.Components.Add(new BaseTestSelector());
             this.BaseGame.Components.Remove(this);
         }
-
+        #endif
         #endregion
 
         base.Draw(deltaTime);

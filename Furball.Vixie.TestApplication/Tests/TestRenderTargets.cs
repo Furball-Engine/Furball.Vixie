@@ -2,7 +2,9 @@ using System.Numerics;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers.Helpers;
+#if USE_IMGUI
 using ImGuiNET;
+#endif
 
 
 namespace Furball.Vixie.TestApplication.Tests; 
@@ -48,14 +50,13 @@ public class TestRenderTargets : GameComponent {
         this._quadRenderer.Draw();
 
         #region ImGui menu
-
+        #if USE_IMGUI
         ImGui.SliderFloat("Final Texture Scale", ref this._scale, 0f, 2f);
-
         if (ImGui.Button("Go back to test selector")) {
             this.BaseGame.Components.Add(new BaseTestSelector());
             this.BaseGame.Components.Remove(this);
         }
-
+        #endif
         #endregion
 
         base.Draw(deltaTime);

@@ -3,7 +3,9 @@ using System.Numerics;
 using FontStashSharp;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers.Helpers;
+#if USE_IMGUI
 using ImGuiNET;
+#endif
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using Color = Furball.Vixie.Backends.Shared.Color;
@@ -64,12 +66,12 @@ public class TestTextureGetData : GameComponent {
         this._renderer.Draw();
         
         #region ImGui menu
-
+        #if USE_IMGUI
         if (ImGui.Button("Go back to test selector")) {
             this.BaseGame.Components.Add(new BaseTestSelector());
             this.BaseGame.Components.Remove(this);
         }
-
+        #endif
         #endregion
         
         base.Draw(deltaTime);

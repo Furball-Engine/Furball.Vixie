@@ -1,3 +1,4 @@
+#if USE_IMGUI
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -441,3 +442,4 @@ public class ImGuiController : IDisposable {
         }
     }
 }
+#endif

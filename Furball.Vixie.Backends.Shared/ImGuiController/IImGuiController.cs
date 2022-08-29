@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if USE_IMGUI
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Numerics;
@@ -9,7 +10,6 @@ using Silk.NET.Maths;
 using Silk.NET.Windowing;
 
 namespace Furball.Vixie.Backends.Shared.ImGuiController;
-
 public abstract class ImGuiController : IDisposable {
     private          IView            _view;
     private          IInputContext    _input;
@@ -236,3 +236,4 @@ public abstract class ImGuiController : IDisposable {
         ImGui.DestroyContext(this.Context);
     }
 }
+#endif

@@ -1,5 +1,6 @@
-﻿using System;
+﻿#if USE_IMGUI
 using ImGuiNET;
+#endif
 using Silk.NET.Input;
 
 namespace Furball.Vixie.Backends.Shared.ImGuiController; 
@@ -14,6 +15,7 @@ public static class Extensions {
         };
     }
     
+    #if USE_IMGUI
     public static ImGuiKey ToImGuiKey(this Key k) {
             return k switch {
                 Key.Space          => ImGuiKey.Space,
@@ -140,5 +142,6 @@ public static class Extensions {
                 _                  => ImGuiKey.None
             };
         }
+#endif
 
 }
