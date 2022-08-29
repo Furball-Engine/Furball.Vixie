@@ -35,15 +35,13 @@ public static class ResourceHelpers {
         Assembly assembly   = vixieResource ? Assembly.GetExecutingAssembly() : Assembly.GetCallingAssembly();
         string   actualName = assembly.GetName().Name + "." + path.Replace("/", ".");
 
-        MemoryStream stream    = new MemoryStream();
-        Stream       resStream = assembly.GetManifestResourceStream(actualName);
+        using Stream? resStream = assembly.GetManifestResourceStream(actualName);
+        
+        Guard.EnsureNonNull(resStream, "resStream");
 
-        if (resStream == null)
-            return null;
+        using StreamReader reader = new(resStream!);
 
-        resStream.CopyTo(stream);
-
-        return Encoding.UTF8.GetString(stream.ToArray());
+        return reader.ReadToEnd();
     }
 
     /// <summary>
@@ -56,13 +54,12 @@ public static class ResourceHelpers {
         Assembly assembly   = vixieResource ? Assembly.GetExecutingAssembly() : Assembly.GetCallingAssembly();
         string   actualName = assembly.GetName().Name + "." + path.Replace("/", ".");
 
-        MemoryStream stream    = new MemoryStream();
-        Stream?       resStream = assembly.GetManifestResourceStream(actualName);
+        using Stream? resStream = assembly.GetManifestResourceStream(actualName);
         
         Guard.EnsureNonNull(resStream, "resStream");
 
-        resStream!.CopyTo(stream);
+        using BinaryReader reader = new(resStream!);
 
-        return stream.ToArray();
+        return reader.ReadBytes((int)reader.BaseStream.Length);
     }
 }
