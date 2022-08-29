@@ -1,13 +1,9 @@
 <Project>
     <PropertyGroup>
-        <UseImGui>true</UseImGui>
+        <UseImGui>false</UseImGui>
     </PropertyGroup>
     
     <PropertyGroup Condition="'$(UseImGui)'=='true'">
         <DefineConstants>$(DefineConstants);USE_IMGUI</DefineConstants>
     </PropertyGroup>
-
-    <ItemGroup Condition="'$(UseImGui)'=='true'">
-        <PackageReference Include="ImGui.NET" Version="1.87.3" />
-    </ItemGroup>
 </Project>

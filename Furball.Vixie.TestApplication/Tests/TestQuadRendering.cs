@@ -1,7 +1,9 @@
 using System.Numerics;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers.Helpers;
+#if USE_IMGUI
 using ImGuiNET;
+#endif
 using SixLabors.ImageSharp;
 using Color=Furball.Vixie.Backends.Shared.Color;
 
@@ -45,15 +47,15 @@ public class TestQuadRendering : GameComponent {
         GraphicsBackend.Current.SetFullScissorRect();
 
         #region ImGui menu
-
+        #if USE_IMGUI
         if (ImGui.Button("Go back to test selector")) {
             this.BaseGame.Components.Add(new BaseTestSelector());
             this.BaseGame.Components.Remove(this);
         }
-
         ImGui.SliderInt("Draws", ref this._cirnoDons, 0, 2048);
         ImGui.Checkbox("Scissor", ref this._scissorEnable);
 
+        #endif
         #endregion
 
         base.Draw(deltaTime);

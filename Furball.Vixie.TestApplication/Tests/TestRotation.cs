@@ -2,7 +2,9 @@ using System.Numerics;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers.Helpers;
+#if USE_IMGUI
 using ImGuiNET;
+#endif
 
 
 namespace Furball.Vixie.TestApplication.Tests; 
@@ -34,14 +36,13 @@ public class TestRotation : GameComponent {
         this._renderer.Draw();
 
         #region ImGui menu
-
+        #if USE_IMGUI
         ImGui.DragFloat("Rotation", ref this._rotation, 0.01f, 0f, 8f);
-
         if (ImGui.Button("Go back to test selector")) {
             this.BaseGame.Components.Add(new BaseTestSelector());
             this.BaseGame.Components.Remove(this);
         }
-
+        #endif
         #endregion
 
         base.Draw(deltaTime);

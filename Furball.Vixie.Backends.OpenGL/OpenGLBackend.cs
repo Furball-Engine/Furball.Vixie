@@ -14,7 +14,9 @@ using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.OpenGL.Legacy.Extensions.EXT;
+#if USE_IMGUI
 using Silk.NET.OpenGLES.Extensions.ImGui;
+#endif
 using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -32,6 +34,7 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     private GL gl;
     private Silk.NET.OpenGL.Legacy.GL legacyGl;
     private Silk.NET.OpenGLES.GL      gles;
+
     /// <summary>
     ///     Projection Matrix used to go from Window Coordinates to OpenGL Coordinates
     /// </summary>

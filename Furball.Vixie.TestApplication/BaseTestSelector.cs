@@ -1,5 +1,6 @@
-using Furball.Vixie.TestApplication.Tests;
+#if USE_IMGUI
 using ImGuiNET;
+#endif
 
 namespace Furball.Vixie.TestApplication; 
 
@@ -7,6 +8,7 @@ public class BaseTestSelector : GameComponent {
     public override void Draw(double deltaTime) {
         GraphicsBackend.Current.Clear();
 
+#if USE_IMGUI
         ImGui.Begin("Test Selector");
             
         if (ImGui.Button("Batched Rendering Test")) {
@@ -60,6 +62,7 @@ public class BaseTestSelector : GameComponent {
         }
         
         ImGui.End();
+#endif
 
         base.Draw(deltaTime);
     }
