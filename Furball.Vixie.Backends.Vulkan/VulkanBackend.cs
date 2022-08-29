@@ -899,6 +899,22 @@ public unsafe class VulkanBackend : IGraphicsBackend {
             PDynamicState       = &dynamicState,
             Layout              = this._pipelineLayout,
         };
+
+        PipelineCacheCreateInfo cacheCreateInfo = new PipelineCacheCreateInfo();
+        cacheCreateInfo.Flags = PipelineCacheCreateFlags.None;
+        cacheCreateInfo.SType = StructureType.PipelineCacheCreateInfo;
+
+        PipelineCache cache = new();
+        result = this._vk.CreatePipelineCache(this._device, &cacheCreateInfo, null, &cache);
+
+        if (result != Result.Success)
+            throw new Exception("Unable to create pipeline cache!");
+        
+        Pipeline pipeline = new();
+        result = this._vk.CreateGraphicsPipelines(this._device, cache, 1, &pipelineInfo, null, &pipeline);
+
+        if (result != Result.Success)
+            throw new Exception("Unable to create graphics pipeline");
     }
 
 
@@ -912,17 +928,17 @@ public unsafe class VulkanBackend : IGraphicsBackend {
     public override int QueryMaxTextureUnits() => throw new NotImplementedException();
 
     public override void Clear() {
-        throw new NotImplementedException();
+        // throw new NotImplementedException();
     }
 
     public override void TakeScreenshot() {
-        throw new NotImplementedException();
+        // throw new NotImplementedException();
     }
 
     public override Rectangle ScissorRect { get; set; }
 
     public override void SetFullScissorRect() {
-        throw new NotImplementedException();
+        // throw new NotImplementedException();
     }
 
     public override VixieTextureRenderTarget CreateRenderTarget(uint width, uint height) {
@@ -940,10 +956,10 @@ public unsafe class VulkanBackend : IGraphicsBackend {
     }
 
     public override void ImGuiUpdate(double deltaTime) {
-        throw new NotImplementedException();
+        // throw new NotImplementedException();
     }
 
     public override void ImGuiDraw(double deltaTime) {
-        throw new NotImplementedException();
+        // throw new NotImplementedException();
     }
 }
