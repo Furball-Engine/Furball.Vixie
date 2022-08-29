@@ -369,6 +369,9 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
         float right = this._isFbProjMatrix ? width : width / (float)height * 720f;
         
         this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, right, bottom, top, 1f, 0f);
+        this.Shader.Bind();
+        this.Shader.SetUniform("ProjectionMatrix", this.ProjectionMatrix);
+        this.Shader.Unbind();
     }
 
     public override Rectangle ScissorRect {

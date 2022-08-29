@@ -243,7 +243,6 @@ internal unsafe class OpenGLRenderer : Renderer {
     private VixieTextureGL[] _texHandles;
     public override void Draw() {
         this._backend.Shader.Bind();
-        this._backend.Shader.SetUniform("ProjectionMatrix", this._backend.ProjectionMatrix);
 
         for (int i = 0; i < this._bufferList.Count; i++) {
             BufferData buf = this._bufferList[i];
