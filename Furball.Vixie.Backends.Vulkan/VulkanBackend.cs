@@ -773,8 +773,10 @@ public unsafe class VulkanBackend : IGraphicsBackend {
         this._vertexShader   = new Shader(this, ResourceHelpers.GetByteResource("ShaderCode/Compiled/HardcodedTriangle/VertexShader.spv"),   ShaderStageFlags.ShaderStageVertexBit,   "main");
         this._fragmentShader = new Shader(this, ResourceHelpers.GetByteResource("ShaderCode/Compiled/HardcodedTriangle/FragmentShader.spv"), ShaderStageFlags.ShaderStageFragmentBit, "main");
 
+        ShaderStagePipelineCreateInfo vertCreateInfo = this._vertexShader.GetPipelineCreateInfo();
+        ShaderStagePipelineCreateInfo fragCreateInfo = this._fragmentShader.GetPipelineCreateInfo();
         PipelineShaderStageCreateInfo* shaderStages = stackalloc PipelineShaderStageCreateInfo[] {
-            this._vertexShader.GetPipelineCreateInfo(), this._fragmentShader.GetPipelineCreateInfo(),
+            vertCreateInfo.Info, fragCreateInfo.Info
         };
 
         PipelineVertexInputStateCreateInfo vertexInputInfo = new PipelineVertexInputStateCreateInfo {

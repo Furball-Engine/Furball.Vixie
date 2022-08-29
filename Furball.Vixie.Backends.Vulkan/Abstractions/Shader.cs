@@ -32,16 +32,29 @@ public class Shader : IDisposable {
         }
     }
 
-    public unsafe PipelineShaderStageCreateInfo GetPipelineCreateInfo() {
-        return new PipelineShaderStageCreateInfo {
-            SType  = StructureType.PipelineShaderStageCreateInfo,
-            Stage  = this._shaderStage,
-            Module = this._shaderModule,
-            PName  = (byte*) SilkMarshal.StringToPtr(this._entrypoint) //TODO: this needs to be manually freed.
+    public unsafe ShaderStagePipelineCreateInfo GetPipelineCreateInfo() {
+        ShaderStagePipelineCreateInfo info = new() {
+            Info = new PipelineShaderStageCreateInfo {
+                SType  = StructureType.PipelineShaderStageCreateInfo,
+                Stage  = this._shaderStage,
+                Module = this._shaderModule,
+                PName  = (byte*)SilkMarshal.StringToPtr(this._entrypoint) //this needs to be manually freed
+            }
         };
+        
+        return info;
     }
 
     public unsafe void Dispose() {
         this._vk.DestroyShaderModule(this._device, this._shaderModule, null);
+    }
+}
+
+public class ShaderStagePipelineCreateInfo {
+    public PipelineShaderStageCreateInfo Info;
+
+    //We need to free the PName when the destructor gets hit
+    unsafe ~ShaderStagePipelineCreateInfo() {
+        SilkMarshal.Free((nint)this.Info.PName);
     }
 }
