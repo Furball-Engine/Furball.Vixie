@@ -189,14 +189,16 @@ public class WindowManager : IDisposable {
     public void Create() {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && this.Backend == Backend.Direct3D11)
             SdlWindowing.Use();
-        
+
         ContextAPI api = this.Backend switch {
-            Backend.OpenGLES   => ContextAPI.OpenGLES,
-            Backend.OpenGL     => ContextAPI.OpenGL,
-            Backend.Veldrid    => ContextAPI.None,
-            Backend.Vulkan     => ContextAPI.Vulkan,
-            Backend.Direct3D11 => RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? ContextAPI.Vulkan : ContextAPI.None,
-            _                  => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
+            Backend.OpenGLES => ContextAPI.OpenGLES,
+            Backend.OpenGL   => ContextAPI.OpenGL,
+            Backend.Veldrid  => ContextAPI.None,
+            Backend.Vulkan   => ContextAPI.Vulkan,
+            Backend.Direct3D11 => RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? ContextAPI.Vulkan
+                : ContextAPI.None,
+            Backend.Dummy => ContextAPI.None,
+            _             => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
         };
 
         ContextProfile profile = this.Backend switch {
@@ -205,6 +207,7 @@ public class WindowManager : IDisposable {
             Backend.Veldrid    => ContextProfile.Core,
             Backend.Vulkan     => ContextProfile.Core,
             Backend.Direct3D11 => ContextProfile.Core,
+            Backend.Dummy      => ContextProfile.Core,
             _                  => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
         };
 
@@ -215,12 +218,14 @@ public class WindowManager : IDisposable {
             Backend.Veldrid    => ContextFlags.ForwardCompatible | ContextFlags.Debug,
             Backend.Vulkan     => ContextFlags.Debug,
             Backend.Direct3D11 => ContextFlags.Debug,
+            Backend.Dummy      => ContextFlags.Debug,
 #else
             Backend.OpenGLES   => ContextFlags.Default,
             Backend.OpenGL     => ContextFlags.Default,
             Backend.Direct3D11 => ContextFlags.Default,
             Backend.Veldrid    => ContextFlags.ForwardCompatible,
             Backend.Vulkan     => ContextFlags.Default,
+            Backend.Dummy      => ContextFlags.Default,
 #endif
             _ => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
         };
@@ -250,6 +255,9 @@ public class WindowManager : IDisposable {
                 version = new APIVersion(11, 0);
                 break;
             case Backend.Vulkan:
+                version = new APIVersion(0, 0);
+                break;
+            case Backend.Dummy:
                 version = new APIVersion(0, 0);
                 break;
             default:

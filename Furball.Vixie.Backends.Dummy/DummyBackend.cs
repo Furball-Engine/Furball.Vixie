@@ -1,0 +1,105 @@
+﻿using System;
+using System.IO;
+using Furball.Vixie.Backends.Shared;
+using Furball.Vixie.Backends.Shared.Backends;
+using Furball.Vixie.Backends.Shared.Renderers;
+using Kettu;
+using Silk.NET.Input;
+using Silk.NET.Windowing;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+
+namespace Furball.Vixie.Backends.Dummy;
+
+public class DummyBackend : IGraphicsBackend {
+#if USE_IMGUI
+        private DummyImGuiController _imgui;
+#endif
+    public override void Initialize(IView view, IInputContext inputContext) {
+#if USE_IMGUI
+        throw new NotImplementedException("ImGui is currently broken on the Dummy backend! please disable ImGui!");
+        this._imgui = new DummyImGuiController(view, inputContext);
+        this._imgui.Initialize();
+#endif
+
+        Logger.Log("Initializing dummy backend!", LoggerLevelDummy.InstanceInfo);
+    }
+    public override void Cleanup() {
+#if USE_IMGUI
+        this._imgui.Dispose();
+#endif
+    }
+    public override void HandleFramebufferResize(int width, int height) {
+        // throw new System.NotImplementedException();
+    }
+    public override Renderer CreateRenderer() {
+        Logger.Log("Creating dummy texture!", LoggerLevelDummy.InstanceInfo);
+        return new DummyRenderer();
+    }
+    public override int QueryMaxTextureUnits() {
+        return 1;
+    }
+    public override void Clear() {
+        // throw new System.NotImplementedException();
+    }
+    public override void TakeScreenshot() {
+        // throw new System.NotImplementedException();
+    }
+    public override Rectangle ScissorRect {
+        get;
+        set;
+    }
+    public override void SetFullScissorRect() {
+        // throw new System.NotImplementedException();
+    }
+    public override VixieTextureRenderTarget CreateRenderTarget(uint width, uint height) {
+        Logger.Log("Creating dummy TextureRenderTarget!", LoggerLevelDummy.InstanceInfo);
+
+        return new DummyTextureRenderTarget((int)width, (int)height);
+    }
+    public override VixieTexture CreateTextureFromByteArray(byte[]            imageData,
+                                                            TextureParameters parameters = default) {
+        Logger.Log("Creating dummy Texture!", LoggerLevelDummy.InstanceInfo);
+        Image image;
+        bool qoi = imageData.Length > 3 && imageData[0] == 'q' && imageData[1] == 'o' && imageData[2] == 'i' &&
+                   imageData[3]     == 'f';
+
+        if(qoi) {
+            (Rgba32[] pixels, QoiLoader.QoiHeader header) data = QoiLoader.Load(imageData);
+
+            image = Image.LoadPixelData(data.pixels, (int)data.header.Width, (int)data.header.Height);
+        } else {
+            image = Image.Load<Rgba32>(imageData);
+        }
+        
+        int   width  = image.Width;
+        int   height = image.Height;
+        image.Dispose();
+        return new DummyTexture(width, height);
+    }
+    public override VixieTexture CreateTextureFromStream(Stream stream, TextureParameters parameters = default) {
+        Logger.Log("Creating dummy Texture!", LoggerLevelDummy.InstanceInfo);
+        Image image  = Image.Load(stream);
+        int   width  = image.Width;
+        int   height = image.Height;
+        image.Dispose();
+        return new DummyTexture(width, height);
+    }
+    public override VixieTexture
+        CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default) {
+        Logger.Log("Creating dummy Texture!", LoggerLevelDummy.InstanceInfo);
+        return new DummyTexture((int)width, (int)height);
+    }
+    public override VixieTexture CreateWhitePixelTexture() {
+        Logger.Log("Creating dummy Texture!", LoggerLevelDummy.InstanceInfo);
+        return new DummyTexture(1, 1);
+    }
+#if USE_IMGUI
+    public override void ImGuiUpdate(double deltaTime) {
+        this._imgui.Update((float)deltaTime);
+    }
+    public override void ImGuiDraw(double deltaTime) {
+        this._imgui.Render();
+    }
+#endif
+}
