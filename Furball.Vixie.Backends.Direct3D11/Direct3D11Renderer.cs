@@ -244,12 +244,11 @@ public class Direct3D11Renderer : Renderer {
         Array.Copy(this._boundShaderViews, buf.Textures, this._usedTextures);
         
         for (int i = 0; i < this._boundShaderViews.Length; i++) {
-            if(this._boundTextures[i] != null && this._boundTextures[i] != this._backend.GetPrivateWhitePixelTexture())
-                this._boundTextures[i]!.UsedId = -1;
-
             this._boundTextures[i]    = null;
             this._boundShaderViews[i] = null;
         }
+        
+        this._texDict.Clear();
         
         this._usedTextures = 0;
         this._indexOffset  = 0;
@@ -286,7 +285,8 @@ public class Direct3D11Renderer : Renderer {
         this._reserveRecursionCount = 0;
         return new MappedData((Vertex*)vtx, (ushort*)idx, vertexCount, indexCount, (uint)(this._indexOffset - vertexCount));
     }
-    
+
+    private Dictionary<VixieTexture, int> _texDict = new();
     public override long GetTextureId(VixieTexture texOrig) {
         this._backend.CheckThread();
 
@@ -294,16 +294,9 @@ public class Direct3D11Renderer : Renderer {
         
         VixieTextureD3D11 tex = (VixieTextureD3D11)texOrig;
         
-        if(tex.UsedId != -1) return tex.UsedId;
-
-        if(this._usedTextures != 0)
-            for (int i = 0; i < this._usedTextures; i++) {
-                ID3D11ShaderResourceView? tex2 = this._boundShaderViews[i];
-
-                if (tex2            == null) break;
-                if (tex.TextureView == tex2) return i;
-            }
-
+        if(this._texDict.TryGetValue(tex, out int val))
+            return val;
+        
         if (this._usedTextures == this._boundShaderViews.Length - 1) {
             this.DumpToBuffers();
             return this.GetTextureId(tex);
@@ -312,7 +305,7 @@ public class Direct3D11Renderer : Renderer {
         this._boundShaderViews[this._usedTextures] = tex.TextureView;
         this._boundTextures[this._usedTextures]    = tex;
 
-        tex.UsedId = this._usedTextures;
+        this._texDict.Add(tex, this._usedTextures);
 
         this._usedTextures++;
 

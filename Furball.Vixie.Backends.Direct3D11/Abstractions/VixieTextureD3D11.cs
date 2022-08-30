@@ -22,8 +22,6 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
     internal ID3D11ShaderResourceView TextureView;
     private  Texture2DDescription     textureDescription;
 
-    internal int UsedId = -1;
-
     public VixieTextureD3D11(Direct3D11Backend backend, ID3D11Texture2D texture, ID3D11ShaderResourceView shaderResourceView, Vector2D<int> size, Texture2DDescription desc) {
         backend.CheckThread();
         this._backend       = backend;
