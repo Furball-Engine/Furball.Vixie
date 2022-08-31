@@ -3,6 +3,7 @@ using System.Diagnostics.Contracts;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Newtonsoft.Json;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Furball.Vixie.Backends.Shared; 
 
@@ -59,11 +60,16 @@ public struct Color {
         this.Af = a / 255f;
     }
 
-    public Color(uint packedColor) {
-        this.Af = ((packedColor & 0xFF000000) >> 24) / 255f;
-        this.Rf = ((packedColor & 0x00FF0000) >> 16) / 255f;
-        this.Gf = ((packedColor & 0x0000FF00) >> 8)  / 255f;
-        this.Bf = ((packedColor & 0x000000FF) >> 0)  / 255f;
+    /// <summary>
+    /// Creates a new colour from a packed RGBA colour
+    /// </summary>
+    /// <param name="packedColor">The RGBA colour packed as a single uint</param>
+    public unsafe Color(uint packedColor) {
+        Rgba32* colCast = (Rgba32*)&packedColor;
+        this.Rf = colCast->R / 255f;
+        this.Gf = colCast->G / 255f;
+        this.Bf = colCast->B / 255f;
+        this.Af = colCast->A / 255f;
     }
    
     public Color(System.Drawing.Color packedColor) {
