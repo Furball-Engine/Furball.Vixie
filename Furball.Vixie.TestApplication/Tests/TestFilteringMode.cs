@@ -17,9 +17,9 @@ public class TestFilteringMode : GameComponent {
     public override void Initialize() {
         this._renderer = GraphicsBackend.Current.CreateRenderer();
         
-        this._pixelatedTexture = Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
+        this._pixelatedTexture = Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
         this._pixelatedTexture.FilterType = TextureFilterType.Pixelated;
-        this._smoothTexture = Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
+        this._smoothTexture = Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
         this._smoothTexture.FilterType = TextureFilterType.Smooth;
         
         this._renderer.Begin();

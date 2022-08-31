@@ -23,7 +23,7 @@ public class TestFSS : GameComponent {
     });
 
     public override void Initialize() {
-        this._defaultFont.AddFont(ResourceHelpers.GetByteResource("Resources/font.ttf"));
+        this._defaultFont.AddFont(ResourceHelpers.GetByteResource("Resources/font.ttf", typeof(TestGame)));
         this._font = this._defaultFont.GetFont(48);
 
         this._renderer = GraphicsBackend.Current.CreateRenderer();
@@ -36,7 +36,7 @@ public class TestFSS : GameComponent {
         
         this._rtl = new RichTextLayout {
             Font = this._font,
-            Text = "This is a test of the rich text drawing!/n/f[60]Bigger!/f[30]Smaller/fdNormal!"
+            Text = "This is a test of the /c[red]rich /c[white]text drawing!/n/f[60]Bigger!/f[30]Smaller/fdNormal!"
         };
 
         base.Initialize();

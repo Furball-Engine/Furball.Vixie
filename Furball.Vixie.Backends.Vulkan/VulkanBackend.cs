@@ -672,10 +672,10 @@ public unsafe class VulkanBackend : IGraphicsBackend {
 
     private void TestStuff() {
         this._vertexShader = new Shader(this,
-            ResourceHelpers.GetByteResource("ShaderCode/Compiled/HardcodedTriangle/VertexShader.spv"),
+            ResourceHelpers.GetByteResource("ShaderCode/Compiled/HardcodedTriangle/VertexShader.spv", typeof(VulkanBackend)),
             ShaderStageFlags.ShaderStageVertexBit, "main");
         this._fragmentShader = new Shader(this,
-            ResourceHelpers.GetByteResource("ShaderCode/Compiled/HardcodedTriangle/FragmentShader.spv"),
+            ResourceHelpers.GetByteResource("ShaderCode/Compiled/HardcodedTriangle/FragmentShader.spv", typeof(VulkanBackend)),
             ShaderStageFlags.ShaderStageFragmentBit, "main");
 
         ShaderStagePipelineCreateInfo vertCreateInfo = this._vertexShader.GetPipelineCreateInfo();

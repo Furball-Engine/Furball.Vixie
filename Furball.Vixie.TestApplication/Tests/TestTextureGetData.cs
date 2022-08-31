@@ -27,7 +27,7 @@ public class TestTextureGetData : GameComponent {
     public override void Initialize() {
         base.Initialize();
 
-        byte[] origData = ResourceHelpers.GetByteResource("Resources/pippidonclear0.png");
+        byte[] origData = ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame));
 
         Configuration config = Configuration.Default;
         config.PreferContiguousImageBuffers = true;
@@ -50,7 +50,7 @@ public class TestTextureGetData : GameComponent {
                 this._testPassed = false;
         }
         
-        this._defaultFont.AddFont(ResourceHelpers.GetByteResource("Resources/font.ttf"));
+        this._defaultFont.AddFont(ResourceHelpers.GetByteResource("Resources/font.ttf", typeof(TestGame)));
         this._font = this._defaultFont.GetFont(48);
 
         this._renderer = GraphicsBackend.Current.CreateRenderer();

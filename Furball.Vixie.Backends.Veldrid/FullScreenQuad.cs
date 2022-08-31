@@ -27,7 +27,7 @@ internal class FullScreenQuad {
             
         ResourceLayout resourceLayout = backend.ResourceFactory.CreateResourceLayout(new ResourceLayoutDescription(new ResourceLayoutElementDescription("SourceTexture", ResourceKind.TextureReadOnly, ShaderStages.Fragment), new ResourceLayoutElementDescription("SourceSampler", ResourceKind.Sampler, ShaderStages.Fragment)));
 
-        Shader[] shaders = this._backend.ResourceFactory.CreateFromSpirv(new ShaderDescription(ShaderStages.Vertex, ResourceHelpers.GetByteResource("Shaders/FullScreenQuad/VertexShader.glsl", false), "main"), new ShaderDescription(ShaderStages.Fragment, ResourceHelpers.GetByteResource("Shaders/FullScreenQuad/FragmentShader.glsl", false), "main"));
+        Shader[] shaders = this._backend.ResourceFactory.CreateFromSpirv(new ShaderDescription(ShaderStages.Vertex, ResourceHelpers.GetByteResource("Shaders/FullScreenQuad/VertexShader.glsl", typeof(VeldridBackend)), "main"), new ShaderDescription(ShaderStages.Fragment, ResourceHelpers.GetByteResource("Shaders/FullScreenQuad/FragmentShader.glsl", typeof(VeldridBackend)), "main"));
 
         GraphicsPipelineDescription pd = new GraphicsPipelineDescription(
             new BlendStateDescription(RgbaFloat.Black, BlendAttachmentDescription.OverrideBlend),

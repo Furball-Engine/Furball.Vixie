@@ -22,7 +22,7 @@ public class TestRenderTargets : GameComponent {
         this._quadRenderer = GraphicsBackend.Current.CreateRenderer();
             
         this._whitePixel = Texture.CreateWhitePixelTexture();
-        this._don = Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
+        this._don = Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
 
         base.Initialize();
     }

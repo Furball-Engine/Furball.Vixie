@@ -17,8 +17,8 @@ public class TestMultipleTextures : GameComponent {
     public override void Initialize() {
         for (int i = 0; i != this._textures.Length; i++) {
             if (i % 2 == 0 && i != 0)
-                this._textures[i]  = Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
-            else this._textures[i] = Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/test.qoi"));
+                this._textures[i]  = Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
+            else this._textures[i] = Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/test.qoi", typeof(TestGame)));
         }
 
         this._renderer = GraphicsBackend.Current.CreateRenderer();

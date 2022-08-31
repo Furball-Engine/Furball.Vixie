@@ -71,8 +71,8 @@ public class Direct3D11Renderer : Renderer {
         this._deviceContext = backend.GetDeviceContext();
         this._device        = backend.GetDevice();
         
-        byte[] vertexShaderData = ResourceHelpers.GetByteResource("Shaders/VertexShader.obj");
-        byte[] pixelShaderData  = ResourceHelpers.GetByteResource("Shaders/PixelShader.obj");
+        byte[] vertexShaderData = ResourceHelpers.GetByteResource("Shaders/VertexShader.obj", typeof(Direct3D11Backend));
+        byte[] pixelShaderData  = ResourceHelpers.GetByteResource("Shaders/PixelShader.obj", typeof(Direct3D11Backend));
         
         //Safety checks for shader data
         Guard.EnsureNonNull(vertexShaderData, "vertexShaderData");

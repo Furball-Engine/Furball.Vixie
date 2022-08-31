@@ -285,7 +285,7 @@ public class OpenGLBackend : IGraphicsBackend, IGLBasedBackend {
     }
     private void CreateShaders() {
         this.Shader = new ShaderGL(this);
-        this.Shader.AttachShader(ShaderType.VertexShader, ResourceHelpers.GetStringResource("Shaders/VertexShader.glsl"));
+        this.Shader.AttachShader(ShaderType.VertexShader, ResourceHelpers.GetStringResource("Shaders/VertexShader.glsl", typeof(OpenGLBackend)));
         this.Shader.AttachShader(ShaderType.FragmentShader, RendererShaderGenerator.GetFragment(this));
         this.Shader.Link();
 

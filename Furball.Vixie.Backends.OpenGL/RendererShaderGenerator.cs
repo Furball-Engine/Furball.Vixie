@@ -6,7 +6,7 @@ namespace Furball.Vixie.Backends.OpenGL;
 
 public static class RendererShaderGenerator {
     public static string GetFragment(IGraphicsBackend backend) {
-        string orig = ResourceHelpers.GetStringResource("Shaders/FragmentShader.glsl");
+        string orig = ResourceHelpers.GetStringResource("Shaders/FragmentShader.glsl", typeof(OpenGLBackend));
 
         StringBuilder uniformBuilder = new();
         StringBuilder ifBuilder      = new();

@@ -20,7 +20,7 @@ public unsafe class TestNewRenderer : GameComponent {
 
     public override void Initialize() {
         this._texture =
-            Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
+            Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
         this._whitePixel = Texture.CreateWhitePixelTexture();
 
         // this._textureArr = new Texture[64];

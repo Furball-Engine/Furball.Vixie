@@ -17,7 +17,7 @@ public class TestQuadRendering : GameComponent {
         this._renderer = GraphicsBackend.Current.CreateRenderer();
 
         //Load the Texture
-        this._texture = Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
+        this._texture = Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
 
         base.Initialize();
     }

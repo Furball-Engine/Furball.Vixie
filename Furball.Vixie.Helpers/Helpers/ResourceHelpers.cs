@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Reflection;
 using System.Text;
@@ -31,8 +32,8 @@ public static class ResourceHelpers {
     /// <param name="path">Path to Resource</param>
     /// <param name="vixieResource">Is it a resource from Vixie?</param>
     /// <returns>String with the resource</returns>
-    public static string GetStringResource(string path, bool vixieResource = false) {
-        Assembly assembly   = vixieResource ? Assembly.GetExecutingAssembly() : Assembly.GetCallingAssembly();
+    public static string GetStringResource(string path, Type type) {
+        Assembly assembly = Assembly.GetAssembly(type);
         string   actualName = assembly.GetName().Name + "." + path.Replace("/", ".");
 
         using Stream? resStream = assembly.GetManifestResourceStream(actualName);
@@ -50,8 +51,8 @@ public static class ResourceHelpers {
     /// <param name="path">Path to Resource</param>
     /// <param name="vixieResource">Is it a resource from Vixie?</param>
     /// <returns>String with the resource</returns>
-    public static byte[] GetByteResource(string path, bool vixieResource = false) {
-        Assembly assembly   = vixieResource ? Assembly.GetExecutingAssembly() : Assembly.GetCallingAssembly();
+    public static byte[] GetByteResource(string path, Type type) {
+        Assembly assembly   = Assembly.GetAssembly(type);
         string   actualName = assembly.GetName().Name + "." + path.Replace("/", ".");
 
         using Stream? resStream = assembly.GetManifestResourceStream(actualName);
