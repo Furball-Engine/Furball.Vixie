@@ -6,7 +6,7 @@ using Furball.Vixie.Backends.Shared.Renderers;
 namespace Furball.Vixie.Backends.Shared.FontStashSharp; 
 
 public class VixieFontStashRenderer : IFontStashRenderer2 {
-    internal Renderer Renderer;
+    internal readonly Renderer Renderer;
     public VixieFontStashRenderer(IGraphicsBackend backend, Renderer renderer) {
         this.Renderer      = renderer;
         this.TextureManager = new VixieTexture2dManager(backend);
