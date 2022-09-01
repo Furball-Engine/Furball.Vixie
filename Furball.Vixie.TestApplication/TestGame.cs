@@ -40,7 +40,11 @@ public class TestGame : Game {
             
         this.Run(options, backend);
     }
-        
+
+    public new void RunHeadless() {
+        base.RunHeadless();
+    }
+
     protected override void Draw(double deltaTime) {
 #if USE_IMGUI
         ImGui.Begin("Global Controls");

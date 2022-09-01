@@ -470,8 +470,8 @@ public class ImGuiControllerD3D11 : IDisposable {
     #endregion
 
     private void CreateObjects() {
-        byte[] vertexShaderData = ResourceHelpers.GetByteResource("Shaders/Compiled/ImGuiController/VertexShader.dxc");
-        byte[] pixelShaderData  = ResourceHelpers.GetByteResource("Shaders/Compiled/ImGuiController/PixelShader.dxc");
+        byte[] vertexShaderData = ResourceHelpers.GetByteResource("Shaders/Compiled/ImGuiController/VertexShader.dxc", typeof(Direct3D11Backend));
+        byte[] pixelShaderData  = ResourceHelpers.GetByteResource("Shaders/Compiled/ImGuiController/PixelShader.dxc", typeof(Direct3D11Backend));
 
         ID3D11VertexShader vertexShader = this._device.CreateVertexShader(vertexShaderData);
         ID3D11PixelShader  pixelShader  = this._device.CreatePixelShader(pixelShaderData);

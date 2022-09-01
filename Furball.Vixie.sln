@@ -26,6 +26,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Furball.Vixie.Backends.Open
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Furball.Vixie.Backends.Dummy", "Furball.Vixie.Backends.Dummy\Furball.Vixie.Backends.Dummy.csproj", "{F5B8333B-11DB-43F4-8372-6599A53282F7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Furball.Vixie.TestApplication.Headless", "Furball.Vixie.TestApplication.Headless\Furball.Vixie.TestApplication.Headless.csproj", "{1173DA09-C512-4218-9B49-E390FD2769F9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -105,6 +107,12 @@ Global
 		{F5B8333B-11DB-43F4-8372-6599A53282F7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F5B8333B-11DB-43F4-8372-6599A53282F7}.DebugWithGL|Any CPU.ActiveCfg = Debug|Any CPU
 		{F5B8333B-11DB-43F4-8372-6599A53282F7}.DebugWithGL|Any CPU.Build.0 = Debug|Any CPU
+		{1173DA09-C512-4218-9B49-E390FD2769F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1173DA09-C512-4218-9B49-E390FD2769F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1173DA09-C512-4218-9B49-E390FD2769F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1173DA09-C512-4218-9B49-E390FD2769F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1173DA09-C512-4218-9B49-E390FD2769F9}.DebugWithGL|Any CPU.ActiveCfg = Debug|Any CPU
+		{1173DA09-C512-4218-9B49-E390FD2769F9}.DebugWithGL|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{61E80C93-3ACB-4576-8B0C-F7FD016959C9} = {50CF14F8-1B19-4836-8967-CDC52EC11CE3}

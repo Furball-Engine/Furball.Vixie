@@ -10,7 +10,7 @@ internal class LoggerLevelDummy : LoggerLevel {
     private LoggerLevelDummy(Channel channel) {
         base.Channel = channel.ToString();
     }
-    public override string Name => "OpenGL";
+    public override string Name => "Dummy";
 
     private new enum Channel {
         Error,

@@ -5,6 +5,7 @@ using Furball.Vixie.Helpers;
 using Kettu;
 using Silk.NET.Input;
 using Silk.NET.Maths;
+using Silk.NET.Vulkan;
 using Silk.NET.Windowing;
 
 namespace Furball.Vixie; 
@@ -45,7 +46,9 @@ public abstract class Game : IDisposable {
         Global.AlreadyInitialized = true;
     }
 
-    private void RunInternal(WindowOptions options, Backend backend, bool requestViewOnly) {
+    private void RunInternal(WindowOptions options, Backend backend, EventLoop eventLoop, bool requestViewOnly) {
+        this._eventLoop = eventLoop;
+        
         try {
             Backends.Shared.Global.LatestSupportedGL = OpenGLDetector.OpenGLDetector.GetLatestSupported();
         }
@@ -59,13 +62,16 @@ public abstract class Game : IDisposable {
         if (backend == Backend.None)
             backend = GraphicsBackend.GetReccomendedBackend();
 
-        this.WindowManager = new WindowManager(options, backend);
-        
-        this.WindowManager.RequestViewOnly = requestViewOnly;
-        
-        this.WindowManager.Initialize();
-        
-        this.WindowManager.Create();
+        if(eventLoop is ViewEventLoop viewEventLoop) {
+            this.WindowManager          = new WindowManager(options, backend);
+            viewEventLoop.WindowManager = this.WindowManager;
+            
+            this.WindowManager.RequestViewOnly = requestViewOnly;
+
+            this.WindowManager.Initialize();
+
+            this.WindowManager.Create();
+        }
 
         this.RehookEvents();
             
@@ -77,10 +83,10 @@ public abstract class Game : IDisposable {
             
         Logger.StartLogging();
             
-        this.WindowManager.RunWindow();
+        eventLoop.Run();
         
         while(this._isRecreated)
-            this.WindowManager.RunWindow();
+            eventLoop.Run();
     }
     
     public void RecreateWindow() {
@@ -88,65 +94,87 @@ public abstract class Game : IDisposable {
     }
 
     private void RehookEvents() {
-        this.WindowManager.GameView.Update            += this.VixieUpdate;
-        this.WindowManager.GameView.Render            += this.VixieDraw;
-        this.WindowManager.GameView.Closing           += this.RendererOnClosing;
-        this.WindowManager.GameView.FocusChanged      += this.EngineOnFocusChanged;
-        this.WindowManager.GameView.FramebufferResize += this.EngineFrameBufferResize;
-        this.WindowManager.GameView.Resize            += this.EngineViewResize;
-        this.WindowManager.GameView.Load              += this.RendererInitialize;
-        
-        if(!this.WindowManager.ViewOnly) {
-            this.WindowManager.GameWindow.FileDrop     += this.OnFileDrop;
-            this.WindowManager.GameWindow.Move         += this.OnViewMove;
-            this.WindowManager.GameWindow.StateChanged += this.EngineOnViewStateChange;
+        this._eventLoop.Start   += this.RendererInitialize;
+        this._eventLoop.Closing += this.RendererOnClosing;
+        this._eventLoop.Update  += this.VixieUpdate;
+        this._eventLoop.Draw    += this.VixieDraw;
+
+        if(this._eventLoop is ViewEventLoop) {
+            this.WindowManager.GameView.FocusChanged      += this.EngineOnFocusChanged;
+            this.WindowManager.GameView.FramebufferResize += this.EngineFrameBufferResize;
+            this.WindowManager.GameView.Resize            += this.EngineViewResize;
+
+            if (!this.WindowManager.ViewOnly) {
+                this.WindowManager.GameWindow.FileDrop     += this.OnFileDrop;
+                this.WindowManager.GameWindow.Move         += this.OnViewMove;
+                this.WindowManager.GameWindow.StateChanged += this.EngineOnViewStateChange;
+            }
         }
     }
     
     private void UnhookEvents() {
-        this.WindowManager.GameView.Update            -= this.VixieUpdate;
-        this.WindowManager.GameView.Render            -= this.VixieDraw;
-        this.WindowManager.GameView.Closing           -= this.RendererOnClosing;
-        this.WindowManager.GameView.FocusChanged      -= this.EngineOnFocusChanged;
-        this.WindowManager.GameView.FramebufferResize -= this.EngineFrameBufferResize;
-        this.WindowManager.GameView.Resize            -= this.EngineViewResize;
-        this.WindowManager.GameView.Load              -= this.RendererInitialize;
-        
-        if(!this.WindowManager.ViewOnly) {
-            this.WindowManager.GameWindow.FileDrop     -= this.OnFileDrop;
-            this.WindowManager.GameWindow.Move         -= this.OnViewMove;
-            this.WindowManager.GameWindow.StateChanged -= this.EngineOnViewStateChange;
+        this._eventLoop.Start   -= this.RendererInitialize;
+        this._eventLoop.Closing -= this.RendererOnClosing;
+        this._eventLoop.Update  -= this.VixieUpdate;
+        this._eventLoop.Draw    -= this.VixieDraw;
+
+        if(this._eventLoop is ViewEventLoop) {
+            this.WindowManager.GameView.FocusChanged      -= this.EngineOnFocusChanged;
+            this.WindowManager.GameView.FramebufferResize -= this.EngineFrameBufferResize;
+            this.WindowManager.GameView.Resize            -= this.EngineViewResize;
+
+            if (!this.WindowManager.ViewOnly) {
+                this.WindowManager.GameWindow.FileDrop     -= this.OnFileDrop;
+                this.WindowManager.GameWindow.Move         -= this.OnViewMove;
+                this.WindowManager.GameWindow.StateChanged -= this.EngineOnViewStateChange;
+            }
         }
     }
 
     protected virtual void OnWindowRecreation() {}
     
     protected void RunViewOnly(WindowOptions options, Backend backend = Backend.None) {
-        this.RunInternal(options, backend, true);
+        this.RunInternal(options, backend, new ViewEventLoop(), true);
     }
         
     /// <summary>
     /// Runs the Game
     /// </summary>
     protected void Run(WindowOptions options, Backend backend = Backend.None) {
-        this.RunInternal(options, backend, false);
+        this.RunInternal(options, backend, new ViewEventLoop(), false);
+    }
+
+    protected void RunHeadless() {
+        //TODO: dont always choose `Dummy` backend, Vulkan can work without a window, this may be useful for CI/Automated testing
+        this.RunInternal(WindowOptions.Default, Backend.Dummy, new HeadlessEventLoop(), false);
     }
 
     #region Renderer Actions
     /// <summary>
     /// Used to Initialize the Renderer and stuff,
     /// </summary>
-    private void RendererInitialize() {
-        this._inputContext = this.WindowManager.GameView.CreateInput();
+    private void RendererInitialize(object sender, EventArgs eventArgs) {
+        if(this._eventLoop is ViewEventLoop) {
+            this._inputContext = this.WindowManager.GameView.CreateInput();
 
-        this.WindowManager.InputContext = this._inputContext;
-        this.WindowManager.SetupGraphicsApi();
+            this.WindowManager.InputContext = this._inputContext;
+            this.WindowManager.SetupGraphicsApi();
 
-        Global.WindowManager = this.WindowManager;
+            Global.WindowManager = this.WindowManager;
+        }
+        else {
+            //todo: support other backends headless
+            GraphicsBackend.SetBackend(Backend.Dummy);
+            Global.GameInstance.SetApiFeatureLevels();
+            GraphicsBackend.Current.SetMainThread();
+            GraphicsBackend.Current.Initialize(null, null);
+
+            GraphicsBackend.Current.HandleFramebufferResize(1280, 720);
+        }
 
         if(!this._isRecreated) {
             this._doDisplayLoadingScreen = true;
-            Global.WindowManager.GameView.DoRender();
+            this._eventLoop.DoDraw();
         }
 
         if(!this._isRecreated)
@@ -185,7 +213,7 @@ public abstract class Game : IDisposable {
     /// <summary>
     /// Gets Fired when the Window Gets Closed
     /// </summary>
-    private void RendererOnClosing() {
+    private void RendererOnClosing(object sender, EventArgs eventArgs) {
         this.OnClosing();
     }
     /// <summary>
@@ -244,8 +272,11 @@ public abstract class Game : IDisposable {
     /// </summary>
     public virtual void SetApiFeatureLevels() {}
     private double _trackedDelta = 0;
-    private void VixieUpdate(double deltaTime) {
+    private void VixieUpdate(object sender, double deltaTime) {
         if (this._recreateQueued) {
+            if(this._eventLoop is HeadlessEventLoop)
+                Guard.Fail("Window recreation is not save on the headless event loop");
+            
             this._recreateQueued = false;
             
             //Unhook the closing event
@@ -298,8 +329,13 @@ public abstract class Game : IDisposable {
 
         DisposeQueue.DoDispose();
 
+        this.CheckForInvalidTrackerResourceReferences(deltaTime);
+    }
+    
+    [Conditional("DEBUG")]
+    private void CheckForInvalidTrackerResourceReferences(double deltaTime) {
         this._trackedDelta += deltaTime;
-        if (this._trackedDelta > 5 && this.WindowManager.Debug) {
+        if (this._trackedDelta > 5) {
             Global.TRACKED_TEXTURES.RemoveAll(x => !x.TryGetTarget(out _));
             Global.TRACKED_RENDER_TARGETS.RemoveAll(x => !x.TryGetTarget(out _));
 
@@ -307,7 +343,8 @@ public abstract class Game : IDisposable {
         }
     }
 
-    private readonly Stopwatch _stopwatch          = new();
+    private readonly Stopwatch _stopwatch = new();
+    private          EventLoop _eventLoop;
 #if USE_IMGUI
     private          bool      _isFirstImguiUpdate = true;
     private          double    _lastImguiDrawTime;
@@ -317,7 +354,7 @@ public abstract class Game : IDisposable {
     /// Sets up and ends the scene
     /// </summary>
     /// <param name="deltaTime"></param>
-    private void VixieDraw(double deltaTime) {
+    private void VixieDraw(object _, double deltaTime) {
         GraphicsBackend.Current.BeginScene();
 
         if (this._doDisplayLoadingScreen) {

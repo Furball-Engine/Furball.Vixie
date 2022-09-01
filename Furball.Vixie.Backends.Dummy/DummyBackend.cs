@@ -3,6 +3,7 @@ using System.IO;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.Renderers;
+using Furball.Vixie.Helpers;
 using Kettu;
 using Silk.NET.Input;
 using Silk.NET.Windowing;
@@ -17,7 +18,7 @@ public class DummyBackend : IGraphicsBackend {
 #endif
     public override void Initialize(IView view, IInputContext inputContext) {
 #if USE_IMGUI
-        throw new NotImplementedException("ImGui is currently broken on the Dummy backend! please disable ImGui!");
+        Guard.Fail("ImGui is currently broken on the Dummy backend! Please disable ImGui in `Directory.Build.props`!");
         this._imgui = new DummyImGuiController(view, inputContext);
         this._imgui.Initialize();
 #endif
