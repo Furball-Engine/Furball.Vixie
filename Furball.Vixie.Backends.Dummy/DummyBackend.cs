@@ -34,8 +34,7 @@ public class DummyBackend : IGraphicsBackend {
         // throw new System.NotImplementedException();
     }
     public override Renderer CreateRenderer() {
-        Logger.Log("Creating dummy texture!", LoggerLevelDummy.InstanceInfo);
-        return new DummyRenderer();
+        return new DummyRenderer(this);
     }
     public override int QueryMaxTextureUnits() {
         return 1;
@@ -54,13 +53,10 @@ public class DummyBackend : IGraphicsBackend {
         // throw new System.NotImplementedException();
     }
     public override VixieTextureRenderTarget CreateRenderTarget(uint width, uint height) {
-        Logger.Log("Creating dummy TextureRenderTarget!", LoggerLevelDummy.InstanceInfo);
-
         return new DummyTextureRenderTarget((int)width, (int)height);
     }
     public override VixieTexture CreateTextureFromByteArray(byte[]            imageData,
                                                             TextureParameters parameters = default) {
-        Logger.Log("Creating dummy Texture!", LoggerLevelDummy.InstanceInfo);
         Image image;
         bool qoi = imageData.Length > 3 && imageData[0] == 'q' && imageData[1] == 'o' && imageData[2] == 'i' &&
                    imageData[3]     == 'f';
@@ -79,7 +75,6 @@ public class DummyBackend : IGraphicsBackend {
         return new DummyTexture(width, height);
     }
     public override VixieTexture CreateTextureFromStream(Stream stream, TextureParameters parameters = default) {
-        Logger.Log("Creating dummy Texture!", LoggerLevelDummy.InstanceInfo);
         Image image  = Image.Load(stream);
         int   width  = image.Width;
         int   height = image.Height;
@@ -88,11 +83,9 @@ public class DummyBackend : IGraphicsBackend {
     }
     public override VixieTexture
         CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default) {
-        Logger.Log("Creating dummy Texture!", LoggerLevelDummy.InstanceInfo);
         return new DummyTexture((int)width, (int)height);
     }
     public override VixieTexture CreateWhitePixelTexture() {
-        Logger.Log("Creating dummy Texture!", LoggerLevelDummy.InstanceInfo);
         return new DummyTexture(1, 1);
     }
 #if USE_IMGUI

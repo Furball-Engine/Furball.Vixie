@@ -47,7 +47,7 @@ public abstract class Game : IDisposable {
     }
 
     private void RunInternal(WindowOptions options, Backend backend, EventLoop eventLoop, bool requestViewOnly) {
-        this._eventLoop = eventLoop;
+        this.EventLoop = eventLoop;
         
         try {
             Backends.Shared.Global.LatestSupportedGL = OpenGLDetector.OpenGLDetector.GetLatestSupported();
@@ -62,8 +62,8 @@ public abstract class Game : IDisposable {
         if (backend == Backend.None)
             backend = GraphicsBackend.GetReccomendedBackend();
 
+        this.WindowManager = new WindowManager(options, backend);
         if(eventLoop is ViewEventLoop viewEventLoop) {
-            this.WindowManager          = new WindowManager(options, backend);
             viewEventLoop.WindowManager = this.WindowManager;
             
             this.WindowManager.RequestViewOnly = requestViewOnly;
@@ -94,12 +94,12 @@ public abstract class Game : IDisposable {
     }
 
     private void RehookEvents() {
-        this._eventLoop.Start   += this.RendererInitialize;
-        this._eventLoop.Closing += this.RendererOnClosing;
-        this._eventLoop.Update  += this.VixieUpdate;
-        this._eventLoop.Draw    += this.VixieDraw;
+        this.EventLoop.Start   += this.RendererInitialize;
+        this.EventLoop.Closing += this.RendererOnClosing;
+        this.EventLoop.Update  += this.VixieUpdate;
+        this.EventLoop.Draw    += this.VixieDraw;
 
-        if(this._eventLoop is ViewEventLoop) {
+        if(this.EventLoop is ViewEventLoop) {
             this.WindowManager.GameView.FocusChanged      += this.EngineOnFocusChanged;
             this.WindowManager.GameView.FramebufferResize += this.EngineFrameBufferResize;
             this.WindowManager.GameView.Resize            += this.EngineViewResize;
@@ -113,12 +113,12 @@ public abstract class Game : IDisposable {
     }
     
     private void UnhookEvents() {
-        this._eventLoop.Start   -= this.RendererInitialize;
-        this._eventLoop.Closing -= this.RendererOnClosing;
-        this._eventLoop.Update  -= this.VixieUpdate;
-        this._eventLoop.Draw    -= this.VixieDraw;
+        this.EventLoop.Start   -= this.RendererInitialize;
+        this.EventLoop.Closing -= this.RendererOnClosing;
+        this.EventLoop.Update  -= this.VixieUpdate;
+        this.EventLoop.Draw    -= this.VixieDraw;
 
-        if(this._eventLoop is ViewEventLoop) {
+        if(this.EventLoop is ViewEventLoop) {
             this.WindowManager.GameView.FocusChanged      -= this.EngineOnFocusChanged;
             this.WindowManager.GameView.FramebufferResize -= this.EngineFrameBufferResize;
             this.WindowManager.GameView.Resize            -= this.EngineViewResize;
@@ -154,7 +154,7 @@ public abstract class Game : IDisposable {
     /// Used to Initialize the Renderer and stuff,
     /// </summary>
     private void RendererInitialize(object sender, EventArgs eventArgs) {
-        if(this._eventLoop is ViewEventLoop) {
+        if(this.EventLoop is ViewEventLoop) {
             this._inputContext = this.WindowManager.GameView.CreateInput();
 
             this.WindowManager.InputContext = this._inputContext;
@@ -174,7 +174,7 @@ public abstract class Game : IDisposable {
 
         if(!this._isRecreated) {
             this._doDisplayLoadingScreen = true;
-            this._eventLoop.DoDraw();
+            this.EventLoop.DoDraw();
         }
 
         if(!this._isRecreated)
@@ -274,7 +274,7 @@ public abstract class Game : IDisposable {
     private double _trackedDelta = 0;
     private void VixieUpdate(object sender, double deltaTime) {
         if (this._recreateQueued) {
-            if(this._eventLoop is HeadlessEventLoop)
+            if(this.EventLoop is HeadlessEventLoop)
                 Guard.Fail("Window recreation is not save on the headless event loop");
             
             this._recreateQueued = false;
@@ -343,8 +343,8 @@ public abstract class Game : IDisposable {
         }
     }
 
-    private readonly Stopwatch _stopwatch = new();
-    private          EventLoop _eventLoop;
+    private readonly   Stopwatch _stopwatch = new();
+    protected internal EventLoop EventLoop;
 #if USE_IMGUI
     private          bool      _isFirstImguiUpdate = true;
     private          double    _lastImguiDrawTime;

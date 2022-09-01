@@ -1,12 +1,19 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.Shared;
+using Furball.Vixie.Backends.Shared.FontStashSharp;
 using Furball.Vixie.Backends.Shared.Renderers;
+using Kettu;
 
 namespace Furball.Vixie.Backends.Dummy;
 
 public class DummyRenderer : Renderer {
     private unsafe void* _dataHandle;
+    public DummyRenderer(DummyBackend backend) {
+        this.FontRenderer = new VixieFontStashRenderer(backend, this);
+        
+        Logger.Log("Creating Dummy renderer!", LoggerLevelDummy.InstanceInfo);
+    }
     public override unsafe void Begin() {
         // throw new System.NotImplementedException();
         this._dataHandle = (void*)Marshal.AllocHGlobal(sizeof(Vertex) * 4 * 128);

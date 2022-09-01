@@ -1,4 +1,5 @@
 ﻿using Furball.Vixie.Backends.Shared;
+using Kettu;
 using Silk.NET.Maths;
 
 namespace Furball.Vixie.Backends.Dummy;
@@ -6,6 +7,7 @@ namespace Furball.Vixie.Backends.Dummy;
 public class DummyTextureRenderTarget : VixieTextureRenderTarget {
     public DummyTextureRenderTarget(int w, int h) {
         this.Size = new Vector2D<int>(w, h);
+        Logger.Log($"Creating Dummy texture({w}x{h})", LoggerLevelDummy.InstanceInfo);
     }
     public sealed override Vector2D<int> Size {
         get;
