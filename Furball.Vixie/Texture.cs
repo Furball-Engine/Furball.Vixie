@@ -15,56 +15,10 @@ using Rectangle = System.Drawing.Rectangle;
 
 namespace Furball.Vixie; 
 
-public class Texture : IDisposable /* , IRenderable */ {
+public class Texture : IDisposable {
     public string Name = "";
 
     private VixieTexture _texture;
-
-    // public void Draw(IFontStashRenderer renderer, Vector2 position, Color color, Vector2 scale, float rotation, float layerDepth) {
-    //     renderer.Draw(this._texture, position, null, color, rotation, scale, layerDepth);
-    // }
-    // public void Draw(IFontStashRenderer2 renderer, Vector2 position, Color color, Vector2 scale, float rotation, float layerDepth) {
-    //     VertexPositionColorTexture topLeft = new();
-    //     VertexPositionColorTexture topRight = new();
-    //     VertexPositionColorTexture bottomLeft = new();
-    //     VertexPositionColorTexture bottomRight = new();
-    //
-    //     Vector2 size = new Vector2(this.Size.X, this.Size.Y) * scale;
-    //
-    //     topRight.Position.X    = size.X;
-    //     
-    //     bottomLeft.Position.Y  = size.Y;
-    //     
-    //     bottomRight.Position.X = size.X;
-    //     bottomRight.Position.Y = size.Y;
-    //     
-    //     Matrix4x4 rotMat = Matrix4x4.CreateRotationZ(rotation);
-    //
-    //     topLeft.Position = Vector3.Transform(topLeft.Position, rotMat);
-    //     topRight.Position = Vector3.Transform(topRight.Position, rotMat);
-    //     bottomLeft.Position = Vector3.Transform(bottomLeft.Position, rotMat);
-    //     bottomRight.Position = Vector3.Transform(bottomRight.Position, rotMat);
-    //
-    //     topLeft.Position.X += position.X;
-    //     topLeft.Position.Y += position.Y;
-    //
-    //     topRight.Position.X += position.X;
-    //     topRight.Position.Y += position.Y;
-    //
-    //     bottomLeft.Position.X += position.X;
-    //     bottomLeft.Position.Y += position.Y;
-    //
-    //     bottomRight.Position.X += position.X;
-    //     bottomRight.Position.Y += position.Y;
-    //
-    //     // bottomRight.Color ;
-    //
-    //     renderer.DrawQuad(this._texture, ref topLeft, ref topRight, ref bottomLeft, ref bottomRight);
-    // }
-    //
-    // Point IRenderable.Size {
-    //     get => this._size;
-    // }
 
     public Vector2D<int> Size {
         get;
