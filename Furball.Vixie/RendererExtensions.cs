@@ -219,7 +219,7 @@ public static class RendererExtensions {
         Guard.EnsureNonNull(renderer.FontRenderer, "renderer.FontRenderer");
 
         font.DrawText(renderer.FontRenderer, text, position,
-                      System.Drawing.Color.FromArgb(color.A, color.R, color.G, color.B),
+                      color,
                       scale, rotation, origin);
     }
     public static void DrawString(this Renderer renderer, DynamicSpriteFont font, string text, Vector2 position,
@@ -227,10 +227,10 @@ public static class RendererExtensions {
         Guard.EnsureNonNull(renderer.FontRenderer, "renderer.FontRenderer");
 
         font.DrawText(renderer.FontRenderer, text, position,
-                      System.Drawing.Color.FromArgb(color.A, color.R, color.G, color.B));
+                      color);
     }
     public static void DrawString(this Renderer renderer, DynamicSpriteFont font, string text, Vector2 position,
-                                  System.Drawing.Color[] colors, float rotation, Vector2? scale, Vector2 origin) {
+                                  FSColor[] colors, float rotation, Vector2? scale, Vector2 origin) {
         Guard.EnsureNonNull(renderer.FontRenderer, "renderer.FontRenderer");
 
         font.DrawText(renderer.FontRenderer, text, position, colors, scale, rotation, origin);

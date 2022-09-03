@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.Contracts;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using FontStashSharp;
 using Newtonsoft.Json;
 using SixLabors.ImageSharp.PixelFormats;
 
@@ -214,7 +215,9 @@ public struct Color {
     public static bool operator !=(Color a, Color b) => !a.Equals(b);
 
     public static implicit operator System.Drawing.Color(Color c) => System.Drawing.Color.FromArgb(c.A, c.R, c.B, c.G); 
-    public static implicit operator Color(System.Drawing.Color c) => new(c.R, c.G, c.B, c.A); 
+    public static implicit operator Color(System.Drawing.Color c) => new(c.R, c.G, c.B, c.A);
+    public static implicit operator FSColor(Color color) => new(color.Rf, color.Gf, color.Bf, color.Af);
+    public static implicit operator Color(FSColor color) => new(color.R, color.G, color.B, color.A);
 
     public override string ToString() => $"R: {this.R}; G: {this.G}; B: {this.B}; A: {this.A}";
 }

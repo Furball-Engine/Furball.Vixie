@@ -21,10 +21,10 @@ public class VixieFontStashRenderer : IFontStashRenderer2 {
         map.VertexPtr[2].Position = new Vector2(bottomLeft.Position.X, bottomLeft.Position.Y);
         map.VertexPtr[3].Position = new Vector2(bottomRight.Position.X, bottomRight.Position.Y);
 
-        map.VertexPtr[0].Color = new Color(topLeft.Color);
-        map.VertexPtr[1].Color = new Color(topRight.Color);
-        map.VertexPtr[2].Color = new Color(bottomLeft.Color);
-        map.VertexPtr[3].Color = new Color(bottomRight.Color);
+        map.VertexPtr[0].Color = topLeft.Color;
+        map.VertexPtr[1].Color = topRight.Color;
+        map.VertexPtr[2].Color = bottomLeft.Color;
+        map.VertexPtr[3].Color = bottomRight.Color;
 
         map.VertexPtr[0].TextureCoordinate = topLeft.TextureCoordinate;
         map.VertexPtr[1].TextureCoordinate = topRight.TextureCoordinate;
