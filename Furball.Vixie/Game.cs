@@ -14,7 +14,7 @@ public abstract class Game : IDisposable {
     /// <summary>
     /// Window Input Context
     /// </summary>
-    internal IInputContext _inputContext;
+    internal IInputContext InputContext;
 
     /// <summary>
     /// Is the Window Active/Focused?
@@ -50,13 +50,13 @@ public abstract class Game : IDisposable {
         this.EventLoop = eventLoop;
         
         try {
-            Backends.Shared.Global.LatestSupportedGL = OpenGLDetector.OpenGLDetector.GetLatestSupported();
+            Backends.Shared.Global.LatestSupportedGl = OpenGLDetector.OpenGLDetector.GetLatestSupported();
         }
         catch {
             //if an error occurs detecting the OpenGL version, fallback to legacy gl
             //todo make this logic smarter
-            Backends.Shared.Global.LatestSupportedGL.GL   = new APIVersion(2, 0);
-            Backends.Shared.Global.LatestSupportedGL.GLES = new APIVersion(0, 0);
+            Backends.Shared.Global.LatestSupportedGl.GL   = new APIVersion(2, 0);
+            Backends.Shared.Global.LatestSupportedGl.GLES = new APIVersion(0, 0);
         }
 
         if (backend == Backend.None)
@@ -155,9 +155,9 @@ public abstract class Game : IDisposable {
     /// </summary>
     private void RendererInitialize(object sender, EventArgs eventArgs) {
         if(this.EventLoop is ViewEventLoop) {
-            this._inputContext = this.WindowManager.GameView.CreateInput();
+            this.InputContext = this.WindowManager.GameView.CreateInput();
 
-            this.WindowManager.InputContext = this._inputContext;
+            this.WindowManager.InputContext = this.InputContext;
             this.WindowManager.SetupGraphicsApi();
 
             Global.WindowManager = this.WindowManager;
@@ -189,14 +189,14 @@ public abstract class Game : IDisposable {
             //     }
             // }
             
-            foreach (WeakReference<Texture> texRef in Global.TRACKED_TEXTURES) {
+            foreach (WeakReference<Texture> texRef in Global.TrackedTextures) {
                 if (texRef.TryGetTarget(out Texture tex)) {
                     tex.LoadDataFromCpuToNewTexture();
                     GC.ReRegisterForFinalize(tex);
                 }
             }
             
-            foreach (WeakReference<RenderTarget> texRef in Global.TRACKED_RENDER_TARGETS) {
+            foreach (WeakReference<RenderTarget> texRef in Global.TrackedRenderTargets) {
                 if (texRef.TryGetTarget(out RenderTarget target)) {
                     target.LoadDataFromCpuToNewTexture();
                     GC.ReRegisterForFinalize(target);
@@ -291,7 +291,7 @@ public abstract class Game : IDisposable {
             //     }
             // }
             
-            foreach (WeakReference<Texture> texRef in Global.TRACKED_TEXTURES) {
+            foreach (WeakReference<Texture> texRef in Global.TrackedTextures) {
                 if (texRef.TryGetTarget(out Texture tex)) {
                     tex.SaveDataToCpu();
                     tex.DisposeInternal();
@@ -299,7 +299,7 @@ public abstract class Game : IDisposable {
                 }
             }
             
-            foreach (WeakReference<RenderTarget> targetRef in Global.TRACKED_RENDER_TARGETS) {
+            foreach (WeakReference<RenderTarget> targetRef in Global.TrackedRenderTargets) {
                 if (targetRef.TryGetTarget(out RenderTarget target)) {
                     target.SaveDataToCpu();
                     target.DisposeInternal();
@@ -336,8 +336,8 @@ public abstract class Game : IDisposable {
     private void CheckForInvalidTrackerResourceReferences(double deltaTime) {
         this._trackedDelta += deltaTime;
         if (this._trackedDelta > 5) {
-            Global.TRACKED_TEXTURES.RemoveAll(x => !x.TryGetTarget(out _));
-            Global.TRACKED_RENDER_TARGETS.RemoveAll(x => !x.TryGetTarget(out _));
+            Global.TrackedTextures.RemoveAll(x => !x.TryGetTarget(out _));
+            Global.TrackedRenderTargets.RemoveAll(x => !x.TryGetTarget(out _));
 
             this._trackedDelta = 0;
         }

@@ -9,7 +9,7 @@ namespace Furball.Vixie.Backends.Veldrid;
 internal class FullScreenQuad {
     private readonly VeldridBackend _backend;
 
-    private static ushort[] s_quadIndices = new ushort[] {
+    private static ushort[] _sQuadIndices = new ushort[] {
         0, 1, 2, 0, 2, 3
     };
         
@@ -50,8 +50,8 @@ internal class FullScreenQuad {
         this._vb = factory.CreateBuffer(new BufferDescription(verts.SizeInBytes() * sizeof(float), BufferUsage.VertexBuffer));
         cl.UpdateBuffer(this._vb, 0, verts);
 
-        this._ib = factory.CreateBuffer(new BufferDescription(s_quadIndices.SizeInBytes(), BufferUsage.IndexBuffer));
-        cl.UpdateBuffer(this._ib, 0, s_quadIndices);
+        this._ib = factory.CreateBuffer(new BufferDescription(_sQuadIndices.SizeInBytes(), BufferUsage.IndexBuffer));
+        cl.UpdateBuffer(this._ib, 0, _sQuadIndices);
     }
         
     public float[] GetFullScreenQuadVerts()

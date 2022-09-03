@@ -16,7 +16,7 @@ using Vortice.DXGI;
 using Vortice.Mathematics;
 using ComObject=SharpGen.Runtime.ComObject;
 
-namespace Furball.Vixie.Backends.Direct3D11; 
+namespace Furball.Vixie.Backends.Direct3D11;
 
 public struct ImGuiFontConfig {
     public string FontPath;
@@ -29,16 +29,14 @@ public struct ImGuiFontConfig {
 }
 
 public class ImGuiControllerD3D11 : IDisposable {
-    private ID3D11Device        _device;
-    private ID3D11DeviceContext _deviceContext;
-
     private int _windowWidth;
     private int _windowHeight;
 
-    private IView         _view;
-    private IInputContext _inputContext;
-    private IKeyboard     _keyboard;
-    private List<char>    _pressedCharacters;
+    private readonly Direct3D11Backend _backend;
+    private          IView             _view;
+    private          IInputContext     _inputContext;
+    private          IKeyboard         _keyboard;
+    private          List<char>        _pressedCharacters;
 
     private Blob                     _vertexShaderBlob;
     private Blob                     _pixelShaderBlob;
@@ -57,16 +55,17 @@ public class ImGuiControllerD3D11 : IDisposable {
     private int _vertexBufferSize;
     private int _indexBufferSize;
 
-    private Dictionary<IntPtr, ID3D11ShaderResourceView> _textureResources = new ();
+    private Dictionary<IntPtr, ID3D11ShaderResourceView> _textureResources = new();
 
     private bool _frameBegun;
 
-    public ImGuiControllerD3D11(Direct3D11Backend backend, IView view, IInputContext context, ImGuiFontConfig? fontConfig, Action onConfigureIo = null) {
-        this._device        = backend.GetDevice();
-        this._deviceContext = backend.GetDeviceContext();
-
+    public ImGuiControllerD3D11(
+        Direct3D11Backend backend, IView view, IInputContext context, ImGuiFontConfig? fontConfig,
+        Action onConfigureIo = null
+    ) {
         this._pressedCharacters = new List<char>();
 
+        this._backend      = backend;
         this._view         = view;
         this._inputContext = context;
         this._windowWidth  = this._view.FramebufferSize.X;
@@ -119,7 +118,7 @@ public class ImGuiControllerD3D11 : IDisposable {
                 CPUAccessFlags = CpuAccessFlags.Write
             };
 
-            this._vertexBuffer = this._device.CreateBuffer(vertexBufferDescription);
+            this._vertexBuffer = this._backend.Device.CreateBuffer(vertexBufferDescription);
             //this._vertexBuffer.DebugName = "ImGui Vertex Buffer";
         }
 
@@ -135,12 +134,12 @@ public class ImGuiControllerD3D11 : IDisposable {
                 CPUAccessFlags = CpuAccessFlags.Write
             };
 
-            this._indexBuffer = this._device.CreateBuffer(indexBufferDescription);
+            this._indexBuffer = this._backend.Device.CreateBuffer(indexBufferDescription);
             //this._indexBuffer.DebugName = "ImGui Index Buffer";
         }
 
-        MappedSubresource vertexResource = this._deviceContext.Map(this._vertexBuffer, 0, MapMode.WriteDiscard);
-        MappedSubresource indexResource  = this._deviceContext.Map(this._indexBuffer, 0, MapMode.WriteDiscard);
+        MappedSubresource vertexResource = this._backend.DeviceContext.Map(this._vertexBuffer, 0, MapMode.WriteDiscard);
+        MappedSubresource indexResource  = this._backend.DeviceContext.Map(this._indexBuffer,  0, MapMode.WriteDiscard);
 
         ImDrawVert* vertexResourcePointer = (ImDrawVert*)vertexResource.DataPointer;
         ushort*     indexResourcePointer  = (ushort*)indexResource.DataPointer;
@@ -158,10 +157,11 @@ public class ImGuiControllerD3D11 : IDisposable {
             indexResourcePointer  += cmdList.IdxBuffer.Size;
         }
 
-        this._deviceContext.Unmap(this._vertexBuffer, 0);
-        this._deviceContext.Unmap(this._indexBuffer, 0);
+        this._backend.DeviceContext.Unmap(this._vertexBuffer, 0);
+        this._backend.DeviceContext.Unmap(this._indexBuffer,  0);
 
-        MappedSubresource constantBufferResource = this._deviceContext.Map(this._constantBuffer, 0, MapMode.WriteDiscard);
+        MappedSubresource constantBufferResource =
+            this._backend.DeviceContext.Map(this._constantBuffer, 0, MapMode.WriteDiscard);
         Span<float> constantBufferResourceSpan = constantBufferResource.AsSpan<float>(16 * sizeof(float));
 
         float l = drawData.DisplayPos.X;
@@ -169,16 +169,14 @@ public class ImGuiControllerD3D11 : IDisposable {
         float t = drawData.DisplayPos.Y;
         float b = drawData.DisplayPos.Y + drawData.DisplaySize.Y;
 
-        float[] projectionMatrix = new [] {
-            2.0f               /(r -l),   0.0f,           0.0f,       0.0f,
-            0.0f,         2.0f /(t -b),     0.0f,       0.0f,
-            0.0f,         0.0f,           0.5f,       0.0f,
-            (r +l) /(l -r),  (t +b) /(b -t),    0.5f,       1.0f,
+        float[] projectionMatrix = new[] {
+            2.0f / (r - l), 0.0f, 0.0f, 0.0f, 0.0f, 2.0f / (t - b), 0.0f, 0.0f, 0.0f, 0.0f, 0.5f, 0.0f,
+            (r + l) / (l - r), (t + b) / (b - t), 0.5f, 1.0f,
         };
 
         projectionMatrix.CopyTo(constantBufferResourceSpan);
 
-        this._deviceContext.Unmap(this._constantBuffer, 0);
+        this._backend.DeviceContext.Unmap(this._constantBuffer, 0);
 
         #region Save Render State
 
@@ -198,29 +196,57 @@ public class ImGuiControllerD3D11 : IDisposable {
         int[]                      oldVertexBufferStrides         = new int[1];
         int[]                      oldVertexBufferOffsets         = new int[1];
 
-        this._deviceContext.RSGetScissorRects(ref oldNumScissorRects, oldScissorRectangles);
-        this._deviceContext.RSGetViewport(ref oldViewport);
-        ID3D11RasterizerState oldRasterizerState = this._deviceContext.RSGetState();
+        this._backend.DeviceContext.RSGetScissorRects(ref oldNumScissorRects, oldScissorRectangles);
+        this._backend.DeviceContext.RSGetViewport(ref oldViewport);
+        ID3D11RasterizerState oldRasterizerState = this._backend.DeviceContext.RSGetState();
 
-        ID3D11BlendState oldBlendState = this._deviceContext.OMGetBlendState(out Color4 oldBlendFactor, out int oldSampleMask);
+        ID3D11BlendState oldBlendState = this._backend.DeviceContext.OMGetBlendState(
+        out Color4 oldBlendFactor,
+        out int oldSampleMask
+        );
 
-        this._deviceContext.OMGetDepthStencilState(out ID3D11DepthStencilState oldDepthStencilState, out int oldStencilRef);
+        this._backend.DeviceContext.OMGetDepthStencilState(
+        out ID3D11DepthStencilState oldDepthStencilState,
+        out int oldStencilRef
+        );
 
-        this._deviceContext.PSGetShaderResources(0, 1, oldShaderResourceViews);
-        this._deviceContext.PSGetSamplers(0, 1, oldSamplerStates);
+        this._backend.DeviceContext.PSGetShaderResources(0, 1, oldShaderResourceViews);
+        this._backend.DeviceContext.PSGetSamplers(0, 1, oldSamplerStates);
 
         oldPixelShaderInstancesCount = oldVertexShaderInstancesCount = oldGeometryShaderInstancesCount = 256;
 
-        this._deviceContext.PSGetShader(out ID3D11PixelShader oldPixelShader, oldPixelShaderInstances, ref oldPixelShaderInstancesCount);
-        this._deviceContext.VSGetShader(out ID3D11VertexShader oldVertexShader, oldVertexShaderInstances, ref oldVertexShaderInstancesCount);
-        this._deviceContext.GSGetShader(out ID3D11GeometryShader oldGeometryShader, oldGeometryShaderInstances, ref oldGeometryShaderInstancesCount);
+        this._backend.DeviceContext.PSGetShader(
+        out ID3D11PixelShader oldPixelShader,
+        oldPixelShaderInstances,
+        ref oldPixelShaderInstancesCount
+        );
+        this._backend.DeviceContext.VSGetShader(
+        out ID3D11VertexShader oldVertexShader,
+        oldVertexShaderInstances,
+        ref oldVertexShaderInstancesCount
+        );
+        this._backend.DeviceContext.GSGetShader(
+        out ID3D11GeometryShader oldGeometryShader,
+        oldGeometryShaderInstances,
+        ref oldGeometryShaderInstancesCount
+        );
 
-        this._deviceContext.VSGetConstantBuffers(0, 1, oldVertexShaderConstantBuffers);
+        this._backend.DeviceContext.VSGetConstantBuffers(0, 1, oldVertexShaderConstantBuffers);
 
-        PrimitiveTopology oldPrimitiveTopology = this._deviceContext.IAGetPrimitiveTopology();
-        this._deviceContext.IAGetIndexBuffer(out ID3D11Buffer oldIndexBuffer, out Format oldIndexBufferFormat, out int oldIndexBufferOffset);
-        this._deviceContext.IAGetVertexBuffers(0, 1, oldVertexBuffers, oldVertexBufferStrides, oldVertexBufferOffsets);
-        ID3D11InputLayout oldInputLayout = this._deviceContext.IAGetInputLayout();
+        PrimitiveTopology oldPrimitiveTopology = this._backend.DeviceContext.IAGetPrimitiveTopology();
+        this._backend.DeviceContext.IAGetIndexBuffer(
+        out ID3D11Buffer oldIndexBuffer,
+        out Format oldIndexBufferFormat,
+        out int oldIndexBufferOffset
+        );
+        this._backend.DeviceContext.IAGetVertexBuffers(
+        0,
+        1,
+        oldVertexBuffers,
+        oldVertexBufferStrides,
+        oldVertexBufferOffsets
+        );
+        ID3D11InputLayout oldInputLayout = this._backend.DeviceContext.IAGetInputLayout();
 
         #endregion
 
@@ -240,14 +266,23 @@ public class ImGuiControllerD3D11 : IDisposable {
                 if (cmd.UserCallback != IntPtr.Zero)
                     throw new NotImplementedException("No!");
                 else {
-                    RawRect rectangle = new RawRect((int)(cmd.ClipRect.X - clipOff.X), (int)(cmd.ClipRect.Y - clipOff.Y), (int)(cmd.ClipRect.Z - clipOff.X), (int)(cmd.ClipRect.W - clipOff.Y));
-                    this._deviceContext.RSSetScissorRect(rectangle);
+                    RawRect rectangle = new RawRect(
+                    (int)(cmd.ClipRect.X - clipOff.X),
+                    (int)(cmd.ClipRect.Y - clipOff.Y),
+                    (int)(cmd.ClipRect.Z - clipOff.X),
+                    (int)(cmd.ClipRect.W - clipOff.Y)
+                    );
+                    this._backend.DeviceContext.RSSetScissorRect(rectangle);
 
                     this._textureResources.TryGetValue(cmd.TextureId, out ID3D11ShaderResourceView texture);
 
                     if (texture != null) {
-                        this._deviceContext.PSSetShaderResource(0, texture);
-                        this._deviceContext.DrawIndexed((int) cmd.ElemCount, (int) (cmd.IdxOffset + globalIndexOffset), (int) (cmd.VtxOffset + globalVertexOffset));
+                        this._backend.DeviceContext.PSSetShaderResource(0, texture);
+                        this._backend.DeviceContext.DrawIndexed(
+                        (int)cmd.ElemCount,
+                        (int)(cmd.IdxOffset + globalIndexOffset),
+                        (int)(cmd.VtxOffset + globalVertexOffset)
+                        );
                     }
                 }
             }
@@ -258,34 +293,34 @@ public class ImGuiControllerD3D11 : IDisposable {
 
         #region Restore Render State
 
-        this._deviceContext.RSSetScissorRects(oldNumScissorRects, oldScissorRectangles);
-        this._deviceContext.RSSetViewport(oldViewport);
-        this._deviceContext.RSSetState(oldRasterizerState);
+        this._backend.DeviceContext.RSSetScissorRects(oldNumScissorRects, oldScissorRectangles);
+        this._backend.DeviceContext.RSSetViewport(oldViewport);
+        this._backend.DeviceContext.RSSetState(oldRasterizerState);
 
         if (oldRasterizerState?.NativePointer != IntPtr.Zero)
             oldRasterizerState?.Dispose();
 
-        this._deviceContext.OMSetBlendState(oldBlendState, oldBlendFactor, oldSampleMask);
+        this._backend.DeviceContext.OMSetBlendState(oldBlendState, oldBlendFactor, oldSampleMask);
 
         if (oldBlendState?.NativePointer != IntPtr.Zero)
             oldBlendState?.Dispose();
 
-        this._deviceContext.OMSetDepthStencilState(oldDepthStencilState, oldStencilRef);
+        this._backend.DeviceContext.OMSetDepthStencilState(oldDepthStencilState, oldStencilRef);
 
         if (oldDepthStencilState?.NativePointer != IntPtr.Zero)
             oldDepthStencilState?.Dispose();
 
-        this._deviceContext.PSSetShaderResources(0, 1, oldShaderResourceViews);
+        this._backend.DeviceContext.PSSetShaderResources(0, 1, oldShaderResourceViews);
 
         if (oldShaderResourceViews[0]?.NativePointer != IntPtr.Zero)
             oldShaderResourceViews[0]?.Dispose();
 
-        this._deviceContext.PSSetSamplers(0, 1, oldSamplerStates);
+        this._backend.DeviceContext.PSSetSamplers(0, 1, oldSamplerStates);
 
         if (oldSamplerStates[0]?.NativePointer != IntPtr.Zero)
             oldSamplerStates[0]?.Dispose();
 
-        this._deviceContext.PSSetShader(oldPixelShader, oldPixelShaderInstances, oldPixelShaderInstancesCount);
+        this._backend.DeviceContext.PSSetShader(oldPixelShader, oldPixelShaderInstances, oldPixelShaderInstancesCount);
 
         if (oldPixelShader?.NativePointer != IntPtr.Zero)
             oldPixelShader?.Dispose();
@@ -293,7 +328,11 @@ public class ImGuiControllerD3D11 : IDisposable {
         for (int i = 0; i < oldPixelShaderInstancesCount; i++)
             oldPixelShaderInstances[i]?.Dispose();
 
-        this._deviceContext.VSSetShader(oldVertexShader, oldVertexShaderInstances, oldVertexShaderInstancesCount);
+        this._backend.DeviceContext.VSSetShader(
+        oldVertexShader,
+        oldVertexShaderInstances,
+        oldVertexShaderInstancesCount
+        );
 
         if (oldVertexShader?.NativePointer != IntPtr.Zero)
             oldVertexShader?.Dispose();
@@ -301,7 +340,11 @@ public class ImGuiControllerD3D11 : IDisposable {
         for (int i = 0; i < oldVertexShaderInstancesCount; i++)
             oldVertexShaderInstances[i]?.Dispose();
 
-        this._deviceContext.GSSetShader(oldGeometryShader, oldGeometryShaderInstances, oldGeometryShaderInstancesCount);
+        this._backend.DeviceContext.GSSetShader(
+        oldGeometryShader,
+        oldGeometryShaderInstances,
+        oldGeometryShaderInstancesCount
+        );
 
         if (oldGeometryShader?.NativePointer != IntPtr.Zero)
             oldGeometryShader?.Dispose();
@@ -309,57 +352,76 @@ public class ImGuiControllerD3D11 : IDisposable {
         for (int i = 0; i < oldGeometryShaderInstancesCount; i++)
             oldGeometryShaderInstances[i]?.Dispose();
 
-        this._deviceContext.VSSetConstantBuffers(0, 1, oldVertexShaderConstantBuffers);
+        this._backend.DeviceContext.VSSetConstantBuffers(0, 1, oldVertexShaderConstantBuffers);
 
         if (oldVertexShaderConstantBuffers[0]?.NativePointer != IntPtr.Zero)
             oldVertexShaderConstantBuffers[0]?.Dispose();
 
-        this._deviceContext.IASetPrimitiveTopology(oldPrimitiveTopology);
-        this._deviceContext.IASetIndexBuffer(oldIndexBuffer, oldIndexBufferFormat, oldIndexBufferOffset);
+        this._backend.DeviceContext.IASetPrimitiveTopology(oldPrimitiveTopology);
+        this._backend.DeviceContext.IASetIndexBuffer(oldIndexBuffer, oldIndexBufferFormat, oldIndexBufferOffset);
 
         if (oldIndexBuffer?.NativePointer != IntPtr.Zero)
             oldIndexBuffer?.Dispose();
 
-        this._deviceContext.IASetVertexBuffers(0, 1, oldVertexBuffers, oldVertexBufferStrides, oldVertexBufferOffsets);
+        this._backend.DeviceContext.IASetVertexBuffers(
+        0,
+        1,
+        oldVertexBuffers,
+        oldVertexBufferStrides,
+        oldVertexBufferOffsets
+        );
 
         if (oldVertexBuffers[0]?.NativePointer != IntPtr.Zero)
             oldVertexBuffers[0]?.Dispose();
 
-        this._deviceContext.IASetInputLayout(oldInputLayout);
+        this._backend.DeviceContext.IASetInputLayout(oldInputLayout);
 
         if (oldInputLayout?.NativePointer != IntPtr.Zero)
             oldInputLayout?.Dispose();
 
         #endregion
+
     }
 
     private unsafe void SetupRenderState(ImDrawDataPtr drawData) {
         Viewport viewport = new Viewport(0, 0, drawData.DisplaySize.X, drawData.DisplaySize.Y, 0, 1);
 
-        this._deviceContext.RSSetViewport(viewport);
+        this._backend.DeviceContext.RSSetViewport(viewport);
 
         int stride = sizeof(ImDrawVert);
         int offset = 0;
 
-        this._deviceContext.IASetInputLayout(this._inputLayout);
-        this._deviceContext.IASetVertexBuffers(0, 1, new []{ _vertexBuffer }, new []{ stride }, new []{ offset });
-        this._deviceContext.IASetIndexBuffer(this._indexBuffer, Format.R16_UInt, 0);
-        this._deviceContext.IASetPrimitiveTopology(PrimitiveTopology.TriangleList);
-        this._deviceContext.VSSetShader(this._vertexShader);
-        this._deviceContext.VSSetConstantBuffer(0, this._constantBuffer);
-        this._deviceContext.PSSetShader(this._pixelShader);
-        this._deviceContext.PSSetSampler(0, this._fontSampler);
-        this._deviceContext.GSSetShader(null);
-        this._deviceContext.HSSetShader(null);
-        this._deviceContext.DSSetShader(null);
-        this._deviceContext.CSSetShader(null);
-        this._deviceContext.OMSetBlendState(this._blendState);
-        this._deviceContext.OMSetDepthStencilState(this._depthStencilState);
-        this._deviceContext.RSSetState(this._rasterizerState);
+        this._backend.DeviceContext.IASetInputLayout(this._inputLayout);
+        this._backend.DeviceContext.IASetVertexBuffers(
+        0,
+        1,
+        new[] {
+            _vertexBuffer
+        },
+        new[] {
+            stride
+        },
+        new[] {
+            offset
+        }
+        );
+        this._backend.DeviceContext.IASetIndexBuffer(this._indexBuffer, Format.R16_UInt, 0);
+        this._backend.DeviceContext.IASetPrimitiveTopology(PrimitiveTopology.TriangleList);
+        this._backend.DeviceContext.VSSetShader(this._vertexShader);
+        this._backend.DeviceContext.VSSetConstantBuffer(0, this._constantBuffer);
+        this._backend.DeviceContext.PSSetShader(this._pixelShader);
+        this._backend.DeviceContext.PSSetSampler(0, this._fontSampler);
+        this._backend.DeviceContext.GSSetShader(null);
+        this._backend.DeviceContext.HSSetShader(null);
+        this._backend.DeviceContext.DSSetShader(null);
+        this._backend.DeviceContext.CSSetShader(null);
+        this._backend.DeviceContext.OMSetBlendState(this._blendState);
+        this._backend.DeviceContext.OMSetDepthStencilState(this._depthStencilState);
+        this._backend.DeviceContext.RSSetState(this._rasterizerState);
     }
 
     public void Update(float delta) {
-        if(this._frameBegun)
+        if (this._frameBegun)
             ImGui.Render();
 
         ImGuiIOPtr io = ImGui.GetIO();
@@ -367,7 +429,10 @@ public class ImGuiControllerD3D11 : IDisposable {
         io.DisplaySize = new Vector2(this._windowWidth, this._windowHeight);
 
         if (this._windowHeight > 0 && this._windowHeight > 0)
-            io.DisplayFramebufferScale = new Vector2(this._view.FramebufferSize.X / this._windowWidth, this._view.FramebufferSize.Y / this._windowHeight);
+            io.DisplayFramebufferScale = new Vector2(
+            this._view.FramebufferSize.X / this._windowWidth,
+            this._view.FramebufferSize.Y / this._windowHeight
+            );
 
         io.DeltaTime = delta;
 
@@ -403,7 +468,10 @@ public class ImGuiControllerD3D11 : IDisposable {
         io.DisplaySize = new Vector2(this._windowWidth, this._windowHeight);
 
         if (this._windowHeight > 0 && this._windowHeight > 0)
-            io.DisplayFramebufferScale = new Vector2(this._view.FramebufferSize.X / this._windowWidth, this._view.FramebufferSize.Y / this._windowHeight);
+            io.DisplayFramebufferScale = new Vector2(
+            this._view.FramebufferSize.X / this._windowWidth,
+            this._view.FramebufferSize.Y / this._windowHeight
+            );
 
         io.DeltaTime = delta;
     }
@@ -426,55 +494,61 @@ public class ImGuiControllerD3D11 : IDisposable {
         io.MouseWheelH = wheel.X;
 
         foreach (Key key in Enum.GetValues(typeof(Key))) {
-            if(key == Key.Unknown)
+            if (key == Key.Unknown)
                 continue;
 
             io.KeysDown[(int)key] = keyboard.IsKeyPressed(key);
         }
 
-        for(int i = 0; i != this._pressedCharacters.Count; i++)
+        for (int i = 0; i != this._pressedCharacters.Count; i++)
             io.AddInputCharacter(this._pressedCharacters[i]);
 
         this._pressedCharacters.Clear();
 
         io.KeyCtrl  = keyboard.IsKeyPressed(Key.ControlLeft) || keyboard.IsKeyPressed(Key.ControlRight);
-        io.KeyAlt   = keyboard.IsKeyPressed(Key.AltLeft)     || keyboard.IsKeyPressed(Key.AltRight);
-        io.KeyShift = keyboard.IsKeyPressed(Key.ShiftLeft)   || keyboard.IsKeyPressed(Key.ShiftRight);
-        io.KeySuper = keyboard.IsKeyPressed(Key.SuperLeft)   || keyboard.IsKeyPressed(Key.SuperRight);
+        io.KeyAlt   = keyboard.IsKeyPressed(Key.AltLeft) || keyboard.IsKeyPressed(Key.AltRight);
+        io.KeyShift = keyboard.IsKeyPressed(Key.ShiftLeft) || keyboard.IsKeyPressed(Key.ShiftRight);
+        io.KeySuper = keyboard.IsKeyPressed(Key.SuperLeft) || keyboard.IsKeyPressed(Key.SuperRight);
     }
 
     private void SetKeyMappings() {
         ImGuiIOPtr io = ImGui.GetIO();
 
-        io.KeyMap[(int) ImGuiKey.Tab]        = (int) Key.Tab;
-        io.KeyMap[(int) ImGuiKey.LeftArrow]  = (int) Key.Left;
-        io.KeyMap[(int) ImGuiKey.RightArrow] = (int) Key.Right;
-        io.KeyMap[(int) ImGuiKey.UpArrow]    = (int) Key.Up;
-        io.KeyMap[(int) ImGuiKey.DownArrow]  = (int) Key.Down;
-        io.KeyMap[(int) ImGuiKey.PageUp]     = (int) Key.PageUp;
-        io.KeyMap[(int) ImGuiKey.PageDown]   = (int) Key.PageDown;
-        io.KeyMap[(int) ImGuiKey.Home]       = (int) Key.Home;
-        io.KeyMap[(int) ImGuiKey.End]        = (int) Key.End;
-        io.KeyMap[(int) ImGuiKey.Delete]     = (int) Key.Delete;
-        io.KeyMap[(int) ImGuiKey.Backspace]  = (int) Key.Backspace;
-        io.KeyMap[(int) ImGuiKey.Enter]      = (int) Key.Enter;
-        io.KeyMap[(int) ImGuiKey.Escape]     = (int) Key.Escape;
-        io.KeyMap[(int) ImGuiKey.A]          = (int) Key.A;
-        io.KeyMap[(int) ImGuiKey.C]          = (int) Key.C;
-        io.KeyMap[(int) ImGuiKey.V]          = (int) Key.V;
-        io.KeyMap[(int) ImGuiKey.X]          = (int) Key.X;
-        io.KeyMap[(int) ImGuiKey.Y]          = (int) Key.Y;
-        io.KeyMap[(int) ImGuiKey.Z]          = (int) Key.Z;
+        io.KeyMap[(int)ImGuiKey.Tab]        = (int)Key.Tab;
+        io.KeyMap[(int)ImGuiKey.LeftArrow]  = (int)Key.Left;
+        io.KeyMap[(int)ImGuiKey.RightArrow] = (int)Key.Right;
+        io.KeyMap[(int)ImGuiKey.UpArrow]    = (int)Key.Up;
+        io.KeyMap[(int)ImGuiKey.DownArrow]  = (int)Key.Down;
+        io.KeyMap[(int)ImGuiKey.PageUp]     = (int)Key.PageUp;
+        io.KeyMap[(int)ImGuiKey.PageDown]   = (int)Key.PageDown;
+        io.KeyMap[(int)ImGuiKey.Home]       = (int)Key.Home;
+        io.KeyMap[(int)ImGuiKey.End]        = (int)Key.End;
+        io.KeyMap[(int)ImGuiKey.Delete]     = (int)Key.Delete;
+        io.KeyMap[(int)ImGuiKey.Backspace]  = (int)Key.Backspace;
+        io.KeyMap[(int)ImGuiKey.Enter]      = (int)Key.Enter;
+        io.KeyMap[(int)ImGuiKey.Escape]     = (int)Key.Escape;
+        io.KeyMap[(int)ImGuiKey.A]          = (int)Key.A;
+        io.KeyMap[(int)ImGuiKey.C]          = (int)Key.C;
+        io.KeyMap[(int)ImGuiKey.V]          = (int)Key.V;
+        io.KeyMap[(int)ImGuiKey.X]          = (int)Key.X;
+        io.KeyMap[(int)ImGuiKey.Y]          = (int)Key.Y;
+        io.KeyMap[(int)ImGuiKey.Z]          = (int)Key.Z;
     }
 
     #endregion
 
     private void CreateObjects() {
-        byte[] vertexShaderData = ResourceHelpers.GetByteResource("Shaders/Compiled/ImGuiController/VertexShader.dxc", typeof(Direct3D11Backend));
-        byte[] pixelShaderData  = ResourceHelpers.GetByteResource("Shaders/Compiled/ImGuiController/PixelShader.dxc", typeof(Direct3D11Backend));
+        byte[] vertexShaderData = ResourceHelpers.GetByteResource(
+        "Shaders/Compiled/ImGuiController/VertexShader.dxc",
+        typeof(Direct3D11Backend)
+        );
+        byte[] pixelShaderData = ResourceHelpers.GetByteResource(
+        "Shaders/Compiled/ImGuiController/PixelShader.dxc",
+        typeof(Direct3D11Backend)
+        );
 
-        ID3D11VertexShader vertexShader = this._device.CreateVertexShader(vertexShaderData);
-        ID3D11PixelShader  pixelShader  = this._device.CreatePixelShader(pixelShaderData);
+        ID3D11VertexShader vertexShader = this._backend.Device.CreateVertexShader(vertexShaderData);
+        ID3D11PixelShader  pixelShader  = this._backend.Device.CreatePixelShader(pixelShaderData);
 
         this._vertexShader = vertexShader;
         //this._vertexShader.DebugName = "ImGui Vertex Shader";
@@ -483,12 +557,12 @@ public class ImGuiControllerD3D11 : IDisposable {
         //this._pixelShader.DebugName = "ImGui Pixel Shader";
 
         InputElementDescription[] inputElementDescription = new InputElementDescription[] {
-            new InputElementDescription("POSITION", 0, Format.R32G32_Float,   0,  0, InputClassification.PerVertexData, 0),
-            new InputElementDescription("TEXCOORD", 0, Format.R32G32_Float,   8,  0, InputClassification.PerVertexData, 0),
-            new InputElementDescription("COLOR",    0, Format.R8G8B8A8_UNorm, 16, 0, InputClassification.PerVertexData, 0),
+            new InputElementDescription("POSITION", 0, Format.R32G32_Float, 0, 0, InputClassification.PerVertexData, 0),
+            new InputElementDescription("TEXCOORD", 0, Format.R32G32_Float, 8, 0, InputClassification.PerVertexData, 0),
+            new InputElementDescription("COLOR", 0, Format.R8G8B8A8_UNorm, 16, 0, InputClassification.PerVertexData, 0),
         };
 
-        this._inputLayout = this._device.CreateInputLayout(inputElementDescription, vertexShaderData);
+        this._inputLayout = this._backend.Device.CreateInputLayout(inputElementDescription, vertexShaderData);
         //this._inputLayout.DebugName = "ImGui InputLayout";
 
         BufferDescription constantBufferDescription = new BufferDescription {
@@ -498,7 +572,7 @@ public class ImGuiControllerD3D11 : IDisposable {
             CPUAccessFlags = CpuAccessFlags.Write
         };
 
-        this._constantBuffer = this._device.CreateBuffer(constantBufferDescription);
+        this._constantBuffer = this._backend.Device.CreateBuffer(constantBufferDescription);
         //this._constantBuffer.DebugName = "ImGui ConstantBuffer";
 
         BlendDescription blendDescription = new BlendDescription {
@@ -517,7 +591,7 @@ public class ImGuiControllerD3D11 : IDisposable {
             }
         };
 
-        this._blendState = this._device.CreateBlendState(blendDescription);
+        this._blendState = this._backend.Device.CreateBlendState(blendDescription);
         //this._blendState.DebugName = "ImGui BlendState";
 
         RasterizerDescription rasterizerDescription = new RasterizerDescription {
@@ -527,10 +601,15 @@ public class ImGuiControllerD3D11 : IDisposable {
             DepthClipEnable = true
         };
 
-        this._rasterizerState = this._device.CreateRasterizerState(rasterizerDescription);
+        this._rasterizerState = this._backend.Device.CreateRasterizerState(rasterizerDescription);
         //this._rasterizerState.DebugName = "ImGui RasterizerState";
 
-        DepthStencilOperationDescription depthStencilOperationDescription = new DepthStencilOperationDescription(StencilOperation.Keep, StencilOperation.Keep, StencilOperation.Keep, ComparisonFunction.Always);
+        DepthStencilOperationDescription depthStencilOperationDescription = new DepthStencilOperationDescription(
+        StencilOperation.Keep,
+        StencilOperation.Keep,
+        StencilOperation.Keep,
+        ComparisonFunction.Always
+        );
 
         DepthStencilDescription depthStencilDescription = new DepthStencilDescription {
             DepthEnable    = false,
@@ -541,7 +620,7 @@ public class ImGuiControllerD3D11 : IDisposable {
             BackFace       = depthStencilOperationDescription
         };
 
-        this._depthStencilState = this._device.CreateDepthStencilState(depthStencilDescription);
+        this._depthStencilState = this._backend.Device.CreateDepthStencilState(depthStencilDescription);
         //this._depthStencilState.DebugName = "ImGui DepthStencilState";
 
         CreateFontsTexture();
@@ -562,7 +641,8 @@ public class ImGuiControllerD3D11 : IDisposable {
             ArraySize = 1,
             Format    = Format.R8G8B8A8_UNorm,
             SampleDescription = new SampleDescription {
-                Count = 1, Quality = 0
+                Count   = 1,
+                Quality = 0
             },
             Usage          = ResourceUsage.Default,
             BindFlags      = BindFlags.ShaderResource,
@@ -575,18 +655,25 @@ public class ImGuiControllerD3D11 : IDisposable {
             SlicePitch  = 0
         };
 
-        ID3D11Texture2D fontTexture = this._device.CreateTexture2D(texture2DDescription, new []{ subresourceData });
+        ID3D11Texture2D fontTexture = this._backend.Device.CreateTexture2D(
+        texture2DDescription,
+        new[] {
+            subresourceData
+        }
+        );
         //fontTexture.DebugName = "ImGui Font Texture";
 
         ShaderResourceViewDescription shaderResourceViewDescription = new ShaderResourceViewDescription {
             Format        = Format.R8G8B8A8_UNorm,
             ViewDimension = ShaderResourceViewDimension.Texture2D,
             Texture2D = new Texture2DShaderResourceView {
-                MipLevels = 1, MostDetailedMip = 0
+                MipLevels       = 1,
+                MostDetailedMip = 0
             }
         };
 
-        this._fontTextureView = this._device.CreateShaderResourceView(fontTexture, shaderResourceViewDescription);
+        this._fontTextureView =
+            this._backend.Device.CreateShaderResourceView(fontTexture, shaderResourceViewDescription);
         //this._fontTextureView.DebugName = "ImGui Font Texture Atlas";
 
         fontTexture.Dispose();
@@ -604,19 +691,18 @@ public class ImGuiControllerD3D11 : IDisposable {
             MaxLOD             = 0f
         };
 
-        this._fontSampler = this._device.CreateSamplerState(samplerDescription);
+        this._fontSampler = this._backend.Device.CreateSamplerState(samplerDescription);
         //this._fontSampler.DebugName = "ImGui Font Sampler";
     }
 
-    IntPtr RegisterTexture(ID3D11ShaderResourceView texture)
-    {
+    IntPtr RegisterTexture(ID3D11ShaderResourceView texture) {
         IntPtr imGuiId = texture.NativePointer;
         _textureResources.Add(imGuiId, texture);
 
         return imGuiId;
     }
 
-    private void ReleaseAndNullify<T>(ref T o) where T : ComObject {
+    private void ReleaseAndNullify<pT>(ref pT o) where pT : ComObject {
         o.Dispose();
         o = null;
     }
@@ -636,7 +722,9 @@ public class ImGuiControllerD3D11 : IDisposable {
             ReleaseAndNullify(ref _inputLayout);
             ReleaseAndNullify(ref _vertexShader);
             ReleaseAndNullify(ref _vertexShaderBlob);
-        } catch(NullReferenceException) { /* Apperantly thing?.Dispose can still throw a NullRefException? */}
+        }
+        catch (NullReferenceException) {/* Apperantly thing?.Dispose can still throw a NullRefException? */
+        }
     }
 
     private bool _isDisposed = false;
@@ -647,7 +735,7 @@ public class ImGuiControllerD3D11 : IDisposable {
 
         this._isDisposed = true;
 
-        if (this._device == null)
+        if (this._backend.Device == null)
             return;
 
         this.InvalidateDeviceObjects();

@@ -6,7 +6,7 @@ namespace Furball.Vixie.Backends.Veldrid;
 
 public class VeldridBufferMapper : BufferMapper {
     private readonly VeldridBackend _backend;
-    private readonly BufferUsage    Usage;
+    private readonly BufferUsage    _usage;
     internal         DeviceBuffer?  Buffer;
 
     public unsafe void* Ptr;
@@ -16,7 +16,7 @@ public class VeldridBufferMapper : BufferMapper {
 
         Guard.Assert((usage & ~(BufferUsage.IndexBuffer | BufferUsage.VertexBuffer)) == 0, "(usage & ~(BufferUsage.IndexBuffer | BufferUsage.VertexBuffer)) == 0");
 
-        this.Usage = usage;
+        this._usage = usage;
         
         this.SizeInBytes = byteSize;
     }
@@ -27,7 +27,7 @@ public class VeldridBufferMapper : BufferMapper {
         //Get the current buffer
         DeviceBuffer? old = this.Buffer;
         
-        Guard.Assert(buffer.Usage == (BufferUsage.Dynamic | this.Usage), "buffer.Usage == (BufferUsage.Dynamic | this.Usage)");
+        Guard.Assert(buffer.Usage == (BufferUsage.Dynamic | this._usage), "buffer.Usage == (BufferUsage.Dynamic | this.Usage)");
         
         //Set the current buffer to the new one
         this.Buffer = buffer;
@@ -46,7 +46,7 @@ public class VeldridBufferMapper : BufferMapper {
     }
 
     public DeviceBuffer? ResetFromFreshBuffer() {
-        BufferDescription desc = new((uint)this.SizeInBytes, BufferUsage.Dynamic | this.Usage);
+        BufferDescription desc = new((uint)this.SizeInBytes, BufferUsage.Dynamic | this._usage);
         DeviceBuffer buf = this._backend.ResourceFactory.CreateBuffer(ref desc);
     
         return this.ResetFromExistingBuffer(buf);

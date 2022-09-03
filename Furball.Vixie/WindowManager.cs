@@ -242,20 +242,20 @@ public class WindowManager : IDisposable {
         APIVersion version;
         switch (this.Backend) {
             case Backend.OpenGLES:
-                if (Backends.Shared.Global.LatestSupportedGL.GLES.MajorVersion < 3) {
-                    Backends.Shared.Global.LatestSupportedGL.GLES = new APIVersion(3, 0);
+                if (Backends.Shared.Global.LatestSupportedGl.GLES.MajorVersion < 3) {
+                    Backends.Shared.Global.LatestSupportedGl.GLES = new APIVersion(3, 0);
                     GraphicsBackend.IsOnUnsupportedPlatform       = true;//mark us as running on an unsupported configuration
                 }
 
-                version = Backends.Shared.Global.LatestSupportedGL.GLES;
+                version = Backends.Shared.Global.LatestSupportedGl.GLES;
                 break;
             case Backend.OpenGL:
-                if (Backends.Shared.Global.LatestSupportedGL.GL.MajorVersion < 2) {
-                    Backends.Shared.Global.LatestSupportedGL.GL = new APIVersion(2, 0);
+                if (Backends.Shared.Global.LatestSupportedGl.GL.MajorVersion < 2) {
+                    Backends.Shared.Global.LatestSupportedGl.GL = new APIVersion(2, 0);
                     GraphicsBackend.IsOnUnsupportedPlatform     = true;//mark us as running on an unsupported configuration
                 }
 
-                version = Backends.Shared.Global.LatestSupportedGL.GL;
+                version = Backends.Shared.Global.LatestSupportedGl.GL;
                 break;
             case Backend.Veldrid:
                 version = new APIVersion(0, 0);

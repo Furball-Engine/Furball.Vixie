@@ -4,8 +4,8 @@ using Silk.NET.OpenGL;
 
 namespace Furball.Vixie.Backends.OpenGL.Abstractions; 
 
-internal sealed class BufferObjectGL : IDisposable {
-    internal static BufferObjectGL CurrentlyBound;
+internal sealed class BufferObjectGl : IDisposable {
+    internal static BufferObjectGl CurrentlyBound;
     public          bool           Bound => CurrentlyBound == this;
 
     /// <summary>
@@ -15,7 +15,7 @@ internal sealed class BufferObjectGL : IDisposable {
     /// <summary>
     /// Backend to which this belongs to
     /// </summary>
-    private readonly IGLBasedBackend _backend;
+    private readonly IGlBasedBackend _backend;
     /// <summary>
     /// Type of Buffer, is it a Vertex Buffer? a Index Buffer? a different buffer entirely?
     /// </summary>
@@ -35,7 +35,7 @@ internal sealed class BufferObjectGL : IDisposable {
     /// <param name="size">Size of the Buffer</param>
     /// <param name="bufferType">What kind of buffer is it?</param>
     /// <param name="usage">How is this buffer going to be used?</param>
-    public unsafe BufferObjectGL(IGLBasedBackend backend, int size, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StreamDraw) {
+    public unsafe BufferObjectGl(IGlBasedBackend backend, int size, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StreamDraw) {
         this._backend = backend;
         this._backend.GlCheckThread();
 
@@ -55,7 +55,7 @@ internal sealed class BufferObjectGL : IDisposable {
     /// <param name="backend">OpenGL backend to which this belongs to</param>
     /// <param name="bufferType">What kind of Buffer is it</param>
     /// <param name="usage">How is this buffer going to be used?</param>
-    public BufferObjectGL(IGLBasedBackend backend, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StreamDraw) {
+    public BufferObjectGl(IGlBasedBackend backend, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StreamDraw) {
         this._backend = backend;
         this._backend.GlCheckThread();
 
@@ -68,7 +68,7 @@ internal sealed class BufferObjectGL : IDisposable {
 
     public delegate void VoidDelegate();
 
-    ~BufferObjectGL() {
+    ~BufferObjectGl() {
         DisposeQueue.Enqueue(this);
     }
 
@@ -78,7 +78,7 @@ internal sealed class BufferObjectGL : IDisposable {
     /// <param name="data">Data to put there</param>
     /// <param name="size">Size of the Data</param>
     /// <returns></returns>
-    public unsafe BufferObjectGL SetData(void* data, nuint size) {
+    public unsafe BufferObjectGl SetData(void* data, nuint size) {
         this._backend.GlCheckThread();
         this._backend.BufferData(this._bufferType, size, data, this._bufferUsage);
         this._backend.CheckError("set buffer data");
@@ -86,7 +86,7 @@ internal sealed class BufferObjectGL : IDisposable {
         return this;
     }
 
-    public unsafe BufferObjectGL SetSubData(void* data, nuint size, nint offset = 0) {
+    public unsafe BufferObjectGl SetSubData(void* data, nuint size, nint offset = 0) {
         this._backend.GlCheckThread();
         this._backend.BufferSubData(this._bufferType, offset, size, data);
         this._backend.CheckError("set sub buffer data");
@@ -94,7 +94,7 @@ internal sealed class BufferObjectGL : IDisposable {
         return this;
     }
 
-    public unsafe BufferObjectGL SetSubData<pDataType>(Span<pDataType> data) where pDataType : unmanaged {
+    public unsafe BufferObjectGl SetSubData<pDataType>(Span<pDataType> data) where pDataType : unmanaged {
         this._backend.GlCheckThread();
         fixed (void* d = data) {
             this.SetSubData(d, (nuint)(data.Length * sizeof(pDataType)));
@@ -110,7 +110,7 @@ internal sealed class BufferObjectGL : IDisposable {
     /// <param name="data">Data to put</param>
     /// <typeparam name="pDataType">Type of data to put</typeparam>
     /// <returns>Self, used for chaining Methods</returns>
-    public unsafe BufferObjectGL SetData<pDataType>(Span<pDataType> data) where pDataType : unmanaged {
+    public unsafe BufferObjectGl SetData<pDataType>(Span<pDataType> data) where pDataType : unmanaged {
         this._backend.GlCheckThread();
         fixed (void* d = data) {
             this.SetData(d, (nuint)(data.Length * sizeof(pDataType)));
@@ -127,27 +127,27 @@ internal sealed class BufferObjectGL : IDisposable {
     /// <param name="usage">How is this buffer going to be used?</param>
     /// <typeparam name="pDataType">Type of Data to initially store</typeparam>
     /// <returns>Self, used for chaining Methods</returns>
-    public static unsafe BufferObjectGL CreateNew<pDataType>(IGLBasedBackend backend, Span<pDataType> data, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StreamDraw)
+    public static unsafe BufferObjectGl CreateNew<pDataType>(IGlBasedBackend backend, Span<pDataType> data, BufferTargetARB bufferType, BufferUsageARB usage = BufferUsageARB.StreamDraw)
         where pDataType : unmanaged
     {
         backend.GlCheckThread();
-        BufferObjectGL BufferObjectGL = new BufferObjectGL(backend, bufferType, usage);
-        BufferObjectGL.Bind();
+        BufferObjectGl bufferObjectGl = new BufferObjectGl(backend, bufferType, usage);
+        bufferObjectGl.Bind();
 
         fixed (void* d = data) {
-            BufferObjectGL.SetData(d, (nuint)(data.Length * sizeof(pDataType)));
+            bufferObjectGl.SetData(d, (nuint)(data.Length * sizeof(pDataType)));
         }
 
-        BufferObjectGL.DataCount = (uint) data.Length;
+        bufferObjectGl.DataCount = (uint) data.Length;
 
-        return BufferObjectGL;
+        return bufferObjectGl;
     }
 
     /// <summary>
     /// Selects this Buffer
     /// </summary>
     /// <returns>Self, used for chaining Methods</returns>
-    public BufferObjectGL Bind() {
+    public BufferObjectGl Bind() {
         this._backend.GlCheckThread();
         if (this.Locked)
             return null;
@@ -171,7 +171,7 @@ internal sealed class BufferObjectGL : IDisposable {
     /// Binds and sets a Lock so that the Buffer cannot be unbound/rebound
     /// </summary>
     /// <returns>Self, used for chaining Methods</returns>
-    public BufferObjectGL LockingBind() {
+    public BufferObjectGl LockingBind() {
         this._backend.GlCheckThread();
         this.Bind();
         this.Lock();
@@ -183,7 +183,7 @@ internal sealed class BufferObjectGL : IDisposable {
     /// Locks the Buffer so that other Buffers cannot be bound/unbound/rebound
     /// </summary>
     /// <returns>Self, used for chaining Methods</returns>
-    internal BufferObjectGL Lock() {
+    internal BufferObjectGl Lock() {
         this._backend.GlCheckThread();
         this.Locked = true;
 
@@ -194,7 +194,7 @@ internal sealed class BufferObjectGL : IDisposable {
     /// Unlocks the Buffer, so that other buffers can be bound
     /// </summary>
     /// <returns>Self, used for chaining Methods</returns>
-    public BufferObjectGL Unlock() {
+    public BufferObjectGl Unlock() {
         this._backend.GlCheckThread();
         this.Locked = false;
 
@@ -204,7 +204,7 @@ internal sealed class BufferObjectGL : IDisposable {
     /// Uninds and unlocks the Buffer so that other buffers can be bound/rebound
     /// </summary>
     /// <returns>Self, used for chaining Methods</returns>
-    internal BufferObjectGL UnlockingUnbind() {
+    internal BufferObjectGl UnlockingUnbind() {
         this._backend.GlCheckThread();
         this.Unlock();
         this.Unbind();
@@ -215,7 +215,7 @@ internal sealed class BufferObjectGL : IDisposable {
     /// Unbinds any bound Buffer
     /// </summary>
     /// <returns>Self, used for chaining Methods</returns>
-    public BufferObjectGL Unbind() {
+    public BufferObjectGl Unbind() {
         this._backend.GlCheckThread();
         if (this.Locked)
             return null;
@@ -229,8 +229,8 @@ internal sealed class BufferObjectGL : IDisposable {
     }
 
     private bool _isDisposed = false;
-    public BufferObjectGL(IGLBasedBackend backend, int                               maxVerticies, Silk.NET.OpenGLES.BufferTargetARB arrayBuffer) : this(backend, maxVerticies, (BufferTargetARB)arrayBuffer) {}
-    public BufferObjectGL(IGLBasedBackend backend, Silk.NET.OpenGLES.BufferTargetARB target,       Silk.NET.OpenGLES.BufferUsageARB  usage = Silk.NET.OpenGLES.BufferUsageARB.StreamDraw) : this(backend, (BufferTargetARB)target, (BufferUsageARB)usage) {}
+    public BufferObjectGl(IGlBasedBackend backend, int                               maxVerticies, Silk.NET.OpenGLES.BufferTargetARB arrayBuffer) : this(backend, maxVerticies, (BufferTargetARB)arrayBuffer) {}
+    public BufferObjectGl(IGlBasedBackend backend, Silk.NET.OpenGLES.BufferTargetARB target,       Silk.NET.OpenGLES.BufferUsageARB  usage = Silk.NET.OpenGLES.BufferUsageARB.StreamDraw) : this(backend, (BufferTargetARB)target, (BufferUsageARB)usage) {}
 
     /// <summary>
     /// Disposes the Buffer

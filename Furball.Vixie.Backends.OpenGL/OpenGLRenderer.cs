@@ -11,7 +11,7 @@ using Silk.NET.OpenGL;
 
 namespace Furball.Vixie.Backends.OpenGL; 
 
-internal unsafe class OpenGLRenderer : Renderer {
+internal unsafe class OpenGlRenderer : Renderer {
     private readonly OpenGLBackend _backend;
     private readonly GL            _gl;
 
@@ -19,16 +19,16 @@ internal unsafe class OpenGLRenderer : Renderer {
     private RamBufferMapper _idxMapper;
 
 
-    private Stack<BufferObjectGL> _vtxQueue = new();
-    private Stack<BufferObjectGL> _idxQueue = new();
+    private Stack<BufferObjectGl> _vtxQueue = new();
+    private Stack<BufferObjectGl> _idxQueue = new();
 
     private class BufferData : IDisposable {
-        public VertexArrayObjectGL Vao;
-        public BufferObjectGL      Vtx;
-        public BufferObjectGL      Idx;
+        public VertexArrayObjectGl Vao;
+        public BufferObjectGl      Vtx;
+        public BufferObjectGl      Idx;
         public uint                IndexCount;
 
-        public VixieTextureGL[] TexArray;
+        public VixieTextureGl[] TexArray;
         public int              UsedTextures;
         
         private bool _isDisposed = false;
@@ -48,22 +48,22 @@ internal unsafe class OpenGLRenderer : Renderer {
 
     private const int QUAD_COUNT = 256;
     
-    public OpenGLRenderer(OpenGLBackend backend) {
+    public OpenGlRenderer(OpenGLBackend backend) {
         this._backend = backend;
-        this._gl      = backend.GetModernGL();
+        this._gl      = backend.GetModernGl();
         
         this._vtxMapper = new RamBufferMapper((nuint)(sizeof(Vertex) * QUAD_COUNT * 4));
         this._idxMapper = new RamBufferMapper(sizeof(ushort) * QUAD_COUNT * 6);
 
-        this._texHandles = new VixieTextureGL[this._backend.QueryMaxTextureUnits()];
+        this._texHandles = new VixieTextureGl[this._backend.QueryMaxTextureUnits()];
         
         this.FontRenderer = new VixieFontStashRenderer(backend, this);
     }
 
-    private void SetVtxBufferToVao(VertexArrayObjectGL vao, BufferObjectGL buffer) {
+    private void SetVtxBufferToVao(VertexArrayObjectGl vao, BufferObjectGl buffer) {
         vao.Bind();
 
-        VertexBufferLayoutGL layout = new();
+        VertexBufferLayoutGl layout = new();
         layout.AddElement<float>(2); //Position
         layout.AddElement<float>(2); //Texture Coordinate
         layout.AddElement<float>(4); //Color
@@ -95,14 +95,14 @@ internal unsafe class OpenGLRenderer : Renderer {
         vao.Unbind();
     }
     
-    private BufferObjectGL CreateNewVertexBuffer() {
-        BufferObjectGL buffer = new(this._backend, (int)this._vtxMapper.SizeInBytes, BufferTargetARB.ArrayBuffer, BufferUsageARB.StaticDraw);
+    private BufferObjectGl CreateNewVertexBuffer() {
+        BufferObjectGl buffer = new(this._backend, (int)this._vtxMapper.SizeInBytes, BufferTargetARB.ArrayBuffer, BufferUsageARB.StaticDraw);
 
         return buffer;
     }
     
-    private BufferObjectGL CreateNewIndexBuffer() {
-        BufferObjectGL buffer = new(this._backend, (int)this._idxMapper.SizeInBytes, BufferTargetARB.ElementArrayBuffer, BufferUsageARB.StaticDraw);
+    private BufferObjectGl CreateNewIndexBuffer() {
+        BufferObjectGl buffer = new(this._backend, (int)this._idxMapper.SizeInBytes, BufferTargetARB.ElementArrayBuffer, BufferUsageARB.StaticDraw);
 
         return buffer;
     }
@@ -112,10 +112,10 @@ internal unsafe class OpenGLRenderer : Renderer {
             return;
         
         //TODO: make VAOs optional (for pre GL3.0)
-        VertexArrayObjectGL vao = new VertexArrayObjectGL(this._backend);
+        VertexArrayObjectGl vao = new VertexArrayObjectGl(this._backend);
         
-        BufferObjectGL vtx;
-        BufferObjectGL idx;
+        BufferObjectGl vtx;
+        BufferObjectGl idx;
         if (this._vtxQueue.Count == 0) {
             vtx = this.CreateNewVertexBuffer();
             idx = this.CreateNewIndexBuffer();
@@ -136,7 +136,7 @@ internal unsafe class OpenGLRenderer : Renderer {
         
         BufferData buf;
         this._bufferList.Add(buf = new BufferData {
-            Vtx          = vtx, Idx = idx, IndexCount = this._indexCount, Vao = vao, TexArray = new VixieTextureGL[this._texHandles.Length],
+            Vtx          = vtx, Idx = idx, IndexCount = this._indexCount, Vao = vao, TexArray = new VixieTextureGl[this._texHandles.Length],
             UsedTextures = this._usedTextures
         });
         Array.Copy(this._texHandles, buf.TexArray, this._usedTextures);
@@ -149,7 +149,7 @@ internal unsafe class OpenGLRenderer : Renderer {
 
         //Clear the `boundat` stuff
         for (int i = 0; i < this._usedTextures; i++) {
-            VixieTextureGL tex = this._texHandles[i];
+            VixieTextureGl tex = this._texHandles[i];
 
             tex.BoundId = -1;
         }
@@ -220,8 +220,8 @@ internal unsafe class OpenGLRenderer : Renderer {
 
     private readonly Dictionary<VixieTexture, long> _texDict = new();
     public override long GetTextureId(VixieTexture tex) {
-        if (tex is not VixieTextureGL texGl)
-            throw new InvalidOperationException($"You must pass a {typeof(VixieTextureGL)} into this function!");
+        if (tex is not VixieTextureGl texGl)
+            throw new InvalidOperationException($"You must pass a {typeof(VixieTextureGl)} into this function!");
 
         if (this._texDict.TryGetValue(tex, out long id))
             return id;
@@ -240,7 +240,7 @@ internal unsafe class OpenGLRenderer : Renderer {
     }
 
     private int              _usedTextures;
-    private VixieTextureGL[] _texHandles;
+    private VixieTextureGl[] _texHandles;
     public override void Draw() {
         this._backend.Shader.Bind();
 
@@ -252,7 +252,7 @@ internal unsafe class OpenGLRenderer : Renderer {
             buf.Idx.Bind();
 
             for (int i2 = 0; i2 < buf.UsedTextures; i2++) {
-                VixieTextureGL tex = buf.TexArray[i2];
+                VixieTextureGl tex = buf.TexArray[i2];
 
                 tex.Bind(TextureUnit.Texture0 + i2);
             }

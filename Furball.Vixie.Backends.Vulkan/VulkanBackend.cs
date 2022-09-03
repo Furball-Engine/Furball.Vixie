@@ -21,7 +21,7 @@ using Image = Silk.NET.Vulkan.Image;
 
 namespace Furball.Vixie.Backends.Vulkan;
 
-public unsafe class VulkanBackend : IGraphicsBackend {
+public unsafe class VulkanBackend : GraphicsBackend {
     private static ulong RateDeviceInfo(PhysicalDeviceInfo info) {
         // NOTE: This method is static to prevent you querying anything extra.
         // If information should be used during rating it should be on the device info,
@@ -54,8 +54,8 @@ public unsafe class VulkanBackend : IGraphicsBackend {
 
         QueueFamilyProperties[] queueFamilyProperties = new QueueFamilyProperties[queueFamilyCount];
 
-        fixed (QueueFamilyProperties* pQueueFamilyProperties = queueFamilyProperties)
-            this._vk.GetPhysicalDeviceQueueFamilyProperties(handle, ref queueFamilyCount, pQueueFamilyProperties);
+        fixed (QueueFamilyProperties* queueFamilyPropertiesPtr = queueFamilyProperties)
+            this._vk.GetPhysicalDeviceQueueFamilyProperties(handle, ref queueFamilyCount, queueFamilyPropertiesPtr);
 
         QueueInfo[] queueInfos = queueFamilyProperties
             .SelectMany((x, i) => Enumerable.Range(0, (int)x.QueueCount)

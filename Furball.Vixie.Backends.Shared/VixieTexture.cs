@@ -6,16 +6,16 @@ using Rectangle = System.Drawing.Rectangle;
 namespace Furball.Vixie.Backends.Shared; 
 
 public abstract class VixieTexture : IDisposable {
-    protected Vector2D<int> _size;
-    public    bool          Useless;
-
     public bool InternalFlip { get; protected set; }
     
     protected int MipMapCount(int width, int height)
         => (int)(Math.Floor(Math.Log(Math.Max(width, height), 2) / 2d) + 1);
 
-    public Vector2D<int> Size => this._size;
-    
+    public Vector2D<int> Size {
+        get;
+        protected set;
+    }
+
     public int Width  => this.Size.X;
     public int Height => this.Size.Y;
 
@@ -29,8 +29,8 @@ public abstract class VixieTexture : IDisposable {
     /// <param name="data">The data</param>
     /// <typeparam name="T">The type of data</typeparam>
     /// <returns></returns>
-    public abstract VixieTexture SetData <T>(ReadOnlySpan<T> data) where T : unmanaged;
-    public abstract VixieTexture SetData <T>(ReadOnlySpan<T> data, Rectangle rect) where T : unmanaged;
+    public abstract VixieTexture SetData <pT>(ReadOnlySpan<pT> data) where pT : unmanaged;
+    public abstract VixieTexture SetData <pT>(ReadOnlySpan<pT> data, Rectangle rect) where pT : unmanaged;
     /// <summary>
     /// Copies the data of the texture into CPU memory
     /// </summary>

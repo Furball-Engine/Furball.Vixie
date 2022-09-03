@@ -39,13 +39,13 @@ public class ImGuiController : IDisposable {
     private Pipeline       _pipeline;
     private ResourceSet    _mainResourceSet;
     private ResourceSet    _fontTextureResourceSet;
-    private IntPtr         _fontAtlasID = (IntPtr)1;
+    private IntPtr         _fontAtlasId = (IntPtr)1;
 
     // Image trackers
     private readonly Dictionary<IntPtr, ResourceSetInfo> _viewsById          = new Dictionary<IntPtr, ResourceSetInfo>();
     private readonly List<IDisposable>                   _ownedResources     = new List<IDisposable>();
     private          ColorSpaceHandling                  _colorSpaceHandling = ColorSpaceHandling.Legacy;
-    public           Assembly                            _assembly;
+    public           Assembly                            Assembly;
 
     private IntPtr _context;
 
@@ -53,7 +53,7 @@ public class ImGuiController : IDisposable {
     /// Constructs a new ImGuiController with font configuration and onConfigure Action.
     /// </summary>
     public ImGuiController(GraphicsDevice gd, OutputDescription outputDescription, IView view, IInputContext input) {
-        this._assembly = typeof(ImGuiController).Assembly;
+        this.Assembly = typeof(ImGuiController).Assembly;
 
         this.Init(gd, view, input);
 
@@ -142,7 +142,7 @@ public class ImGuiController : IDisposable {
         io.DeltaTime = deltaSeconds; // DeltaTime is in seconds.
     }
 
-    private Key[] keyEnumValues = (Key[])Enum.GetValues(typeof(Key));
+    private Key[] _keyEnumValues = (Key[])Enum.GetValues(typeof(Key));
     private void UpdateImGuiInput() {
         var io = ImGui.GetIO();
 
@@ -160,8 +160,8 @@ public class ImGuiController : IDisposable {
         io.MouseWheel  = wheel.Y;
         io.MouseWheelH = wheel.X;
 
-        for (var i = 0; i < this.keyEnumValues.Length; i++) {
-            Key key = this.keyEnumValues[i];
+        for (var i = 0; i < this._keyEnumValues.Length; i++) {
+            Key key = this._keyEnumValues[i];
             if (key == Key.Unknown) {
                 continue;
             }
@@ -215,35 +215,35 @@ public class ImGuiController : IDisposable {
         return rsi.ResourceSet;
     }
 
-    private unsafe void RenderImDrawData(ImDrawDataPtr draw_data, GraphicsDevice gd, CommandList cl) {
+    private unsafe void RenderImDrawData(ImDrawDataPtr drawData, GraphicsDevice gd, CommandList cl) {
         uint vertexOffsetInVertices = 0;
         uint indexOffsetInElements  = 0;
 
-        if (draw_data.CmdListsCount == 0) {
+        if (drawData.CmdListsCount == 0) {
             return;
         }
 
-        uint totalVBSize = (uint)(draw_data.TotalVtxCount * sizeof(ImDrawVert));
-        if (totalVBSize > this._vertexBuffer.SizeInBytes) {
+        uint totalVbSize = (uint)(drawData.TotalVtxCount * sizeof(ImDrawVert));
+        if (totalVbSize > this._vertexBuffer.SizeInBytes) {
             this._vertexBuffer.Dispose();
-            this._vertexBuffer = gd.ResourceFactory.CreateBuffer(new BufferDescription((uint)(totalVBSize * 1.5f), BufferUsage.VertexBuffer | BufferUsage.Dynamic));
+            this._vertexBuffer = gd.ResourceFactory.CreateBuffer(new BufferDescription((uint)(totalVbSize * 1.5f), BufferUsage.VertexBuffer | BufferUsage.Dynamic));
         }
 
-        uint totalIBSize = (uint)(draw_data.TotalIdxCount * sizeof(ushort));
-        if (totalIBSize > this._indexBuffer.SizeInBytes) {
+        uint totalIbSize = (uint)(drawData.TotalIdxCount * sizeof(ushort));
+        if (totalIbSize > this._indexBuffer.SizeInBytes) {
             this._indexBuffer.Dispose();
-            this._indexBuffer = gd.ResourceFactory.CreateBuffer(new BufferDescription((uint)(totalIBSize * 1.5f), BufferUsage.IndexBuffer | BufferUsage.Dynamic));
+            this._indexBuffer = gd.ResourceFactory.CreateBuffer(new BufferDescription((uint)(totalIbSize * 1.5f), BufferUsage.IndexBuffer | BufferUsage.Dynamic));
         }
 
-        for (int i = 0; i < draw_data.CmdListsCount; i++) {
-            ImDrawListPtr cmd_list = draw_data.CmdListsRange[i];
+        for (int i = 0; i < drawData.CmdListsCount; i++) {
+            ImDrawListPtr cmdList = drawData.CmdListsRange[i];
 
-            cl.UpdateBuffer(this._vertexBuffer, vertexOffsetInVertices * (uint)sizeof(ImDrawVert), cmd_list.VtxBuffer.Data, (uint)(cmd_list.VtxBuffer.Size * sizeof(ImDrawVert)));
+            cl.UpdateBuffer(this._vertexBuffer, vertexOffsetInVertices * (uint)sizeof(ImDrawVert), cmdList.VtxBuffer.Data, (uint)(cmdList.VtxBuffer.Size * sizeof(ImDrawVert)));
 
-            cl.UpdateBuffer(this._indexBuffer, indexOffsetInElements * sizeof(ushort), cmd_list.IdxBuffer.Data, (uint)(cmd_list.IdxBuffer.Size * sizeof(ushort)));
+            cl.UpdateBuffer(this._indexBuffer, indexOffsetInElements * sizeof(ushort), cmdList.IdxBuffer.Data, (uint)(cmdList.IdxBuffer.Size * sizeof(ushort)));
 
-            vertexOffsetInVertices += (uint)cmd_list.VtxBuffer.Size;
-            indexOffsetInElements  += (uint)cmd_list.IdxBuffer.Size;
+            vertexOffsetInVertices += (uint)cmdList.VtxBuffer.Size;
+            indexOffsetInElements  += (uint)cmdList.IdxBuffer.Size;
         }
 
         // Setup orthographic projection matrix into our constant buffer
@@ -260,20 +260,20 @@ public class ImGuiController : IDisposable {
         cl.SetPipeline(this._pipeline);
         cl.SetGraphicsResourceSet(0, this._mainResourceSet);
 
-        draw_data.ScaleClipRects(ImGui.GetIO().DisplayFramebufferScale);
+        drawData.ScaleClipRects(ImGui.GetIO().DisplayFramebufferScale);
 
         // Render command lists
-        int vtx_offset = 0;
-        int idx_offset = 0;
-        for (int n = 0; n < draw_data.CmdListsCount; n++) {
-            ImDrawListPtr cmd_list = draw_data.CmdListsRange[n];
-            for (int cmd_i = 0; cmd_i < cmd_list.CmdBuffer.Size; cmd_i++) {
-                ImDrawCmdPtr pcmd = cmd_list.CmdBuffer[cmd_i];
+        int vtxOffset = 0;
+        int idxOffset = 0;
+        for (int n = 0; n < drawData.CmdListsCount; n++) {
+            ImDrawListPtr cmdList = drawData.CmdListsRange[n];
+            for (int cmdI = 0; cmdI < cmdList.CmdBuffer.Size; cmdI++) {
+                ImDrawCmdPtr pcmd = cmdList.CmdBuffer[cmdI];
                 if (pcmd.UserCallback != IntPtr.Zero) {
                     throw new NotImplementedException();
                 }
                 if (pcmd.TextureId != IntPtr.Zero) {
-                    if (pcmd.TextureId == this._fontAtlasID) {
+                    if (pcmd.TextureId == this._fontAtlasId) {
                         cl.SetGraphicsResourceSet(1, this._fontTextureResourceSet);
                     } else {
                         cl.SetGraphicsResourceSet(1, this.GetImageResourceSet(pcmd.TextureId));
@@ -282,24 +282,24 @@ public class ImGuiController : IDisposable {
 
                 cl.SetScissorRect(0, (uint)pcmd.ClipRect.X, (uint)pcmd.ClipRect.Y, (uint)(pcmd.ClipRect.Z - pcmd.ClipRect.X), (uint)(pcmd.ClipRect.W - pcmd.ClipRect.Y));
 
-                cl.DrawIndexed(pcmd.ElemCount, 1, pcmd.IdxOffset + (uint)idx_offset, (int)(pcmd.VtxOffset + vtx_offset), 0);
+                cl.DrawIndexed(pcmd.ElemCount, 1, pcmd.IdxOffset + (uint)idxOffset, (int)(pcmd.VtxOffset + vtxOffset), 0);
             }
 
-            idx_offset += cmd_list.IdxBuffer.Size;
-            vtx_offset += cmd_list.VtxBuffer.Size;
+            idxOffset += cmdList.IdxBuffer.Size;
+            vtxOffset += cmdList.VtxBuffer.Size;
         }
             
         cl.SetFullScissorRect(0);
     }
 
     private string GetEmbeddedResourceText(string resourceName) {
-        using (StreamReader sr = new StreamReader(this._assembly.GetManifestResourceStream(resourceName))) {
+        using (StreamReader sr = new StreamReader(this.Assembly.GetManifestResourceStream(resourceName))) {
             return sr.ReadToEnd();
         }
     }
 
     private byte[] GetEmbeddedResourceBytes(string resourceName) {
-        using (Stream s = this._assembly.GetManifestResourceStream(resourceName)) {
+        using (Stream s = this.Assembly.GetManifestResourceStream(resourceName)) {
             byte[] ret = new byte[s.Length];
             s.Read(ret, 0, (int)s.Length);
             return ret;
@@ -392,7 +392,7 @@ public class ImGuiController : IDisposable {
         io.Fonts.GetTexDataAsRGBA32(out byte* pixels, out int width, out int height, out int bytesPerPixel);
 
         // Store our identifier
-        io.Fonts.SetTexID(this._fontAtlasID);
+        io.Fonts.SetTexID(this._fontAtlasId);
 
         this._fontTexture?.Dispose();
         this._fontTexture      = gd.ResourceFactory.CreateTexture(TextureDescription.Texture2D((uint)width, (uint)height, 1, 1, PixelFormat.R8_G8_B8_A8_UNorm, TextureUsage.Sampled));

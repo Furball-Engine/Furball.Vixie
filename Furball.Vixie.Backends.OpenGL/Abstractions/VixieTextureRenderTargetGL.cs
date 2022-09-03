@@ -6,11 +6,11 @@ using Silk.NET.OpenGL;
 
 namespace Furball.Vixie.Backends.OpenGL.Abstractions; 
 
-internal sealed class VixieTextureRenderTargetGL : VixieTextureRenderTarget, IDisposable {
+internal sealed class VixieTextureRenderTargetGl : VixieTextureRenderTarget, IDisposable {
     /// <summary>
     /// Currently Bound TextureRenderTarget
     /// </summary>
-    internal static VixieTextureRenderTargetGL CurrentlyBound;
+    internal static VixieTextureRenderTargetGl CurrentlyBound;
     /// <summary>
     /// Getter for Checking whether this Target is bound
     /// </summary>
@@ -44,14 +44,14 @@ internal sealed class VixieTextureRenderTargetGL : VixieTextureRenderTarget, IDi
     /// </summary>
     public int TargetHeight { get; private set; }
 
-    private VixieTextureGL _vixieTexture;
+    private VixieTextureGl _vixieTexture;
 
     public override Vector2D<int> Size {
         get => new Vector2D<int>(this.TargetWidth, this.TargetHeight);
         protected set => throw new Exception("Setting the size of TextureRenderTargets is currently unsupported.");
     }
 
-    private IGLBasedBackend _backend;
+    private IGlBasedBackend _backend;
 
     /// <summary>
     /// Creates a TextureRenderTarget
@@ -59,11 +59,11 @@ internal sealed class VixieTextureRenderTargetGL : VixieTextureRenderTarget, IDi
     /// <param name="width">Desired Width</param>
     /// <param name="height">Desired Width</param>
     /// <exception cref="Exception">Throws Exception if the Target didn't create properly</exception>
-    public unsafe VixieTextureRenderTargetGL(IGLBasedBackend backend, uint width, uint height) {
+    public unsafe VixieTextureRenderTargetGl(IGlBasedBackend backend, uint width, uint height) {
         this._backend = backend;
         this._backend.GlCheckThread();
 
-        this._gl = backend.GetModernGL();
+        this._gl = backend.GetModernGl();
         
         //Generate and bind a FrameBuffer
         this._frameBufferId = this._backend.GenFramebuffer();
@@ -115,10 +115,10 @@ internal sealed class VixieTextureRenderTargetGL : VixieTextureRenderTarget, IDi
         this.TargetWidth  = (int)width;
         this.TargetHeight = (int)height;
 
-        this._vixieTexture = new VixieTextureGL(backend, this._textureId, width, height);
+        this._vixieTexture = new VixieTextureGl(backend, this._textureId, width, height);
     }
 
-    ~VixieTextureRenderTargetGL() {
+    ~VixieTextureRenderTargetGl() {
         DisposeQueue.Enqueue(this);
     }
 
@@ -153,7 +153,7 @@ internal sealed class VixieTextureRenderTargetGL : VixieTextureRenderTarget, IDi
     /// Binds and sets a Lock so that the Target cannot be unbound/rebound
     /// </summary>
     /// <returns>Self, used for chaining Methods</returns>
-    internal VixieTextureRenderTargetGL LockingBind() {
+    internal VixieTextureRenderTargetGl LockingBind() {
         this._backend.GlCheckThread();
         this.Bind();
         this.Lock();
@@ -164,7 +164,7 @@ internal sealed class VixieTextureRenderTargetGL : VixieTextureRenderTarget, IDi
     /// Locks the Target so that other Targets cannot be bound/unbound/rebound
     /// </summary>
     /// <returns>Self, used for chaining Methods</returns>
-    internal VixieTextureRenderTargetGL Lock() {
+    internal VixieTextureRenderTargetGl Lock() {
         this._backend.GlCheckThread();
         this.Locked = true;
 
@@ -174,7 +174,7 @@ internal sealed class VixieTextureRenderTargetGL : VixieTextureRenderTarget, IDi
     /// Unlocks the Target, so that other Targets can be bound
     /// </summary>
     /// <returns>Self, used for chaining Methods</returns>
-    internal VixieTextureRenderTargetGL Unlock() {
+    internal VixieTextureRenderTargetGl Unlock() {
         this._backend.GlCheckThread();
         this.Locked = false;
 
@@ -184,7 +184,7 @@ internal sealed class VixieTextureRenderTargetGL : VixieTextureRenderTarget, IDi
     /// Uninds and unlocks the Target so that other Targets can be bound/rebound
     /// </summary>
     /// <returns>Self, used for chaining Methods</returns>
-    internal VixieTextureRenderTargetGL UnlockingUnbind() {
+    internal VixieTextureRenderTargetGl UnlockingUnbind() {
         this._backend.GlCheckThread();
         this.Unlock();
         this.Unbind();

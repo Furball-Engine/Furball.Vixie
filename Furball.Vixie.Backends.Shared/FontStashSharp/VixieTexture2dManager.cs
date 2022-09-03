@@ -7,8 +7,8 @@ using Rectangle = System.Drawing.Rectangle;
 namespace Furball.Vixie.Backends.Shared.FontStashSharp; 
 
 public class VixieTexture2dManager : ITexture2DManager {
-    private readonly IGraphicsBackend _backend;
-    public VixieTexture2dManager(IGraphicsBackend backend) {
+    private readonly GraphicsBackend _backend;
+    public VixieTexture2dManager(GraphicsBackend backend) {
         this._backend = backend;
     }
     

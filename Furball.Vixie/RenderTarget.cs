@@ -20,7 +20,7 @@ public class RenderTarget : IDisposable {
         this._target  = GraphicsBackend.Current.CreateRenderTarget(width, height);
         this._texture = this._target.GetTexture();
         
-        Global.TRACKED_RENDER_TARGETS.Add(new WeakReference<RenderTarget>(this));
+        Global.TrackedRenderTargets.Add(new WeakReference<RenderTarget>(this));
         
         this.Size = new Vector2D<int>((int)width, (int)height);
     }
@@ -35,10 +35,10 @@ public class RenderTarget : IDisposable {
 
     public Rgba32[] GetData() => this._texture.GetData();
 
-    public void SetData<T>(T[] arr, Rectangle? rect = null) where T : unmanaged {
+    public void SetData<pT>(pT[] arr, Rectangle? rect = null) where pT : unmanaged {
         rect ??= new Rectangle(0, 0, this.Size.X, this.Size.Y);
         
-        this._texture.SetData<T>(arr, rect.Value);
+        this._texture.SetData<pT>(arr, rect.Value);
     }
     
     ~RenderTarget() {

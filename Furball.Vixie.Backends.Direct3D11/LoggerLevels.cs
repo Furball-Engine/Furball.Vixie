@@ -5,7 +5,7 @@ namespace Furball.Vixie.Backends.Direct3D11;
 internal class LoggerLevelD3D11 : LoggerLevel {
     public override string Name => "Direct3D11";
 
-    private enum Channel {
+    private new enum Channel {
         Error,
         Warning,
         Info

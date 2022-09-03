@@ -5,7 +5,7 @@ namespace Furball.Vixie.Backends.Veldrid;
 internal class LoggerLevelVeldrid : LoggerLevel {
     public override string Name => "Veldrid";
 
-    private enum Channel {
+    private new enum Channel {
         Info,
         Warning,
         Error

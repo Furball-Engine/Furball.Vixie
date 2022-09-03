@@ -46,7 +46,7 @@ internal struct LayoutElement {
     }
 }
 
-internal class VertexBufferLayoutGL {
+internal class VertexBufferLayoutGl {
     /// <summary>
     /// All of the Layout Elements
     /// </summary>
@@ -56,7 +56,7 @@ internal class VertexBufferLayoutGL {
     /// </summary>
     private uint _stride;
 
-    public VertexBufferLayoutGL() {
+    public VertexBufferLayoutGl() {
         this._elements = new List<LayoutElement>();
     }
     /// <summary>
@@ -66,7 +66,7 @@ internal class VertexBufferLayoutGL {
     /// <param name="normalized">Do they need to be Normalized?</param>
     /// <typeparam name="pElementType">Type of Element</typeparam>
     /// <returns></returns>
-    public VertexBufferLayoutGL AddElement<pElementType>(int count, bool normalized = false, uint instanceDivisor = uint.MaxValue) where pElementType : unmanaged {
+    public VertexBufferLayoutGl AddElement<pElementType>(int count, bool normalized = false, uint instanceDivisor = uint.MaxValue) where pElementType : unmanaged {
         VertexAttribPointerType type = Type.GetTypeCode(typeof(pElementType)) switch {
             TypeCode.Single => VertexAttribPointerType.Float,
             TypeCode.Byte   => VertexAttribPointerType.Byte,

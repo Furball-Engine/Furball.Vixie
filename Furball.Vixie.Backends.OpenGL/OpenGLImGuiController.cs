@@ -13,15 +13,15 @@ using Silk.NET.Windowing;
 
 namespace Furball.Vixie.Backends.OpenGL;
 
-public enum OpenGLType {
+public enum OpenGlType {
     Modern,
     Legacy,
-    ES
+    Es
 }
 
 public class OpenGlImGuiController : ImGuiController {
     private readonly GL         _gl;
-    private readonly OpenGLType _type;
+    private readonly OpenGlType _type;
 
     private int  _attribLocationTex;
     private int  _attribLocationProjMtx;
@@ -54,7 +54,7 @@ public class OpenGlImGuiController : ImGuiController {
     private          int   _lastBlendEquationAlpha;
     private          uint  _shader;
 
-    public OpenGlImGuiController(GL gl, OpenGLType type, [NotNull] IView view, [NotNull] IInputContext input,
+    public OpenGlImGuiController(GL gl, OpenGlType type, [NotNull] IView view, [NotNull] IInputContext input,
                                  ImGuiFontConfig? imGuiFontConfig = null, [NotNull] Action onConfigureIo = null) : base(
         view, input, imGuiFontConfig, onConfigureIo) {
         this._gl   = gl;
@@ -71,21 +71,21 @@ public class OpenGlImGuiController : ImGuiController {
         this._gl.Disable(GLEnum.DepthTest);
         this._gl.Disable(GLEnum.StencilTest);
         this._gl.Enable(GLEnum.ScissorTest);
-        if (this._type == OpenGLType.Modern) {
+        if (this._type == OpenGlType.Modern) {
             this._gl.Disable(GLEnum.PrimitiveRestart);
             this._gl.PolygonMode(GLEnum.FrontAndBack, GLEnum.Fill);
         }
 
         float l = drawDataPtr.DisplayPos.X;
         float r = drawDataPtr.DisplayPos.X + drawDataPtr.DisplaySize.X;
-        float T = drawDataPtr.DisplayPos.Y;
+        float t = drawDataPtr.DisplayPos.Y;
         float b = drawDataPtr.DisplayPos.Y + drawDataPtr.DisplaySize.Y;
 
         Span<float> orthoProjection = stackalloc float[] {
             2.0f       / (r - l), 0.0f, 0.0f, 0.0f,
-            0.0f, 2.0f / (T - b), 0.0f, 0.0f,
+            0.0f, 2.0f / (t - b), 0.0f, 0.0f,
             0.0f, 0.0f, -1.0f, 0.0f,
-            (r + l) / (l - r), (T + b) / (b - T), 0.0f, 1.0f
+            (r + l) / (l - r), (t + b) / (b - t), 0.0f, 1.0f
         };
 
         this._gl.UseProgram(this._shader);
@@ -126,7 +126,7 @@ public class OpenGlImGuiController : ImGuiController {
         this._gl.GetInteger(GLEnum.ArrayBufferBinding, out this._lastArrayBuffer);
         this._gl.GetInteger(GLEnum.VertexArrayBinding, out this._lastVertexArrayObject);
 
-        if (this._type != OpenGLType.ES)
+        if (this._type != OpenGlType.Es)
             this._gl.GetInteger(GLEnum.PolygonMode, this._lastPolygonMode);
 
         this._gl.GetInteger(GLEnum.ScissorBox, this._lastScissorBox);
@@ -147,7 +147,7 @@ public class OpenGlImGuiController : ImGuiController {
         this._lastEnableScissorTest = this._gl.IsEnabled(GLEnum.ScissorTest);
 
         //PrimitiveRestart only exists on modern GL contexts
-        if (this._type == OpenGLType.Modern)
+        if (this._type == OpenGlType.Modern)
             this._lastEnablePrimitiveRestart = this._gl.IsEnabled(GLEnum.PrimitiveRestart);
     }
     protected override unsafe void Draw(ImDrawDataPtr drawDataPtr) {
@@ -240,7 +240,7 @@ public class OpenGlImGuiController : ImGuiController {
         else
             this._gl.Disable(GLEnum.ScissorTest);
 
-        if (this._type == OpenGLType.Modern) {
+        if (this._type == OpenGlType.Modern) {
             if (this._lastEnablePrimitiveRestart)
                 this._gl.Enable(GLEnum.PrimitiveRestart);
             else
@@ -294,7 +294,7 @@ public class OpenGlImGuiController : ImGuiController {
         string fragmentSource;
 
         switch (this._type) {
-            case OpenGLType.Modern:
+            case OpenGlType.Modern:
                 vertexSource = @"#version 330
         layout (location = 0) in vec2 Position;
         layout (location = 1) in vec2 UV;
@@ -318,7 +318,7 @@ public class OpenGlImGuiController : ImGuiController {
             Out_Color = Frag_Color * texture(Texture, Frag_UV.st);
         }";
                 break;
-            case OpenGLType.Legacy:
+            case OpenGlType.Legacy:
                 vertexSource = @"#version 110
 attribute vec2 Position;
 attribute vec2 UV;
@@ -341,7 +341,7 @@ void main()
     gl_FragColor = Frag_Color * texture2D(Texture, Frag_UV.st);
 }";
                 break;
-            case OpenGLType.ES:
+            case OpenGlType.Es:
                 vertexSource = @"#version 300 es
 precision highp float;
     

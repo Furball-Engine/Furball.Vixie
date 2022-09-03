@@ -11,38 +11,35 @@ using Vortice.Mathematics;
 using Rectangle=System.Drawing.Rectangle;
 #pragma warning disable CS8618
 
-namespace Furball.Vixie.Backends.Direct3D11.Abstractions; 
+namespace Furball.Vixie.Backends.Direct3D11.Abstractions;
 
 internal sealed class VixieTextureD3D11 : VixieTexture {
-    private Direct3D11Backend   _backend;
-    private ID3D11Device        _device;
-    private ID3D11DeviceContext _deviceContext;
+    private Direct3D11Backend _backend;
 
     private  ID3D11Texture2D          _texture;
     internal ID3D11ShaderResourceView TextureView;
-    private  Texture2DDescription     textureDescription;
+    private  Texture2DDescription     _textureDescription;
 
-    public VixieTextureD3D11(Direct3D11Backend backend, ID3D11Texture2D texture, ID3D11ShaderResourceView shaderResourceView, Vector2D<int> size, Texture2DDescription desc) {
+    public VixieTextureD3D11(
+        Direct3D11Backend backend, ID3D11Texture2D texture, ID3D11ShaderResourceView shaderResourceView,
+        Vector2D<int> size, Texture2DDescription desc
+    ) {
         backend.CheckThread();
-        this._backend       = backend;
-        this._deviceContext = backend.GetDeviceContext();
-        this._device        = backend.GetDevice();
+        this._backend = backend;
 
-        this._size = size;
+        this.Size = size;
 
         this._texture    = texture;
         this.TextureView = shaderResourceView;
-        
-        this.textureDescription = desc;
+
+        this._textureDescription = desc;
 
         this.GenerateMips();
     }
 
     public unsafe VixieTextureD3D11(Direct3D11Backend backend) {
         backend.CheckThread();
-        this._backend       = backend;
-        this._device        = backend.GetDevice();
-        this._deviceContext = backend.GetDeviceContext();
+        this._backend = backend;
 
         Texture2DDescription textureDescription = new Texture2DDescription {
             Width     = 1,
@@ -63,39 +60,37 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
 
         SubresourceData subresourceData = new(data, 4);
 
-        ID3D11Texture2D texture = this._device.CreateTexture2D(
+        ID3D11Texture2D texture = this._backend.Device.CreateTexture2D(
         textureDescription,
         new[] {
             subresourceData
         }
         );
-        ID3D11ShaderResourceView textureView = this._device.CreateShaderResourceView(texture);
+        ID3D11ShaderResourceView textureView = this._backend.Device.CreateShaderResourceView(texture);
 
-        
+
         this._texture    = texture;
         this.TextureView = textureView;
-        
+
         this.TextureView.DebugName = "white pixel";
 
-        this.textureDescription = textureDescription;
+        this._textureDescription = textureDescription;
 
         this.GenerateMips();
 
-        this._size = Vector2D<int>.One;
+        this.Size = Vector2D<int>.One;
     }
 
     public VixieTextureD3D11(Direct3D11Backend backend, byte[] imageData, TextureParameters parameters) {
         backend.CheckThread();
-        this._backend       = backend;
-        this._device        = backend.GetDevice();
-        this._deviceContext = backend.GetDeviceContext();
+        this._backend = backend;
 
         Image<Rgba32> image;
 
         bool qoi = imageData.Length > 3 && imageData[0] == 'q' && imageData[1] == 'o' && imageData[2] == 'i' &&
-                   imageData[3]     == 'f';
-        
-        if(qoi) {
+                   imageData[3] == 'f';
+
+        if (qoi) {
             (Rgba32[] pixels, QoiLoader.QoiHeader header) data = QoiLoader.Load(imageData);
 
             image = Image.LoadPixelData(data.pixels, (int)data.header.Width, (int)data.header.Height);
@@ -109,7 +104,7 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
 
         this.GenerateMips();
 
-        this._size = new Vector2D<int>(image.Width, image.Height);
+        this.Size = new Vector2D<int>(image.Width, image.Height);
 
         image.Dispose();
 
@@ -121,13 +116,13 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
         accessor => {
             for (int i = 0; i < accessor.Height; i++)
                 fixed (void* ptr = accessor.GetRowSpan(i)) {
-                    this._deviceContext.UpdateSubresource(
-                        this._texture,
-                        0,
-                        new Box(0, i, 0, accessor.Width, i + 1, 1),
-                        (IntPtr)ptr,
-                        sizeof(Rgba32) * accessor.Width,
-                        sizeof(Rgba32) * accessor.Width
+                    this._backend.DeviceContext.UpdateSubresource(
+                    this._texture,
+                    0,
+                    new Box(0, i, 0, accessor.Width, i + 1, 1),
+                    (IntPtr)ptr,
+                    sizeof(Rgba32) * accessor.Width,
+                    sizeof(Rgba32) * accessor.Width
                     );
                 }
         }
@@ -136,9 +131,7 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
 
     public VixieTextureD3D11(Direct3D11Backend backend, Stream stream, TextureParameters parameters) {
         backend.CheckThread();
-        this._backend       = backend;
-        this._device        = backend.GetDevice();
-        this._deviceContext = backend.GetDeviceContext();
+        this._backend = backend;
 
         Image<Rgba32> image = Image.Load<Rgba32>(stream);
 
@@ -148,7 +141,7 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
 
         this.GenerateMips();
 
-        this._size = new Vector2D<int>(image.Width, image.Height);
+        this.Size = new Vector2D<int>(image.Width, image.Height);
 
         image.Dispose();
 
@@ -157,15 +150,13 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
 
     public VixieTextureD3D11(Direct3D11Backend backend, uint width, uint height, TextureParameters parameters) {
         backend.CheckThread();
-        this._backend       = backend;
-        this._device        = backend.GetDevice();
-        this._deviceContext = backend.GetDeviceContext();
+        this._backend = backend;
 
         this.CreateTextureAndView((int)width, (int)height, parameters);
 
         this.GenerateMips();
 
-        this._size = new Vector2D<int>((int)width, (int)height);
+        this.Size = new Vector2D<int>((int)width, (int)height);
 
         this.FilterType = parameters.FilterType;
     }
@@ -177,19 +168,21 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
             MipLevels = parameters.RequestMipmaps ? this.MipMapCount(width, height) : 1,
             ArraySize = 1,
             Format    = Format.R8G8B8A8_UNorm,
-            BindFlags = parameters.RequestMipmaps ? BindFlags.ShaderResource | BindFlags.RenderTarget
+            BindFlags = parameters.RequestMipmaps
+                            ? BindFlags.ShaderResource | BindFlags.RenderTarget
                             : BindFlags.ShaderResource,
             Usage     = ResourceUsage.Default,
             MiscFlags = parameters.RequestMipmaps ? ResourceOptionFlags.GenerateMips : ResourceOptionFlags.None,
             SampleDescription = new SampleDescription {
-                Count = 1, Quality = 0
+                Count   = 1,
+                Quality = 0
             }
         };
 
-        this.textureDescription = textureDescription;
+        this._textureDescription = textureDescription;
 
-        ID3D11Texture2D          texture     = this._device.CreateTexture2D(textureDescription);
-        ID3D11ShaderResourceView textureView = this._device.CreateShaderResourceView(texture);
+        ID3D11Texture2D          texture     = this._backend.Device.CreateTexture2D(textureDescription);
+        ID3D11ShaderResourceView textureView = this._backend.Device.CreateShaderResourceView(texture);
 
         this._texture    = texture;
         this.TextureView = textureView;
@@ -199,12 +192,12 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
         DisposeQueue.Enqueue(this);
     }
 
-    public override bool Mipmaps => this.textureDescription.MipLevels != 1;
-        
-    public override unsafe VixieTexture SetData <pDataType>(ReadOnlySpan<pDataType> data) {
+    public override bool Mipmaps => this._textureDescription.MipLevels != 1;
+
+    public override unsafe VixieTexture SetData<pDataType>(ReadOnlySpan<pDataType> data) {
         this._backend.CheckThread();
         fixed (void* ptr = data) {
-            this._deviceContext.UpdateSubresource(
+            this._backend.DeviceContext.UpdateSubresource(
             this._texture,
             0,
             new Box(0, 0, 0, this.Width, this.Height, 1),
@@ -219,37 +212,41 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
         return this;
     }
 
-    public override unsafe VixieTexture SetData <pDataType>(ReadOnlySpan<pDataType> data, Rectangle rect) {
+    public override unsafe VixieTexture SetData<pDataType>(ReadOnlySpan<pDataType> data, Rectangle rect) {
         this._backend.CheckThread();
         fixed (void* dataPtr = data) {
-            this._deviceContext.UpdateSubresource(this._texture, 0,
-                                                  new Box(rect.X, rect.Y, 0, rect.X + rect.Width, rect.Y + rect.Height,
-                                                          1), (IntPtr)dataPtr, sizeof(Rgba32) * rect.Width,
-                                                  sizeof(Rgba32) * rect.Width * rect.Height);
+            this._backend.DeviceContext.UpdateSubresource(
+            this._texture,
+            0,
+            new Box(rect.X, rect.Y, 0, rect.X + rect.Width, rect.Y + rect.Height, 1),
+            (IntPtr)dataPtr,
+            sizeof(Rgba32) * rect.Width,
+            sizeof(Rgba32) * rect.Width * rect.Height
+            );
         }
 
-        this._deviceContext.PSSetShaderResource(0, this.TextureView);
+        this._backend.DeviceContext.PSSetShaderResource(0, this.TextureView);
 
         this.GenerateMips();
 
         return this;
     }
-    
+
     public override unsafe Rgba32[] GetData() {
-        Texture2DDescription desc = this.textureDescription;
+        Texture2DDescription desc = this._textureDescription;
         desc.Usage          = ResourceUsage.Staging;
         desc.CPUAccessFlags = CpuAccessFlags.Read;
         desc.Format         = Format.R8G8B8A8_UNorm_SRgb;
         desc.MipLevels      = 1;
 
         //Create staging texture
-        ID3D11Texture2D texture = this._device.CreateTexture2D(desc);
+        ID3D11Texture2D texture = this._backend.Device.CreateTexture2D(desc);
 
         //Copy texture to staging texture
-        this._deviceContext.CopyResource(texture, this._texture);
+        this._backend.DeviceContext.CopyResource(texture, this._texture);
 
         //Map data
-        MappedSubresource mapped = this._deviceContext.Map(texture, 0);
+        MappedSubresource mapped = this._backend.DeviceContext.Map(texture, 0);
 
         //Copy into array
         Span<Rgba32> rawData = mapped.AsSpan<Rgba32>(texture, 0, 0);
@@ -262,29 +259,30 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
             rawData.Slice(i * (mapped.RowPitch / sizeof(Rgba32)), desc.Width).CopyTo(data.AsSpan(i * desc.Width));
 
         //Unmap & dispose
-        this._deviceContext.Unmap(texture, 0, 0);
+        this._backend.DeviceContext.Unmap(texture, 0, 0);
         texture.Dispose();
-        
+
         return data;
     }
 
     private void GenerateMips() {
-        this._deviceContext.GenerateMips(this.TextureView);
+        this._backend.DeviceContext.GenerateMips(this.TextureView);
     }
 
     private TextureFilterType _filterType = TextureFilterType.Smooth;
+
     public override TextureFilterType FilterType {
         get => this._filterType;
         set {
             this._filterType = value;
-            
+
             //TODO: actually implement this
         }
     }
-    
+
     public VixieTexture BindToPixelShader(int slot) {
         this._backend.CheckThread();
-        this._deviceContext.PSSetShaderResource(slot, this.TextureView);
+        this._backend.DeviceContext.PSSetShaderResource(slot, this.TextureView);
 
         return this;
     }
@@ -293,15 +291,17 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
 
     public override void Dispose() {
         this._backend.CheckThread();
-            
+
         if (this._isDisposed)
             return;
 
         this._isDisposed = true;
 
         try {
-            this._texture?.Dispose();
-            this.TextureView?.Dispose();
-        } catch(NullReferenceException) { /* Apperantly thing?.Dispose can still throw a NullRefException? */ }
+            this._texture.Dispose();
+            this.TextureView.Dispose();
+        }
+        catch (NullReferenceException) {/* Apperantly thing?.Dispose can still throw a NullRefException? */
+        }
     }
 }

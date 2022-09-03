@@ -45,7 +45,7 @@ public class Texture : IDisposable {
 
         Texture managedTex = new(tex);
         
-        Global.TRACKED_TEXTURES.Add(new WeakReference<Texture>(managedTex));
+        Global.TrackedTextures.Add(new WeakReference<Texture>(managedTex));
         
         return managedTex;
     }
@@ -55,7 +55,7 @@ public class Texture : IDisposable {
 
         Texture managedTex = new(tex);
 
-        Global.TRACKED_TEXTURES.Add(new WeakReference<Texture>(managedTex));
+        Global.TrackedTextures.Add(new WeakReference<Texture>(managedTex));
 
         return managedTex;
     }
@@ -65,7 +65,7 @@ public class Texture : IDisposable {
 
         Texture managedTex = new(tex);
 
-        Global.TRACKED_TEXTURES.Add(new WeakReference<Texture>(managedTex));
+        Global.TrackedTextures.Add(new WeakReference<Texture>(managedTex));
 
         return managedTex;
     }
@@ -75,7 +75,7 @@ public class Texture : IDisposable {
 
         Texture managedTex = new(tex);
 
-        Global.TRACKED_TEXTURES.Add(new WeakReference<Texture>(managedTex));
+        Global.TrackedTextures.Add(new WeakReference<Texture>(managedTex));
 
         return managedTex;
     }
@@ -85,7 +85,7 @@ public class Texture : IDisposable {
         
         Texture managedTex = new(tex);
 
-        Global.TRACKED_TEXTURES.Add(new WeakReference<Texture>(managedTex));
+        Global.TrackedTextures.Add(new WeakReference<Texture>(managedTex));
 
         managedTex.SetData(image);
         
@@ -116,15 +116,15 @@ public class Texture : IDisposable {
         this.SetData(image.CloneAs<Rgba32>());
     }
 
-    public void SetData <T>(T[] data) where T : unmanaged {
-        this._texture.SetData<T>(data);
+    public void SetData <pT>(pT[] data) where pT : unmanaged {
+        this._texture.SetData<pT>(data);
     }
     
-    public void SetData<T>(ReadOnlySpan<T> data) where T : unmanaged {
+    public void SetData<pT>(ReadOnlySpan<pT> data) where pT : unmanaged {
         this._texture.SetData(data);
     }
     
-    public void SetData<T>(ReadOnlySpan<T> arr, Rectangle? rect = null) where T : unmanaged {
+    public void SetData<pT>(ReadOnlySpan<pT> arr, Rectangle? rect = null) where pT : unmanaged {
         rect ??= new Rectangle(0, 0, this.Size.X, this.Size.Y);
         
         this._texture.SetData(arr, rect.Value);

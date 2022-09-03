@@ -2,20 +2,20 @@ using Kettu;
 
 namespace Furball.Vixie.Backends.OpenGL; 
 
-internal class LoggerLevelOpenGL : LoggerLevel {
+internal class LoggerLevelOpenGl : LoggerLevel {
     public override string Name => "OpenGL";
 
-    private enum Channel {
+    private new enum Channel {
         Error,
         Warning,
         Info
     }
 
-    public static readonly LoggerLevelOpenGL InstanceError   = new(Channel.Error);
-    public static readonly LoggerLevelOpenGL InstanceWarning = new(Channel.Warning);
-    public static readonly LoggerLevelOpenGL InstanceInfo    = new(Channel.Info);
+    public static readonly LoggerLevelOpenGl InstanceError   = new(Channel.Error);
+    public static readonly LoggerLevelOpenGl InstanceWarning = new(Channel.Warning);
+    public static readonly LoggerLevelOpenGl InstanceInfo    = new(Channel.Info);
         
-    private LoggerLevelOpenGL(Channel channel) {
+    private LoggerLevelOpenGl(Channel channel) {
         base.Channel = channel.ToString();
     }
 }

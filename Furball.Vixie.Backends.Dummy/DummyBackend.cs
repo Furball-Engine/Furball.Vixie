@@ -12,7 +12,7 @@ using SixLabors.ImageSharp.PixelFormats;
 
 namespace Furball.Vixie.Backends.Dummy;
 
-public class DummyBackend : IGraphicsBackend {
+public class DummyBackend : GraphicsBackend {
 #if USE_IMGUI
         private DummyImGuiController _imgui;
 #endif

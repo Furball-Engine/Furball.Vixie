@@ -6,14 +6,14 @@ namespace Furball.Vixie.Input;
 
 public class Keyboard {
     public static KeyboardState GetState(int keyboard = 0) {
-        return Global.GameInstance._inputContext.Keyboards[keyboard].CaptureState();
+        return Global.GameInstance.InputContext.Keyboards[keyboard].CaptureState();
     }
 
     public static IReadOnlyList<IKeyboard> GetKeyboards() {
-        return Global.GameInstance._inputContext.Keyboards;
+        return Global.GameInstance.InputContext.Keyboards;
     }
 
     public static IKeyboard GetKeyboard(int keyboard = 0) {
-        return Global.GameInstance._inputContext.Keyboards[keyboard];
+        return Global.GameInstance.InputContext.Keyboards[keyboard];
     }
 }

@@ -16,12 +16,12 @@ public static class QoiLoader {
     private const byte QOI_MASK_2 = 0xc0; /* 11000000 */
         
     public enum Channel : byte {
-        RGB  = 3,
-        RGBA = 4
+        Rgb  = 3,
+        Rgba = 4
     }
 
     public enum ColorSpace : byte {
-        LinearAlphaSRGB = 0,
+        LinearAlphaSrgb = 0,
         AllLinear       = 1
     }
 
@@ -36,7 +36,7 @@ public static class QoiLoader {
         return (pixel.R * 3 + pixel.G * 5 + pixel.B * 7 + pixel.A * 11) % 64;
     }
 
-    private static readonly byte[] QOI_PADDING = new byte[] {
+    private static readonly byte[] QoiPadding = new byte[] {
         0, 0, 0, 0, 0, 0, 0, 1
     };
 
@@ -93,7 +93,7 @@ public static class QoiLoader {
         Rgba32 px = new(0, 0, 0, 255);
 
         //The length of a chunk?
-        int chunksLen = file.Length - QOI_PADDING.Length * sizeof(byte);
+        int chunksLen = file.Length - QoiPadding.Length * sizeof(byte);
             
         for (pixelPosition = 0; pixelPosition < totalPixels; pixelPosition++) {
             if (run > 0) {

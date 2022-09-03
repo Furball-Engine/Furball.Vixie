@@ -11,8 +11,8 @@ using Rectangle=System.Drawing.Rectangle;
 
 namespace Furball.Vixie.Backends.OpenGL.Abstractions; 
 
-internal sealed class VixieTextureGL : VixieTexture, IDisposable {
-    private readonly IGLBasedBackend _backend;
+internal sealed class VixieTextureGl : VixieTexture, IDisposable {
+    private readonly IGlBasedBackend _backend;
     /// <summary>
     /// All the Currently Bound Textures
     /// </summary>
@@ -88,7 +88,7 @@ internal sealed class VixieTextureGL : VixieTexture, IDisposable {
     /// <param name="backend"></param>
     /// <param name="imageData">Image Data</param>
     /// <param name="parameters"></param>
-    public VixieTextureGL(IGLBasedBackend backend, byte[] imageData, TextureParameters parameters) {
+    public VixieTextureGl(IGlBasedBackend backend, byte[] imageData, TextureParameters parameters) {
         this._backend = backend;
         this._backend.GlCheckThread();
         this._mipmaps = parameters.RequestMipmaps;
@@ -111,14 +111,14 @@ internal sealed class VixieTextureGL : VixieTexture, IDisposable {
 
         this.Load(image);
 
-        this._size = new Vector2D<int>(width, height);
+        this.Size = new Vector2D<int>(width, height);
 
         this.FilterType = parameters.FilterType;
     }
     /// <summary>
     /// Creates a Texture with a single White Pixel
     /// </summary>
-    public unsafe VixieTextureGL(IGLBasedBackend backend) {
+    public unsafe VixieTextureGl(IGlBasedBackend backend) {
         this._backend = backend;
         this._backend.GlCheckThread();
             
@@ -145,7 +145,7 @@ internal sealed class VixieTextureGL : VixieTexture, IDisposable {
         this._backend.BindTexture(TextureTarget.Texture2D, 0);
         this._backend.CheckError("create white pixel texture");
 
-        this._size = new Vector2D<int>(1, 1);
+        this.Size = new Vector2D<int>(1, 1);
     }
     /// <summary>
     /// Creates a Empty texture given a width and height
@@ -154,7 +154,7 @@ internal sealed class VixieTextureGL : VixieTexture, IDisposable {
     /// <param name="width">Desired Width</param>
     /// <param name="height">Desired Height</param>
     /// <param name="parameters"></param>
-    public unsafe VixieTextureGL(IGLBasedBackend backend, uint width, uint height, TextureParameters parameters) {
+    public unsafe VixieTextureGl(IGlBasedBackend backend, uint width, uint height, TextureParameters parameters) {
         this._backend = backend;
         this._backend.GlCheckThread();
         this._mipmaps = parameters.RequestMipmaps;
@@ -172,7 +172,7 @@ internal sealed class VixieTextureGL : VixieTexture, IDisposable {
         this._backend.BindTexture(TextureTarget.Texture2D, 0);
         this._backend.CheckError("create blank texture with width + height");
 
-        this._size = new Vector2D<int>((int)width, (int)height);
+        this.Size = new Vector2D<int>((int)width, (int)height);
     }
     /// <summary>
     /// Creates a Texture from a Stream which Contains Image Data
@@ -180,7 +180,7 @@ internal sealed class VixieTextureGL : VixieTexture, IDisposable {
     /// <param name="backend"></param>
     /// <param name="stream">Image Data Stream</param>
     /// <param name="parameters"></param>
-    public VixieTextureGL(IGLBasedBackend backend, Stream stream, TextureParameters parameters) {
+    public VixieTextureGl(IGlBasedBackend backend, Stream stream, TextureParameters parameters) {
         this._backend = backend;
         this._backend.GlCheckThread();
         this._mipmaps = parameters.RequestMipmaps;
@@ -192,7 +192,7 @@ internal sealed class VixieTextureGL : VixieTexture, IDisposable {
 
         this.Load(image);
 
-        this._size = new Vector2D<int>(width, height);
+        this.Size = new Vector2D<int>(width, height);
 
         this.FilterType = parameters.FilterType;
         
@@ -206,14 +206,14 @@ internal sealed class VixieTextureGL : VixieTexture, IDisposable {
         this._backend.GenerateMipmaps(this);
     }
     
-    ~VixieTextureGL() {
+    ~VixieTextureGl() {
         DisposeQueue.Enqueue(this);
     }
 
     private unsafe void Load(Image<Rgba32> image) {
         this._backend.GlCheckThread();
         this.Load(null, image.Width, image.Height);
-        this.Bind(TextureUnit.Texture0);
+        this.Bind();
         image.ProcessPixelRows(accessor =>
         {
             for (int i = 0; i < accessor.Height; i++) {
@@ -232,11 +232,11 @@ internal sealed class VixieTextureGL : VixieTexture, IDisposable {
     /// <param name="textureId">OpenGL Texture ID</param>
     /// <param name="width">Width of the Texture</param>
     /// <param name="height">Height of the Texture</param>
-    internal VixieTextureGL(IGLBasedBackend backend, uint textureId, uint width, uint height) {
+    internal VixieTextureGl(IGlBasedBackend backend, uint textureId, uint width, uint height) {
         this._backend = backend;
         this._backend.GlCheckThread();
         this.TextureId = textureId;
-        this._size     = new Vector2D<int>((int)width, (int)height);
+        this.Size     = new Vector2D<int>((int)width, (int)height);
     }
 
     /// <summary>
@@ -324,7 +324,7 @@ internal sealed class VixieTextureGL : VixieTexture, IDisposable {
     /// </summary>
     /// <param name="textureSlot">Desired Texture Slot</param>
     /// <returns>Self, used for chaining methods</returns>
-    public VixieTextureGL Bind(TextureUnit textureSlot = TextureUnit.Texture0) {
+    public VixieTextureGl Bind(TextureUnit textureSlot = TextureUnit.Texture0) {
         this._backend.GlCheckThread();
         if (this.Locked)
             return null;
@@ -350,9 +350,9 @@ internal sealed class VixieTextureGL : VixieTexture, IDisposable {
     /// Binds and sets a Lock so that the Texture cannot be unbound/rebound
     /// </summary>
     /// <returns>Self, used for chaining Methods</returns>
-    internal VixieTextureGL LockingBind() {
+    internal VixieTextureGl LockingBind() {
         this._backend.GlCheckThread();
-        this.Bind(TextureUnit.Texture0);
+        this.Bind();
         this.Lock();
 
         return this;
@@ -361,7 +361,7 @@ internal sealed class VixieTextureGL : VixieTexture, IDisposable {
     /// Locks the Texture so that other Textures cannot be bound/unbound/rebound
     /// </summary>
     /// <returns>Self, used for chaining Methods</returns>
-    internal VixieTextureGL Lock() {
+    internal VixieTextureGl Lock() {
         this._backend.GlCheckThread();
         this.Locked = true;
 
@@ -371,7 +371,7 @@ internal sealed class VixieTextureGL : VixieTexture, IDisposable {
     /// Unlocks the Texture, so that other Textures can be bound
     /// </summary>
     /// <returns>Self, used for chaining Methods</returns>
-    internal VixieTextureGL Unlock() {
+    internal VixieTextureGl Unlock() {
         this._backend.GlCheckThread();
         this.Locked = false;
 
@@ -381,7 +381,7 @@ internal sealed class VixieTextureGL : VixieTexture, IDisposable {
     /// Uninds and unlocks the Texture so that other Textures can be bound/rebound
     /// </summary>
     /// <returns>Self, used for chaining Methods</returns>
-    internal VixieTextureGL UnlockingUnbind() {
+    internal VixieTextureGl UnlockingUnbind() {
         this._backend.GlCheckThread();
         this.Unlock();
         this.Unbind();
@@ -393,7 +393,7 @@ internal sealed class VixieTextureGL : VixieTexture, IDisposable {
     /// Unbinds the Texture
     /// </summary>
     /// <returns>Self, used for chaining methods</returns>
-    public VixieTextureGL Unbind() {
+    public VixieTextureGl Unbind() {
         this._backend.GlCheckThread();
         if (this.Locked)
             return null;

@@ -7,29 +7,23 @@ using Vortice.Direct3D11;
 using Vortice.DXGI;
 using Vortice.Mathematics;
 
-namespace Furball.Vixie.Backends.Direct3D11.Abstractions; 
+namespace Furball.Vixie.Backends.Direct3D11.Abstractions;
 
 internal sealed class VixieTextureRenderTargetD3D11 : VixieTextureRenderTarget {
     public override Vector2D<int> Size { get; protected set; }
 
-    private Direct3D11Backend        _backend;
-    private ID3D11Device             _device;
-    private ID3D11DeviceContext      _deviceContext;
-    private ID3D11Texture2D          _renderTargetTexture;
-    private ID3D11RenderTargetView   _renderTarget;
-    private ID3D11ShaderResourceView _shaderResourceView;
+    private readonly Direct3D11Backend        _backend;
+    private readonly ID3D11Texture2D          _renderTargetTexture;
+    private readonly ID3D11RenderTargetView   _renderTarget;
+    private readonly ID3D11ShaderResourceView _shaderResourceView;
 
     private readonly Texture2DDescription _texDesc;
 
     private readonly VixieTexture _vixieTexture;
-    
-    private Viewport[] _viewports;
 
     public VixieTextureRenderTargetD3D11(Direct3D11Backend backend, uint width, uint height) {
         this._backend = backend;
         this._backend.CheckThread();
-        this._deviceContext = backend.GetDeviceContext();
-        this._device        = backend.GetDevice();
 
         Texture2DDescription renderTargetTextureDescription = new Texture2DDescription {
             Width     = (int)width,
@@ -40,13 +34,14 @@ internal sealed class VixieTextureRenderTargetD3D11 : VixieTextureRenderTarget {
             BindFlags = BindFlags.ShaderResource | BindFlags.RenderTarget,
             Usage     = ResourceUsage.Default,
             SampleDescription = new SampleDescription {
-                Count = 1, Quality = 0
+                Count   = 1,
+                Quality = 0
             },
         };
 
         this._texDesc = renderTargetTextureDescription;
 
-        ID3D11Texture2D renderTargetTexture = this._device.CreateTexture2D(renderTargetTextureDescription);
+        ID3D11Texture2D renderTargetTexture = backend.Device.CreateTexture2D(renderTargetTextureDescription);
 
         RenderTargetViewDescription renderTargetDescription = new RenderTargetViewDescription {
             Format        = renderTargetTextureDescription.Format,
@@ -55,7 +50,8 @@ internal sealed class VixieTextureRenderTargetD3D11 : VixieTextureRenderTarget {
 
         renderTargetDescription.Texture2D.MipSlice = 0;
 
-        ID3D11RenderTargetView renderTarget = this._device.CreateRenderTargetView(renderTargetTexture, renderTargetDescription);
+        ID3D11RenderTargetView renderTarget =
+            backend.Device.CreateRenderTargetView(renderTargetTexture, renderTargetDescription);
 
         ShaderResourceViewDescription shaderResourceViewDescription = new ShaderResourceViewDescription {
             Format        = renderTargetDescription.Format,
@@ -65,16 +61,21 @@ internal sealed class VixieTextureRenderTargetD3D11 : VixieTextureRenderTarget {
         shaderResourceViewDescription.Texture2D.MostDetailedMip = 0;
         shaderResourceViewDescription.Texture2D.MipLevels       = 1;
 
-        ID3D11ShaderResourceView shaderResourceView = this._device.CreateShaderResourceView(renderTargetTexture, shaderResourceViewDescription);
+        ID3D11ShaderResourceView shaderResourceView =
+            backend.Device.CreateShaderResourceView(renderTargetTexture, shaderResourceViewDescription);
 
         this._renderTargetTexture = renderTargetTexture;
         this._renderTarget        = renderTarget;
         this._shaderResourceView  = shaderResourceView;
         this.Size                 = new Vector2D<int>((int)width, (int)height);
-        this._viewports           = new Viewport[16];
 
-        this._vixieTexture = new VixieTextureD3D11(this._backend, this._renderTargetTexture, this._shaderResourceView,
-            this.Size, this._texDesc);
+        this._vixieTexture = new VixieTextureD3D11(
+        this._backend,
+        this._renderTargetTexture,
+        this._shaderResourceView,
+        this.Size,
+        this._texDesc
+        );
     }
 
     ~VixieTextureRenderTargetD3D11() {
@@ -83,14 +84,21 @@ internal sealed class VixieTextureRenderTargetD3D11 : VixieTextureRenderTarget {
 
     public override void Bind() {
         this._backend.CheckThread();
-        this._deviceContext.OMSetRenderTargets(this._renderTarget);
+        this._backend.DeviceContext.OMSetRenderTargets(this._renderTarget);
         this._backend.CurrentlyBoundTarget = this._renderTarget;
         this._backend.ResetBlendState();
 
-        this._startingViewport = this._deviceContext.RSGetViewport();
+        this._startingViewport = this._backend.DeviceContext.RSGetViewport();
 
-        Viewport newViewport = new Viewport(0, 0, this.Size.X, this.Size.Y, this._startingViewport.MinDepth, this._startingViewport.MaxDepth);
-        this._deviceContext.RSSetViewport(newViewport);
+        Viewport newViewport = new Viewport(
+        0,
+        0,
+        this.Size.X,
+        this.Size.Y,
+        this._startingViewport.MinDepth,
+        this._startingViewport.MaxDepth
+        );
+        this._backend.DeviceContext.RSSetViewport(newViewport);
         this._backend.SetProjectionMatrix(this.Size.X, this.Size.Y, true);
     }
 
@@ -98,7 +106,7 @@ internal sealed class VixieTextureRenderTargetD3D11 : VixieTextureRenderTarget {
         this._backend.CheckThread();
         this._backend.SetDefaultRenderTarget();
 
-        this._deviceContext.RSSetViewport(this._startingViewport);
+        this._backend.DeviceContext.RSSetViewport(this._startingViewport);
         this._backend.SetProjectionMatrix((int)this._startingViewport.Width, (int)this._startingViewport.Height, false);
     }
 
@@ -114,7 +122,9 @@ internal sealed class VixieTextureRenderTargetD3D11 : VixieTextureRenderTarget {
         this._isDisposed = true;
 
         try {
-            this._renderTarget?.Dispose();
-        } catch(NullReferenceException) { /* Apperantly thing?.Dispose can still throw a NullRefException? */ }
+            this._renderTarget.Dispose();
+        }
+        catch (NullReferenceException) {/* Apperantly thing?.Dispose can still throw a NullRefException? */
+        }
     }
 }

@@ -4,12 +4,12 @@ using Silk.NET.OpenGL;
 
 namespace Furball.Vixie.Backends.OpenGL.Abstractions; 
 
-internal sealed class VertexArrayObjectGL : IDisposable {
-    private readonly IGLBasedBackend _backend;
+internal sealed class VertexArrayObjectGl : IDisposable {
+    private readonly IGlBasedBackend _backend;
     /// <summary>
     /// Current Bound VAO
     /// </summary>
-    internal static VertexArrayObjectGL CurrentlyBound;
+    internal static VertexArrayObjectGl CurrentlyBound;
     /// <summary>
     /// Getter to check whether this VAO is bound
     /// </summary>
@@ -19,7 +19,7 @@ internal sealed class VertexArrayObjectGL : IDisposable {
     /// </summary>
     internal uint ArrayId;
 
-    public VertexArrayObjectGL(IGLBasedBackend backend) {
+    public VertexArrayObjectGl(IGlBasedBackend backend) {
         this._backend = backend;
         this._backend.GlCheckThread();
 
@@ -28,7 +28,7 @@ internal sealed class VertexArrayObjectGL : IDisposable {
         this._backend.CheckError("gen vertex arr");
     }
 
-    ~VertexArrayObjectGL() {
+    ~VertexArrayObjectGl() {
         DisposeQueue.Enqueue(this);
     }
 
@@ -37,7 +37,7 @@ internal sealed class VertexArrayObjectGL : IDisposable {
     /// </summary>
     /// <param name="vertexBuffer">Vertex Buffer to add</param>
     /// <param name="layoutGl41">Layout of said Vertex Buffer</param>
-    public unsafe VertexArrayObjectGL AddBuffer(BufferObjectGL vertexBuffer, VertexBufferLayoutGL layoutGl41, uint iOffset = 0) {
+    public unsafe VertexArrayObjectGl AddBuffer(BufferObjectGl vertexBuffer, VertexBufferLayoutGl layoutGl41, uint iOffset = 0) {
         this._backend.GlCheckThread();
         //Bind both this and the Vertex Buffer
         this.Bind();
@@ -71,7 +71,7 @@ internal sealed class VertexArrayObjectGL : IDisposable {
     /// <summary>
     /// Binds or Selects this current Vertex Array
     /// </summary>
-    public VertexArrayObjectGL Bind() {
+    public VertexArrayObjectGl Bind() {
         this._backend.GlCheckThread();
         if (this.Locked)
             return null;
@@ -95,7 +95,7 @@ internal sealed class VertexArrayObjectGL : IDisposable {
     /// Binds and sets a Lock so that the Texture cannot be unbound/rebound
     /// </summary>
     /// <returns>Self, used for chaining Methods</returns>
-    public VertexArrayObjectGL LockingBind() {
+    public VertexArrayObjectGl LockingBind() {
         this._backend.GlCheckThread();
         this.Bind();
         this.Lock();
@@ -106,7 +106,7 @@ internal sealed class VertexArrayObjectGL : IDisposable {
     /// Locks the Texture so that other Textures cannot be bound/unbound/rebound
     /// </summary>
     /// <returns>Self, used for chaining Methods</returns>
-    internal VertexArrayObjectGL Lock() {
+    internal VertexArrayObjectGl Lock() {
         this._backend.GlCheckThread();
         this.Locked = true;
 
@@ -116,7 +116,7 @@ internal sealed class VertexArrayObjectGL : IDisposable {
     /// Unlocks the Texture, so that other Textures can be bound
     /// </summary>
     /// <returns>Self, used for chaining Methods</returns>
-    public VertexArrayObjectGL Unlock() {
+    public VertexArrayObjectGl Unlock() {
         this._backend.GlCheckThread();
         this.Locked = false;
 
@@ -126,7 +126,7 @@ internal sealed class VertexArrayObjectGL : IDisposable {
     /// Uninds and unlocks the Texture so that other Textures can be bound/rebound
     /// </summary>
     /// <returns>Self, used for chaining Methods</returns>
-    internal VertexArrayObjectGL UnlockingUnbind() {
+    internal VertexArrayObjectGl UnlockingUnbind() {
         this._backend.GlCheckThread();
         this.Unlock();
         this.Unbind();
@@ -137,7 +137,7 @@ internal sealed class VertexArrayObjectGL : IDisposable {
     /// <summary>
     /// Unbinds all Vertex Arrays
     /// </summary>
-    public VertexArrayObjectGL Unbind() {
+    public VertexArrayObjectGl Unbind() {
         this._backend.GlCheckThread();
         if (this.Locked)
             return null;

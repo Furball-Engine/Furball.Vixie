@@ -2,18 +2,18 @@ using Silk.NET.OpenGL;
 
 namespace Furball.Vixie.Backends.OpenGL.Abstractions; 
 
-public enum GLBackendType {
+public enum GlBackendType {
     Modern,
-    ES,
+    Es,
     Legacy
 }
 
-internal interface IGLBasedBackend {
+internal interface IGlBasedBackend {
     public float VerticalRatio { get; set; }
         
-    public GL                        GetModernGL();
-    public Silk.NET.OpenGL.Legacy.GL GetLegacyGL();
-    public Silk.NET.OpenGLES.GL      GetGLES();
+    public GL                        GetModernGl();
+    public Silk.NET.OpenGL.Legacy.GL GetLegacyGl();
+    public Silk.NET.OpenGLES.GL      GetGles();
 
     public uint GenBuffer();
 
@@ -124,7 +124,7 @@ internal interface IGLBasedBackend {
     unsafe void   Uniform2(int              getUniformLocation, uint count, float* ptr);
     unsafe void   Uniform1(int              getUniformLocation, uint count, float* ptr);
     void          VertexAttribDivisor(uint  iOffset,            uint currentElementInstanceDivisor);
-    internal void GenerateMipmaps(VixieTextureGL vixieTextureGl);
+    internal void GenerateMipmaps(VixieTextureGl vixieTextureGl);
     unsafe   void GetTexImage(TextureTarget target, int level, PixelFormat format, PixelType type, void* ptr);
     void SetProjectionMatrixAndViewport(int targetWidth, int targetHeight, bool flip);
 }

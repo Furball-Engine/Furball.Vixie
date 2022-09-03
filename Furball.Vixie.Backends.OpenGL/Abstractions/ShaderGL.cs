@@ -12,12 +12,12 @@ namespace Furball.Vixie.Backends.OpenGL.Abstractions;
 /// <summary>
 /// A Shader, a Program run on the GPU
 /// </summary>
-internal sealed class ShaderGL : IDisposable {
-    private readonly IGLBasedBackend _backend;
+internal sealed class ShaderGl : IDisposable {
+    private readonly IGlBasedBackend _backend;
     /// <summary>
     /// Currently Bound Shader
     /// </summary>
-    internal static ShaderGL CurrentlyBound;
+    internal static ShaderGl CurrentlyBound;
     /// <summary>
     /// Getter to check whether this Shader is bound
     /// </summary>
@@ -38,7 +38,7 @@ internal sealed class ShaderGL : IDisposable {
     /// <summary>
     /// Creates a unlinked Shader with no source code
     /// </summary>
-    public ShaderGL(IGLBasedBackend backend) {
+    public ShaderGl(IGlBasedBackend backend) {
         this._backend = backend;
         this._backend.GlCheckThread();
 
@@ -49,11 +49,11 @@ internal sealed class ShaderGL : IDisposable {
         this._backend.CheckError("create shader program");
     }
 
-    ~ShaderGL() {
+    ~ShaderGl() {
         DisposeQueue.Enqueue(this);
     }
 
-    public ShaderGL AttachShader(Silk.NET.OpenGLES.ShaderType type, string source) {
+    public ShaderGl AttachShader(Silk.NET.OpenGLES.ShaderType type, string source) {
         this._backend.GlCheckThread();
         return this.AttachShader((ShaderType) type, source);
     }
@@ -65,7 +65,7 @@ internal sealed class ShaderGL : IDisposable {
     /// <param name="source">Shader source code</param>
     /// <returns>Self, used for Chaining methods</returns>
     /// <exception cref="Exception">Shader Compilation Failure</exception>
-    public ShaderGL AttachShader(ShaderType type, string source) {
+    public ShaderGl AttachShader(ShaderType type, string source) {
         this._backend.GlCheckThread();
         uint shaderId = this._backend.CreateShader(type);
         this._backend.CheckError($"create shader 2 {type}");
@@ -95,7 +95,7 @@ internal sealed class ShaderGL : IDisposable {
     /// </summary>
     /// <returns>Self, used for Chaining methods</returns>
     /// <exception cref="Exception"></exception>
-    public ShaderGL Link() {
+    public ShaderGl Link() {
         this._backend.GlCheckThread();
         //Link Program and get Error incase something failed
         this._backend.LinkProgram(this.ProgramId);
@@ -115,7 +115,7 @@ internal sealed class ShaderGL : IDisposable {
     /// <summary>
     /// Selects this Shader
     /// </summary>
-    public ShaderGL Bind() {
+    public ShaderGl Bind() {
         this._backend.GlCheckThread();
         if (this.Locked)
             return null;
@@ -139,7 +139,7 @@ internal sealed class ShaderGL : IDisposable {
     /// Binds and sets a Lock so that the Shader cannot be unbound/rebound
     /// </summary>
     /// <returns>Self, used for chaining Methods</returns>
-    public ShaderGL LockingBind() {
+    public ShaderGl LockingBind() {
         this._backend.GlCheckThread();
         this.Bind();
         this.Lock();
@@ -151,7 +151,7 @@ internal sealed class ShaderGL : IDisposable {
     /// Locks the Shader so that other Shaders cannot be bound/unbound/rebound
     /// </summary>
     /// <returns>Self, used for chaining Methods</returns>
-    internal ShaderGL Lock() {
+    internal ShaderGl Lock() {
         this._backend.GlCheckThread();
         this.Locked = true;
 
@@ -162,7 +162,7 @@ internal sealed class ShaderGL : IDisposable {
     /// Unlocks the Shader, so that other Shaders can be bound
     /// </summary>
     /// <returns>Self, used for chaining Methods</returns>
-    public ShaderGL Unlock() {
+    public ShaderGl Unlock() {
         this._backend.GlCheckThread();
         this.Locked = false;
 
@@ -172,7 +172,7 @@ internal sealed class ShaderGL : IDisposable {
     /// Uninds and unlocks the Shader so that other Shaders can be bound/rebound
     /// </summary>
     /// <returns>Self, used for chaining Methods</returns>
-    internal ShaderGL UnlockingUnbind() {
+    internal ShaderGl UnlockingUnbind() {
         this._backend.GlCheckThread();
         this.Unlock();
         this.Unbind();
@@ -208,7 +208,7 @@ internal sealed class ShaderGL : IDisposable {
         return location;
     }
 
-    public unsafe ShaderGL SetUniform(string uniformName, Matrix4x4 matrix) {
+    public unsafe ShaderGl SetUniform(string uniformName, Matrix4x4 matrix) {
         this._backend.GlCheckThread();
         this._backend.UniformMatrix4(this.GetUniformLocation(uniformName), 1, false, (float*) &matrix);
         this._backend.CheckError("set uniform matrix 4");
@@ -217,7 +217,7 @@ internal sealed class ShaderGL : IDisposable {
         return this;
     }
         
-    public ShaderGL SetUniform(string uniformName, float f) {
+    public ShaderGl SetUniform(string uniformName, float f) {
         this._backend.GlCheckThread();
         this._backend.Uniform1(this.GetUniformLocation(uniformName), f);
         this._backend.CheckError("set uniform float");
@@ -226,13 +226,13 @@ internal sealed class ShaderGL : IDisposable {
         return this;
     }
     
-    public unsafe ShaderGL SetUniform4<T>(string uniformName, T[] arr, int count = -1) where T : unmanaged {
+    public unsafe ShaderGl SetUniform4<pT>(string uniformName, pT[] arr, int count = -1) where pT : unmanaged {
         if (count == -1)
             count = arr.Length;
         
         this._backend.GlCheckThread();
         
-        fixed(T* ptr = arr)
+        fixed(pT* ptr = arr)
             this._backend.Uniform4(this.GetUniformLocation(uniformName), (uint)count, (float*)ptr);
         
         this._backend.CheckError("set uniform float");
@@ -241,13 +241,13 @@ internal sealed class ShaderGL : IDisposable {
         return this;
     }
     
-    public unsafe ShaderGL SetUniform2<T>(string uniformName, T[] arr, int count = -1) where T : unmanaged {
+    public unsafe ShaderGl SetUniform2<pT>(string uniformName, pT[] arr, int count = -1) where pT : unmanaged {
         if (count == -1)
             count = arr.Length;
         
         this._backend.GlCheckThread();
         
-        fixed(T* ptr = arr)
+        fixed(pT* ptr = arr)
             this._backend.Uniform2(this.GetUniformLocation(uniformName), (uint)count, (float*)ptr);
         
         this._backend.CheckError("set uniform float");
@@ -256,13 +256,13 @@ internal sealed class ShaderGL : IDisposable {
         return this;
     }
     
-    public unsafe ShaderGL SetUniform1<T>(string uniformName, T[] arr, int count = -1) where T : unmanaged {
+    public unsafe ShaderGl SetUniform1<pT>(string uniformName, pT[] arr, int count = -1) where pT : unmanaged {
         if (count == -1)
             count = arr.Length;
         
         this._backend.GlCheckThread();
         
-        fixed(T* ptr = arr)
+        fixed(pT* ptr = arr)
             this._backend.Uniform1(this.GetUniformLocation(uniformName), (uint)count, (float*)ptr);
         
         this._backend.CheckError("set uniform float");
@@ -271,7 +271,7 @@ internal sealed class ShaderGL : IDisposable {
         return this;
     }
         
-    public ShaderGL SetUniform(string uniformName, float f, float f2) {
+    public ShaderGl SetUniform(string uniformName, float f, float f2) {
         this._backend.GlCheckThread();
         this._backend.Uniform2(this.GetUniformLocation(uniformName), f, f2);
         this._backend.CheckError("set uniform 2 floats");
@@ -280,7 +280,7 @@ internal sealed class ShaderGL : IDisposable {
         return this;
     }
         
-    public ShaderGL SetUniform(string uniformName, int i) {
+    public ShaderGl SetUniform(string uniformName, int i) {
         this._backend.GlCheckThread();
         this._backend.Uniform1(this.GetUniformLocation(uniformName), i);
         this._backend.CheckError("set uniform int");
@@ -292,7 +292,7 @@ internal sealed class ShaderGL : IDisposable {
     /// Unbinds all Shaders
     /// </summary>
     /// <returns>Self, used for chaining Methods</returns>
-    public ShaderGL Unbind() {
+    public ShaderGl Unbind() {
         this._backend.GlCheckThread();
         if (this.Locked)
             return null;

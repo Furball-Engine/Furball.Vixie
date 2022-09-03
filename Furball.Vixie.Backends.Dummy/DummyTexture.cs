@@ -9,7 +9,7 @@ namespace Furball.Vixie.Backends.Dummy;
 
 public class DummyTexture : VixieTexture {
     public DummyTexture(int w, int h) {
-        this._size = new Vector2D<int>(w, h);
+        this.Size = new Vector2D<int>(w, h);
         
         Logger.Log($"Creating Dummy texture({w}x{h})", LoggerLevelDummy.InstanceInfo);
     }
@@ -20,11 +20,11 @@ public class DummyTexture : VixieTexture {
     public override bool Mipmaps {
         get;
     }
-    public override VixieTexture SetData <T>(ReadOnlySpan<T> data) {
+    public override VixieTexture SetData <pT>(ReadOnlySpan<pT> data) {
         // throw new NotImplementedException();
         return this;
     }
-    public override VixieTexture SetData <T>(ReadOnlySpan<T> data, Rectangle rect) {
+    public override VixieTexture SetData <pT>(ReadOnlySpan<pT> data, Rectangle rect) {
         // throw new NotImplementedException();
         return this;
     }

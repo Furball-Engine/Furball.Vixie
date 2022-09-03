@@ -5,7 +5,7 @@ namespace Furball.Vixie.Backends.Vulkan;
 public class LoggerLevelVulkan : LoggerLevel {
     public override string Name => "VulkanInfo";
 
-    private enum Channel {
+    private new enum Channel {
         Info,
         Warning,
         Error,

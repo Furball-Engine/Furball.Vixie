@@ -15,19 +15,20 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using Veldrid;
 using Veldrid.MetalBindings;
+using GraphicsBackend=Furball.Vixie.Backends.Shared.Backends.GraphicsBackend;
 using Rectangle=SixLabors.ImageSharp.Rectangle;
 using Texture=Veldrid.Texture;
 
 namespace Furball.Vixie.Backends.Veldrid; 
 
-public class VeldridBackend : IGraphicsBackend {
-    public static GraphicsBackend PrefferedBackend = VeldridWindow.GetPlatformDefaultBackend();
+public class VeldridBackend : GraphicsBackend {
+    public static global::Veldrid.GraphicsBackend PrefferedBackend = VeldridWindow.GetPlatformDefaultBackend();
         
     internal GraphicsDevice  GraphicsDevice;
     internal ResourceFactory ResourceFactory;
     internal CommandList     CommandList;
 
-    public GraphicsBackend ChosenBackend;
+    public global::Veldrid.GraphicsBackend ChosenBackend;
         
     internal Matrix4x4       ProjectionMatrix;
     private  IView           _view;
@@ -61,7 +62,7 @@ public class VeldridBackend : IGraphicsBackend {
         this.CommandList     = this.ResourceFactory.CreateCommandList();
 
         //we do a little trolling
-        if(this.GraphicsDevice.BackendType is GraphicsBackend.OpenGL or GraphicsBackend.OpenGLES && !view.VSync) {
+        if(this.GraphicsDevice.BackendType is global::Veldrid.GraphicsBackend.OpenGL or global::Veldrid.GraphicsBackend.OpenGLES && !view.VSync) {
             this.GraphicsDevice.SyncToVerticalBlank = true;
             this.GraphicsDevice.SyncToVerticalBlank = false;
         }
@@ -75,14 +76,14 @@ public class VeldridBackend : IGraphicsBackend {
             
         BackendInfoSection backendSection = new("Backend Info");
         switch (this.GraphicsDevice.BackendType) {
-            case GraphicsBackend.Direct3D11: {
+            case global::Veldrid.GraphicsBackend.Direct3D11: {
                 //we dont actually get anything useful from this :/
                 BackendInfoD3D11 info = this.GraphicsDevice.GetD3D11Info();
                     
                 backendSection.Contents.Add(("Device ID", info.DeviceId.ToString()));
                 break;
             }
-            case GraphicsBackend.Vulkan: {
+            case global::Veldrid.GraphicsBackend.Vulkan: {
                 BackendInfoVulkan info = this.GraphicsDevice.GetVulkanInfo();
                     
                 backendSection.Contents.Add(("Driver Name", info.DriverName));
@@ -100,8 +101,8 @@ public class VeldridBackend : IGraphicsBackend {
 
                 break;
             }
-            case GraphicsBackend.OpenGLES:
-            case GraphicsBackend.OpenGL: {
+            case global::Veldrid.GraphicsBackend.OpenGLES:
+            case global::Veldrid.GraphicsBackend.OpenGL: {
                 BackendInfoOpenGL info = this.GraphicsDevice.GetOpenGLInfo();
 
                 backendSection.Contents.Add(("OpenGL Version", info.Version));
@@ -114,7 +115,7 @@ public class VeldridBackend : IGraphicsBackend {
                     
                 break;
             }
-            case GraphicsBackend.Metal: {
+            case global::Veldrid.GraphicsBackend.Metal: {
                 BackendInfoMetal info = this.GraphicsDevice.GetMetalInfo();
 
                 ReadOnlyCollection<MTLFeatureSet> featureSetList = info.FeatureSet;

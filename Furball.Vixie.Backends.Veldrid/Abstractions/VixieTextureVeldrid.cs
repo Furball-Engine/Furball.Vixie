@@ -17,8 +17,8 @@ internal sealed class VixieTextureVeldrid : VixieTexture {
 
     internal int UsedId = -1;
 
-    private          TextureFilterType[] FilterTypes     = new TextureFilterType[VeldridBackend.MAX_TEXTURE_UNITS];
-    private readonly ResourceSet?[]      ResourceSets    = new ResourceSet[VeldridBackend.MAX_TEXTURE_UNITS];
+    private          TextureFilterType[] _filterTypes     = new TextureFilterType[VeldridBackend.MAX_TEXTURE_UNITS];
+    private readonly ResourceSet?[]      _resourceSets    = new ResourceSet[VeldridBackend.MAX_TEXTURE_UNITS];
     public static    ResourceLayout[]    ResourceLayouts = new ResourceLayout[VeldridBackend.MAX_TEXTURE_UNITS];
         
     private readonly VeldridBackend _backend;
@@ -26,10 +26,10 @@ internal sealed class VixieTextureVeldrid : VixieTexture {
     private readonly bool _mipmap;
 
     public ResourceSet GetResourceSet(VeldridBackend backend, int i) {
-        if (this.FilterTypes[i] != this.FilterType)
-            this.ResourceSets[i] = null;
+        if (this._filterTypes[i] != this.FilterType)
+            this._resourceSets[i] = null;
         
-        return this.ResourceSets[i] ?? (this.ResourceSets[i] = backend.ResourceFactory.CreateResourceSet(new ResourceSetDescription(ResourceLayouts[i], this.Texture, this.FilterType == TextureFilterType.Smooth ? this._backend.GraphicsDevice.Aniso4xSampler : this._backend.GraphicsDevice.PointSampler)));
+        return this._resourceSets[i] ?? (this._resourceSets[i] = backend.ResourceFactory.CreateResourceSet(new ResourceSetDescription(ResourceLayouts[i], this.Texture, this.FilterType == TextureFilterType.Smooth ? this._backend.GraphicsDevice.Aniso4xSampler : this._backend.GraphicsDevice.PointSampler)));
     }
 
     private void Load(Image<Rgba32> image, TextureParameters parameters) {
@@ -85,7 +85,7 @@ internal sealed class VixieTextureVeldrid : VixieTexture {
 
         this.Load(image, parameters);
 
-        this._size = new Vector2D<int>(width, height);
+        this.Size = new Vector2D<int>(width, height);
 
         this.FilterType = parameters.FilterType;
     }
@@ -100,7 +100,7 @@ internal sealed class VixieTextureVeldrid : VixieTexture {
 
         this.Load(px, default);
             
-        this._size = new Vector2D<int>(1, 1);
+        this.Size = new Vector2D<int>(1, 1);
     }
     /// <summary>
     /// Creates a Empty texture given a width and height
@@ -118,7 +118,7 @@ internal sealed class VixieTextureVeldrid : VixieTexture {
 
         this.Load(px, parameters);
 
-        this._size = new Vector2D<int>((int)width, (int)height);
+        this.Size = new Vector2D<int>((int)width, (int)height);
 
         this.FilterType = parameters.FilterType;
     }
@@ -140,7 +140,7 @@ internal sealed class VixieTextureVeldrid : VixieTexture {
 
         this.Load(image, parameters);
 
-        this._size = new Vector2D<int>(width, height);
+        this.Size = new Vector2D<int>(width, height);
 
         this.FilterType = parameters.FilterType;
     }
@@ -215,16 +215,16 @@ internal sealed class VixieTextureVeldrid : VixieTexture {
         DisposeQueue.Enqueue(this);
     }
         
-    private bool IsDisposed = false;
+    private bool _isDisposed = false;
 
     public override void Dispose() {
         this._backend.CheckThread();
         
-        if (this.IsDisposed) return;
+        if (this._isDisposed) return;
         
-        this.IsDisposed = true;
+        this._isDisposed = true;
 
-        foreach (ResourceSet? resourceSet in this.ResourceSets)
+        foreach (ResourceSet? resourceSet in this._resourceSets)
             resourceSet?.Dispose();
         
         this.Texture.Dispose(); 
