@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Reflection;
-using System.Text;
 
 namespace Furball.Vixie.Helpers.Helpers; 
 

@@ -1,11 +1,8 @@
 ﻿#if USE_IMGUI
 using System;
-using System.Collections.Generic;
-using System.Drawing;
 using System.Numerics;
 using ImGuiNET;
 using Silk.NET.Input;
-using Silk.NET.Input.Extensions;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
 
@@ -16,7 +13,7 @@ public abstract class ImGuiController : IDisposable {
     private readonly ImGuiFontConfig? _imGuiFontConfig;
     private readonly Action?          _onConfigureIo;
     private          bool             _frameBegun;
-    private          IKeyboard        _keyboard;
+    private          IKeyboard        _keyboard = null!;
 
     private int _windowWidth;
     private int _windowHeight;
@@ -27,7 +24,7 @@ public abstract class ImGuiController : IDisposable {
     ///     Constructs a new ImGuiController with font configuration and onConfigure Action.
     /// </summary>
     public ImGuiController(IView  view, IInputContext input, ImGuiFontConfig? imGuiFontConfig = null,
-                            Action onConfigureIo = null) {
+                            Action? onConfigureIo = null) {
         this._view            = view;
         this._input           = input;
         this._imGuiFontConfig = imGuiFontConfig;
@@ -123,9 +120,6 @@ public abstract class ImGuiController : IDisposable {
 
     /// <summary>
     ///     Renders the ImGui draw list data.
-    ///     This method requires a <see cref="GraphicsDevice" /> because it may create new DeviceBuffers if the size of vertex
-    ///     or index data has increased beyond the capacity of the existing buffers.
-    ///     A <see cref="CommandList" /> is needed to submit drawing and resource update commands.
     /// </summary>
     public void Render() {
         if (this._frameBegun) {

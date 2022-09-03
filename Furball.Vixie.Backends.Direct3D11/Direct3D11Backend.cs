@@ -24,23 +24,22 @@ using FeatureLevel=Vortice.Direct3D.FeatureLevel;
 namespace Furball.Vixie.Backends.Direct3D11;
 
 public class Direct3D11Backend : GraphicsBackend {
-    public ID3D11Debug DebugDevice { get; private set; }
-    public ID3D11Device Device { get; private set; }
-    public ID3D11DeviceContext DeviceContext { get; private set; }
-    public IDXGISwapChain SwapChain { get; private set; }
-    public ID3D11RenderTargetView RenderTarget { get; private set; }
-    public ID3D11Texture2D BackBuffer { get; private set; }
-    public ID3D11Debug Debug { get; private set; }
-    public ID3D11BlendState DefaultBlendState { get; private set; }
+    public ID3D11Debug DebugDevice { get; private set; } = null!;
+    public ID3D11Device Device { get; private set; } = null!;
+    public ID3D11DeviceContext DeviceContext { get; private set; } = null!;
+    public IDXGISwapChain SwapChain { get; private set; } = null!;
+    public ID3D11RenderTargetView RenderTarget { get; private set; } = null!;
+    public ID3D11Texture2D BackBuffer { get; private set; } = null!;
+    public ID3D11BlendState DefaultBlendState { get; private set; } = null!;
 
     private Color4 _clearColor;
     public Viewport Viewport { get; private set; }
     public Matrix4x4 ProjectionMatrix { get; private set; }
 
-    internal ID3D11RenderTargetView CurrentlyBoundTarget;
+    internal ID3D11RenderTargetView CurrentlyBoundTarget = null!;
 
 #if USE_IMGUI
-    private ImGuiControllerD3D11 _imGuiController;
+    private ImGuiControllerD3D11 _imGuiController = null!;
 #endif
 
     private VixieTextureD3D11 _privateWhitePixelVixieTexture = null!;
@@ -89,7 +88,9 @@ public class Direct3D11Backend : GraphicsBackend {
         for (int i = 0; i < adapterCount; i++) {
             AdapterDescription description = dxgiFactory.GetAdapter(i).Description;
 
+#pragma warning disable CS0675
             long luid = description.Luid.LowPart | description.Luid.HighPart;
+#pragma warning restore CS0675
 
             string dedicatedSysMemMb = Math.Round((description.DedicatedSystemMemory / 1024.0) / 1024.0, 2)
                 .ToString(CultureInfo.InvariantCulture);
@@ -232,8 +233,6 @@ public class Direct3D11Backend : GraphicsBackend {
         this.RenderTarget.Dispose();
         this.BackBuffer.Dispose();
         this.DefaultBlendState.Dispose();
-
-        this.Debug?.Dispose();
     }
 
     public override void HandleFramebufferResize(int width, int height) {

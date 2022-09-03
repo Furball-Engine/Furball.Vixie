@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using Furball.Vixie.Helpers;
-using Silk.NET.SDL;
 using Thread = System.Threading.Thread;
 
 namespace Furball.Vixie; 

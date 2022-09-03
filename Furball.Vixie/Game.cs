@@ -5,7 +5,6 @@ using Furball.Vixie.Helpers;
 using Kettu;
 using Silk.NET.Input;
 using Silk.NET.Maths;
-using Silk.NET.Vulkan;
 using Silk.NET.Windowing;
 
 namespace Furball.Vixie; 

@@ -408,7 +408,7 @@ public class Direct3D11Renderer : Renderer {
         this._backend.DeviceContext.PSSetShaderResources(0, 128, this._nullShaderViews);
 
         this._backend.DeviceContext.IASetInputLayout(null);
-        this._backend.DeviceContext.IASetVertexBuffer(0, null, 0);
+        this._backend.DeviceContext.IASetVertexBuffer(0, null!, 0);
         this._backend.DeviceContext.IASetIndexBuffer(null, Format.R16_UInt, 0);
     }
 

@@ -6,7 +6,6 @@ using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.FontStashSharp;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers;
-using Furball.Vixie.Helpers.Helpers;
 using Silk.NET.OpenGL;
 
 namespace Furball.Vixie.Backends.OpenGL; 

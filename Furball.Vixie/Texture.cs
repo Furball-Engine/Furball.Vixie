@@ -1,15 +1,11 @@
 ﻿#nullable enable
 using System;
 using System.IO;
-using System.Numerics;
-using FontStashSharp.Interfaces;
-using FontStashSharp.RichText;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Helpers;
 using Silk.NET.Maths;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using Color=System.Drawing.Color;
 using Point=System.Drawing.Point;
 using Rectangle = System.Drawing.Rectangle;
 

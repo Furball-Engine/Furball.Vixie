@@ -15,7 +15,6 @@ using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.OpenGL.Legacy.Extensions.EXT;
 #if USE_IMGUI
-using Silk.NET.OpenGLES.Extensions.ImGui;
 #endif
 using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
