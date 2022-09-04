@@ -50,7 +50,7 @@ public class TestFSS : GameComponent {
         GraphicsBackend.Current.Clear();
 
         this._renderer.Begin();
-        this._rtl.Draw(this._renderer.FontRenderer, new Vector2(10), System.Drawing.Color.White);
+        this._rtl.Draw(this._renderer.FontRenderer, new Vector2(10), Color.White);
         this._renderer.DrawString(this._font, "VixieFontStashSharpRenderer Testing",                new Vector2(10,  100), Color.White,      this._rotation,                         new Vector2(_scale), new Vector2(-50));
         this._renderer.DrawString(this._font, "More Quite Long Text, Foxes Are Cute",               new Vector2(10,  200), Color.LightBlue,  (float)(2f * Math.PI - this._rotation), new Vector2(_scale));
         this._renderer.DrawString(this._font, "Did You Know That A Bee Should Not Be Able To Fly?", new Vector2(500, 300), Color.LightGreen, (float)(Math.PI - this._rotation),       new Vector2(_scale));
