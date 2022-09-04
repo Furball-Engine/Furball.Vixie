@@ -52,7 +52,7 @@ public class WindowManager : IDisposable {
         }
         set {
             if (Global.GameInstance.EventLoop is not ViewEventLoop)
-                return false;
+                return;
             
             if (this.ViewOnly)
                 throw new NotSupportedException("No fullscreen on view only platforms!");

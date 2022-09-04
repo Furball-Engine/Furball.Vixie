@@ -35,6 +35,10 @@ public static class QoiLoader {
     private static int CalculateIndex(Rgba32 pixel) {
         return (pixel.R * 3 + pixel.G * 5 + pixel.B * 7 + pixel.A * 11) % 64;
     }
+    
+    private static int CalculateIndex(Argb32 pixel) {
+        return (pixel.R * 3 + pixel.G * 5 + pixel.B * 7 + pixel.A * 11) % 64;
+    }
 
     private static readonly byte[] QoiPadding = new byte[] {
         0, 0, 0, 0, 0, 0, 0, 1
@@ -91,6 +95,121 @@ public static class QoiLoader {
 
         // This is the pixel we will copy into the array many times
         Rgba32 px = new(0, 0, 0, 255);
+
+        //The length of a chunk?
+        int chunksLen = file.Length - QoiPadding.Length * sizeof(byte);
+            
+        for (pixelPosition = 0; pixelPosition < totalPixels; pixelPosition++) {
+            if (run > 0) {
+                run--;
+            } 
+            else if (p < chunksLen) {
+                byte b1 = file[p++];
+
+                switch (b1) {
+                    //A full RGB pixel
+                    case QOI_OP_RGB:
+                        px.R = file[p++];
+                        px.G = file[p++];
+                        px.B = file[p++];
+                        break;
+                    //A full RGBA pixel
+                    case QOI_OP_RGBA:
+                        px.R = file[p++];
+                        px.G = file[p++];
+                        px.B = file[p++];
+                        px.A = file[p++];
+                        break;
+                    default: {
+                        switch (b1 & QOI_MASK_2) {
+                            //Set the pixel to a certain index
+                            case QOI_OP_INDEX:
+                                px = index[b1];
+                                break;
+                            //Set the pixel to a difference from the last pixel
+                            case QOI_OP_DIFF:
+                                px.R += (byte)(((b1 >> 4) & 0x03) - 2);
+                                px.G += (byte)(((b1 >> 2) & 0x03) - 2);
+                                px.B += (byte)(( b1       & 0x03) - 2);
+                                break;
+                            //
+                            case QOI_OP_LUMA: {
+                                byte b2 = file[p++];
+                                byte vg = (byte)((b1 & 0x3f) - 32);
+                                px.R += (byte)(vg - 8 + ((b2 >> 4) & 0x0f));
+                                px.G += vg;
+                                px.B += (byte)(vg - 8 + (b2 & 0x0f));
+                                break;
+                            }
+                            //Repeat the same pixel again
+                            case QOI_OP_RUN:
+                                run = (b1 & 0x3f);
+                                break;
+                        }
+                        break;
+                    }
+                }
+
+                index[CalculateIndex(px) % 64] = px;
+            }
+
+            data[pixelPosition] = px;
+        }
+
+        return (data, header);
+    }
+    
+    public static (Argb32[] pixels, QoiHeader header) LoadArgb(byte[] file) {
+        QoiHeader header = new();
+        int       p      = 0;
+
+        var stream = new MemoryStream(file);
+        var reader = new BigEndianBinaryReader(stream);
+            
+        #region Read Header
+
+        // char magic[4]; // magic bytes "qoif"
+        byte[] magic = reader.ReadBytes(4);
+        p += 4;
+
+        if (magic[0] != 'q' || magic[1] != 'o' || magic[2] != 'i' || magic[3] != 'f')
+            throw new Exception("Magic does not match! (this is likely not a Qoi file!)");
+
+        //uint32_t width; // image width in pixels (BE)
+        header.Width =  reader.ReadUInt32();
+        p            += 4;
+        //uint32_t height; // image height in pixels (BE)
+        header.Height =  reader.ReadUInt32();
+        p             += 4;
+
+        //uint8_t channels; // 3 = RGB, 4 = RGBA
+        header.Channels = (Channel)reader.ReadByte();
+        p++;
+        //uint8_t colorspace; // 0 = sRGB with linear alpha
+        //                       1 = all channels linear
+        header.ColorSpace = (ColorSpace)reader.ReadByte();
+        p++;
+
+        #endregion
+
+        //Since ImageSharp only supports int size images, we error out here
+        if (header.Width > int.MaxValue || header.Height > int.MaxValue) {
+            throw new Exception("We do not support images that big!");
+        }
+            
+        // An image is complete when all pixels specified by width * height have been covered.
+        uint totalPixels = header.Width * header.Height;
+        uint pixelPosition;
+
+        int run = 0;
+
+        Argb32[] data = new Argb32[totalPixels];
+            
+        // A running array[64] (zero-initialized) of previously seen pixel values is maintained by the encoder and decoder.
+        Argb32[] index = new Argb32[64];
+
+        // This is the pixel we will copy into the array many times
+        Argb32 px = new(0, 0, 0, 255);
 
         //The length of a chunk?
         int chunksLen = file.Length - QoiPadding.Length * sizeof(byte);

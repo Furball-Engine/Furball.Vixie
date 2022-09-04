@@ -14,7 +14,7 @@ using Rectangle = SixLabors.ImageSharp.Rectangle;
 
 namespace Furball.Vixie.Backends.Direct3D9;
 
-public class Direct3D9Backend : IGraphicsBackend {
+public class Direct3D9Backend : GraphicsBackend {
     private          IDirect3D9          _direct3D;
     private          IDirect3DDevice9    _device;
     private          IDirect3DSwapChain9 _swapChain;

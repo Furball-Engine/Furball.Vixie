@@ -36,7 +36,7 @@ public class TextureD3D9 : VixieTexture {
             image = Image.Load<Argb32>(imageData);
         }
 
-        this._size = new Vector2D<int>(image.Width, image.Height);
+        this.Size = new Vector2D<int>(image.Width, image.Height);
 
         Usage texUsage = Usage.Dynamic;
 
@@ -56,7 +56,7 @@ public class TextureD3D9 : VixieTexture {
 
         Image<Argb32> image = Image.Load<Argb32>(imageData);
 
-        this._size = new Vector2D<int>(image.Width, image.Height);
+        this.Size = new Vector2D<int>(image.Width, image.Height);
 
         Usage texUsage = Usage.Dynamic;
 
