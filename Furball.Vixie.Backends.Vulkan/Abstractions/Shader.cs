@@ -2,7 +2,7 @@
 using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
 
-namespace Furball.Vixie.Backends.Vulkan; 
+namespace Furball.Vixie.Backends.Vulkan.Abstractions; 
 
 public class Shader : IDisposable {
     private Vk     _vk;
@@ -19,7 +19,7 @@ public class Shader : IDisposable {
         this._shaderStage = shaderStage;
 
         fixed (void* shaderByteCodePtr = shaderByteCode) {
-            ShaderModuleCreateInfo shaderModuleCreateInfo = new ShaderModuleCreateInfo {
+            ShaderModuleCreateInfo shaderModuleCreateInfo = new() {
                 SType    = StructureType.ShaderModuleCreateInfo,
                 CodeSize = (nuint)shaderByteCode.Length,
                 PCode    = (uint*) shaderByteCodePtr

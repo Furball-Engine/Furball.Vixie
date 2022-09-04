@@ -4,7 +4,7 @@ using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Helpers;
 using Silk.NET.Maths;
 using SixLabors.ImageSharp.PixelFormats;
-using Rectangle = System.Drawing.Rectangle;
+using Rectangle=System.Drawing.Rectangle;
 
 namespace Furball.Vixie; 
 
@@ -16,7 +16,7 @@ public class RenderTarget : IDisposable {
     
     private Rgba32[]? _dataCache;
 
-    public RenderTarget(uint width, uint height, TextureParameters parameters = default) {
+    public RenderTarget(uint width, uint height) {
         this._target  = GraphicsBackend.Current.CreateRenderTarget(width, height);
         this._texture = this._target.GetTexture();
         

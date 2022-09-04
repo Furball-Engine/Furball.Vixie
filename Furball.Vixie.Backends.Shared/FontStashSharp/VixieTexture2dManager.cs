@@ -2,7 +2,7 @@ using System.Drawing;
 using FontStashSharp.Interfaces;
 using Furball.Vixie.Backends.Shared.Backends;
 using Silk.NET.Maths;
-using Rectangle = System.Drawing.Rectangle;
+using Rectangle=System.Drawing.Rectangle;
 
 namespace Furball.Vixie.Backends.Shared.FontStashSharp; 
 

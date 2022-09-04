@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Numerics;
 using Furball.Vixie.Backends.OpenGL.Abstractions;
@@ -14,13 +15,13 @@ using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.OpenGL.Legacy.Extensions.EXT;
-#if USE_IMGUI
-#endif
 using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using Rectangle=SixLabors.ImageSharp.Rectangle;
+#if USE_IMGUI
+#endif
 
 namespace Furball.Vixie.Backends.OpenGL;
 
@@ -64,18 +65,6 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
                 Value       = false
             }
         }, {
-            "InstancedQuadRendering", new FeatureLevel {
-                Name        = "Instanced Hardware Quad Rendering",
-                Description = "Whether to use hardware instancing for quad rendering",
-                Value       = false
-            }
-        }, {
-            "GeometryShaderLines", new FeatureLevel {
-                Name        = "Geometry Shader Lines",
-                Description = "Whether to use Geometry Shaders to draw lines",
-                Value       = false
-            }
-        }, {
             "NeedsFramebufferExtension", new FeatureLevel {
                 Name        = "Require the ExtFramebufferObject extension",
                 Description = "Whether we require the ExtFramebufferObject to run",
@@ -98,8 +87,6 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
 
     private ExtFramebufferObject _framebufferObjectExt;
 
-    private readonly FeatureLevel _instancedQuadRenderingFeatureLevel;
-    private readonly FeatureLevel _geometryShaderLinesFeatureLevel;
     private readonly FeatureLevel _glBindTexturesFeatureLevel;
     private readonly FeatureLevel _needsFrameBufferExtensionFeatureLevel;
     private readonly FeatureLevel _needsCustomMipmapGenerationFeatureLevel;
@@ -114,26 +101,12 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     public OpenGLBackend(Backend backend) {
         this.CreationBackend = backend;
 
-        this._instancedQuadRenderingFeatureLevel      = FeatureLevels["InstancedQuadRendering"];
-        this._geometryShaderLinesFeatureLevel         = FeatureLevels["GeometryShaderLines"];
         this._glBindTexturesFeatureLevel              = FeatureLevels["glBindTextures"];
         this._needsFrameBufferExtensionFeatureLevel   = FeatureLevels["NeedsFramebufferExtension"];
         this._needsCustomMipmapGenerationFeatureLevel = FeatureLevels["NeedsCustomMipmapGeneration"];
         this._bindlessMipmapGenerationFeatureLevel    = FeatureLevels["BindlessMipmapGeneration"];
 
         if (backend == Backend.OpenGLES) {
-            if (Global.LatestSupportedGl.GLES.MajorVersion >= 3) {
-                FeatureLevels["InstancedQuadRendering"].Value = true;
-                Logger.Log("Enabling instanced quad rendering!", LoggerLevelOpenGl.InstanceInfo);
-            }
-            
-            if ((Global.LatestSupportedGl.GLES.MajorVersion >= 3 &&
-                 Global.LatestSupportedGl.GLES.MinorVersion >= 2) ||
-                Global.LatestSupportedGl.GLES.MajorVersion > 3) {
-                FeatureLevels["GeometryShaderLines"].Value = true;
-                Logger.Log("Enabling geometry shader lines!", LoggerLevelOpenGl.InstanceInfo);
-            }
-
             if (Global.LatestSupportedGl.GLES.MajorVersion >= 2) {
                 FeatureLevels["NeedsCustomMipmapGeneration"].Value = false;
                 Logger.Log("Marking that we dont need custom mipmap generation!", LoggerLevelOpenGl.InstanceInfo);
@@ -145,20 +118,6 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
                  Global.LatestSupportedGl.GL.MinorVersion < 2)) {
                 FeatureLevels["NeedsFramebufferExtension"].Value = true;
                 Logger.Log("Marking that we require the ExtFramebufferObject!", LoggerLevelOpenGl.InstanceInfo);
-            }
-            
-            if ((Global.LatestSupportedGl.GL.MajorVersion == 3 &&
-                 Global.LatestSupportedGl.GL.MinorVersion >= 1) ||
-                Global.LatestSupportedGl.GL.MajorVersion > 3) {
-                FeatureLevels["InstancedQuadRendering"].Value = true;
-                Logger.Log("Enabling instanced quad rendering!", LoggerLevelOpenGl.InstanceInfo);
-            }
-
-            if ((Global.LatestSupportedGl.GL.MajorVersion >= 3 &&
-                 Global.LatestSupportedGl.GL.MinorVersion >= 2) ||
-                Global.LatestSupportedGl.GL.MajorVersion > 3) {
-                FeatureLevels["GeometryShaderLines"].Value = true;
-                Logger.Log("Enabling geometry shader lines!", LoggerLevelOpenGl.InstanceInfo);
             }
             
             if ((Global.LatestSupportedGl.GL.MajorVersion >= 4 &&
@@ -186,9 +145,8 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     /// </summary>
     /// <param name="view"></param>
     /// <param name="inputContext"></param>
-    /// <param name="game"></param>
     public override void Initialize(IView view, IInputContext inputContext) {
-        this.gl       = view.CreateOpenGL();
+        this.gl        = view.CreateOpenGL();
         this._legacyGl = Silk.NET.OpenGL.Legacy.GL.GetApi(this.gl.Context);
         this._gles     = Silk.NET.OpenGLES.GL.GetApi(this.gl.Context);
 
@@ -366,7 +324,6 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     /// </summary>
     /// <param name="width">New width</param>
     /// <param name="height">New height</param>
-    /// <param name="flip"></param>
     public override void HandleFramebufferResize(int width, int height) {
         this.gl.Viewport(0, 0, (uint)width, (uint)height);
         this.CurrentViewport = new Vector2D<int>(width, height);
@@ -505,6 +462,8 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     /// <summary>
     ///     Debug Callback
     /// </summary>
+    [SuppressMessage("ReSharper", "UnusedParameter.Local")]
+    // ReSharper disable once UnusedMember.Local
     private void Callback(GLEnum source, GLEnum type, int id, GLEnum severity, int length, nint message,
                           nint   userparam) {
         string stringMessage = SilkMarshal.PtrToString(message);

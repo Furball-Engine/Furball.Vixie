@@ -6,7 +6,7 @@ using Silk.NET.OpenGL;
 
 namespace Furball.Vixie.Backends.OpenGL.Abstractions; 
 
-internal sealed class VixieTextureRenderTargetGl : VixieTextureRenderTarget, IDisposable {
+internal sealed class VixieTextureRenderTargetGl : VixieTextureRenderTarget {
     /// <summary>
     /// Currently Bound TextureRenderTarget
     /// </summary>
@@ -47,7 +47,7 @@ internal sealed class VixieTextureRenderTargetGl : VixieTextureRenderTarget, IDi
     private VixieTextureGl _vixieTexture;
 
     public override Vector2D<int> Size {
-        get => new Vector2D<int>(this.TargetWidth, this.TargetHeight);
+        get => new(this.TargetWidth, this.TargetHeight);
         protected set => throw new Exception("Setting the size of TextureRenderTargets is currently unsupported.");
     }
 
@@ -56,6 +56,7 @@ internal sealed class VixieTextureRenderTargetGl : VixieTextureRenderTarget, IDi
     /// <summary>
     /// Creates a TextureRenderTarget
     /// </summary>
+    /// <param name="backend">The OpenGL backend</param>
     /// <param name="width">Desired Width</param>
     /// <param name="height">Desired Width</param>
     /// <exception cref="Exception">Throws Exception if the Target didn't create properly</exception>
@@ -98,7 +99,7 @@ internal sealed class VixieTextureRenderTargetGl : VixieTextureRenderTarget, IDi
         this._backend.FramebufferTexture(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, this._textureId, 0);
         this._backend.CheckError("framebuffer texture");
 
-        GLEnum[] drawBuffers = new GLEnum[1] {
+        GLEnum[] drawBuffers = new GLEnum[] {
             GLEnum.ColorAttachment0
         };
         this._backend.DrawBuffers(1, drawBuffers);

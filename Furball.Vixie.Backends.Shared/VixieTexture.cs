@@ -1,7 +1,7 @@
 using System;
 using Silk.NET.Maths;
 using SixLabors.ImageSharp.PixelFormats;
-using Rectangle = System.Drawing.Rectangle;
+using Rectangle=System.Drawing.Rectangle;
 
 namespace Furball.Vixie.Backends.Shared; 
 
@@ -27,7 +27,7 @@ public abstract class VixieTexture : IDisposable {
     /// Sets the data of the whole texture at once
     /// </summary>
     /// <param name="data">The data</param>
-    /// <typeparam name="T">The type of data</typeparam>
+    /// <typeparam name="pT">The type of data</typeparam>
     /// <returns></returns>
     public abstract VixieTexture SetData <pT>(ReadOnlySpan<pT> data) where pT : unmanaged;
     public abstract VixieTexture SetData <pT>(ReadOnlySpan<pT> data, Rectangle rect) where pT : unmanaged;

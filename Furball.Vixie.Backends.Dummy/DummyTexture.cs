@@ -3,15 +3,18 @@ using Furball.Vixie.Backends.Shared;
 using Kettu;
 using Silk.NET.Maths;
 using SixLabors.ImageSharp.PixelFormats;
-using Rectangle = System.Drawing.Rectangle;
+using Rectangle=System.Drawing.Rectangle;
 
 namespace Furball.Vixie.Backends.Dummy;
 
-public class DummyTexture : VixieTexture {
-    public DummyTexture(int w, int h) {
+public sealed class DummyTexture : VixieTexture {
+    public DummyTexture(TextureParameters @params, int w, int h) {
         this.Size = new Vector2D<int>(w, h);
         
         Logger.Log($"Creating Dummy texture({w}x{h})", LoggerLevelDummy.InstanceInfo);
+
+        this.FilterType = @params.FilterType;
+        this.Mipmaps    = @params.RequestMipmaps;
     }
     public override TextureFilterType FilterType {
         get;

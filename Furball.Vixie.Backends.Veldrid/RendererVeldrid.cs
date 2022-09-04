@@ -32,8 +32,8 @@ public unsafe class RendererVeldrid : Renderer {
         public DeviceBuffer? Vtx;
         public DeviceBuffer? Idx;
 
-        public int                    UsedTextures;
-        public VixieTextureVeldrid[]? Textures;
+        public int                     UsedTextures;
+        public VixieTextureVeldrid?[]? Textures;
         
         public uint IndexCount;
 
@@ -85,7 +85,7 @@ public unsafe class RendererVeldrid : Renderer {
                     vtxLayout
                 }
             },
-            Outputs           = backend.RenderFramebuffer.OutputDescription,
+            Outputs           = backend.RenderFramebuffer!.OutputDescription,
             BlendState        = BlendStateDescription.SingleAlphaBlend,
             PrimitiveTopology = PrimitiveTopology.TriangleList,
             RasterizerState =
@@ -100,12 +100,12 @@ public unsafe class RendererVeldrid : Renderer {
         this._projectionBuffer = this._backend.ResourceFactory.CreateBuffer(projBufDesc);
             
         ResourceSetDescription projectionBufferResourceLayout = new() {
-            BoundResources = new[] {
+            BoundResources = new BindableResource[] {
                 this._projectionBuffer
             },
-            Layout = this._backend.ResourceFactory.CreateResourceLayout(new(new[] {
-                new ResourceLayoutElementDescription("ProjectionMatrixUniform", ResourceKind.UniformBuffer, ShaderStages.Vertex)
-            }))
+            Layout = this._backend.ResourceFactory.CreateResourceLayout(new(
+                                                                        new ResourceLayoutElementDescription("ProjectionMatrixUniform", ResourceKind.UniformBuffer, ShaderStages.Vertex)
+                                                                        ))
         };
         this._projectionBufferResourceSet =
             this._backend.ResourceFactory.CreateResourceSet(projectionBufferResourceLayout);
@@ -286,7 +286,7 @@ public unsafe class RendererVeldrid : Renderer {
             this._backend.CommandList.InsertDebugMarker($"begin draw buf {i}");
 
             for (uint j = 0; j < buf.UsedTextures; j++) {
-                this._backend.CommandList.SetGraphicsResourceSet(j + 1, buf.Textures[j].GetResourceSet(this._backend, (int)j));
+                this._backend.CommandList.SetGraphicsResourceSet(j + 1, buf.Textures![j]!.GetResourceSet(this._backend, (int)j));
             }
             
             this._backend.CommandList.SetVertexBuffer(0, buf.Vtx);

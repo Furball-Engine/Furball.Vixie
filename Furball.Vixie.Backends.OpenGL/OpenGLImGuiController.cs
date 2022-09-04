@@ -55,7 +55,7 @@ public class OpenGlImGuiController : ImGuiController {
     private          uint  _shader;
 
     public OpenGlImGuiController(GL gl, OpenGlType type, [NotNull] IView view, [NotNull] IInputContext input,
-                                 ImGuiFontConfig? imGuiFontConfig = null, [NotNull] Action onConfigureIo = null) : base(
+                                 ImGuiFontConfig? imGuiFontConfig = null, [CanBeNull] Action onConfigureIo = null) : base(
         view, input, imGuiFontConfig, onConfigureIo) {
         this._gl   = gl;
         this._type = type;
@@ -432,10 +432,12 @@ void main()
     }
     protected override unsafe void RecreateFontDeviceTexture() {
         // Build texture atlas
+        // Load as RGBA 32-bit (75% of the memory is wasted, but default font is so small)
+        // because it is more likely to be compatible with user's existing shaders.
+        // If your ImTextureId represent a higher-level concept than just a GL texture id, consider calling GetTexDataAsAlpha8() instead to save on GPU memory.
         ImGuiIOPtr io = ImGui.GetIO();
         io.Fonts.GetTexDataAsRGBA32(out IntPtr pixels, out int width, out int height,
-                                    out int bytesPerPixel); // Load as RGBA 32-bit (75% of the memory is wasted, but default font is so small) because it is more likely to be compatible with user's existing shaders. If your ImTextureId represent a higher-level concept than just a GL texture id, consider calling GetTexDataAsAlpha8() instead to save on GPU memory.
-
+                                    out int _); 
         // Upload texture to graphics system
         this._gl.GetInteger(GLEnum.TextureBinding2D, out int lastTexture);
 

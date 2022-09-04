@@ -6,8 +6,7 @@ using Furball.Vixie.Helpers;
 using Silk.NET.Maths;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using Point=System.Drawing.Point;
-using Rectangle = System.Drawing.Rectangle;
+using Rectangle=System.Drawing.Rectangle;
 
 namespace Furball.Vixie; 
 
@@ -120,6 +119,7 @@ public class Texture : IDisposable {
         this._texture.SetData(data);
     }
     
+    // ReSharper disable once MethodOverloadWithOptionalParameter
     public void SetData<pT>(ReadOnlySpan<pT> arr, Rectangle? rect = null) where pT : unmanaged {
         rect ??= new Rectangle(0, 0, this.Size.X, this.Size.Y);
         
@@ -130,8 +130,7 @@ public class Texture : IDisposable {
         return this._texture.GetData();
     }
 
-    private bool  _isDisposed;
-    private Point _size;
+    private bool _isDisposed;
     public void Dispose() {
         if (this._isDisposed)
             return;

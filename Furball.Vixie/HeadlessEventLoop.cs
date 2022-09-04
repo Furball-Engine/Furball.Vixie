@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
+using System.Threading;
 using Furball.Vixie.Helpers;
-using Thread = System.Threading.Thread;
 
 namespace Furball.Vixie; 
 

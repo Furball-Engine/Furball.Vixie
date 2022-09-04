@@ -20,6 +20,6 @@ public class DummyTextureRenderTarget : VixieTextureRenderTarget {
         // throw new System.NotImplementedException();
     }
     public override VixieTexture GetTexture() {
-        return new DummyTexture(this.Size.X, this.Size.Y);
+        return new DummyTexture(default, this.Size.X, this.Size.Y);
     }
 }

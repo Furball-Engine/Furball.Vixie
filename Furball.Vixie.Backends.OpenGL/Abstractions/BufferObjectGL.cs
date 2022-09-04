@@ -122,6 +122,7 @@ internal sealed class BufferObjectGl : IDisposable {
     /// <summary>
     /// Creates a BufferObject with the old constructor
     /// </summary>
+    /// <param name="backend">The OpenGL backend</param>
     /// <param name="data">Data</param>
     /// <param name="bufferType">What type of buffer is it?</param>
     /// <param name="usage">How is this buffer going to be used?</param>
@@ -131,7 +132,7 @@ internal sealed class BufferObjectGl : IDisposable {
         where pDataType : unmanaged
     {
         backend.GlCheckThread();
-        BufferObjectGl bufferObjectGl = new BufferObjectGl(backend, bufferType, usage);
+        BufferObjectGl bufferObjectGl = new(backend, bufferType, usage);
         bufferObjectGl.Bind();
 
         fixed (void* d = data) {

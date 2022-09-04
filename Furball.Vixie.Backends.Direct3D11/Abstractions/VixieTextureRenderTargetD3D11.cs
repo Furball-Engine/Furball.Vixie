@@ -25,7 +25,7 @@ internal sealed class VixieTextureRenderTargetD3D11 : VixieTextureRenderTarget {
         this._backend = backend;
         this._backend.CheckThread();
 
-        Texture2DDescription renderTargetTextureDescription = new Texture2DDescription {
+        Texture2DDescription renderTargetTextureDescription = new() {
             Width     = (int)width,
             Height    = (int)height,
             MipLevels = 1,
@@ -43,7 +43,7 @@ internal sealed class VixieTextureRenderTargetD3D11 : VixieTextureRenderTarget {
 
         ID3D11Texture2D renderTargetTexture = backend.Device.CreateTexture2D(renderTargetTextureDescription);
 
-        RenderTargetViewDescription renderTargetDescription = new RenderTargetViewDescription {
+        RenderTargetViewDescription renderTargetDescription = new() {
             Format        = renderTargetTextureDescription.Format,
             ViewDimension = RenderTargetViewDimension.Texture2D,
         };
@@ -53,7 +53,7 @@ internal sealed class VixieTextureRenderTargetD3D11 : VixieTextureRenderTarget {
         ID3D11RenderTargetView renderTarget =
             backend.Device.CreateRenderTargetView(renderTargetTexture, renderTargetDescription);
 
-        ShaderResourceViewDescription shaderResourceViewDescription = new ShaderResourceViewDescription {
+        ShaderResourceViewDescription shaderResourceViewDescription = new() {
             Format        = renderTargetDescription.Format,
             ViewDimension = ShaderResourceViewDimension.Texture2D,
         };
@@ -90,7 +90,7 @@ internal sealed class VixieTextureRenderTargetD3D11 : VixieTextureRenderTarget {
 
         this._startingViewport = this._backend.DeviceContext.RSGetViewport();
 
-        Viewport newViewport = new Viewport(
+        Viewport newViewport = new(
         0,
         0,
         this.Size.X,

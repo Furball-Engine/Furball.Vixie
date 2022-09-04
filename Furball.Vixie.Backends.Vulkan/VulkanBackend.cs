@@ -7,6 +7,8 @@ using System.Reflection;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.Renderers;
+using Furball.Vixie.Backends.Vulkan.Abstractions;
+using Furball.Vixie.Helpers;
 using Furball.Vixie.Helpers.Helpers;
 using Kettu;
 using Silk.NET.Core;
@@ -17,7 +19,7 @@ using Silk.NET.Vulkan.Extensions.EXT;
 using Silk.NET.Vulkan.Extensions.KHR;
 using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
-using Image = Silk.NET.Vulkan.Image;
+using Image=Silk.NET.Vulkan.Image;
 
 namespace Furball.Vixie.Backends.Vulkan;
 
@@ -75,34 +77,34 @@ public unsafe class VulkanBackend : GraphicsBackend {
     }
 
     private Instance                _instance;
-    private Vk                      _vk;
-    private IView                   _view;
-    private PhysicalDeviceInfo      _physicalDeviceInfo;
+    private Vk                      _vk                 = null!;
+    private IView                   _view               = null!;
+    private PhysicalDeviceInfo      _physicalDeviceInfo = null!;
     private Device                  _device;
     private SurfaceKHR              _surface;
     private bool                    _debug;
-    private DebugUtilsMessengerEXT? _messenger = null;
-    private QueuePool               _queuePool;
-    private QueueInfo               _presentationQueueInfo;
+    private DebugUtilsMessengerEXT? _messenger             = null;
+    private QueuePool               _queuePool             = null!;
+    private QueueInfo               _presentationQueueInfo = null!;
 
     private SwapchainKHR _swapchain;
     private Format       _swapchainImageFormat;
     private Extent2D     _swapchainExtent;
-    private Image[]      _swapChainImages;
-    private ImageView[]  _swapChainImageViews;
+    private Image[]      _swapChainImages     = null!;
+    private ImageView[]  _swapChainImageViews = null!;
 
     // Extensions:
-    private ExtDebugUtils  _extDebugUtils;
-    private KhrSurface     _vkSurface;
-    private KhrSwapchain   _vkSwapchain;
-    private ExtToolingInfo _vkToolingInfo;
+    private ExtDebugUtils  _extDebugUtils = null!;
+    private KhrSurface     _vkSurface     = null!;
+    private KhrSwapchain   _vkSwapchain   = null!;
+    private ExtToolingInfo _vkToolingInfo = null!;
 
     internal Device GetDevice() => this._device;
     internal Vk GetVk() => this._vk;
 
     private ExtensionSet GetInstanceExtensions() {
-        List<string> requiredExtensions = new List<string>();
-        List<string> optionalExtensions = new List<string>();
+        List<string> requiredExtensions = new();
+        List<string> optionalExtensions = new();
 
         Debug.Assert(this._view.VkSurface is not null);
         requiredExtensions.AddRange(SilkMarshal.PtrToStringArray(
@@ -124,12 +126,12 @@ public unsafe class VulkanBackend : GraphicsBackend {
     }
 
     private ExtensionSet GetDeviceExtensions() {
-        List<string> requiredExtensions = new List<string>();
-        List<string> optionalExtensions = new List<string>();
+        List<string> requiredExtensions = new() {
+            KhrSwapchain.ExtensionName
+        };
 
-        requiredExtensions.Add(KhrSwapchain.ExtensionName);
-
-        return new ExtensionSet(requiredExtensions, optionalExtensions);
+        //NOTE: we pass in a blank list beacuse we dont have any optional extensions yet
+        return new ExtensionSet(requiredExtensions, new List<string>());
     }
 
     private static bool TryExtractUsedExtensions(
@@ -139,7 +141,7 @@ public unsafe class VulkanBackend : GraphicsBackend {
         /* [NotNullWhen(true)] */
         out GlobalMemory? memory
     ) {
-        HashSet<string> usedExtensions = new HashSet<string>();
+        HashSet<string> usedExtensions = new();
 
         bool allRequiredPresent = true;
 
@@ -192,7 +194,7 @@ public unsafe class VulkanBackend : GraphicsBackend {
         GlobalMemory? applicationNameMem = SilkMarshal.StringToMemory(entryAssemblyname.FullName);
         GlobalMemory? engineNameMem      = SilkMarshal.StringToMemory("Furball.Vixie");
 
-        ApplicationInfo appInfo = new ApplicationInfo {
+        ApplicationInfo appInfo = new() {
             SType              = StructureType.ApplicationInfo,
             PApplicationName   = applicationNameMem.AsPtr<byte>(),
             ApplicationVersion = (Version32)entryAssemblyname.Version,
@@ -201,7 +203,7 @@ public unsafe class VulkanBackend : GraphicsBackend {
             ApiVersion         = Vk.Version11
         };
 
-        InstanceCreateInfo createInfo = new InstanceCreateInfo {
+        InstanceCreateInfo createInfo = new() {
             SType                   = StructureType.InstanceCreateInfo, PApplicationInfo = &appInfo,
             EnabledExtensionCount   = (uint)extensionCount,
             PpEnabledExtensionNames = (byte**)(extensionMemory?.Handle ?? 0),
@@ -321,7 +323,7 @@ public unsafe class VulkanBackend : GraphicsBackend {
                 pQueuePriorities: prio);
         }
 
-        PhysicalDeviceFeatures enabledFeature = new PhysicalDeviceFeatures() {};
+        PhysicalDeviceFeatures enabledFeature = new();
 
         if (!TryExtractUsedExtensions(extensionSet,
                 e => _vk.IsDeviceExtensionPresent(this._physicalDeviceInfo.Handle, e),
@@ -337,7 +339,7 @@ public unsafe class VulkanBackend : GraphicsBackend {
             new DeviceCreateInfo(queueCreateInfoCount: (uint)(queueCreateCount + 1),
                 pQueueCreateInfos: queueCreates,
                 enabledExtensionCount: (uint)enabledExtensionCount,
-                ppEnabledExtensionNames: (byte**)extensionMem.Handle,
+                ppEnabledExtensionNames: (byte**)extensionMem!.Handle,
                 pEnabledFeatures: &enabledFeature),
             null,
             out device);
@@ -361,7 +363,7 @@ public unsafe class VulkanBackend : GraphicsBackend {
         return true;
     }
 
-    public override unsafe void Initialize(IView window, IInputContext inputContext) {
+    public override void Initialize(IView window, IInputContext inputContext) {
         this._view = window;
 
         if (this._view.VkSurface == null) {
@@ -450,7 +452,7 @@ public unsafe class VulkanBackend : GraphicsBackend {
             return;
         }
 
-        this._presentationQueueInfo = this._queuePool!.GetReferenceTo(presentQueue!);
+        this._presentationQueueInfo = this._queuePool.GetReferenceTo(presentQueue!);
 
         Logger.Log(
             $"Picked Presentation Queue from queue family {presentQueue!.QueueFamilyIndex} and registered with pool",
@@ -470,17 +472,17 @@ public unsafe class VulkanBackend : GraphicsBackend {
 
         //pick best settings
         SurfaceFormatKHR surfaceFormat;
-        PresentModeKHR   presentMode = PresentModeKHR.PresentModeImmediateKhr;
+        PresentModeKHR   presentMode = PresentModeKHR.ImmediateKhr;
         Extent2D         extent;
 
         PresentModeKHR[] presentModeTryList = new PresentModeKHR[] {
-            PresentModeKHR.PresentModeFifoKhr,
-            PresentModeKHR.PresentModeMailboxKhr,
-            PresentModeKHR.PresentModeImmediateKhr,
-            PresentModeKHR.PresentModeSharedContinuousRefreshKhr,
-            PresentModeKHR.PresentModeSharedDemandRefreshKhr,
-            PresentModeKHR.PresentModeFifoRelaxedKhr,
-            PresentModeKHR.PresentModeFifoKhr
+            PresentModeKHR.FifoKhr,
+            PresentModeKHR.MailboxKhr,
+            PresentModeKHR.ImmediateKhr,
+            PresentModeKHR.SharedContinuousRefreshKhr,
+            PresentModeKHR.SharedDemandRefreshKhr,
+            PresentModeKHR.FifoRelaxedKhr,
+            PresentModeKHR.FifoKhr
         };
 
         surfaceFormat = swapChainSupportDetails.Formats[0];
@@ -505,7 +507,7 @@ public unsafe class VulkanBackend : GraphicsBackend {
             bufferCount > swapChainSupportDetails.SurfaceCapabilities.MaxImageCount)
             bufferCount = swapChainSupportDetails.SurfaceCapabilities.MaxImageCount;
 
-        SwapchainCreateInfoKHR swapchainCreateInfo = new SwapchainCreateInfoKHR {
+        SwapchainCreateInfoKHR swapchainCreateInfo = new() {
             SType            = StructureType.SwapchainCreateInfoKhr,
             Surface          = this._surface,
             MinImageCount    = bufferCount,
@@ -513,13 +515,15 @@ public unsafe class VulkanBackend : GraphicsBackend {
             ImageColorSpace  = surfaceFormat.ColorSpace,
             ImageExtent      = extent,
             ImageArrayLayers = 1,
-            ImageUsage       = ImageUsageFlags.ImageUsageColorAttachmentBit
+            ImageUsage       = ImageUsageFlags.ColorAttachmentBit
         };
 
-        QueueInfo graphicsQueue = this._queuePool.NextGraphicsQueue();
+        QueueInfo? graphicsQueue = this._queuePool.NextGraphicsQueue();
+        
+        Guard.EnsureNonNull(graphicsQueue, nameof(graphicsQueue));
 
         uint* queueFamilyIndicies = stackalloc uint[] {
-            (uint)this._presentationQueueInfo.QueueFamilyIndex, (uint)graphicsQueue.QueueFamilyIndex
+            (uint)this._presentationQueueInfo.QueueFamilyIndex, (uint)graphicsQueue!.QueueFamilyIndex
         };
 
         if (graphicsQueue.QueueFamilyIndex != _presentationQueueInfo.QueueFamilyIndex) {
@@ -534,7 +538,7 @@ public unsafe class VulkanBackend : GraphicsBackend {
         }
 
         swapchainCreateInfo.PreTransform   = swapChainSupportDetails.SurfaceCapabilities.CurrentTransform;
-        swapchainCreateInfo.CompositeAlpha = CompositeAlphaFlagsKHR.CompositeAlphaOpaqueBitKhr;
+        swapchainCreateInfo.CompositeAlpha = CompositeAlphaFlagsKHR.OpaqueBitKhr;
         swapchainCreateInfo.PresentMode    = presentMode;
         swapchainCreateInfo.Clipped        = true;
 
@@ -568,10 +572,10 @@ public unsafe class VulkanBackend : GraphicsBackend {
         for (var i = 0; i < this._swapChainImages.Length; i++) {
             Image image = this._swapChainImages[i];
 
-            ImageViewCreateInfo imageViewCreateInfo = new ImageViewCreateInfo {
+            ImageViewCreateInfo imageViewCreateInfo = new() {
                 SType    = StructureType.ImageViewCreateInfo,
                 Image    = image,
-                ViewType = ImageViewType.ImageViewType2D,
+                ViewType = ImageViewType.Type2D,
                 Format   = this._swapchainImageFormat,
                 Components = new ComponentMapping {
                     R = ComponentSwizzle.Identity,
@@ -580,7 +584,7 @@ public unsafe class VulkanBackend : GraphicsBackend {
                     A = ComponentSwizzle.Identity,
                 },
                 SubresourceRange = new ImageSubresourceRange {
-                    AspectMask     = ImageAspectFlags.ImageAspectColorBit,
+                    AspectMask     = ImageAspectFlags.ColorBit,
                     BaseMipLevel   = 0,
                     LevelCount     = 1,
                     BaseArrayLayer = 0,
@@ -599,7 +603,7 @@ public unsafe class VulkanBackend : GraphicsBackend {
     }
 
     private SwapChainSupportDetails QuerySwapChainSupportDetails(PhysicalDevice device) {
-        SwapChainSupportDetails details = new SwapChainSupportDetails();
+        SwapChainSupportDetails details = new();
 
         this._vkSurface.GetPhysicalDeviceSurfaceCapabilities(device, this._surface, out details.SurfaceCapabilities);
 
@@ -608,7 +612,7 @@ public unsafe class VulkanBackend : GraphicsBackend {
 
         if (formatCount != 0) {
             details.Formats = new SurfaceFormatKHR[formatCount];
-            Span<SurfaceFormatKHR> spanFormats = new Span<SurfaceFormatKHR>(details.Formats);
+            Span<SurfaceFormatKHR> spanFormats = new(details.Formats);
 
             this._vkSurface.GetPhysicalDeviceSurfaceFormats(device, this._surface, &formatCount, spanFormats);
         }
@@ -618,7 +622,7 @@ public unsafe class VulkanBackend : GraphicsBackend {
 
         if (presentModeCount != 0) {
             details.PresentModes = new PresentModeKHR[presentModeCount];
-            Span<PresentModeKHR> spanPresentModes = new Span<PresentModeKHR>(details.PresentModes);
+            Span<PresentModeKHR> spanPresentModes = new(details.PresentModes);
 
             this._vkSurface.GetPhysicalDeviceSurfacePresentModes(device, this._surface, &presentModeCount,
                 spanPresentModes);
@@ -645,7 +649,7 @@ public unsafe class VulkanBackend : GraphicsBackend {
         return false;
     }
     
-    public override unsafe void Cleanup() {
+    public override void Cleanup() {
         this._presentationQueueInfo.Dispose();
         this._queuePool.Dispose();
 
@@ -666,17 +670,17 @@ public unsafe class VulkanBackend : GraphicsBackend {
         this._vk.DestroyInstance(this._instance, null);
     }
 
-    private Shader         _vertexShader;
-    private Shader         _fragmentShader;
+    private Shader         _vertexShader   = null!;
+    private Shader         _fragmentShader = null!;
     private PipelineLayout _pipelineLayout;
 
     private void TestStuff() {
         this._vertexShader = new Shader(this,
             ResourceHelpers.GetByteResource("ShaderCode/Compiled/HardcodedTriangle/VertexShader.spv", typeof(VulkanBackend)),
-            ShaderStageFlags.ShaderStageVertexBit, "main");
+            ShaderStageFlags.VertexBit, "main");
         this._fragmentShader = new Shader(this,
             ResourceHelpers.GetByteResource("ShaderCode/Compiled/HardcodedTriangle/FragmentShader.spv", typeof(VulkanBackend)),
-            ShaderStageFlags.ShaderStageFragmentBit, "main");
+            ShaderStageFlags.FragmentBit, "main");
 
         ShaderStagePipelineCreateInfo vertCreateInfo = this._vertexShader.GetPipelineCreateInfo();
         ShaderStagePipelineCreateInfo fragCreateInfo = this._fragmentShader.GetPipelineCreateInfo();
@@ -731,7 +735,7 @@ public unsafe class VulkanBackend : GraphicsBackend {
             RasterizerDiscardEnable = false,
             PolygonMode             = PolygonMode.Fill,
             LineWidth               = 1.0f,
-            CullMode                = CullModeFlags.CullModeBackBit,
+            CullMode                = CullModeFlags.BackBit,
             FrontFace               = FrontFace.Clockwise,
             DepthBiasEnable         = false,
             DepthBiasConstantFactor = 0.0f,
@@ -741,7 +745,7 @@ public unsafe class VulkanBackend : GraphicsBackend {
 
         PipelineMultisampleStateCreateInfo multisampleState = new(
             sampleShadingEnable: false,
-            rasterizationSamples: SampleCountFlags.SampleCount1Bit,
+            rasterizationSamples: SampleCountFlags.Count1Bit,
             minSampleShading: 1.0f,
             pSampleMask: null,
             alphaToCoverageEnable: false,
@@ -749,10 +753,10 @@ public unsafe class VulkanBackend : GraphicsBackend {
         );
 
         PipelineColorBlendAttachmentState blendState = new(
-            colorWriteMask: ColorComponentFlags.ColorComponentRBit |
-                            ColorComponentFlags.ColorComponentGBit |
-                            ColorComponentFlags.ColorComponentBBit |
-                            ColorComponentFlags.ColorComponentABit,
+            colorWriteMask: ColorComponentFlags.RBit |
+                            ColorComponentFlags.GBit |
+                            ColorComponentFlags.BBit |
+                            ColorComponentFlags.ABit,
             blendEnable: true,
             srcColorBlendFactor: BlendFactor.SrcAlpha,
             dstColorBlendFactor: BlendFactor.OneMinusSrcAlpha,
@@ -805,7 +809,7 @@ public unsafe class VulkanBackend : GraphicsBackend {
         );
 
         RenderPass pass = new();
-        result = this._vk.CreateRenderPass(this._device, &passCreateInfo, null, &pass);
+        this._vk.CreateRenderPass(this._device, &passCreateInfo, null, &pass);
         
         GraphicsPipelineCreateInfo pipelineInfo = new(
             stageCount: 2,

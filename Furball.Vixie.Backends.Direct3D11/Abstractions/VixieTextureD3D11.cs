@@ -41,7 +41,7 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
         backend.CheckThread();
         this._backend = backend;
 
-        Texture2DDescription textureDescription = new Texture2DDescription {
+        Texture2DDescription textureDescription = new() {
             Width     = 1,
             Height    = 1,
             MipLevels = 0,
@@ -162,7 +162,7 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
     }
 
     private void CreateTextureAndView(int width, int height, TextureParameters parameters) {
-        Texture2DDescription textureDescription = new Texture2DDescription {
+        Texture2DDescription textureDescription = new() {
             Width     = width,
             Height    = height,
             MipLevels = parameters.RequestMipmaps ? this.MipMapCount(width, height) : 1,

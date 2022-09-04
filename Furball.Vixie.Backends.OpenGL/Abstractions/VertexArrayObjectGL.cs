@@ -37,6 +37,7 @@ internal sealed class VertexArrayObjectGl : IDisposable {
     /// </summary>
     /// <param name="vertexBuffer">Vertex Buffer to add</param>
     /// <param name="layoutGl41">Layout of said Vertex Buffer</param>
+    /// <param name="iOffset">The offset of the layout</param>
     public unsafe VertexArrayObjectGl AddBuffer(BufferObjectGl vertexBuffer, VertexBufferLayoutGl layoutGl41, uint iOffset = 0) {
         this._backend.GlCheckThread();
         //Bind both this and the Vertex Buffer

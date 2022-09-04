@@ -111,7 +111,7 @@ internal unsafe class OpenGlRenderer : Renderer {
             return;
         
         //TODO: make VAOs optional (for pre GL3.0)
-        VertexArrayObjectGl vao = new VertexArrayObjectGl(this._backend);
+        VertexArrayObjectGl vao = new(this._backend);
         
         BufferObjectGl vtx;
         BufferObjectGl idx;

@@ -53,7 +53,7 @@ public abstract class GraphicsBackend {
     /// <summary>
     /// Called when a screenshot is completed
     /// </summary>
-    public event EventHandler<Image> ScreenshotTaken;
+    public event EventHandler<Image>? ScreenshotTaken;
     protected void InvokeScreenshotTaken(Image image) {
         this.ScreenshotTaken?.Invoke(this, image);
     }

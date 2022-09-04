@@ -5,6 +5,7 @@ using System.Numerics;
 using Furball.Vixie.Helpers;
 using Furball.Vixie.Helpers.Helpers;
 using ImGuiNET;
+using SharpGen.Runtime;
 using Silk.NET.Input;
 using Silk.NET.Input.Extensions;
 using Silk.NET.Maths;
@@ -14,7 +15,6 @@ using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
 using Vortice.Mathematics;
-using ComObject=SharpGen.Runtime.ComObject;
 
 namespace Furball.Vixie.Backends.Direct3D11;
 
@@ -111,7 +111,7 @@ public class ImGuiControllerD3D11 : IDisposable {
 
             this._vertexBufferSize += 5000;
 
-            BufferDescription vertexBufferDescription = new BufferDescription {
+            BufferDescription vertexBufferDescription = new() {
                 Usage          = ResourceUsage.Dynamic,
                 ByteWidth      = this._vertexBufferSize * sizeof(ImDrawVert),
                 BindFlags      = BindFlags.VertexBuffer,
@@ -127,7 +127,7 @@ public class ImGuiControllerD3D11 : IDisposable {
 
             this._indexBufferSize += 5000;
 
-            BufferDescription indexBufferDescription = new BufferDescription {
+            BufferDescription indexBufferDescription = new() {
                 Usage          = ResourceUsage.Dynamic,
                 ByteWidth      = this._indexBufferSize * sizeof(ushort),
                 BindFlags      = BindFlags.IndexBuffer,
@@ -183,8 +183,8 @@ public class ImGuiControllerD3D11 : IDisposable {
         int oldNumScissorRects = 0; 
         int oldVertexShaderInstancesCount, oldGeometryShaderInstancesCount;
 
-        RawRect[]                  oldScissorRectangles           = new RawRect[16];
-        Viewport                   oldViewport                    = new Viewport();
+        RawRect[]                   oldScissorRectangles           = new RawRect[16];
+        Viewport                    oldViewport                    = new();
         ID3D11ShaderResourceView?[] oldShaderResourceViews         = new ID3D11ShaderResourceView[1];
         ID3D11SamplerState?[]       oldSamplerStates               = new ID3D11SamplerState[1];
         ID3D11ClassInstance?[]      oldPixelShaderInstances        = new ID3D11ClassInstance[256];
@@ -192,8 +192,8 @@ public class ImGuiControllerD3D11 : IDisposable {
         ID3D11ClassInstance?[]      oldGeometryShaderInstances     = new ID3D11ClassInstance[256];
         ID3D11Buffer?[]             oldVertexShaderConstantBuffers = new ID3D11Buffer[1];
         ID3D11Buffer?[]             oldVertexBuffers               = new ID3D11Buffer[1];
-        int[]                      oldVertexBufferStrides         = new int[1];
-        int[]                      oldVertexBufferOffsets         = new int[1];
+        int[]                       oldVertexBufferStrides         = new int[1];
+        int[]                       oldVertexBufferOffsets         = new int[1];
 
         this._backend.DeviceContext.RSGetScissorRects(ref oldNumScissorRects, oldScissorRectangles);
         this._backend.DeviceContext.RSGetViewport(ref oldViewport);
@@ -264,25 +264,24 @@ public class ImGuiControllerD3D11 : IDisposable {
 
                 if (cmd.UserCallback != IntPtr.Zero)
                     throw new NotImplementedException("No!");
-                else {
-                    RawRect rectangle = new RawRect(
-                    (int)(cmd.ClipRect.X - clipOff.X),
-                    (int)(cmd.ClipRect.Y - clipOff.Y),
-                    (int)(cmd.ClipRect.Z - clipOff.X),
-                    (int)(cmd.ClipRect.W - clipOff.Y)
+
+                RawRect rectangle = new(
+                (int)(cmd.ClipRect.X - clipOff.X),
+                (int)(cmd.ClipRect.Y - clipOff.Y),
+                (int)(cmd.ClipRect.Z - clipOff.X),
+                (int)(cmd.ClipRect.W - clipOff.Y)
+                );
+                this._backend.DeviceContext.RSSetScissorRect(rectangle);
+
+                this._textureResources.TryGetValue(cmd.TextureId, out ID3D11ShaderResourceView? texture);
+
+                if (texture != null) {
+                    this._backend.DeviceContext.PSSetShaderResource(0, texture);
+                    this._backend.DeviceContext.DrawIndexed(
+                    (int)cmd.ElemCount,
+                    (int)(cmd.IdxOffset + globalIndexOffset),
+                    (int)(cmd.VtxOffset + globalVertexOffset)
                     );
-                    this._backend.DeviceContext.RSSetScissorRect(rectangle);
-
-                    this._textureResources.TryGetValue(cmd.TextureId, out ID3D11ShaderResourceView? texture);
-
-                    if (texture != null) {
-                        this._backend.DeviceContext.PSSetShaderResource(0, texture);
-                        this._backend.DeviceContext.DrawIndexed(
-                        (int)cmd.ElemCount,
-                        (int)(cmd.IdxOffset + globalIndexOffset),
-                        (int)(cmd.VtxOffset + globalVertexOffset)
-                        );
-                    }
                 }
             }
 
@@ -383,7 +382,7 @@ public class ImGuiControllerD3D11 : IDisposable {
     }
 
     private unsafe void SetupRenderState(ImDrawDataPtr drawData) {
-        Viewport viewport = new Viewport(0, 0, drawData.DisplaySize.X, drawData.DisplaySize.Y, 0, 1);
+        Viewport viewport = new(0, 0, drawData.DisplaySize.X, drawData.DisplaySize.Y, 0, 1);
 
         this._backend.DeviceContext.RSSetViewport(viewport);
 
@@ -542,15 +541,15 @@ public class ImGuiControllerD3D11 : IDisposable {
         //this._pixelShader.DebugName = "ImGui Pixel Shader";
 
         InputElementDescription[] inputElementDescription = new InputElementDescription[] {
-            new InputElementDescription("POSITION", 0, Format.R32G32_Float, 0, 0, InputClassification.PerVertexData, 0),
-            new InputElementDescription("TEXCOORD", 0, Format.R32G32_Float, 8, 0, InputClassification.PerVertexData, 0),
-            new InputElementDescription("COLOR", 0, Format.R8G8B8A8_UNorm, 16, 0, InputClassification.PerVertexData, 0),
+            new("POSITION", 0, Format.R32G32_Float, 0, 0, InputClassification.PerVertexData, 0),
+            new("TEXCOORD", 0, Format.R32G32_Float, 8, 0, InputClassification.PerVertexData, 0),
+            new("COLOR", 0, Format.R8G8B8A8_UNorm, 16, 0, InputClassification.PerVertexData, 0),
         };
 
         this._inputLayout = this._backend.Device.CreateInputLayout(inputElementDescription, vertexShaderData);
         //this._inputLayout.DebugName = "ImGui InputLayout";
 
-        BufferDescription constantBufferDescription = new BufferDescription {
+        BufferDescription constantBufferDescription = new() {
             ByteWidth      = 16 * sizeof(float),
             Usage          = ResourceUsage.Dynamic,
             BindFlags      = BindFlags.ConstantBuffer,
@@ -560,10 +559,10 @@ public class ImGuiControllerD3D11 : IDisposable {
         this._constantBuffer = this._backend.Device.CreateBuffer(constantBufferDescription);
         //this._constantBuffer.DebugName = "ImGui ConstantBuffer";
 
-        BlendDescription blendDescription = new BlendDescription {
+        BlendDescription blendDescription = new() {
             AlphaToCoverageEnable = false,
             RenderTarget = new RenderTargetBlendDescription[] {
-                new RenderTargetBlendDescription {
+                new() {
                     IsBlendEnabled        = true,
                     SourceBlend           = Blend.SourceAlpha,
                     DestinationBlend      = Blend.InverseSourceAlpha,
@@ -579,7 +578,7 @@ public class ImGuiControllerD3D11 : IDisposable {
         this._blendState = this._backend.Device.CreateBlendState(blendDescription);
         //this._blendState.DebugName = "ImGui BlendState";
 
-        RasterizerDescription rasterizerDescription = new RasterizerDescription {
+        RasterizerDescription rasterizerDescription = new() {
             FillMode        = FillMode.Solid,
             CullMode        = CullMode.None,
             ScissorEnable   = true,
@@ -589,14 +588,14 @@ public class ImGuiControllerD3D11 : IDisposable {
         this._rasterizerState = this._backend.Device.CreateRasterizerState(rasterizerDescription);
         //this._rasterizerState.DebugName = "ImGui RasterizerState";
 
-        DepthStencilOperationDescription depthStencilOperationDescription = new DepthStencilOperationDescription(
+        DepthStencilOperationDescription depthStencilOperationDescription = new(
         StencilOperation.Keep,
         StencilOperation.Keep,
         StencilOperation.Keep,
         ComparisonFunction.Always
         );
 
-        DepthStencilDescription depthStencilDescription = new DepthStencilDescription {
+        DepthStencilDescription depthStencilDescription = new() {
             DepthEnable    = false,
             DepthWriteMask = DepthWriteMask.All,
             DepthFunc      = ComparisonFunction.Always,
@@ -619,7 +618,7 @@ public class ImGuiControllerD3D11 : IDisposable {
 
         io.Fonts.GetTexDataAsRGBA32(out pixels, out width, out height);
 
-        Texture2DDescription texture2DDescription = new Texture2DDescription {
+        Texture2DDescription texture2DDescription = new() {
             Width     = width,
             Height    = height,
             MipLevels = 1,
@@ -634,7 +633,7 @@ public class ImGuiControllerD3D11 : IDisposable {
             CPUAccessFlags = CpuAccessFlags.None
         };
 
-        SubresourceData subresourceData = new SubresourceData {
+        SubresourceData subresourceData = new() {
             DataPointer = (IntPtr)pixels,
             RowPitch    = width * 4,
             SlicePitch  = 0
@@ -648,7 +647,7 @@ public class ImGuiControllerD3D11 : IDisposable {
         );
         //fontTexture.DebugName = "ImGui Font Texture";
 
-        ShaderResourceViewDescription shaderResourceViewDescription = new ShaderResourceViewDescription {
+        ShaderResourceViewDescription shaderResourceViewDescription = new() {
             Format        = Format.R8G8B8A8_UNorm,
             ViewDimension = ShaderResourceViewDimension.Texture2D,
             Texture2D = new Texture2DShaderResourceView {
@@ -665,7 +664,7 @@ public class ImGuiControllerD3D11 : IDisposable {
 
         io.Fonts.TexID = RegisterTexture(this._fontTextureView);
 
-        SamplerDescription samplerDescription = new SamplerDescription {
+        SamplerDescription samplerDescription = new() {
             Filter             = Filter.MinMagMipLinear,
             AddressU           = TextureAddressMode.Wrap,
             AddressV           = TextureAddressMode.Wrap,

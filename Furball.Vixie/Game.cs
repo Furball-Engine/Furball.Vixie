@@ -352,7 +352,8 @@ public abstract class Game : IDisposable {
     /// <summary>
     /// Sets up and ends the scene
     /// </summary>
-    /// <param name="deltaTime"></param>
+    /// <param name="_"></param>
+    /// <param name="deltaTime">Delta time</param>
     private void VixieDraw(object _, double deltaTime) {
         GraphicsBackend.Current.BeginScene();
 

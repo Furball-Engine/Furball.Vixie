@@ -7,6 +7,7 @@ using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Backends.Veldrid.Abstractions;
+using Furball.Vixie.Helpers;
 using Silk.NET.Input;
 using Silk.NET.Windowing;
 using Silk.NET.Windowing.Extensions.Veldrid;
@@ -17,35 +18,34 @@ using Veldrid;
 using Veldrid.MetalBindings;
 using GraphicsBackend=Furball.Vixie.Backends.Shared.Backends.GraphicsBackend;
 using Rectangle=SixLabors.ImageSharp.Rectangle;
-using Texture=Veldrid.Texture;
 
 namespace Furball.Vixie.Backends.Veldrid; 
 
 public class VeldridBackend : GraphicsBackend {
     public static global::Veldrid.GraphicsBackend PrefferedBackend = VeldridWindow.GetPlatformDefaultBackend();
         
-    internal GraphicsDevice  GraphicsDevice;
-    internal ResourceFactory ResourceFactory;
-    internal CommandList     CommandList;
+    internal GraphicsDevice  GraphicsDevice  = null!;
+    internal ResourceFactory ResourceFactory = null!;
+    internal CommandList     CommandList     = null!;
 
     public global::Veldrid.GraphicsBackend ChosenBackend;
         
-    internal Matrix4x4       ProjectionMatrix;
-    private  IView           _view;
+    internal Matrix4x4 ProjectionMatrix;
+    private  IView     _view = null!;
 #if USE_IMGUI
-    private  ImGuiController _imgui;
+    private ImGuiController _imgui = null!;
 #endif
 
-    internal VixieTextureVeldrid WhitePixel;
-    internal ResourceSet    WhitePixelResourceSet;
+    internal VixieTextureVeldrid WhitePixel            = null!;
+    internal ResourceSet         WhitePixelResourceSet = null!;
 
-    internal  Framebuffer    RenderFramebuffer;
-    internal  Texture        MainFramebufferTexture;
-    internal  ResourceSet    MainFramebufferTextureSet;
-    internal  ResourceLayout MainFramebufferTextureLayout;
-    internal  FullScreenQuad FullScreenQuad;
-    private bool           _screenshotQueued;
-    private Rectangle      _lastScissor;
+    internal Framebuffer?    RenderFramebuffer            = null!;
+    internal Texture?        MainFramebufferTexture       = null!;
+    internal ResourceSet?    MainFramebufferTextureSet    = null!;
+    internal ResourceLayout? MainFramebufferTextureLayout = null!;
+    internal FullScreenQuad  FullScreenQuad               = null!;
+    private  bool            _screenshotQueued;
+    private  Rectangle       _lastScissor;
 
     public override void Initialize(IView view, IInputContext inputContext) {
         this._view = view;
@@ -161,22 +161,22 @@ public class VeldridBackend : GraphicsBackend {
         this.CreateFramebuffer(this.GraphicsDevice.SwapchainFramebuffer.Width, this.GraphicsDevice.SwapchainFramebuffer.Height);
 
 #if USE_IMGUI
-        this._imgui = new ImGuiController(this.GraphicsDevice, this.RenderFramebuffer.OutputDescription, view, inputContext);
+        this._imgui = new ImGuiController(this.GraphicsDevice, this.RenderFramebuffer!.OutputDescription, view, inputContext);
 #endif
 
         for (int i = 0; i < MAX_TEXTURE_UNITS; i++) {
-            ResourceLayout layout = this.ResourceFactory.CreateResourceLayout(new(new ResourceLayoutElementDescription[] {
-                new($"tex_{i}", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
-                new($"sampler_{i}", ResourceKind.Sampler, ShaderStages.Fragment)
-            }));
+            ResourceLayout layout = this.ResourceFactory.CreateResourceLayout(new(
+                                                                              new($"tex_{i}", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
+                                                                                  new($"sampler_{i}", ResourceKind.Sampler, ShaderStages.Fragment)
+                                                                              ));
 
             VixieTextureVeldrid.ResourceLayouts[i] = layout;
         }
             
-        ResourceLayout blankLayout = this.ResourceFactory.CreateResourceLayout(new(new ResourceLayoutElementDescription[] {
-            new($"tex_blank", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
-            new($"sampler_blank", ResourceKind.Sampler, ShaderStages.Fragment),
-        }));
+        ResourceLayout blankLayout = this.ResourceFactory.CreateResourceLayout(new(
+                                                                               new("tex_blank", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
+                                                                                   new("sampler_blank", ResourceKind.Sampler, ShaderStages.Fragment)
+                                                                               ));
 
         this.WhitePixel = (VixieTextureVeldrid)this.CreateWhitePixelTexture();
             
@@ -201,17 +201,17 @@ public class VeldridBackend : GraphicsBackend {
 
         this.MainFramebufferTexture = this.ResourceFactory.CreateTexture(TextureDescription.Texture2D(width, height, 1, 1, PixelFormat.R8_G8_B8_A8_UNorm, TextureUsage.RenderTarget | TextureUsage.Sampled));
 
-        FramebufferDescription fbdesc = new FramebufferDescription {
+        FramebufferDescription fbdesc = new() {
             ColorTargets = new[] {
                 new FramebufferAttachmentDescription(this.MainFramebufferTexture, 0)
             }
         };
         this.RenderFramebuffer = this.ResourceFactory.CreateFramebuffer(fbdesc);
 
-        this.MainFramebufferTextureLayout = this.ResourceFactory.CreateResourceLayout(new(new[] {
-            new ResourceLayoutElementDescription("SourceTexture", ResourceKind.TextureReadOnly, ShaderStages.Fragment), 
-            new ResourceLayoutElementDescription("SourceSampler", ResourceKind.Sampler, ShaderStages.Fragment)
-        }));
+        this.MainFramebufferTextureLayout = this.ResourceFactory.CreateResourceLayout(new(
+                                                                                      new ResourceLayoutElementDescription("SourceTexture", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
+                                                                                          new ResourceLayoutElementDescription("SourceSampler", ResourceKind.Sampler,         ShaderStages.Fragment)
+                                                                                      ));
             
         var resourceSetDesc = new ResourceSetDescription {
             BoundResources = new BindableResource[] {
@@ -262,11 +262,13 @@ public class VeldridBackend : GraphicsBackend {
     }
 
     public override void BeginScene() {
+        Guard.EnsureNonNull(this.RenderFramebuffer, "this.RenderFramebuffer");
+        
         this.CommandList.Begin();
         this.CommandList.SetFramebuffer(this.RenderFramebuffer);
 
         this.CommandList.SetFullViewports();
-        this.SetProjectionMatrix(this.RenderFramebuffer.Width, this.RenderFramebuffer.Height, false);
+        this.SetProjectionMatrix(this.RenderFramebuffer!.Width, this.RenderFramebuffer.Height, false);
     }
 
     public override void EndScene() {
@@ -280,6 +282,8 @@ public class VeldridBackend : GraphicsBackend {
     }
         
     public override void Present() {
+        Guard.EnsureNonNull(this.MainFramebufferTexture, nameof(this.MainFramebufferTexture));
+        
         this.CommandList.Begin();
         this.CommandList.SetFramebuffer(this.GraphicsDevice.SwapchainFramebuffer);
         // this.CommandList.CopyTexture(this.MainFramebufferTexture, this.GraphicsDevice.SwapchainFramebuffer.ColorTargets[0].Target);
@@ -293,7 +297,7 @@ public class VeldridBackend : GraphicsBackend {
             this._screenshotQueued = false;
                 
             TextureDescription desc = TextureDescription.Texture2D(
-                this.MainFramebufferTexture.Width, 
+                this.MainFramebufferTexture!.Width, 
                 this.MainFramebufferTexture.Height, 
                 this.MainFramebufferTexture.MipLevels, 
                 this.MainFramebufferTexture.ArrayLayers, 
@@ -356,16 +360,16 @@ public class VeldridBackend : GraphicsBackend {
     }
     public override VixieTextureRenderTarget CreateRenderTarget(uint width, uint height) => new VixieTextureRenderTargetVeldrid(this, width, height);
 
-    public override Shared.VixieTexture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default)
+    public override VixieTexture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default)
         => new VixieTextureVeldrid(this, imageData, parameters);
 
-    public override Shared.VixieTexture CreateTextureFromStream(Stream stream, TextureParameters parameters = default)
+    public override VixieTexture CreateTextureFromStream(Stream stream, TextureParameters parameters = default)
         => new VixieTextureVeldrid(this, stream, parameters);
 
-    public override Shared.VixieTexture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default)
+    public override VixieTexture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default)
         => new VixieTextureVeldrid(this, width, height, parameters);
 
-    public override Shared.VixieTexture CreateWhitePixelTexture() => new VixieTextureVeldrid(this);
+    public override VixieTexture CreateWhitePixelTexture() => new VixieTextureVeldrid(this);
 
 #if USE_IMGUI
     public override void ImGuiUpdate(double deltaTime) {

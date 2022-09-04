@@ -15,13 +15,12 @@ public static class ResourceHelpers {
         Assembly assembly   = vixieResource ? Assembly.GetExecutingAssembly() : Assembly.GetCallingAssembly();
         string   actualName = assembly.GetName().Name + "." + path.Replace("/", ".");
 
-        MemoryStream stream    = new MemoryStream();
-        Stream       resStream = assembly.GetManifestResourceStream(actualName);
+        MemoryStream stream    = new();
+        Stream?      resStream = assembly.GetManifestResourceStream(actualName);
+        
+        Guard.EnsureNonNull(resStream, "resStream");
 
-        if (resStream == null)
-            return null;
-
-        resStream.CopyTo(stream);
+        resStream!.CopyTo(stream);
 
         return stream;
     }
@@ -29,7 +28,7 @@ public static class ResourceHelpers {
     /// Gets a String Resource
     /// </summary>
     /// <param name="path">Path to Resource</param>
-    /// <param name="vixieResource">Is it a resource from Vixie?</param>
+    /// <param name="type">A type from the assembly to grab from</param>
     /// <returns>String with the resource</returns>
     public static string GetStringResource(string path, Type type) {
         Assembly assembly = Assembly.GetAssembly(type);
@@ -48,7 +47,7 @@ public static class ResourceHelpers {
     /// Gets a Byte Array Resource
     /// </summary>
     /// <param name="path">Path to Resource</param>
-    /// <param name="vixieResource">Is it a resource from Vixie?</param>
+    /// <param name="type">A type from the assembly to grab from</param>
     /// <returns>String with the resource</returns>
     public static byte[] GetByteResource(string path, Type type) {
         Assembly assembly   = Assembly.GetAssembly(type);

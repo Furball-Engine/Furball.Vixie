@@ -64,6 +64,7 @@ internal class VertexBufferLayoutGl {
     /// </summary>
     /// <param name="count">Count of Elements</param>
     /// <param name="normalized">Do they need to be Normalized?</param>
+    /// <param name="instanceDivisor">The instance divisor</param>
     /// <typeparam name="pElementType">Type of Element</typeparam>
     /// <returns></returns>
     public VertexBufferLayoutGl AddElement<pElementType>(int count, bool normalized = false, uint instanceDivisor = uint.MaxValue) where pElementType : unmanaged {
@@ -74,6 +75,7 @@ internal class VertexBufferLayoutGl {
             TypeCode.Int16  => VertexAttribPointerType.Short,
             TypeCode.UInt16 => VertexAttribPointerType.UnsignedShort,
             TypeCode.Int32  => VertexAttribPointerType.Int,
+            // ReSharper disable once NotResolvedInText
             _ => throw new ArgumentOutOfRangeException("pElementType", "Generic Argument pElementType currently not supported")
         };
 

@@ -1,9 +1,9 @@
 namespace Furball.Vixie.Backends.Shared.Backends; 
 
 public class FeatureLevel {
-    public string Name;
-    public string Description;
-    public object Value;
+    public string Name = "";
+    public string Description = "";
+    public object Value = null!;
 
     public bool   Boolean => (bool) this.Value;
     public string String  => (string) this.Value;

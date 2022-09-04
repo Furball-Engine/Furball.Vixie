@@ -120,7 +120,7 @@ public class Direct3D11Backend : GraphicsBackend {
                                   ? view.Handle
                                   : view.Native!.Win32!.Value.Hwnd;
 
-        SwapChainDescription1 swapChainDescription = new SwapChainDescription1 {
+        SwapChainDescription1 swapChainDescription = new() {
             Width  = view.FramebufferSize.X,
             Height = view.FramebufferSize.Y,
             Format = Format.R8G8B8A8_UNorm,
@@ -134,7 +134,7 @@ public class Direct3D11Backend : GraphicsBackend {
             Flags       = SwapChainFlags.None,
         };
 
-        SwapChainFullscreenDescription fullscreenDescription = new SwapChainFullscreenDescription {
+        SwapChainFullscreenDescription fullscreenDescription = new() {
             Windowed = true
         };
 
@@ -149,7 +149,7 @@ public class Direct3D11Backend : GraphicsBackend {
 
         this._clearColor = new Color4(0.0f, 0.0f, 0.0f, 1.0f);
 
-        RasterizerDescription rasterizerDescription = new RasterizerDescription {
+        RasterizerDescription rasterizerDescription = new() {
             FillMode              = FillMode.Solid,
             CullMode              = CullMode.None,
             FrontCounterClockwise = true,
@@ -163,11 +163,11 @@ public class Direct3D11Backend : GraphicsBackend {
 
         this.DeviceContext.RSSetState(rasterizerState);
 
-        BlendDescription blendDescription = new BlendDescription {
+        BlendDescription blendDescription = new() {
             AlphaToCoverageEnable  = false,
             IndependentBlendEnable = false,
             RenderTarget = new RenderTargetBlendDescription[] {
-                new RenderTargetBlendDescription {
+                new() {
                     IsBlendEnabled        = true,
                     SourceBlend           = Blend.SourceAlpha,
                     DestinationBlend      = Blend.InverseSourceAlpha,

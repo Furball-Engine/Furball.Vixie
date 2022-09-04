@@ -1,7 +1,8 @@
-﻿#if USE_IMGUI
+﻿
+using Silk.NET.Input;
+#if USE_IMGUI
 using ImGuiNET;
 #endif
-using Silk.NET.Input;
 
 namespace Furball.Vixie.Backends.Shared.ImGuiController; 
 

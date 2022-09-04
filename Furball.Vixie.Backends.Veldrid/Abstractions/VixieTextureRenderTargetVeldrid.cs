@@ -33,8 +33,7 @@ internal sealed class VixieTextureRenderTargetVeldrid : VixieTextureRenderTarget
 
         this._fb = backend.ResourceFactory.CreateFramebuffer(description);
 
-        if (!this._backend.GraphicsDevice.IsUvOriginTopLeft)
-            this._tex.IsFbAndShouldFlip = true;
+        if (!this._backend.GraphicsDevice.IsUvOriginTopLeft) {}
     }
         
     public override void Bind() {
@@ -55,7 +54,7 @@ internal sealed class VixieTextureRenderTargetVeldrid : VixieTextureRenderTarget
             
         this._backend.CommandList.SetFullViewports();
 
-        this._backend.SetProjectionMatrix(this._backend.RenderFramebuffer.Width, this._backend.RenderFramebuffer.Height, false);
+        this._backend.SetProjectionMatrix(this._backend.RenderFramebuffer!.Width, this._backend.RenderFramebuffer.Height, false);
     }
 
     private bool _isDisposed;

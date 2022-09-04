@@ -1,7 +1,7 @@
 ﻿using System;
 using Silk.NET.SDL;
 using Silk.NET.Windowing;
-using Window = Silk.NET.SDL.Window;
+using Window=Silk.NET.SDL.Window;
 
 namespace Furball.Vixie.OpenGLDetector;
 
@@ -21,28 +21,28 @@ public static class OpenGLDetector {
 
     private static readonly APIVersion[] KnownOpenGlVersions = {
         //1.x
-        new APIVersion(1, 0),
-        new APIVersion(1, 1),
-        new APIVersion(1, 2),
-        new APIVersion(1, 3),
-        new APIVersion(1, 4),
-        new APIVersion(1, 5),
+        new(1, 0),
+        new(1, 1),
+        new(1, 2),
+        new(1, 3),
+        new(1, 4),
+        new(1, 5),
         //2.x
-        new APIVersion(2, 0),
-        new APIVersion(2, 1),
+        new(2, 0),
+        new(2, 1),
         //3.x
-        new APIVersion(3, 0),
-        new APIVersion(3, 1),
-        new APIVersion(3, 2),
-        new APIVersion(3, 3),
+        new(3, 0),
+        new(3, 1),
+        new(3, 2),
+        new(3, 3),
         //4.x
-        new APIVersion(4, 0),
-        new APIVersion(4, 1),
-        new APIVersion(4, 2),
-        new APIVersion(4, 3),
-        new APIVersion(4, 4),
-        new APIVersion(4, 5),
-        new APIVersion(4, 6)
+        new(4, 0),
+        new(4, 1),
+        new(4, 2),
+        new(4, 3),
+        new(4, 4),
+        new(4, 5),
+        new(4, 6)
     };
 
     private static readonly APIVersion[] KnownOpenGlesVersions = {
@@ -50,11 +50,11 @@ public static class OpenGLDetector {
         // new APIVersion(1, 0),
         // new APIVersion(1, 1),
         //2.x
-        new APIVersion(2, 0),
+        new(2, 0),
         //3.x
-        new APIVersion(3, 0),
-        new APIVersion(3, 1),
-        new APIVersion(3, 2)
+        new(3, 0),
+        new(3, 1),
+        new(3, 2)
     };
 
     private static unsafe Window* _window;

@@ -11,11 +11,7 @@ using Rectangle=System.Drawing.Rectangle;
 namespace Furball.Vixie.Backends.Veldrid.Abstractions; 
 
 internal sealed class VixieTextureVeldrid : VixieTexture {
-    public global::Veldrid.Texture Texture;
-        
-    public bool IsFbAndShouldFlip = false;
-
-    internal int UsedId = -1;
+    public Texture Texture = null!;
 
     private          TextureFilterType[] _filterTypes     = new TextureFilterType[VeldridBackend.MAX_TEXTURE_UNITS];
     private readonly ResourceSet?[]      _resourceSets    = new ResourceSet[VeldridBackend.MAX_TEXTURE_UNITS];
@@ -183,7 +179,7 @@ internal sealed class VixieTextureVeldrid : VixieTexture {
             TextureUsage.Staging
         );
 
-        global::Veldrid.Texture? stagingTexture = this._backend.ResourceFactory.CreateTexture(textureDescription);
+        Texture? stagingTexture = this._backend.ResourceFactory.CreateTexture(textureDescription);
 
         CommandList cmdList = this._backend.ResourceFactory.CreateCommandList();
 

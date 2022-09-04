@@ -27,7 +27,7 @@ namespace Furball.Vixie.Backends.Dummy {
         }
         protected override void RecreateFontDeviceTexture() {
             ImGuiIOPtr io = ImGui.GetIO(); 
-            io.Fonts.GetTexDataAsRGBA32(out IntPtr pix, out int width, out int height);
+            io.Fonts.GetTexDataAsRGBA32(out IntPtr _, out int _, out int _);
             
             io.Fonts.SetTexID((IntPtr)0);
         }

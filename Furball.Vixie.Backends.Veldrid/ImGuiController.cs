@@ -1,6 +1,7 @@
 #if USE_IMGUI
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Numerics;
 using System.Reflection;
@@ -17,33 +18,35 @@ using Point=System.Drawing.Point;
 namespace Furball.Vixie.Backends.Veldrid; 
 
 public class ImGuiController : IDisposable {
-    private          IView         _view;
-    private          IInputContext _input;
+    private          IView         _view  = null!;
+    private          IInputContext _input = null!;
     private          bool          _frameBegun;
-    private readonly List<char>    _pressedChars = new List<char>();
-    private          IKeyboard     _keyboard;
+    private readonly List<char>    _pressedChars = new();
+    private          IKeyboard     _keyboard     = null!;
 
     private int            _windowWidth;
     private int            _windowHeight;
-    private GraphicsDevice _gd;
+    private GraphicsDevice _gd = null!;
 
     // Device objects
-    private DeviceBuffer   _vertexBuffer;
-    private DeviceBuffer   _indexBuffer;
-    private DeviceBuffer   _projMatrixBuffer;
-    private Texture        _fontTexture;
-    private Shader         _vertexShader;
-    private Shader         _fragmentShader;
-    private ResourceLayout _layout;
-    private ResourceLayout _textureLayout;
-    private Pipeline       _pipeline;
-    private ResourceSet    _mainResourceSet;
-    private ResourceSet    _fontTextureResourceSet;
+    private DeviceBuffer   _vertexBuffer     = null!;
+    private DeviceBuffer   _indexBuffer      = null!;
+    private DeviceBuffer   _projMatrixBuffer = null!;
+    private Texture?       _fontTexture      = null!;
+    private Shader         _vertexShader     = null!;
+    private Shader         _fragmentShader   = null!;
+    private ResourceLayout _layout           = null!;
+    private ResourceLayout _textureLayout    = null!;
+    private Pipeline       _pipeline         = null!;
+    private ResourceSet    _mainResourceSet  = null!;
+    private ResourceSet?   _fontTextureResourceSet;
     private IntPtr         _fontAtlasId = (IntPtr)1;
 
     // Image trackers
-    private readonly Dictionary<IntPtr, ResourceSetInfo> _viewsById          = new Dictionary<IntPtr, ResourceSetInfo>();
-    private readonly List<IDisposable>                   _ownedResources     = new List<IDisposable>();
+    // ReSharper disable CollectionNeverUpdated.Local
+    private readonly Dictionary<IntPtr, ResourceSetInfo> _viewsById          = new();
+    private readonly List<IDisposable>                   _ownedResources     = new();
+    // ReSharper restore CollectionNeverUpdated.Local
     private          ColorSpaceHandling                  _colorSpaceHandling = ColorSpaceHandling.Legacy;
     public           Assembly                            Assembly;
 
@@ -292,18 +295,12 @@ public class ImGuiController : IDisposable {
         cl.SetFullScissorRect(0);
     }
 
-    private string GetEmbeddedResourceText(string resourceName) {
-        using (StreamReader sr = new StreamReader(this.Assembly.GetManifestResourceStream(resourceName))) {
-            return sr.ReadToEnd();
-        }
-    }
-
     private byte[] GetEmbeddedResourceBytes(string resourceName) {
-        using (Stream s = this.Assembly.GetManifestResourceStream(resourceName)) {
-            byte[] ret = new byte[s.Length];
-            s.Read(ret, 0, (int)s.Length);
-            return ret;
-        }
+        using Stream s   = this.Assembly.GetManifestResourceStream(resourceName) ?? throw new Exception();
+        byte[]       ret = new byte[s.Length];
+        _ = s.Read(ret, 0, (int)s.Length);
+        return ret;
+
     }
 
     private byte[] LoadEmbeddedShaderCode(ResourceFactory factory, string name, ShaderStages stage, ColorSpaceHandling colorSpaceHandling) {
@@ -354,28 +351,28 @@ public class ImGuiController : IDisposable {
         this._fragmentShader = factory.CreateShader(new ShaderDescription(ShaderStages.Fragment, fragmentShaderBytes, this._gd.BackendType == GraphicsBackend.Vulkan ? "main" : "FS"));
 
         VertexLayoutDescription[] vertexLayouts = new VertexLayoutDescription[] {
-            new VertexLayoutDescription(new VertexElementDescription("in_position", VertexElementSemantic.Position, VertexElementFormat.Float2), new VertexElementDescription("in_texCoord", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2), new VertexElementDescription("in_color", VertexElementSemantic.Color, VertexElementFormat.Byte4_Norm))
+            new(new VertexElementDescription("in_position", VertexElementSemantic.Position, VertexElementFormat.Float2), new VertexElementDescription("in_texCoord", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2), new VertexElementDescription("in_color", VertexElementSemantic.Color, VertexElementFormat.Byte4_Norm))
         };
 
         this._layout        = factory.CreateResourceLayout(new ResourceLayoutDescription(new ResourceLayoutElementDescription("ProjectionMatrixBuffer", ResourceKind.UniformBuffer,   ShaderStages.Vertex), new ResourceLayoutElementDescription("MainSampler", ResourceKind.Sampler, ShaderStages.Fragment)));
         this._textureLayout = factory.CreateResourceLayout(new ResourceLayoutDescription(new ResourceLayoutElementDescription("MainTexture",            ResourceKind.TextureReadOnly, ShaderStages.Fragment)));
 
-        GraphicsPipelineDescription pd = new GraphicsPipelineDescription(BlendStateDescription.SingleAlphaBlend,
-                                                                         new DepthStencilStateDescription(false, false, ComparisonKind.Always),
-                                                                         new RasterizerStateDescription(FaceCullMode.None, PolygonFillMode.Solid, FrontFace.Clockwise, true, true),
-                                                                         PrimitiveTopology.TriangleList,
-                                                                         new ShaderSetDescription(vertexLayouts,
-                                                                                                  new[] {
-                                                                                                      this._vertexShader, this._fragmentShader
-                                                                                                  },
-                                                                                                  new[] {
-                                                                                                      new SpecializationConstant(0, gd.IsClipSpaceYInverted), new SpecializationConstant(1, this._colorSpaceHandling == ColorSpaceHandling.Legacy),
-                                                                                                  }),
-                                                                         new ResourceLayout[] {
-                                                                             this._layout, this._textureLayout
-                                                                         },
-                                                                         outputDescription,
-                                                                         ResourceBindingModel.Default);
+        GraphicsPipelineDescription pd = new(BlendStateDescription.SingleAlphaBlend,
+                                             new DepthStencilStateDescription(false, false, ComparisonKind.Always),
+                                             new RasterizerStateDescription(FaceCullMode.None, PolygonFillMode.Solid, FrontFace.Clockwise, true, true),
+                                             PrimitiveTopology.TriangleList,
+                                             new ShaderSetDescription(vertexLayouts,
+                                                                      new[] {
+                                                                          this._vertexShader, this._fragmentShader
+                                                                      },
+                                                                      new[] {
+                                                                          new SpecializationConstant(0, gd.IsClipSpaceYInverted), new SpecializationConstant(1, this._colorSpaceHandling == ColorSpaceHandling.Legacy),
+                                                                      }),
+                                             new ResourceLayout[] {
+                                                 this._layout, this._textureLayout
+                                             },
+                                             outputDescription,
+                                             ResourceBindingModel.Default);
         this._pipeline = factory.CreateGraphicsPipeline(ref pd);
 
         this._mainResourceSet = factory.CreateResourceSet(new ResourceSetDescription(this._layout, this._projMatrixBuffer, gd.PointSampler));
@@ -415,14 +412,14 @@ public class ImGuiController : IDisposable {
         this._vertexBuffer.Dispose();
         this._indexBuffer.Dispose();
         this._projMatrixBuffer.Dispose();
-        this._fontTexture.Dispose();
+        this._fontTexture?.Dispose();
         this._vertexShader.Dispose();
         this._fragmentShader.Dispose();
         this._layout.Dispose();
         this._textureLayout.Dispose();
         this._pipeline.Dispose();
         this._mainResourceSet.Dispose();
-        this._fontTextureResourceSet.Dispose();
+        this._fontTextureResourceSet?.Dispose();
 
         foreach (IDisposable resource in this._ownedResources) {
             resource.Dispose();
@@ -432,10 +429,12 @@ public class ImGuiController : IDisposable {
         GC.SuppressFinalize(this);
     }
 
+    [SuppressMessage("ReSharper", "NotAccessedField.Local")]
     private struct ResourceSetInfo {
         public readonly IntPtr      ImGuiBinding;
         public readonly ResourceSet ResourceSet;
 
+        // ReSharper disable once UnusedMember.Local
         public ResourceSetInfo(IntPtr imGuiBinding, ResourceSet resourceSet) {
             this.ImGuiBinding = imGuiBinding;
             this.ResourceSet  = resourceSet;

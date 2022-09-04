@@ -5,7 +5,9 @@ using System.Numerics;
 using Furball.Vixie.Helpers;
 using Furball.Vixie.Helpers.Helpers;
 using Kettu;
-using Silk.NET.OpenGL;
+using Silk.NET.OpenGLES;
+using ProgramPropertyARB=Silk.NET.OpenGL.ProgramPropertyARB;
+using ShaderParameterName=Silk.NET.OpenGL.ShaderParameterName;
 
 namespace Furball.Vixie.Backends.OpenGL.Abstractions; 
 
@@ -53,9 +55,9 @@ internal sealed class ShaderGl : IDisposable {
         DisposeQueue.Enqueue(this);
     }
 
-    public ShaderGl AttachShader(Silk.NET.OpenGLES.ShaderType type, string source) {
+    public ShaderGl AttachShader(ShaderType type, string source) {
         this._backend.GlCheckThread();
-        return this.AttachShader((ShaderType) type, source);
+        return this.AttachShader((Silk.NET.OpenGL.ShaderType) type, source);
     }
 
     /// <summary>
@@ -65,7 +67,7 @@ internal sealed class ShaderGl : IDisposable {
     /// <param name="source">Shader source code</param>
     /// <returns>Self, used for Chaining methods</returns>
     /// <exception cref="Exception">Shader Compilation Failure</exception>
-    public ShaderGl AttachShader(ShaderType type, string source) {
+    public ShaderGl AttachShader(Silk.NET.OpenGL.ShaderType type, string source) {
         this._backend.GlCheckThread();
         uint shaderId = this._backend.CreateShader(type);
         this._backend.CheckError($"create shader 2 {type}");

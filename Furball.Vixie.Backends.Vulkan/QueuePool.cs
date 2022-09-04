@@ -7,7 +7,7 @@ namespace Furball.Vixie.Backends.Vulkan;
 
 public sealed class QueuePool : IDisposable {
 
-    private sealed class QueueReference : QueueInfo, IDisposable {
+    private sealed class QueueReference : QueueInfo {
 #if DEBUG
         private bool _released = false;
 #endif
@@ -63,14 +63,14 @@ public sealed class QueuePool : IDisposable {
             }
         }
 
-        QueueReference v = new QueueReference(this, s[i].QueueFamilyIndex, s[i].QueueIndex, s[i].Handle, s[i].FamilyProperties);
+        QueueReference v = new(this, s[i].QueueFamilyIndex, s[i].QueueIndex, s[i].Handle, s[i].FamilyProperties);
 
         this._usageCount.Span[i]++;
 
         return v;
     }
 
-    private bool TryFindNext(QueueFlags requiredFlags, out QueueInfo best) {
+    private bool TryFindNext(QueueFlags requiredFlags, out QueueInfo? best) {
         ReadOnlySpan<QueueInfo> s1 = this._queueInfos.Span;
         Span<int>               s2 = this._usageCount.Span;
 
@@ -97,28 +97,28 @@ public sealed class QueuePool : IDisposable {
         return true;
     }
 
-    public QueueInfo NextTransferQueue() {
-        if (!TryFindNext(QueueFlags.QueueTransferBit, out QueueInfo? queueInfo)) {
+    public QueueInfo? NextTransferQueue() {
+        if (!TryFindNext(QueueFlags.TransferBit, out QueueInfo? queueInfo)) {
             Logger.Log("Could not find Transfer queue", LoggerLevelVulkan.InstanceFatal);
-            return null!;
+            return null;
         }
 
         return queueInfo;
     }
 
-    public QueueInfo NextComputeQueue() {
-        if (!TryFindNext(QueueFlags.QueueComputeBit, out QueueInfo? queueInfo)) {
+    public QueueInfo? NextComputeQueue() {
+        if (!TryFindNext(QueueFlags.ComputeBit, out QueueInfo? queueInfo)) {
             Logger.Log("Could not find Compute queue", LoggerLevelVulkan.InstanceFatal);
-            return null!;
+            return null;
         }
 
         return queueInfo;
     }
 
-    public QueueInfo NextGraphicsQueue() {
-        if (!TryFindNext(QueueFlags.QueueGraphicsBit, out QueueInfo? queueInfo)) {
+    public QueueInfo? NextGraphicsQueue() {
+        if (!TryFindNext(QueueFlags.GraphicsBit, out QueueInfo? queueInfo)) {
             Logger.Log("Could not find Graphics queue", LoggerLevelVulkan.InstanceFatal);
-            return null!;
+            return null;
         }
 
         return queueInfo;

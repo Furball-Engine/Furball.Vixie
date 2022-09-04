@@ -11,7 +11,7 @@ using Rectangle=System.Drawing.Rectangle;
 
 namespace Furball.Vixie.Backends.OpenGL.Abstractions; 
 
-internal sealed class VixieTextureGl : VixieTexture, IDisposable {
+internal sealed class VixieTextureGl : VixieTexture {
     private readonly IGlBasedBackend _backend;
     /// <summary>
     /// All the Currently Bound Textures
@@ -225,10 +225,11 @@ internal sealed class VixieTextureGl : VixieTexture, IDisposable {
         this.Unbind();
         this._backend.CheckError("fill texture");
     }
-        
+
     /// <summary>
     /// Creates a Texture class using a already Generated OpenGL Texture
     /// </summary>
+    /// <param name="backend">The OpenGL backend</param>
     /// <param name="textureId">OpenGL Texture ID</param>
     /// <param name="width">Width of the Texture</param>
     /// <param name="height">Height of the Texture</param>

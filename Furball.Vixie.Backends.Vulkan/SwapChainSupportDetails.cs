@@ -4,6 +4,6 @@ namespace Furball.Vixie.Backends.Vulkan;
 
 public class SwapChainSupportDetails {
     public SurfaceCapabilitiesKHR SurfaceCapabilities;
-    public SurfaceFormatKHR[]     Formats;
-    public PresentModeKHR[]       PresentModes;
+    public SurfaceFormatKHR[]     Formats      = null!;
+    public PresentModeKHR[]       PresentModes = null!;
 }

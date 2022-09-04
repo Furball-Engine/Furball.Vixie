@@ -68,6 +68,7 @@ public class WindowManager : IDisposable {
     /// Creates a Window Manager
     /// </summary>
     /// <param name="windowOptions">Window Creation Options</param>
+    /// <param name="backend">The backend to use</param>
     public WindowManager(WindowOptions windowOptions, Backend backend) {
         this.Backend        = backend;
         this._windowOptions = windowOptions;
@@ -207,7 +208,7 @@ public class WindowManager : IDisposable {
             Backend.Direct3D11 => RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? ContextAPI.Vulkan
                 : ContextAPI.None,
             Backend.Dummy => ContextAPI.None,
-            _             => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
+            _             => throw new Exception("Invalid API chosen...")
         };
 
         ContextProfile profile = this.Backend switch {
@@ -217,7 +218,7 @@ public class WindowManager : IDisposable {
             Backend.Vulkan     => ContextProfile.Core,
             Backend.Direct3D11 => ContextProfile.Core,
             Backend.Dummy      => ContextProfile.Core,
-            _                  => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
+            _                  => throw new Exception("Invalid API chosen...")
         };
 
         ContextFlags flags = this.Backend switch {
@@ -236,7 +237,7 @@ public class WindowManager : IDisposable {
             Backend.Vulkan     => ContextFlags.Default,
             Backend.Dummy      => ContextFlags.Default,
 #endif
-            _ => throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...")
+            _ => throw new Exception("Invalid API chosen...")
         };
 
         APIVersion version;
@@ -270,7 +271,7 @@ public class WindowManager : IDisposable {
                 version = new APIVersion(0, 0);
                 break;
             default:
-                throw new ArgumentOutOfRangeException("backend", "Invalid API chosen...");
+                throw new Exception("Invalid API chosen...");
         }
 
         this._windowOptions.API = new GraphicsAPI(api, profile, flags, version);

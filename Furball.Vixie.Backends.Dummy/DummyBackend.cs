@@ -71,21 +71,21 @@ public class DummyBackend : GraphicsBackend {
         int   width  = image.Width;
         int   height = image.Height;
         image.Dispose();
-        return new DummyTexture(width, height);
+        return new DummyTexture(parameters, width, height);
     }
     public override VixieTexture CreateTextureFromStream(Stream stream, TextureParameters parameters = default) {
         Image image  = Image.Load(stream);
         int   width  = image.Width;
         int   height = image.Height;
         image.Dispose();
-        return new DummyTexture(width, height);
+        return new DummyTexture(parameters, width, height);
     }
     public override VixieTexture
         CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default) {
-        return new DummyTexture((int)width, (int)height);
+        return new DummyTexture(parameters, (int)width, (int)height);
     }
     public override VixieTexture CreateWhitePixelTexture() {
-        return new DummyTexture(1, 1);
+        return new DummyTexture(default, 1, 1);
     }
 #if USE_IMGUI
     public override void ImGuiUpdate(double deltaTime) {

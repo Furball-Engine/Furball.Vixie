@@ -136,7 +136,7 @@ public class Direct3D11Renderer : Renderer {
         //Create the input layout for the shader
         this._inputLayout = this._backend.Device.CreateInputLayout(inputLayoutDescription, vertexShaderData);
 
-        BufferDescription projectionBufferDescription = new BufferDescription {
+        BufferDescription projectionBufferDescription = new() {
             BindFlags      = BindFlags.ConstantBuffer,
             ByteWidth      = sizeof(Matrix4x4),
             CPUAccessFlags = CpuAccessFlags.Write,
