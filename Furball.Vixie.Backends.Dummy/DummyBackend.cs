@@ -51,6 +51,8 @@ public class DummyBackend : GraphicsBackend {
     public override void SetFullScissorRect() {
         // throw new System.NotImplementedException();
     }
+    public override ulong GetVramUsage() => 0;
+    public override ulong GetTotalVram() => 0;
     public override VixieTextureRenderTarget CreateRenderTarget(uint width, uint height) {
         return new DummyTextureRenderTarget((int)width, (int)height);
     }

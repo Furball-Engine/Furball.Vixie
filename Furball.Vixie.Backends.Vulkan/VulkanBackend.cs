@@ -862,6 +862,8 @@ public unsafe class VulkanBackend : GraphicsBackend {
     public override void SetFullScissorRect() {
         // throw new NotImplementedException();
     }
+    public override ulong GetVramUsage() => throw new NotImplementedException();
+    public override ulong GetTotalVram() => throw new NotImplementedException();
 
     public override VixieTextureRenderTarget CreateRenderTarget(uint width, uint height) {
         throw new NotImplementedException();

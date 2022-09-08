@@ -14,8 +14,6 @@ namespace Furball.Vixie.Backends.Shared.Backends;
 /// Specification for a Graphics Backend
 /// </summary>
 public abstract class GraphicsBackend {
-    public bool Dropped;
-    
     /// <summary>
     /// Used to Initialize the Backend
     /// </summary>
@@ -79,6 +77,13 @@ public abstract class GraphicsBackend {
     /// </summary>
     public abstract void SetFullScissorRect();
 
+    #region Debug info
+
+    public abstract ulong GetVramUsage();
+    public abstract ulong GetTotalVram();
+
+    #endregion
+    
     #region Render Targets
 
     /// <summary>

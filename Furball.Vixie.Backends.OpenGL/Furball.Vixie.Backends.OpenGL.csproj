@@ -14,10 +14,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Kettu" Version="1.4.0" />
-        <PackageReference Include="Silk.NET.OpenGL" Version="2.16.0" />
-        <PackageReference Include="Silk.NET.OpenGL.Legacy.Extensions.EXT" Version="2.16.0" />
-        <PackageReference Include="Silk.NET.OpenGLES" Version="2.16.0" />
+        <PackageReference Include="Kettu" Version="1.4.0"/>
+        <PackageReference Include="Silk.NET.OpenGL" Version="2.16.0"/>
+        <PackageReference Include="Silk.NET.OpenGL.Extensions.AMD" Version="2.16.0"/>
+        <PackageReference Include="Silk.NET.OpenGL.Extensions.NV" Version="2.16.0"/>
+        <PackageReference Include="Silk.NET.OpenGL.Legacy.Extensions.EXT" Version="2.16.0"/>
+        <PackageReference Include="Silk.NET.OpenGLES" Version="2.16.0"/>
     </ItemGroup>
     
     <ItemGroup Condition="'$(UseImGui)'=='true'">

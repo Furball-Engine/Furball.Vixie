@@ -307,7 +307,6 @@ public abstract class Game : IDisposable {
             }
             
             GraphicsBackend.Current.Cleanup();
-            GraphicsBackend.Current.Dropped = true;
             this.WindowManager.Close();
         
             this.WindowManager.Create();

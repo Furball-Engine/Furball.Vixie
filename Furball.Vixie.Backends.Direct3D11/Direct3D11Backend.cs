@@ -78,15 +78,15 @@ public class Direct3D11Backend : GraphicsBackend {
         }
 #endif
 
-        IDXGIFactory3 dxgiFactory = this.Device.QueryInterface<IDXGIDevice>().GetParent<IDXGIAdapter>()
-            .GetParent<IDXGIFactory3>();
+        this._dxgiFactory = this.Device.QueryInterface<IDXGIDevice>().GetParent<IDXGIAdapter>()
+                                .GetParent<IDXGIFactory3>();
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             goto skipAdapterPrint;
 
-        int adapterCount = dxgiFactory.GetAdapterCount1();
+        int adapterCount = this._dxgiFactory.GetAdapterCount1();
         for (int i = 0; i < adapterCount; i++) {
-            AdapterDescription description = dxgiFactory.GetAdapter(i).Description;
+            AdapterDescription description = this._dxgiFactory.GetAdapter(i).Description;
 
 #pragma warning disable CS0675
             long luid = description.Luid.LowPart | description.Luid.HighPart;
@@ -138,7 +138,7 @@ public class Direct3D11Backend : GraphicsBackend {
             Windowed = true
         };
 
-        this.SwapChain = dxgiFactory.CreateSwapChainForHwnd(
+        this.SwapChain = this._dxgiFactory.CreateSwapChainForHwnd(
         this.Device,
         outputWindow,
         swapChainDescription,
@@ -343,8 +343,9 @@ public class Direct3D11Backend : GraphicsBackend {
         this.DeviceContext.RSSetScissorRect(0, 0, (int)this.Viewport.Width, (int)this.Viewport.Height);
     }
 
-    private Rectangle _currentScissorRect;
-    public  bool      FbProjMatrix;
+    private Rectangle     _currentScissorRect;
+    public  bool          FbProjMatrix;
+    private IDXGIFactory3 _dxgiFactory;
 
     public override Rectangle ScissorRect {
         get => this._currentScissorRect;
@@ -362,4 +363,26 @@ public class Direct3D11Backend : GraphicsBackend {
     public override void SetFullScissorRect() {
         this.ScissorRect = new Rectangle(0, 0, (int)this.Viewport.Width, (int)this.Viewport.Height);
     }
+    public override ulong GetVramUsage() {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            return 0;
+
+        this._dxgiFactory.EnumAdapters1(0, out IDXGIAdapter1 adapter);
+
+        IDXGIAdapter3 adapter3 = new(adapter.NativePointer);
+
+        QueryVideoMemoryInfo info = adapter3.QueryVideoMemoryInfo(0, MemorySegmentGroup.Local);
+
+        return info.CurrentUsage;
+    }
+    public override unsafe ulong GetTotalVram() {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            return 0;
+
+        this._dxgiFactory.EnumAdapters1(0, out IDXGIAdapter1 adapter);
+
+        IDXGIAdapter4 adapter4 = new(adapter.NativePointer);
+
+        return (ulong)(void*)adapter4.Description3.DedicatedVideoMemory;
+    } 
 }

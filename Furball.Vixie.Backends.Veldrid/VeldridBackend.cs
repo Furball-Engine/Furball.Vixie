@@ -358,6 +358,10 @@ public class VeldridBackend : GraphicsBackend {
         this.GraphicsDevice.SubmitCommands(commandList);
         this.GraphicsDevice.WaitForIdle();
     }
+
+    public override ulong GetVramUsage() => 0;//Veldrid has no support for this :(
+    public override ulong GetTotalVram() => 0;
+    
     public override VixieTextureRenderTarget CreateRenderTarget(uint width, uint height) => new VixieTextureRenderTargetVeldrid(this, width, height);
 
     public override VixieTexture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default)

@@ -46,11 +46,10 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     /// <summary>
     ///     ImGui Controller
     /// </summary>
-
     internal ShaderGl Shader;
 
 #if USE_IMGUI
-    private  bool          _runImGui = true;
+    private bool _runImGui = true;
 #endif
     internal IView         View;
     private  bool          _screenshotQueued;
@@ -92,10 +91,10 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     private readonly FeatureLevel _needsCustomMipmapGenerationFeatureLevel;
     private readonly FeatureLevel _bindlessMipmapGenerationFeatureLevel;
 
-    public readonly Backend               CreationBackend;
-    private         bool                  _isFbProjMatrix;
+    public readonly Backend CreationBackend;
+    private         bool    _isFbProjMatrix;
 #if USE_IMGUI
-    private         OpenGlImGuiController _imgui;
+    private OpenGlImGuiController _imgui;
 #endif
 
     public OpenGLBackend(Backend backend) {
@@ -111,17 +110,14 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
                 FeatureLevels["NeedsCustomMipmapGeneration"].Value = false;
                 Logger.Log("Marking that we dont need custom mipmap generation!", LoggerLevelOpenGl.InstanceInfo);
             }
-        }
-        else {
-            if (Global.LatestSupportedGl.GL.MajorVersion < 3 ||
-                (Global.LatestSupportedGl.GL.MajorVersion == 3 &&
-                 Global.LatestSupportedGl.GL.MinorVersion < 2)) {
+        } else {
+            if (Global.LatestSupportedGl.GL.MajorVersion < 3 || Global.LatestSupportedGl.GL.MajorVersion == 3 &&
+                Global.LatestSupportedGl.GL.MinorVersion                                                 < 2) {
                 FeatureLevels["NeedsFramebufferExtension"].Value = true;
                 Logger.Log("Marking that we require the ExtFramebufferObject!", LoggerLevelOpenGl.InstanceInfo);
             }
-            
-            if ((Global.LatestSupportedGl.GL.MajorVersion >= 4 &&
-                 Global.LatestSupportedGl.GL.MinorVersion >= 4) ||
+
+            if (Global.LatestSupportedGl.GL.MajorVersion >= 4 && Global.LatestSupportedGl.GL.MinorVersion >= 4 ||
                 Global.LatestSupportedGl.GL.MajorVersion > 4) {
                 FeatureLevels["glBindTextures"].Value = true;
                 Logger.Log("Enabling multi-texture bind!", LoggerLevelOpenGl.InstanceInfo);
@@ -170,7 +166,7 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
         this.CheckError("enable srcalpha");
 
         this.gl.Enable(EnableCap.ScissorTest);
-        
+
         this.gl.Enable(EnableCap.CullFace);
         this.gl.CullFace(CullFaceMode.Back);
 
@@ -198,7 +194,8 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
         if (Global.LatestSupportedGl.GL.MajorVersion >= 3) {
             bool foundExtFramebufferObject = false;
             Exception ex = new(
-                "Your OpenGL version is too old and does not support the EXT_framebuffer_object extension! Try updating your video card drivers or try the Direct3D 11 and Vulkan backends!");
+            "Your OpenGL version is too old and does not support the EXT_framebuffer_object extension! Try updating your video card drivers or try the Direct3D 11 and Vulkan backends!"
+            );
 
             this.gl.GetInteger(GetPName.NumExtensions, out int numExtensions);
             for (uint i = 0; i < numExtensions; i++) {
@@ -214,10 +211,10 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
 
             if (this._needsFrameBufferExtensionFeatureLevel.Boolean)
                 this._framebufferObjectExt = new ExtFramebufferObject(this._legacyGl.Context);
-        }
-        else {
+        } else {
             Exception ex = new(
-                "Your OpenGL version is too old and does not support the EXT_framebuffer_object extension! Try updating your video card drivers or try the Direct3D 11 and Vulkan backends!");
+            "Your OpenGL version is too old and does not support the EXT_framebuffer_object extension! Try updating your video card drivers or try the Direct3D 11 and Vulkan backends!"
+            );
 
             string extensions = this.gl.GetStringS(StringName.Extensions);
             if (FeatureLevels["NeedsFramebufferExtension"].Boolean && !extensions.Contains("EXT_framebuffer_object"))
@@ -235,28 +232,30 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
             this._runImGui = false;
 #endif
         };
-        this.CurrentViewport    = new Vector2D<int>(view.FramebufferSize.X, view.FramebufferSize.Y);
-        this._lastScissor = new(0, 0, view.FramebufferSize.X, view.FramebufferSize.Y);
+        this.CurrentViewport = new Vector2D<int>(view.FramebufferSize.X, view.FramebufferSize.Y);
+        this._lastScissor    = new(0, 0, view.FramebufferSize.X, view.FramebufferSize.Y);
 
         this.CreateShaders();
     }
     private void CreateShaders() {
         this.Shader = new ShaderGl(this);
-        this.Shader.AttachShader(ShaderType.VertexShader, ResourceHelpers.GetStringResource("Shaders/VertexShader.glsl", typeof(OpenGLBackend)));
+        this.Shader.AttachShader(
+        ShaderType.VertexShader,
+        ResourceHelpers.GetStringResource("Shaders/VertexShader.glsl", typeof(OpenGLBackend))
+        );
         this.Shader.AttachShader(ShaderType.FragmentShader, RendererShaderGenerator.GetFragment(this));
         this.Shader.Link();
 
         this.Shader.Bind();
-        for (int i = 0; i < this.QueryMaxTextureUnits(); i++) {
+        for (int i = 0; i < this.QueryMaxTextureUnits(); i++)
             this.Shader.BindUniformToTexUnit($"tex_{i}", i);
-        }
-        
+
         this.gl.BindAttribLocation(this.Shader.ProgramId, 0, "VertexPosition");
         this.gl.BindAttribLocation(this.Shader.ProgramId, 1, "TextureCoordinate");
         this.gl.BindAttribLocation(this.Shader.ProgramId, 2, "VertexColor");
         this.gl.BindAttribLocation(this.Shader.ProgramId, 3, "TextureId2");
         this.gl.BindAttribLocation(this.Shader.ProgramId, 4, "TextureId");
-        
+
         this.Shader.Unbind();
     }
 
@@ -287,7 +286,7 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
             }
         }
     }
-    
+
     public unsafe void GetTexImage(TextureTarget target, int level, PixelFormat format, PixelType type, void* ptr) {
         this.gl.GetTexImage(target, level, format, type, ptr);
     }
@@ -331,10 +330,10 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
         this.VerticalRatio = this._isFbProjMatrix ? 1 : height / 720f;
 
         float bottom = this._isFbProjMatrix ? 0f : 720f;
-        float top = this._isFbProjMatrix ? height : 0f;
+        float top    = this._isFbProjMatrix ? height : 0f;
 
         float right = this._isFbProjMatrix ? width : width / (float)height * 720f;
-        
+
         this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, right, bottom, top, 1f, 0f);
         this.Shader.Bind();
         this.Shader.SetUniform("ProjectionMatrix", this.ProjectionMatrix);
@@ -344,13 +343,23 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     public override Rectangle ScissorRect {
         get => this._lastScissor;
         set {
-            this.gl.Scissor(value.X, this.CurrentViewport.Y - value.Height - value.Y, (uint)value.Width, (uint)value.Height);
+            this.gl.Scissor(
+            value.X,
+            this.CurrentViewport.Y - value.Height - value.Y,
+            (uint)value.Width,
+            (uint)value.Height
+            );
             this._lastScissor = value;
         }
     }
     public override void SetFullScissorRect() {
         this.ScissorRect = new(0, 0, this.CurrentViewport.X, this.CurrentViewport.Y);
     }
+    public override ulong GetVramUsage() =>
+        //TODO: figure out a way to get this info, AMD has dropped the ATI_meminfo extension
+        //and Nvidia has not updated the NVX_gpu_memory_info to the modern core profile
+        0;
+    public override ulong    GetTotalVram()   => 0;
     public override Renderer CreateRenderer() => new OpenGlRenderer(this);
     /// <summary>
     ///     Gets the Amount of Texture Units available for use
@@ -386,8 +395,15 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
             Rgba32[] colorArr = new Rgba32[viewport[2] * viewport[3]];
 
             fixed (void* ptr = colorArr) {
-                this.gl.ReadPixels(viewport[0], viewport[1], (uint)viewport[2], (uint)viewport[3], PixelFormat.Rgba,
-                                   PixelType.UnsignedByte, ptr);
+                this.gl.ReadPixels(
+                viewport[0],
+                viewport[1],
+                (uint)viewport[2],
+                (uint)viewport[3],
+                PixelFormat.Rgba,
+                PixelType.UnsignedByte,
+                ptr
+                );
             }
 
             Image img = Image.LoadPixelData(colorArr, viewport[2], viewport[3]);
@@ -404,23 +420,24 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     /// <param name="width">Width of the Target</param>
     /// <param name="height">Height of the Target</param>
     /// <returns></returns>
-    public override VixieTextureRenderTarget CreateRenderTarget(uint width, uint height) {
-        return new VixieTextureRenderTargetGl(this, width, height);
-    }
+    public override VixieTextureRenderTarget CreateRenderTarget(uint width, uint height)
+        => new VixieTextureRenderTargetGl(this, width, height);
     /// <summary>
     ///     Creates a Texture given some Data
     /// </summary>
     /// <param name="imageData">Image Data</param>
     /// <param name="parameters"></param>
     /// <returns>Texture</returns>
-    public override VixieTexture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default) => new VixieTextureGl(this, imageData, parameters);
+    public override VixieTexture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default)
+        => new VixieTextureGl(this, imageData, parameters);
     /// <summary>
     ///     Creates a Texture given a Stream
     /// </summary>
     /// <param name="stream">Stream to read from</param>
     /// <param name="parameters"></param>
     /// <returns>Texture</returns>
-    public override VixieTexture CreateTextureFromStream(Stream stream, TextureParameters parameters = default) => new VixieTextureGl(this, stream, parameters);
+    public override VixieTexture CreateTextureFromStream(Stream stream, TextureParameters parameters = default)
+        => new VixieTextureGl(this, stream, parameters);
     /// <summary>
     ///     Creates a Empty Texture given a Size
     /// </summary>
@@ -428,15 +445,14 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     /// <param name="height">Height of Texture</param>
     /// <param name="parameters"></param>
     /// <returns>Texture</returns>
-    public override VixieTexture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default) => new VixieTextureGl(this, width, height, parameters);
+    public override VixieTexture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default)
+        => new VixieTextureGl(this, width, height, parameters);
     /// <summary>
     ///     Used to Create a 1x1 Texture with only a white pixel
     /// </summary>
     /// <returns>White Pixel Texture</returns>
-    public override VixieTexture CreateWhitePixelTexture() {
-        return new VixieTextureGl(this);
-    }
-    
+    public override VixieTexture CreateWhitePixelTexture() => new VixieTextureGl(this);
+
 #if USE_IMGUI
     /// <summary>
     ///     Used to Update the ImGuiController in charge of rendering ImGui on this backend
@@ -464,8 +480,9 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     /// </summary>
     [SuppressMessage("ReSharper", "UnusedParameter.Local")]
     // ReSharper disable once UnusedMember.Local
-    private void Callback(GLEnum source, GLEnum type, int id, GLEnum severity, int length, nint message,
-                          nint   userparam) {
+    private void Callback(
+        GLEnum source, GLEnum type, int id, GLEnum severity, int length, nint message, nint userparam
+    ) {
         string stringMessage = SilkMarshal.PtrToString(message);
 
         if (stringMessage!.Contains("Buffer detailed info:"))
@@ -477,19 +494,11 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
         get;
         set;
     }
-    public GL GetModernGl() {
-        return this.gl;
-    }
-    public Silk.NET.OpenGL.Legacy.GL GetLegacyGl() {
-        return this._legacyGl;
-    }
-    public Silk.NET.OpenGLES.GL GetGles() {
-        return this._gles;
-    }
+    public GL                        GetModernGl() => this.gl;
+    public Silk.NET.OpenGL.Legacy.GL GetLegacyGl() => this._legacyGl;
+    public Silk.NET.OpenGLES.GL      GetGles()     => this._gles;
 
-    public uint GenBuffer() {
-        return this.gl.GenBuffer();
-    }
+    public uint GenBuffer() => this.gl.GenBuffer();
 
     public void BindBuffer(BufferTargetARB usage, uint buf) {
         this.gl.BindBuffer(usage, buf);
@@ -538,17 +547,17 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
 
     public void BindFramebuffer(FramebufferTarget framebuffer, uint frameBufferId) {
         if (this._needsFrameBufferExtensionFeatureLevel.Boolean) {
-            this._framebufferObjectExt.BindFramebuffer((Silk.NET.OpenGL.Legacy.FramebufferTarget)framebuffer,
-                                                      frameBufferId);
+            this._framebufferObjectExt.BindFramebuffer(
+            (Silk.NET.OpenGL.Legacy.FramebufferTarget)framebuffer,
+            frameBufferId
+            );
             return;
         }
         this.gl.BindFramebuffer(framebuffer, frameBufferId);
     }
 
-    public uint GenFramebuffer() {
-        return this._needsFrameBufferExtensionFeatureLevel.Boolean ? this._framebufferObjectExt.GenFramebuffer()
-            : this.gl.GenFramebuffer();
-    }
+    public uint GenFramebuffer() => this._needsFrameBufferExtensionFeatureLevel.Boolean
+                                        ? this._framebufferObjectExt.GenFramebuffer() : this.gl.GenFramebuffer();
 
     public void BindTexture(TextureTarget target, uint textureId) {
         this.gl.BindTexture(target, textureId);
@@ -564,8 +573,10 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
             }
     }
 
-    public unsafe void TexImage2D(TextureTarget target, int level, InternalFormat format, uint width, uint height,
-                                  int           border, PixelFormat pxFormat, PixelType type, void* data) {
+    public unsafe void TexImage2D(
+        TextureTarget target,   int       level, InternalFormat format, uint width, uint height, int border,
+        PixelFormat   pxFormat, PixelType type,  void*          data
+    ) {
         this.gl.TexImage2D(target, level, format, width, height, border, pxFormat, type, data);
     }
 
@@ -573,10 +584,8 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
         this.gl.TexParameterI(target, param, paramData);
     }
 
-    public uint GenRenderbuffer() {
-        return this._needsFrameBufferExtensionFeatureLevel.Boolean ? this._framebufferObjectExt.GenRenderbuffer()
-            : this.gl.GenRenderbuffer();
-    }
+    public uint GenRenderbuffer() => this._needsFrameBufferExtensionFeatureLevel.Boolean
+                                         ? this._framebufferObjectExt.GenRenderbuffer() : this.gl.GenRenderbuffer();
 
     public void Viewport(int x, int y, uint width, uint height) {
         this.gl.Viewport(x, y, width, height);
@@ -598,32 +607,43 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
 
     public void RenderbufferStorage(RenderbufferTarget target, InternalFormat format, uint width, uint height) {
         if (this._needsFrameBufferExtensionFeatureLevel.Boolean) {
-            this._framebufferObjectExt.RenderbufferStorage((Silk.NET.OpenGL.Legacy.RenderbufferTarget)target,
-                                                          (Silk.NET.OpenGL.Legacy.InternalFormat)format, width, height);
+            this._framebufferObjectExt.RenderbufferStorage(
+            (Silk.NET.OpenGL.Legacy.RenderbufferTarget)target,
+            (Silk.NET.OpenGL.Legacy.InternalFormat)format,
+            width,
+            height
+            );
             return;
         }
         this.gl.RenderbufferStorage(target, format, width, height);
     }
 
-    public void FramebufferRenderbuffer(FramebufferTarget  target,   FramebufferAttachment attachment,
-                                        RenderbufferTarget rbTarget, uint                  id) {
+    public void FramebufferRenderbuffer(
+        FramebufferTarget target, FramebufferAttachment attachment, RenderbufferTarget rbTarget, uint id
+    ) {
         if (this._needsFrameBufferExtensionFeatureLevel.Boolean) {
-            this._framebufferObjectExt.FramebufferRenderbuffer((Silk.NET.OpenGL.Legacy.FramebufferTarget)target,
-                                                              (Silk.NET.OpenGL.Legacy.FramebufferAttachment)attachment,
-                                                              (Silk.NET.OpenGL.Legacy.RenderbufferTarget)rbTarget, id);
+            this._framebufferObjectExt.FramebufferRenderbuffer(
+            (Silk.NET.OpenGL.Legacy.FramebufferTarget)target,
+            (Silk.NET.OpenGL.Legacy.FramebufferAttachment)attachment,
+            (Silk.NET.OpenGL.Legacy.RenderbufferTarget)rbTarget,
+            id
+            );
             return;
         }
         this.gl.FramebufferRenderbuffer(target, attachment, rbTarget, id);
     }
 
-    public void FramebufferTexture(FramebufferTarget target, FramebufferAttachment colorAttachment0, uint textureId,
-                                   int               level) {
+    public void FramebufferTexture(
+        FramebufferTarget target, FramebufferAttachment colorAttachment0, uint textureId, int level
+    ) {
         if (this._needsFrameBufferExtensionFeatureLevel.Boolean) {
-            this._framebufferObjectExt.FramebufferTexture2D((Silk.NET.OpenGL.Legacy.FramebufferTarget)target,
-                                                           (Silk.NET.OpenGL.Legacy.FramebufferAttachment)
-                                                           colorAttachment0,
-                                                           Silk.NET.OpenGL.Legacy.TextureTarget.Texture2D, textureId,
-                                                           level);
+            this._framebufferObjectExt.FramebufferTexture2D(
+            (Silk.NET.OpenGL.Legacy.FramebufferTarget)target,
+            (Silk.NET.OpenGL.Legacy.FramebufferAttachment)colorAttachment0,
+            Silk.NET.OpenGL.Legacy.TextureTarget.Texture2D,
+            textureId,
+            level
+            );
             return;
         }
         this.gl.FramebufferTexture(target, colorAttachment0, textureId, level);
@@ -632,7 +652,8 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     public GLEnum CheckFramebufferStatus(FramebufferTarget target) {
         if (this._needsFrameBufferExtensionFeatureLevel.Boolean)
             return (GLEnum)this._framebufferObjectExt.CheckFramebufferStatus(
-                (Silk.NET.OpenGL.Legacy.FramebufferTarget)target);
+            (Silk.NET.OpenGL.Legacy.FramebufferTarget)target
+            );
         return this.gl.CheckFramebufferStatus(target);
     }
 
@@ -644,18 +665,16 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
         this.gl.TexParameter(target, paramName, param);
     }
 
-    public unsafe void TexSubImage2D(TextureTarget target,   int       level,  int   x, int y, uint width, uint height,
-                                     PixelFormat   pxformat, PixelType pxtype, void* data) {
+    public unsafe void TexSubImage2D(
+        TextureTarget target, int level, int x, int y, uint width, uint height, PixelFormat pxformat, PixelType pxtype,
+        void*         data
+    ) {
         this.gl.TexSubImage2D(target, level, x, y, width, height, pxformat, pxtype, data);
     }
 
-    public uint CreateProgram() {
-        return this.gl.CreateProgram();
-    }
+    public uint CreateProgram() => this.gl.CreateProgram();
 
-    public uint CreateShader(ShaderType type) {
-        return this.gl.CreateShader(type);
-    }
+    public uint CreateShader(ShaderType type) => this.gl.CreateShader(type);
 
     public void ShaderSource(uint shaderId, string source) {
         this.gl.ShaderSource(shaderId, source);
@@ -665,9 +684,7 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
         this.gl.CompileShader(shaderId);
     }
 
-    public string GetShaderInfoLog(uint shaderId) {
-        return this.gl.GetShaderInfoLog(shaderId);
-    }
+    public string GetShaderInfoLog(uint shaderId) => this.gl.GetShaderInfoLog(shaderId);
 
     public void AttachShader(uint programId, uint shaderId) {
         this.gl.AttachShader(programId, shaderId);
@@ -689,17 +706,14 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
         this.gl.GetShader(shaderId, paramName, out returnValue);
     }
 
-    public string GetProgramInfoLog(uint programId) {
-        return this.gl.GetProgramInfoLog(programId);
-    }
+    public string GetProgramInfoLog(uint programId) => this.gl.GetProgramInfoLog(programId);
 
     public void UseProgram(uint programId) {
         this.gl.UseProgram(programId);
     }
 
-    public int GetUniformLocation(uint programId, string uniformName) {
-        return this.gl.GetUniformLocation(programId, uniformName);
-    }
+    public int GetUniformLocation(uint programId, string uniformName)
+        => this.gl.GetUniformLocation(programId, uniformName);
 
     public unsafe void UniformMatrix4(int getUniformLocation, uint i, bool b, float* f) {
         this.gl.UniformMatrix4(getUniformLocation, i, b, f);
@@ -732,22 +746,29 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
         this.gl.DeleteVertexArray(arrayId);
     }
 
-    public uint GenVertexArray() {
-        return this.gl.GenVertexArray();
-    }
+    public uint GenVertexArray() => this.gl.GenVertexArray();
 
     public void EnableVertexAttribArray(uint u) {
         this.gl.EnableVertexAttribArray(u);
     }
 
-    public unsafe void VertexAttribPointer(uint u, int currentElementCount, VertexAttribPointerType currentElementType,
-                                           bool currentElementNormalized, uint getStride, void* offset) {
-        this.gl.VertexAttribPointer(u, currentElementCount, (GLEnum)currentElementType, currentElementNormalized,
-                                    getStride, offset);
+    public unsafe void VertexAttribPointer(
+        uint u, int currentElementCount, VertexAttribPointerType currentElementType, bool currentElementNormalized,
+        uint getStride, void* offset
+    ) {
+        this.gl.VertexAttribPointer(
+        u,
+        currentElementCount,
+        (GLEnum)currentElementType,
+        currentElementNormalized,
+        getStride,
+        offset
+        );
     }
 
-    public unsafe void VertexAttribIPointer(uint u, int currentElementCount, VertexAttribIType vertexAttribIType,
-                                            uint getStride, void* offset) {
+    public unsafe void VertexAttribIPointer(
+        uint u, int currentElementCount, VertexAttribIType vertexAttribIType, uint getStride, void* offset
+    ) {
         this.gl.VertexAttribIPointer(u, currentElementCount, (GLEnum)vertexAttribIType, getStride, offset);
     }
 
