@@ -477,8 +477,8 @@ public class ImGuiControllerD3D11 : IDisposable {
         io.MouseWheel  = wheel.Y;
         io.MouseWheelH = wheel.X;
 
-        foreach (Key key in Enum.GetValues(typeof(Key))) {
-            if (key == Key.Unknown)
+        foreach (Key key in this._keys) {
+            if(key == Key.Unknown)
                 continue;
 
             io.KeysDown[(int)key] = keyboard.IsKeyPressed(key);
@@ -711,7 +711,8 @@ public class ImGuiControllerD3D11 : IDisposable {
         }
     }
 
-    private bool _isDisposed = false;
+    private          bool  _isDisposed = false;
+    private readonly Array _keys       = Enum.GetValues(typeof(Key));
 
     public void Dispose() {
         if (this._isDisposed)
