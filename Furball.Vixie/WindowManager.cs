@@ -208,6 +208,7 @@ public class WindowManager : IDisposable {
             Backend.Direct3D11 => RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? ContextAPI.Vulkan
                 : ContextAPI.None,
             Backend.Dummy => ContextAPI.None,
+            Backend.Mola  => ContextAPI.None,
             _             => throw new Exception("Invalid API chosen...")
         };
 
@@ -218,6 +219,7 @@ public class WindowManager : IDisposable {
             Backend.Vulkan     => ContextProfile.Core,
             Backend.Direct3D11 => ContextProfile.Core,
             Backend.Dummy      => ContextProfile.Core,
+            Backend.Mola       => ContextProfile.Core,
             _                  => throw new Exception("Invalid API chosen...")
         };
 
@@ -229,6 +231,7 @@ public class WindowManager : IDisposable {
             Backend.Vulkan     => ContextFlags.Debug,
             Backend.Direct3D11 => ContextFlags.Debug,
             Backend.Dummy      => ContextFlags.Debug,
+            Backend.Mola       => ContextFlags.Debug,
 #else
             Backend.OpenGLES   => ContextFlags.Default,
             Backend.OpenGL     => ContextFlags.Default,
@@ -236,6 +239,7 @@ public class WindowManager : IDisposable {
             Backend.Veldrid    => ContextFlags.ForwardCompatible,
             Backend.Vulkan     => ContextFlags.Default,
             Backend.Dummy      => ContextFlags.Default,
+            Backend.Mola       => ContextFlags.Default,
 #endif
             _ => throw new Exception("Invalid API chosen...")
         };
@@ -268,6 +272,9 @@ public class WindowManager : IDisposable {
                 version = new APIVersion(0, 0);
                 break;
             case Backend.Dummy:
+                version = new APIVersion(0, 0);
+                break;
+            case Backend.Mola:
                 version = new APIVersion(0, 0);
                 break;
             default:

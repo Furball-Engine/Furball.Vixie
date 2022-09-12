@@ -2,6 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.Direct3D11;
 using Furball.Vixie.Backends.Dummy;
+using Furball.Vixie.Backends.Mola;
 using Furball.Vixie.Backends.OpenGL;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Veldrid;
@@ -29,6 +30,7 @@ public class GraphicsBackend {
             Backend.Veldrid    => new VeldridBackend(),
             Backend.Vulkan     => new VulkanBackend(),
             Backend.Dummy      => new DummyBackend(),
+            Backend.Mola       => new MolaBackend(),
             _                  => throw new ArgumentOutOfRangeException(nameof (backend), backend, "Invalid API")
         };
     }
