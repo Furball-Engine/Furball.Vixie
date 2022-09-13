@@ -139,10 +139,6 @@ public class Texture : IDisposable {
         this._texture.Dispose();
     }
 
-    ~Texture() {
-        DisposeQueue.Enqueue(this);
-    }
-
     internal void DisposeInternal() {
         this._texture.Dispose();
     }
