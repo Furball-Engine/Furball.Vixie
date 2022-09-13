@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="FontStashSharp" Version="1.2.5" />
+        <PackageReference Include="FontStashSharp" Version="1.2.6"/>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
         <PackageReference Include="Silk.NET.Input.Extensions" Version="2.16.0" />
         <PackageReference Include="SixLabors.ImageSharp" Version="2.1.3" />
