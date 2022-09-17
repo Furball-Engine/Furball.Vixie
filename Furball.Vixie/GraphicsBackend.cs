@@ -43,6 +43,7 @@ public class GraphicsBackend {
     public static Backend PrefferedBackends = Backend.None;
     public static Backend GetReccomendedBackend() {
         string backendForce = Environment.GetEnvironmentVariable("VIXIE_BACKEND_FORCE", EnvironmentVariableTarget.Process);
+
         if (backendForce != null) {
             if (!Enum.TryParse(backendForce, out Backend backend))
                 throw new NotSupportedException($"{backendForce} is not a valid option for VIXIE_BACKEND_FORCE!");

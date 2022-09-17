@@ -23,22 +23,22 @@ public class TextureD3D9 : VixieTexture {
     public TextureD3D9(IDirect3DDevice9 device, byte[] imageData, TextureParameters parameters) {
         this._device = device;
 
-        Image<Argb32> image;
+        Image<Rgba32> image;
 
         bool qoi = imageData.Length > 3 && imageData[0] == 'q' && imageData[1] == 'o' && imageData[2] == 'i' &&
                    imageData[3]     == 'f';
 
         if(qoi) {
-            (Argb32[] pixels, QoiLoader.QoiHeader header) data = QoiLoader.LoadArgb(imageData);
+            (Rgba32[] pixels, QoiLoader.QoiHeader header) data = QoiLoader.Load(imageData);
 
             image = Image.LoadPixelData(data.pixels, (int)data.header.Width, (int)data.header.Height);
         } else {
-            image = Image.Load<Argb32>(imageData);
+            image = Image.Load<Rgba32>(imageData);
         }
 
         this.Size = new Vector2D<int>(image.Width, image.Height);
 
-        Usage texUsage = Usage.Dynamic;
+        Usage texUsage = Usage.None;
 
         if (parameters.RequestMipmaps) {
             texUsage         |= Usage.AutoGenerateMipMap;
@@ -46,7 +46,7 @@ public class TextureD3D9 : VixieTexture {
         }
 
         //Apperantly level HAS to be 1, according to the official docs,
-        this._texture = this._device.CreateTexture(image.Width, image.Height, 1, texUsage, Format.A8R8G8B8, Pool.Managed);
+        this._texture = this._device.CreateTexture(image.Width, image.Height, 0, texUsage, Format.A8B8G8R8, Pool.Managed);
 
         this.SetData(image);
     }
@@ -54,11 +54,11 @@ public class TextureD3D9 : VixieTexture {
     public TextureD3D9(IDirect3DDevice9 device, Stream imageData, TextureParameters parameters) {
         this._device = device;
 
-        Image<Argb32> image = Image.Load<Argb32>(imageData);
+        Image<Rgba32> image = Image.Load<Rgba32>(imageData);
 
         this.Size = new Vector2D<int>(image.Width, image.Height);
 
-        Usage texUsage = Usage.Dynamic;
+        Usage texUsage = Usage.None;
 
         if (parameters.RequestMipmaps) {
             texUsage         |= Usage.AutoGenerateMipMap;
@@ -66,30 +66,31 @@ public class TextureD3D9 : VixieTexture {
         }
 
         //Apperantly level HAS to be 1, according to the official docs,
-        this._texture = this._device.CreateTexture(image.Width, image.Height, 1, texUsage, Format.A8R8G8B8, Pool.Managed);
+        this._texture = this._device.CreateTexture(image.Width, image.Height, 0, texUsage, Format.A8B8G8R8, Pool.Managed);
 
         this.SetData(image);
     }
 
-    private unsafe void SetData(Image<Argb32> image) {
-        image.ProcessPixelRows(
-        accessor => {
-            for (int i = 0; i < accessor.Height; i++)
-                fixed (void* ptr = accessor.GetRowSpan(i)) {
-                    LockedRectangle rect = this._texture.LockRect(0, new RectI(0, i, accessor.Width, 1), LockFlags.Discard);
+    private unsafe void SetData(Image<Rgba32> image) {
+        int length = image.Width * image.Height * sizeof(Rgba32);
 
-                    Buffer.MemoryCopy(ptr, (void*)rect.DataPointer, sizeof(Argb32) * accessor.Width, sizeof(Argb32) * accessor.Width);
+        byte[] dataStore = new byte[length];
 
-                    this._texture.UnlockRect(0);
-                }
+        image.CopyPixelDataTo(dataStore);
+
+        LockedRectangle rect = this._texture.LockRect(0, LockFlags.None);
+
+        fixed (void* ptr = dataStore) {
+            Buffer.MemoryCopy(ptr, (void*)rect.DataPointer, length, length);
         }
-        );
+
+        this._texture.UnlockRect(0);
     }
 
     public TextureD3D9(IDirect3DDevice9 device, uint width, uint height, TextureParameters parameters) {
         this._device = device;
 
-        Usage texUsage = Usage.Dynamic;
+        Usage texUsage = Usage.None;
 
         if (parameters.RequestMipmaps) {
             texUsage         |= Usage.AutoGenerateMipMap;
@@ -97,13 +98,13 @@ public class TextureD3D9 : VixieTexture {
         }
 
         //Apperantly level HAS to be 1, according to the official docs,
-        this._texture = this._device.CreateTexture((int) width, (int) height, 1, texUsage, Format.A8R8G8B8, Pool.Managed);
+        this._texture = this._device.CreateTexture((int) width, (int) height, 0, texUsage, Format.A8B8G8R8, Pool.Managed);
     }
 
     public unsafe TextureD3D9(IDirect3DDevice9 device) {
         this._device = device;
 
-        this._texture = this._device.CreateTexture(1, 1, 1, Usage.Dynamic, Format.A8R8G8B8, Pool.Managed);
+        this._texture = this._device.CreateTexture(1, 1, 0, Usage.Dynamic, Format.A8B8G8R8, Pool.Managed);
 
         byte* data = stackalloc byte[] {
             255, 255, 255, 255
@@ -119,7 +120,7 @@ public class TextureD3D9 : VixieTexture {
     public override unsafe VixieTexture SetData<T>(ReadOnlySpan<T> data) {
         byte[] argb = FormatHelpers.ConvertRgbaToArgb(data);
 
-        LockedRectangle rect = this._texture.LockRect(0, new RectI(0, 0, this.Width, this.Height), LockFlags.Discard);
+        LockedRectangle rect = this._texture.LockRect(0, new RectI(0, 0, this.Width, this.Height), LockFlags.None);
 
         fixed (void* ptr = argb) {
             Buffer.MemoryCopy(ptr, (void*)rect.DataPointer, sizeof(byte) * argb.Length, sizeof(byte) * argb.Length);
@@ -148,5 +149,9 @@ public class TextureD3D9 : VixieTexture {
 
     public override Rgba32[] GetData() {
         throw new NotImplementedException();
+    }
+
+    public void Bind(int stage) {
+        this._device.SetTexture(stage, this._texture);
     }
 }

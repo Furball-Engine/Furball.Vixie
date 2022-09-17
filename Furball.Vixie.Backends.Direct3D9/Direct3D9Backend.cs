@@ -1,9 +1,11 @@
 ﻿using System;
 using System.IO;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.Renderers;
+using Furball.Vixie.Helpers.Helpers;
 using Kettu;
 using Silk.NET.Input;
 using Silk.NET.Maths;
@@ -102,6 +104,15 @@ public class Direct3D9Backend : GraphicsBackend {
         }
     }
 
+    private TextureD3D9            _testTexture;
+    private IDirect3DVertexBuffer9 _vertexbuffer;
+    private IDirect3DIndexBuffer9 _indexBuffer;
+
+    private struct Vertex {
+        public  Vector4 xyzrhw;
+        public Vector2 uv;
+    }
+
     public override unsafe void Initialize(IView view, IInputContext inputContext) {
         this._direct3D = D3D9.Direct3DCreate9();
 
@@ -139,6 +150,37 @@ public class Direct3D9Backend : GraphicsBackend {
         this._currentViewport = new Vector2D<int>(view.FramebufferSize.X, view.FramebufferSize.Y);
 
         this._imgui = new ImGuiController(view, inputContext);
+
+        this._testTexture = new TextureD3D9(this._device, File.ReadAllBytes("test.png"), default);
+
+        Vertex[] verticies = new [] {
+            new Vertex { xyzrhw = new Vector4(0,   0,    0, 1), uv = new Vector2(0,   0) },
+            new Vertex { xyzrhw = new Vector4(950, 0,    0, 1), uv = new Vector2(1, 0) },
+            new Vertex { xyzrhw = new Vector4(950, 1460, 0,  1), uv = new Vector2(1, 1) },
+            new Vertex { xyzrhw = new Vector4(0,   1460, 0,  1), uv = new Vector2(0,   1 ) }
+        };
+
+        this._vertexbuffer = this._device.CreateVertexBuffer(sizeof(Vertex) * 4, Usage.None, VertexFormat.PositionRhw | VertexFormat.Texture1, Pool.Managed);
+        Span<Vertex> locked = this._vertexbuffer.Lock<Vertex>(0, sizeof(Vertex) * 4);
+
+        verticies.CopyTo(locked);
+
+        this._vertexbuffer.Unlock();
+
+        short[] indicies = new short[] {
+            0, 1, 2, 0, 2, 3
+        };
+
+        this._indexBuffer = this._device.CreateIndexBuffer(12, Usage.None, true, Pool.Managed);
+        Span<short> idxLocked = this._indexBuffer.Lock<short>(0, 12);
+
+        indicies.CopyTo(idxLocked);
+
+        this._indexBuffer.Unlock();
+
+        this._device.SetSamplerState(0, SamplerState.MagFilter, (int) TextureFilter.Linear);
+        this._device.SetSamplerState(0, SamplerState.MinFilter, (int) TextureFilter.Linear);
+        this._device.SetSamplerState(0, SamplerState.MipFilter, (int) TextureFilter.Linear);
     }
 
     public override void Cleanup() {
@@ -160,7 +202,7 @@ public class Direct3D9Backend : GraphicsBackend {
 
         this._currentViewport = new Vector2D<int>(width, height);
     }
-    public override Renderer CreateRenderer() => throw new NotImplementedException();
+    public override Renderer CreateRenderer() => new Direct3D9Renderer();
 
     public override int QueryMaxTextureUnits() {
         throw new NotImplementedException();
@@ -217,11 +259,17 @@ public class Direct3D9Backend : GraphicsBackend {
         this._imgui.Render();
     }
 
-    public override void BeginScene() {
+    public override unsafe void BeginScene() {
         this._device.BeginScene();
     }
 
     public override unsafe void EndScene() {
+        this._testTexture.Bind(0);
+        this._device.SetStreamSource(0, this._vertexbuffer, 0, sizeof(Vertex));
+        this._device.Indices      = this._indexBuffer;
+        this._device.VertexFormat = VertexFormat.PositionRhw | VertexFormat.Texture1;
+        this._device.DrawIndexedPrimitive(PrimitiveType.TriangleList, 0, 0, 4, 0, 2);
+
         this._device.EndScene();
     }
 

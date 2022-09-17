@@ -20,7 +20,7 @@ public class TestGame : Game {
     protected override void Initialize() {
         Instance = this;
         
-        this.Components.Add(new BaseTestSelector());
+        this.Components.Add(new TestMultipleTextures());
 
         GraphicsBackend.Current.ScreenshotTaken += delegate(object _, Image image) {
             Logger.Log("Writing screenshot!", LoggerLevelImageLoader.Instance);

@@ -16,9 +16,13 @@ public unsafe class Direct3D9Renderer : Renderer {
 
     }
 
-    public override MappedData Reserve(ushort vertexCount, uint indexCount) => throw new NotImplementedException();
+    public override MappedData Reserve(ushort vertexCount, uint indexCount) {
+        return new MappedData();
+    }
 
-    public override long GetTextureId(VixieTexture tex) => throw new NotImplementedException();
+    public override long GetTextureId(VixieTexture tex) {
+        return 0;
+    }
 
     public override void Draw() {
 
