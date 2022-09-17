@@ -118,12 +118,10 @@ public class TextureD3D9 : VixieTexture {
     }
 
     public override unsafe VixieTexture SetData<T>(ReadOnlySpan<T> data) {
-        byte[] argb = FormatHelpers.ConvertRgbaToArgb(data);
-
         LockedRectangle rect = this._texture.LockRect(0, new RectI(0, 0, this.Width, this.Height), LockFlags.None);
 
-        fixed (void* ptr = argb) {
-            Buffer.MemoryCopy(ptr, (void*)rect.DataPointer, sizeof(byte) * argb.Length, sizeof(byte) * argb.Length);
+        fixed (void* ptr = data) {
+            Buffer.MemoryCopy(ptr, (void*)rect.DataPointer, sizeof(T) * data.Length, sizeof(T) * data.Length);
         }
 
         this._texture.UnlockRect(0);
@@ -133,11 +131,9 @@ public class TextureD3D9 : VixieTexture {
     }
 
     public override unsafe VixieTexture SetData<T>(ReadOnlySpan<T> data, Rectangle rectangle) {
-        byte[] argb = FormatHelpers.ConvertRgbaToArgb(data);
-
         LockedRectangle rect = this._texture.LockRect(0, new RectI(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height), LockFlags.Discard);
 
-        fixed (void* ptr = argb) {
+        fixed (void* ptr = data) {
             Buffer.MemoryCopy(ptr, (void*)rect.DataPointer, sizeof(Argb32) * rectangle.Width * rectangle.Height, sizeof(Argb32) * rectangle.Width * rectangle.Height);
         }
 
