@@ -2,6 +2,7 @@
 using System.IO;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using Furball.Vixie.Backends.Direct3D9.Abstractions;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.Renderers;
@@ -22,6 +23,12 @@ public class Direct3D9Backend : GraphicsBackend {
     private          IDirect3DSwapChain9 _swapChain;
     private readonly Color               _clearColor = new(0, 0, 0, 255);
     private          Vector2D<int>       _currentViewport;
+
+    internal IDirect3DSurface9 DefaultRendertarget;
+
+    internal void ResetRendertarget() {
+        this._device.SetRenderTarget(0, this.DefaultRendertarget);
+    }
 
     internal Capabilities DeviceCapabilities;
 
@@ -181,6 +188,8 @@ public class Direct3D9Backend : GraphicsBackend {
         this._device.SetSamplerState(0, SamplerState.MagFilter, (int) TextureFilter.Linear);
         this._device.SetSamplerState(0, SamplerState.MinFilter, (int) TextureFilter.Linear);
         this._device.SetSamplerState(0, SamplerState.MipFilter, (int) TextureFilter.Linear);
+
+        this.DefaultRendertarget = this._device.GetRenderTarget(0);
     }
 
     public override void Cleanup() {
@@ -223,7 +232,7 @@ public class Direct3D9Backend : GraphicsBackend {
         set {
             this._lastScissor = value;
 
-            this._device.ScissorRect = new Vortice.Direct3D9.Rect(value.Left, value.Top, value.Right, value.Bottom);
+            this._device.ScissorRect = new Rect(value.Left, value.Top, value.Right, value.Bottom);
         }
     }
 
@@ -232,7 +241,7 @@ public class Direct3D9Backend : GraphicsBackend {
     }
 
     public override VixieTextureRenderTarget CreateRenderTarget(uint width, uint height) {
-        return new RenderTargetD3D9(width, height);
+        return new RenderTargetD3D9(this, this._device, width, height);
     }
 
     public override VixieTexture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default) {

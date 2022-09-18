@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using Furball.Vixie.Backends.Direct3D9.Helpers;
 using Furball.Vixie.Backends.Shared;
 using Silk.NET.Maths;
 using SixLabors.ImageSharp;
@@ -9,7 +8,7 @@ using Vortice.Direct3D9;
 using Vortice.Mathematics;
 using Rectangle=System.Drawing.Rectangle;
 
-namespace Furball.Vixie.Backends.Direct3D9; 
+namespace Furball.Vixie.Backends.Direct3D9.Abstractions;
 
 public class TextureD3D9 : VixieTexture {
     private IDirect3DDevice9  _device;
@@ -115,6 +114,13 @@ public class TextureD3D9 : VixieTexture {
         Buffer.MemoryCopy(data, (void*)rect.DataPointer, sizeof(Argb32), sizeof(Argb32));
 
         this._texture.UnlockRect(0);
+    }
+
+    internal TextureD3D9(IDirect3DDevice9 device, int width, int height, IDirect3DTexture9 texture) {
+        this._device     = device;
+        this._texture    = texture;
+        this.Size        = new Vector2D<int>(width, height);
+        this._hasMipmaps = false;
     }
 
     public override unsafe VixieTexture SetData<T>(ReadOnlySpan<T> data) {
