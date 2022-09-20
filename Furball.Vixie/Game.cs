@@ -48,7 +48,7 @@ public abstract class Game : IDisposable {
 
     private void RunInternal(WindowOptions options, Backend backend, EventLoop eventLoop, bool requestViewOnly) {
         this.EventLoop           = eventLoop;
-        this.EventLoopToChangeTo = eventLoop;
+        this._eventLoopToChangeTo = eventLoop;
         
         try {
             Backends.Shared.Global.LatestSupportedGl = OpenGLDetector.OpenGLDetector.GetLatestSupported();
@@ -94,7 +94,7 @@ public abstract class Game : IDisposable {
         this._recreateQueued = true;
         
         if(loop != null)
-            this.EventLoopToChangeTo = loop;
+            this._eventLoopToChangeTo = loop;
     }
 
     private void RehookEvents() {
@@ -285,7 +285,7 @@ public abstract class Game : IDisposable {
             
             //Unhook the closing event
             this.UnhookEvents();
-            this.EventLoop = this.EventLoopToChangeTo;
+            this.EventLoop = this._eventLoopToChangeTo;
             
             this._isRecreated = true;
 
@@ -347,9 +347,10 @@ public abstract class Game : IDisposable {
         }
     }
 
-    private readonly   Stopwatch _stopwatch = new();
-    protected internal EventLoop EventLoop;
-    private            EventLoop EventLoopToChangeTo;
+    private readonly Stopwatch _stopwatch = new();
+
+    public  EventLoop EventLoop;
+    private EventLoop _eventLoopToChangeTo;
 #if USE_IMGUI
     private          bool      _isFirstImguiUpdate = true;
     private          double    _lastImguiDrawTime;
