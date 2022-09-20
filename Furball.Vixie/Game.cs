@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Helpers;
+using JetBrains.Annotations;
 using Kettu;
 using Silk.NET.Input;
 using Silk.NET.Maths;
@@ -46,7 +47,8 @@ public abstract class Game : IDisposable {
     }
 
     private void RunInternal(WindowOptions options, Backend backend, EventLoop eventLoop, bool requestViewOnly) {
-        this.EventLoop = eventLoop;
+        this.EventLoop           = eventLoop;
+        this.EventLoopToChangeTo = eventLoop;
         
         try {
             Backends.Shared.Global.LatestSupportedGl = OpenGLDetector.OpenGLDetector.GetLatestSupported();
@@ -62,7 +64,7 @@ public abstract class Game : IDisposable {
             backend = GraphicsBackend.GetReccomendedBackend();
 
         this.WindowManager = new WindowManager(options, backend);
-        if(eventLoop is ViewEventLoop viewEventLoop) {
+        if(this.EventLoop is ViewEventLoop viewEventLoop) {
             viewEventLoop.WindowManager = this.WindowManager;
             
             this.WindowManager.RequestViewOnly = requestViewOnly;
@@ -82,14 +84,17 @@ public abstract class Game : IDisposable {
             
         Logger.StartLogging();
             
-        eventLoop.Run();
+        this.EventLoop.Run();
         
         while(this._isRecreated)
-            eventLoop.Run();
+            this.EventLoop.Run();
     }
     
-    public void RecreateWindow() {
+    public void RecreateWindow([CanBeNull] EventLoop loop = null) {
         this._recreateQueued = true;
+        
+        if(loop != null)
+            this.EventLoopToChangeTo = loop;
     }
 
     private void RehookEvents() {
@@ -273,14 +278,15 @@ public abstract class Game : IDisposable {
     private double _trackedDelta = 0;
     private void VixieUpdate(object sender, double deltaTime) {
         if (this._recreateQueued) {
-            if(this.EventLoop is HeadlessEventLoop)
-                Guard.Fail("Window recreation is not save on the headless event loop");
+            // if(this.EventLoop is HeadlessEventLoop)
+                // Guard.Fail("Window recreation is not save on the headless event loop");
             
             this._recreateQueued = false;
             
             //Unhook the closing event
             this.UnhookEvents();
-        
+            this.EventLoop = this.EventLoopToChangeTo;
+            
             this._isRecreated = true;
 
             // foreach (WeakReference<Renderer> rendererRef in Global.TRACKED_RENDERERS) {
@@ -343,6 +349,7 @@ public abstract class Game : IDisposable {
 
     private readonly   Stopwatch _stopwatch = new();
     protected internal EventLoop EventLoop;
+    private            EventLoop EventLoopToChangeTo;
 #if USE_IMGUI
     private          bool      _isFirstImguiUpdate = true;
     private          double    _lastImguiDrawTime;
