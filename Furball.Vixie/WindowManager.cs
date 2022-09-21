@@ -61,6 +61,27 @@ public class WindowManager : IDisposable {
             this.GameWindow.WindowState = value ? WindowState.Fullscreen : WindowState.Normal;
         }
     }
+
+    public bool Minimized {
+        get {
+            if (Global.GameInstance.EventLoop is not ViewEventLoop)
+                return false;
+
+            if (this.ViewOnly)
+                throw new NotSupportedException("No minimization on view only platforms!");
+
+            return this.GameWindow.WindowState == WindowState.Minimized;
+        }
+        set {
+            if (Global.GameInstance.EventLoop is not ViewEventLoop)
+                return;
+
+            if (this.ViewOnly)
+                throw new NotSupportedException("No minimization on view only platforms!");
+
+            this.GameWindow.WindowState = value ? WindowState.Minimized : WindowState.Normal;
+        }
+    }
         
     public IInputContext InputContext;
 
