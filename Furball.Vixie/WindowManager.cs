@@ -311,6 +311,9 @@ public class WindowManager : IDisposable {
         }
 
         this._windowOptions.PreferredDepthBufferBits = 0;
+
+        //Allows for multisampling
+        this._windowOptions.Samples = 4;
         
         if (this.RequestViewOnly) {
             this.GameView = Window.GetView(new ViewOptions(this._windowOptions));

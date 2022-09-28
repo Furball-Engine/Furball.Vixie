@@ -236,6 +236,8 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
         this._lastScissor    = new(0, 0, view.FramebufferSize.X, view.FramebufferSize.Y);
 
         this.CreateShaders();
+        
+        gl.Enable(EnableCap.Multisample);
     }
     private void CreateShaders() {
         this.Shader = new ShaderGl(this);
