@@ -117,14 +117,14 @@ public class WindowManager : IDisposable {
         get => this._targetUnfocusedFramerate;
         set {
             this._targetUnfocusedFramerate = value;
-            this.UpdateFramerates();
+            this.UpdateGameView();
         }
     }
     public double TargetUnfocusedUpdaterate {
         get => this._targetUnfocusedUpdaterate;
         set {
             this._targetUnfocusedUpdaterate = value;
-            this.UpdateFramerates();
+            this.UpdateGameView();
         }
     }
 
@@ -135,7 +135,7 @@ public class WindowManager : IDisposable {
         get => this._targetFramerate;
         set {
             this._targetFramerate = value;
-            this.UpdateFramerates();
+            this.UpdateGameView();
         }
     }
 
@@ -143,24 +143,25 @@ public class WindowManager : IDisposable {
         get => this._targetUpdaterate;
         set {
             this._targetUpdaterate = value;
-            this.UpdateFramerates();
+            this.UpdateGameView();
         }
     }
 
     public bool EnableUnfocusCap = true;
     
-    private void UpdateFramerates() {
+    private void UpdateGameView() {
         bool focus = this.Focused;
         
-        if (!this.EnableUnfocusCap)
-            focus = true;
-        
-        if(focus) {
+        if(focus || !this.EnableUnfocusCap) {
             this.GameView.FramesPerSecond  = this._targetFramerate;
             this.GameView.UpdatesPerSecond = this._targetUpdaterate;
+            this.GameView.VSync = _verticalSync;
         } else {
             this.GameView.FramesPerSecond  = this.TargetUnfocusedFramerate;
             this.GameView.UpdatesPerSecond = this.TargetUnfocusedUpdaterate;
+
+            // VSync enforces a higher fps; disabling it here allows us to actually use the unfocused framerate.
+            this.GameView.VSync = false;
         }
     }
 
@@ -168,10 +169,19 @@ public class WindowManager : IDisposable {
         get;
         private set;
     } = true;
+
+    private bool _verticalSync;
+    public bool VerticalSync {
+        get => _verticalSync;
+        set {
+            _verticalSync = value;
+            UpdateGameView();
+        }
+    }
     
     private void GameViewOnFocusChanged(bool focus) {
         this.Focused = focus;
-        this.UpdateFramerates();
+        this.UpdateGameView();
     }
 
     public string WindowTitle {
