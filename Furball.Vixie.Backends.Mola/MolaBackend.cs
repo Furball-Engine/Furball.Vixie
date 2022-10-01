@@ -64,7 +64,7 @@ public unsafe class MolaBackend : GraphicsBackend {
         return 0;
     }
     public override VixieTextureRenderTarget CreateRenderTarget(uint width, uint height) {
-        throw new NotImplementedException();
+        return new MolaRenderTarget(this, (int)width, (int)height);
     }
     public override VixieTexture CreateTextureFromByteArray(byte[]            imageData,
                                                             TextureParameters parameters = default) {

@@ -19,8 +19,10 @@ public unsafe class MolaTexture : VixieTexture {
     public override TextureFilterType FilterType {
         get;
         set;
-    } = TextureFilterType.Pixelated;
+    } = TextureFilterType.Pixelated; //TODO: different filter types, currently the renderer only supports nearest neighbor/pixelated
+    
     public override bool Mipmaps => false;
+    
     public override VixieTexture SetData <T>(ReadOnlySpan<T> data) {
         fixed(void* ptr = data)
             Buffer.MemoryCopy(ptr, this.RenderBitmap->Rgba32Ptr, data.Length * sizeof(T), data.Length * sizeof(T));

@@ -7,8 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Furball.Mola.Bindings\Furball.Mola.Bindings\Furball.Mola.Bindings.csproj"/>
-        <ProjectReference Include="..\Furball.Vixie.Backends.Shared\Furball.Vixie.Backends.Shared.csproj"/>
+        <ProjectReference Include="..\Furball.Mola.Bindings\Furball.Mola.Bindings\Furball.Mola.Bindings.csproj" />
+        <ProjectReference Include="..\Furball.Vixie.Backends.Shared\Furball.Vixie.Backends.Shared.csproj" />
     </ItemGroup>
 
 </Project>
