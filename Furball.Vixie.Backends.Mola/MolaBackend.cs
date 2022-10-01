@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using Furball.Mola.Bindings;
 using Furball.Vixie.Backends.Shared;
@@ -53,6 +54,28 @@ public unsafe class MolaBackend : GraphicsBackend {
 
     public override void Clear() {
         Furball.Mola.Bindings.Mola.ClearRenderBitmap(this._renderBitmap);
+    }
+    
+    private double startTime;
+    public override void BeginScene() {
+        base.BeginScene();
+
+        this.startTime = Stopwatch.GetTimestamp() / (double)Stopwatch.Frequency;
+    }
+
+    public override void Present() {
+        base.Present();
+        
+        Console.WriteLine($"Frame took {(Stopwatch.GetTimestamp() / (double)Stopwatch.Frequency - this.startTime) * 1000}ms");
+
+        Image<Rgba32> img = Image.LoadPixelData(new ReadOnlySpan<Rgba32>(
+                                                    this._renderBitmap->Rgba32Ptr,
+                                                    (int)(this._renderBitmap->Width * this._renderBitmap->Height)),
+                                                (int)this._renderBitmap->Width,
+                                                (int)this._renderBitmap->Height
+        );
+        
+        img.SaveAsPng("output.png");
     }
 
     public override void TakeScreenshot() {
@@ -117,7 +140,7 @@ public unsafe class MolaBackend : GraphicsBackend {
 
         int width  = image.Width;
         int height = image.Height;
-        
+
         MolaTexture tex = new MolaTexture((uint)width, (uint)height);
 
         //Set the data of the texture
