@@ -1,6 +1,7 @@
 ﻿using System;
 using Furball.Mola.Bindings;
 using Furball.Vixie.Backends.Shared;
+using Furball.Vixie.Helpers;
 using Silk.NET.Maths;
 using SixLabors.ImageSharp.PixelFormats;
 using Rectangle = System.Drawing.Rectangle;
@@ -44,5 +45,9 @@ public unsafe class MolaTexture : VixieTexture {
             Buffer.MemoryCopy(this.RenderBitmap->Rgba32Ptr, ptr, arr.Length * sizeof(Rgba32), arr.Length * sizeof(Rgba32));
 
         return arr;
+    }
+
+    ~MolaTexture() {
+        DisposeQueue.Enqueue(this);
     }
 }
