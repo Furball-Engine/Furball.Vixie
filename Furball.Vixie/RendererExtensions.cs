@@ -5,7 +5,7 @@ using FontStashSharp;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers;
-using Color=Furball.Vixie.Backends.Shared.Color;
+using Color = Furball.Vixie.Backends.Shared.Color;
 
 namespace Furball.Vixie;
 
@@ -214,25 +214,55 @@ public static class RendererExtensions {
     }
 
     public static void DrawString(this Renderer renderer, DynamicSpriteFont font,
-                                  string        text,     Vector2           position, Color   color,
-                                  float         rotation, Vector2           scale,    Vector2 origin = default) {
+                                  string        text,     Vector2           position, Color   color, float rotation,
+                                  Vector2 scale, Vector2 origin = default(Vector2), TextStyle style = TextStyle.None,
+                                  FontSystemEffect effect = FontSystemEffect.None, int effectAmount = 0
+    ) {
         Guard.EnsureNonNull(renderer.FontRenderer, "renderer.FontRenderer");
 
         font.DrawText(renderer.FontRenderer, text, position,
                       color,
-                      scale, rotation, origin);
+                      scale,
+                      rotation,
+                      origin,
+                      0,
+                      0,
+                      0,
+                      style,
+                      effect,
+                      effectAmount
+        );
     }
-    public static void DrawString(this Renderer renderer, DynamicSpriteFont font, string text, Vector2 position,
-                                  Color         color) {
+    public static void DrawString(this Renderer    renderer, DynamicSpriteFont font, string text, Vector2 position,
+                                  Color            color,    TextStyle         style = TextStyle.None,
+                                  FontSystemEffect effect = FontSystemEffect.None
+    ) {
         Guard.EnsureNonNull(renderer.FontRenderer, "renderer.FontRenderer");
 
         font.DrawText(renderer.FontRenderer, text, position,
                       color);
     }
     public static void DrawString(this Renderer renderer, DynamicSpriteFont font, string text, Vector2 position,
-                                  FSColor[] colors, float rotation, Vector2? scale, Vector2 origin) {
+                                  FSColor[]     colors, float rotation, Vector2? scale, Vector2 origin,
+                                  TextStyle     style = TextStyle.None, FontSystemEffect effect = FontSystemEffect.None,
+                                  int           effectAmount = 0
+    ) {
         Guard.EnsureNonNull(renderer.FontRenderer, "renderer.FontRenderer");
 
-        font.DrawText(renderer.FontRenderer, text, position, colors, scale, rotation, origin);
+        font.DrawText(
+        renderer.FontRenderer,
+        text,
+        position,
+        colors,
+        scale,
+        rotation,
+        origin,
+        0,
+        0,
+        0,
+        style,
+        effect,
+        effectAmount
+        );
     }
 }
