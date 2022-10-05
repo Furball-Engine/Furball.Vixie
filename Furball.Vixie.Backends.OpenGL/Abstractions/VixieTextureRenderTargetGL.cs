@@ -229,7 +229,7 @@ internal sealed class VixieTextureRenderTargetGl : VixieTextureRenderTarget {
         this._isDisposed = true;
 
         this._backend.DeleteFramebuffer(this._frameBufferId);
-        this._backend.DeleteTexture(this._textureId);
+        // this._backend.DeleteTexture(this._textureId);
         this._backend.DeleteRenderbuffer(this._depthRenderBufferId);
 
         this._backend.CheckError("dispose render target");

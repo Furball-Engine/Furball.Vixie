@@ -51,7 +51,7 @@ public class RenderTarget : IDisposable {
             return;
 
         this._isDisposed = true;
-        this._target.Dispose();
+        // this._target.Dispose();
     }
     
     internal void SaveDataToCpu() {

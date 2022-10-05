@@ -381,7 +381,7 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     /// </summary>
     public override void Clear() {
         this.gl.Clear(ClearBufferMask.ColorBufferBit);
-        this.gl.ClearColor(0, 0, 0, 1);
+        this.gl.ClearColor(0, 0, 0, 0);
     }
     public override void TakeScreenshot() {
         this._screenshotQueued = true;
