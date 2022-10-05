@@ -20,7 +20,7 @@
     </PropertyGroup>
     
     <ItemGroup>
-        <PackageReference Include="FontStashSharp" Version="1.2.6"/>
+        <PackageReference Include="FontStashSharp" Version="1.2.7" />
         <PackageReference Include="Kettu" Version="1.4.0" />
         <PackageReference Include="Silk.NET.Input" Version="2.16.0" />
         <PackageReference Include="Silk.NET.Input.Extensions" Version="2.16.0" />
