@@ -214,10 +214,12 @@ public struct Color {
 
     public static bool operator !=(Color a, Color b) => !a.Equals(b);
 
-    public static implicit operator System.Drawing.Color(Color c) => System.Drawing.Color.FromArgb(c.A, c.R, c.B, c.G); 
-    public static implicit operator Color(System.Drawing.Color c) => new(c.R, c.G, c.B, c.A);
-    public static implicit operator FSColor(Color color) => new(color.Rf, color.Gf, color.Bf, color.Af);
-    public static implicit operator Color(FSColor color) => new(color.R, color.G, color.B, color.A);
+    public static Color operator *(Color a, Color b) => new Color(a.Rf * b.Rf, a.Gf * b.Gf, a.Bf * b.Bf, a.Af * b.Af);
+
+    public static implicit operator System.Drawing.Color(Color c)     => System.Drawing.Color.FromArgb(c.A, c.R, c.B, c.G); 
+    public static implicit operator Color(System.Drawing.Color                c)     => new(c.R, c.G, c.B, c.A);
+    public static implicit operator FSColor(Color              color) => new(color.Rf, color.Gf, color.Bf, color.Af);
+    public static implicit operator Color(FSColor              color) => new(color.R, color.G, color.B, color.A);
 
     public override string ToString() => $"R: {this.R}; G: {this.G}; B: {this.B}; A: {this.A}";
 }
