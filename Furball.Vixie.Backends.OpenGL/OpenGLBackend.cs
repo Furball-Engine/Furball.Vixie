@@ -81,6 +81,12 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
                 Description = "Whether we use glGenerateTextureMipmap to generate mipmaps",
                 Value       = false
             }
+        }, {
+            "VertexArrayObjects", new FeatureLevel {
+                Name = "Use Vertex Array Objects",
+                Description = "Whether to use Vertex array objects when rendering",
+                Value = false
+            }
         }
     };
 
@@ -90,6 +96,7 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     private readonly FeatureLevel _needsFrameBufferExtensionFeatureLevel;
     private readonly FeatureLevel _needsCustomMipmapGenerationFeatureLevel;
     private readonly FeatureLevel _bindlessMipmapGenerationFeatureLevel;
+    internal readonly FeatureLevel VaoFeatureLevel;
 
     public readonly Backend CreationBackend;
     private         bool    _isFbProjMatrix;
@@ -104,6 +111,7 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
         this._needsFrameBufferExtensionFeatureLevel   = FeatureLevels["NeedsFramebufferExtension"];
         this._needsCustomMipmapGenerationFeatureLevel = FeatureLevels["NeedsCustomMipmapGeneration"];
         this._bindlessMipmapGenerationFeatureLevel    = FeatureLevels["BindlessMipmapGeneration"];
+        this.VaoFeatureLevel                         = FeatureLevels["VertexArrayObjects"];
 
         if (backend == Backend.OpenGLES) {
             if (Global.LatestSupportedGl.GLES.MajorVersion >= 2) {
@@ -124,8 +132,13 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
             }
 
             if (Global.LatestSupportedGl.GL.MajorVersion >= 3) {
+                this.VaoFeatureLevel.Value = true;
+                
                 FeatureLevels["NeedsCustomMipmapGeneration"].Value = false;
                 Logger.Log("Marking that we dont need custom mipmap generation!", LoggerLevelOpenGl.InstanceInfo);
+            }
+            else {
+                Logger.Log("We need the ARB_vertex_array_object extension!", LoggerLevelOpenGl.InstanceInfo);
             }
 
             if (Global.LatestSupportedGl.GL.MajorVersion > 4 || Global.LatestSupportedGl.GL.MajorVersion == 4 &&
@@ -204,6 +217,13 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
 
                 if (extension.Contains("EXT_framebuffer_object"))
                     foundExtFramebufferObject = true;
+                
+                //If we have the ARB_vertex_array_object extension, always enable use of VAOs
+                if (extension.Contains("ARB_vertex_array_object")) {
+                    Logger.Log("Marking that we have the ARB_vertex_array_object extension!", LoggerLevelOpenGl.InstanceInfo);
+
+                    this.VaoFeatureLevel.Value = true;
+                }
             }
 
             if (!foundExtFramebufferObject && FeatureLevels["NeedsFramebufferExtension"].Boolean)
@@ -220,6 +240,11 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
             if (FeatureLevels["NeedsFramebufferExtension"].Boolean && !extensions.Contains("EXT_framebuffer_object"))
                 throw ex;
 
+            if (extensions.Contains("ARB_vertex_array_object")) {
+                Logger.Log("Marking that we have the ARB_vertex_array_object extension!", LoggerLevelOpenGl.InstanceInfo);
+                this.VaoFeatureLevel.Value = true;
+            }
+                
             this._framebufferObjectExt = new ExtFramebufferObject(this._legacyGl.Context);
         }
         this.CheckError("check extensions");

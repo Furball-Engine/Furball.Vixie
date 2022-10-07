@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.OpenGL.Abstractions;
@@ -22,10 +23,10 @@ internal unsafe class OpenGlRenderer : Renderer {
     private Stack<BufferObjectGl> _idxQueue = new();
 
     private class BufferData : IDisposable {
-        public VertexArrayObjectGl Vao;
-        public BufferObjectGl      Vtx;
-        public BufferObjectGl      Idx;
-        public uint                IndexCount;
+        public VertexArrayObjectGl? Vao;
+        public BufferObjectGl?      Vtx;
+        public BufferObjectGl?      Idx;
+        public uint                 IndexCount;
 
         public VixieTextureGl[] TexArray;
         public int              UsedTextures;
@@ -59,15 +60,8 @@ internal unsafe class OpenGlRenderer : Renderer {
         this.FontRenderer = new VixieFontStashRenderer(backend, this);
     }
 
-    private void SetVtxBufferToVao(VertexArrayObjectGl vao, BufferObjectGl buffer) {
-        vao.Bind();
-
-        VertexBufferLayoutGl layout = new();
-        layout.AddElement<float>(2); //Position
-        layout.AddElement<float>(2); //Texture Coordinate
-        layout.AddElement<float>(4); //Color
-        layout.AddElement<int>(1);   //Texture id2
-        layout.AddElement<int>(1);   //Texture id
+    private void SetVtxBufferToVao(VertexArrayObjectGl? vao, BufferObjectGl buffer) {
+        vao?.Bind();
 
         buffer.Bind();
         
@@ -91,7 +85,7 @@ internal unsafe class OpenGlRenderer : Renderer {
 
         buffer.Unbind();
 
-        vao.Unbind();
+        vao?.Unbind();
     }
     
     private BufferObjectGl CreateNewVertexBuffer() {
@@ -109,10 +103,12 @@ internal unsafe class OpenGlRenderer : Renderer {
     private void DumpToBuffers() {
         if (this._vtxMapper.ReservedBytes == 0 || this._idxMapper.ReservedBytes == 0)
             return;
-        
-        //TODO: make VAOs optional (for pre GL3.0)
-        VertexArrayObjectGl vao = new(this._backend);
-        
+
+        VertexArrayObjectGl? vao = null;
+        if(this._backend.VaoFeatureLevel.Boolean) {
+            vao = new VertexArrayObjectGl(this._backend);
+        }
+
         BufferObjectGl vtx;
         BufferObjectGl idx;
         if (this._vtxQueue.Count == 0) {
@@ -124,7 +120,8 @@ internal unsafe class OpenGlRenderer : Renderer {
             idx = this._idxQueue.Pop();
         }
         
-        this.SetVtxBufferToVao(vao, vtx);
+        if(vao != null)
+            this.SetVtxBufferToVao(vao, vtx);
 
         vtx.Bind();
         idx.Bind();
@@ -161,13 +158,15 @@ internal unsafe class OpenGlRenderer : Renderer {
         this._texDict.Clear();
         
         this._bufferList.ForEach(x => {
-            this._vtxQueue.Push(x.Vtx);
-            this._idxQueue.Push(x.Idx);
+            if(x.Vtx != null)
+                this._vtxQueue.Push(x.Vtx);
+            if(x.Idx != null)
+                this._idxQueue.Push(x.Idx);
 
             x.Vtx = null;
             x.Idx = null;
 
-            x.Vao.Dispose();
+            x.Vao?.Dispose();
             x.Vao = null;
             
             x.Dispose();
@@ -238,17 +237,21 @@ internal unsafe class OpenGlRenderer : Renderer {
         return this._usedTextures - 1;
     }
 
-    private int              _usedTextures;
-    private VixieTextureGl[] _texHandles;
+    private int               _usedTextures;
+    private VixieTextureGl?[] _texHandles;
     public override void Draw() {
         this._backend.Shader.Bind();
 
         for (int i = 0; i < this._bufferList.Count; i++) {
             BufferData buf = this._bufferList[i];
-            buf.Vao.Bind();
+            buf.Vao?.Bind();
 
-            buf.Vtx.Bind();
-            buf.Idx.Bind();
+            buf.Vtx?.Bind();
+            buf.Idx?.Bind();
+
+            if (buf.Vao == null) {
+                this.SetVtxBufferToVao(null, buf.Vtx!);
+            }
 
             for (int i2 = 0; i2 < buf.UsedTextures; i2++) {
                 VixieTextureGl tex = buf.TexArray[i2];
@@ -258,10 +261,10 @@ internal unsafe class OpenGlRenderer : Renderer {
 
             this._gl.DrawElements(PrimitiveType.Triangles, buf.IndexCount, DrawElementsType.UnsignedShort, null);
 
-            buf.Idx.Unbind();
-            buf.Vtx.Unbind();
+            buf.Idx?.Unbind();
+            buf.Vtx?.Unbind();
 
-            buf.Vao.Unbind();
+            buf.Vao?.Unbind();
         }
 
         this._backend.Shader.Unbind();
