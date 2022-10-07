@@ -54,4 +54,8 @@ public static class Guard {
     public static void Fail(string message) {
         throw new Exception(message);
     }
+    
+    public static void Todo(string message) {
+        throw new NotImplementedException(message);
+    }
 }
