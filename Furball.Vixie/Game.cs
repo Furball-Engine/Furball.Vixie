@@ -35,6 +35,8 @@ public abstract class Game : IDisposable {
 
     private bool _recreateQueued;
     private bool _isRecreated = false;
+
+    public event EventHandler<string[]> FileDrop;
     
     /// <summary>
     /// Creates a Game Window using `options`
@@ -416,7 +418,9 @@ public abstract class Game : IDisposable {
     /// Gets fired when a File Drag and Drop Occurs
     /// </summary>
     /// <param name="files">File paths to the Dropped files</param>
-    protected virtual void OnFileDrop(string[] files) {}
+    protected virtual void OnFileDrop(string[] files) {
+        this.FileDrop?.Invoke(this, files);
+    }
     /// <summary>
     /// Gets fired when the Window Moves
     /// </summary>
