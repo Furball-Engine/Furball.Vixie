@@ -14,6 +14,7 @@ using Silk.NET.Core.Native;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
+using Silk.NET.OpenGL.Legacy.Extensions.APPLE;
 using Silk.NET.OpenGL.Legacy.Extensions.EXT;
 using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
@@ -87,21 +88,29 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
                 Description = "Whether to use Vertex array objects when rendering",
                 Value = false
             }
+        }, {
+            "AppleVertexArrayObjects", new FeatureLevel {
+                Name = "Use the apple specific VAO extension",
+                Description = "Whether to use the APPLE_vertex_array_object extension in place of ARB_vertex_array_object",
+                Value = false
+            }
         }
     };
 
-    private ExtFramebufferObject _framebufferObjectExt;
+    private ExtFramebufferObject   _framebufferObjectExt;
+    private AppleVertexArrayObject _appleVao;
 
-    private readonly FeatureLevel _glBindTexturesFeatureLevel;
-    private readonly FeatureLevel _needsFrameBufferExtensionFeatureLevel;
-    private readonly FeatureLevel _needsCustomMipmapGenerationFeatureLevel;
-    private readonly FeatureLevel _bindlessMipmapGenerationFeatureLevel;
+    private readonly  FeatureLevel _glBindTexturesFeatureLevel;
+    private readonly  FeatureLevel _needsFrameBufferExtensionFeatureLevel;
+    private readonly  FeatureLevel _needsCustomMipmapGenerationFeatureLevel;
+    private readonly  FeatureLevel _bindlessMipmapGenerationFeatureLevel;
     internal readonly FeatureLevel VaoFeatureLevel;
+    internal readonly FeatureLevel AppleVaoFeatureLevel;
 
     public readonly Backend CreationBackend;
     private         bool    _isFbProjMatrix;
 #if USE_IMGUI
-    private OpenGlImGuiController _imgui;
+    private OpenGlImGuiController  _imgui;
 #endif
 
     public OpenGLBackend(Backend backend) {
@@ -111,7 +120,8 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
         this._needsFrameBufferExtensionFeatureLevel   = FeatureLevels["NeedsFramebufferExtension"];
         this._needsCustomMipmapGenerationFeatureLevel = FeatureLevels["NeedsCustomMipmapGeneration"];
         this._bindlessMipmapGenerationFeatureLevel    = FeatureLevels["BindlessMipmapGeneration"];
-        this.VaoFeatureLevel                         = FeatureLevels["VertexArrayObjects"];
+        this.VaoFeatureLevel                          = FeatureLevels["VertexArrayObjects"];
+        this.AppleVaoFeatureLevel                     = FeatureLevels["AppleVertexArrayObjects"];
 
         if (backend == Backend.OpenGLES) {
             if (Global.LatestSupportedGl.GLES.MajorVersion >= 2) {
@@ -217,12 +227,24 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
 
                 if (extension.Contains("EXT_framebuffer_object"))
                     foundExtFramebufferObject = true;
+
+                if (extension.Contains(AppleVertexArrayObject.ExtensionName) && !this.VaoFeatureLevel.Boolean) {
+                    Logger.Log("Marking that we should be using the APPLE_vertex_array_object extension!", LoggerLevelOpenGl.InstanceInfo);
+
+                    this.AppleVaoFeatureLevel.Value = true;
+                }
                 
                 //If we have the ARB_vertex_array_object extension, always enable use of VAOs
                 if (extension.Contains("ARB_vertex_array_object")) {
                     Logger.Log("Marking that we have the ARB_vertex_array_object extension!", LoggerLevelOpenGl.InstanceInfo);
 
                     this.VaoFeatureLevel.Value = true;
+
+                    if (this.AppleVaoFeatureLevel.Boolean) {
+                        Logger.Log("Using the ARB extension over the APPLE extension for VAOs!", LoggerLevelOpenGl.InstanceInfo);
+
+                        this.AppleVaoFeatureLevel.Value = false;
+                    }
                 }
             }
 
@@ -240,12 +262,25 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
             if (FeatureLevels["NeedsFramebufferExtension"].Boolean && !extensions.Contains("EXT_framebuffer_object"))
                 throw ex;
 
+            if (extensions.Contains(AppleVertexArrayObject.ExtensionName) && !this.VaoFeatureLevel.Boolean) {
+                Logger.Log("Marking that we should be using the APPLE_vertex_array_object extension!", LoggerLevelOpenGl.InstanceInfo);
+
+                this.AppleVaoFeatureLevel.Value = true;
+            }
+            
             if (extensions.Contains("ARB_vertex_array_object")) {
                 Logger.Log("Marking that we have the ARB_vertex_array_object extension!", LoggerLevelOpenGl.InstanceInfo);
                 this.VaoFeatureLevel.Value = true;
+                
+                if (this.AppleVaoFeatureLevel.Boolean) {
+                    Logger.Log("Using the ARB extension over the APPLE extension for VAOs!", LoggerLevelOpenGl.InstanceInfo);
+
+                    this.AppleVaoFeatureLevel.Value = false;
+                }
             }
                 
             this._framebufferObjectExt = new ExtFramebufferObject(this._legacyGl.Context);
+            this._appleVao              = new AppleVertexArrayObject(this._legacyGl.Context);
         }
         this.CheckError("check extensions");
         this.InfoSections.Add(mainSection);
@@ -770,10 +805,15 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     }
 
     public void DeleteVertexArray(uint arrayId) {
-        this.gl.DeleteVertexArray(arrayId);
+        if (this.AppleVaoFeatureLevel.Boolean)
+            this._appleVao.GenVertexArray();
+        else
+            this.gl.DeleteVertexArray(arrayId);
     }
 
-    public uint GenVertexArray() => this.gl.GenVertexArray();
+    public uint GenVertexArray() {
+        return this.AppleVaoFeatureLevel.Boolean ? this._appleVao.GenVertexArray() : this.gl.GenVertexArray();
+    }
 
     public void EnableVertexAttribArray(uint u) {
         this.gl.EnableVertexAttribArray(u);
