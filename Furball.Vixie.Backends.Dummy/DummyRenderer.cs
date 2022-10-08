@@ -4,6 +4,7 @@ using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.FontStashSharp;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Kettu;
+using Silk.NET.Core.Native;
 
 namespace Furball.Vixie.Backends.Dummy;
 
@@ -16,7 +17,7 @@ public class DummyRenderer : Renderer {
     }
     public override unsafe void Begin() {
         // throw new System.NotImplementedException();
-        this._dataHandle = (void*)Marshal.AllocHGlobal(sizeof(Vertex) * 4 * 128);
+        this._dataHandle = (void*)SilkMarshal.Allocate(sizeof(Vertex) * 4 * 128);
     }
     public override void End() {
         // throw new System.NotImplementedException();
@@ -32,6 +33,6 @@ public class DummyRenderer : Renderer {
     }
     protected override unsafe void DisposeInternal() {
         // throw new System.NotImplementedException();
-        Marshal.FreeHGlobal((IntPtr)this._dataHandle);
+        SilkMarshal.Free((IntPtr)this._dataHandle);
     }
 }

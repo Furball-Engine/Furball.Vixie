@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using Silk.NET.Core.Native;
 
 namespace Furball.Vixie.Backends.Shared.Renderers; 
 
@@ -9,7 +10,7 @@ public unsafe class RamBufferMapper : BufferMapper {
     public RamBufferMapper(nuint sizeInBytes) {
         this.SizeInBytes = sizeInBytes;
 
-        this.Handle = (void*)Marshal.AllocHGlobal((int)sizeInBytes);
+        this.Handle = (void*)SilkMarshal.Allocate((int)sizeInBytes);
     }
 
     public void Reset() {
@@ -35,7 +36,7 @@ public unsafe class RamBufferMapper : BufferMapper {
     }
 
     protected override void DisposeInternal() {
-        Marshal.FreeHGlobal((IntPtr)this.Handle);
+        SilkMarshal.Free((IntPtr)this.Handle);
     }
 
     ~RamBufferMapper() {

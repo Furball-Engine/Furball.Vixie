@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers;
+using Silk.NET.Core.Native;
 
 namespace Furball.Vixie.Backends.Mola;
 
@@ -32,8 +33,8 @@ public class MolaRenderer : Renderer {
     public unsafe MolaRenderer(MolaBackend backend) {
         this._backend = backend;
 
-        this._currentBatch.VertexPtr = (Vertex*)Marshal.AllocHGlobal(VtxBufSize);
-        this._currentBatch.IndexPtr  = (ushort*)Marshal.AllocHGlobal(IdxBufSize);
+        this._currentBatch.VertexPtr = (Vertex*)SilkMarshal.Allocate(VtxBufSize);
+        this._currentBatch.IndexPtr  = (ushort*)SilkMarshal.Allocate(IdxBufSize);
     }
 
     public override unsafe void Begin() {
@@ -85,8 +86,8 @@ public class MolaRenderer : Renderer {
         }
 
         this._currentBatch = new RenderBatch {
-            VertexPtr = (Vertex*)Marshal.AllocHGlobal(VtxBufSize),
-            IndexPtr  = (ushort*)Marshal.AllocHGlobal(IdxBufSize)
+            VertexPtr = (Vertex*)SilkMarshal.Allocate(VtxBufSize),
+            IndexPtr  = (ushort*)SilkMarshal.Allocate(IdxBufSize)
         };
     }
 
@@ -131,12 +132,12 @@ public class MolaRenderer : Renderer {
             this.End();
 
         foreach (RenderBatch renderBatch in this._batches) {
-            Marshal.FreeHGlobal((IntPtr)renderBatch.VertexPtr);
-            Marshal.FreeHGlobal((IntPtr)renderBatch.IndexPtr);
+            SilkMarshal.Free((IntPtr)renderBatch.VertexPtr);
+            SilkMarshal.Free((IntPtr)renderBatch.IndexPtr);
         }
         foreach ((IntPtr vertex, IntPtr index) in this._freeBuffers) {
-            Marshal.FreeHGlobal(vertex);
-            Marshal.FreeHGlobal(index);
+            SilkMarshal.Free(vertex);
+            SilkMarshal.Free(index);
         }
     }
 }
