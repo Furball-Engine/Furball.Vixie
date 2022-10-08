@@ -8,6 +8,7 @@ using Furball.Vixie.Backends.OpenGL.Abstractions;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.Renderers;
+using Furball.Vixie.Helpers;
 using Furball.Vixie.Helpers.Helpers;
 using Kettu;
 using Silk.NET.Core.Native;
@@ -94,6 +95,12 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
                 Description = "Whether to use the APPLE_vertex_array_object extension in place of ARB_vertex_array_object",
                 Value = false
             }
+        }, {
+            "FixedFunctionPipeline", new FeatureLevel {
+                Name = "Requires Fixed Function Pipeline",
+                Description = "Whether to use the fixed function pipeline",
+                Value = false
+            }
         }
     };
 
@@ -106,6 +113,7 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     private readonly  FeatureLevel _bindlessMipmapGenerationFeatureLevel;
     internal readonly FeatureLevel VaoFeatureLevel;
     internal readonly FeatureLevel AppleVaoFeatureLevel;
+    internal readonly FeatureLevel FixedFunctionPipeline;
 
     public readonly Backend CreationBackend;
     private         bool    _isFbProjMatrix;
@@ -122,6 +130,7 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
         this._bindlessMipmapGenerationFeatureLevel    = FeatureLevels["BindlessMipmapGeneration"];
         this.VaoFeatureLevel                          = FeatureLevels["VertexArrayObjects"];
         this.AppleVaoFeatureLevel                     = FeatureLevels["AppleVertexArrayObjects"];
+        this.FixedFunctionPipeline                    = FeatureLevels["FixedFunctionPipeline"];
 
         if (backend == Backend.OpenGLES) {
             if (Global.LatestSupportedGl.GLES.MajorVersion >= 2) {
@@ -155,6 +164,11 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
                 Global.LatestSupportedGl.GL.MinorVersion                                                 >= 5) {
                 FeatureLevels["BindlessMipmapGeneration"].Value = true;
                 Logger.Log("Marking that we can use bindless mipmap generation!", LoggerLevelOpenGl.InstanceInfo);
+            }
+
+            if (Global.LatestSupportedGl.GL.MajorVersion < 2) {
+                this.FixedFunctionPipeline.Value = true;
+                Logger.Log("Marking that we need to use the fixed function pipeline!", LoggerLevelOpenGl.InstanceInfo);
             }
         }
     }
@@ -295,11 +309,15 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
         this.CurrentViewport = new Vector2D<int>(view.FramebufferSize.X, view.FramebufferSize.Y);
         this._lastScissor    = new(0, 0, view.FramebufferSize.X, view.FramebufferSize.Y);
 
-        this.CreateShaders();
+        if (!this.FixedFunctionPipeline.Boolean) {
+            this.CreateShaders();
         
-        gl.Enable(EnableCap.Multisample);
+            gl.Enable(EnableCap.Multisample);
+        }
     }
     private void CreateShaders() {
+        Guard.Assert(!this.FixedFunctionPipeline.Boolean, "Cannot create shaders when fixed function pipeline is enabled!");
+        
         this.Shader = new ShaderGl(this);
         this.Shader.AttachShader(
         ShaderType.VertexShader,
@@ -385,7 +403,7 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     /// </summary>
     /// <param name="width">New width</param>
     /// <param name="height">New height</param>
-    public override void HandleFramebufferResize(int width, int height) {
+    public override unsafe void HandleFramebufferResize(int width, int height) {
         this.gl.Viewport(0, 0, (uint)width, (uint)height);
         this.CurrentViewport = new Vector2D<int>(width, height);
 
@@ -396,10 +414,20 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
 
         float right = this._isFbProjMatrix ? width : width / (float)height * 720f;
 
+        //If we are using the fixed function pipeline, use glOrtho, otherwise, set the projection matrix on the shader
         this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, right, bottom, top, 1f, 0f);
-        this.Shader.Bind();
-        this.Shader.SetUniform("ProjectionMatrix", this.ProjectionMatrix);
-        this.Shader.Unbind();
+
+        //Copy it to a local var so we can get a reference to it
+        Matrix4x4 mat = this.ProjectionMatrix;
+        
+        if (this.FixedFunctionPipeline.Boolean) {
+            this._legacyGl.MatrixMode(Silk.NET.OpenGL.Legacy.MatrixMode.Projection);
+            this._legacyGl.LoadMatrix((float*)&mat);
+        } else {
+            this.Shader.Bind();
+            this.Shader.SetUniform("ProjectionMatrix", this.ProjectionMatrix);
+            this.Shader.Unbind();
+        }
     }
 
     public override Rectangle ScissorRect {
@@ -422,7 +450,9 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
         //and Nvidia has not updated the NVX_gpu_memory_info to the modern core profile
         0;
     public override ulong    GetTotalVram()   => 0;
-    public override Renderer CreateRenderer() => new OpenGlRenderer(this);
+    public override Renderer CreateRenderer() => this.FixedFunctionPipeline.Boolean 
+        ? new FixedFunctionOpenGLRenderer(this) 
+        : new OpenGlRenderer(this);
     /// <summary>
     ///     Gets the Amount of Texture Units available for use
     /// </summary>
