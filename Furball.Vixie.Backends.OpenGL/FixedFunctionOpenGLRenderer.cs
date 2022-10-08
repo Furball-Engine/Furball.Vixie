@@ -6,6 +6,7 @@ using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.FontStashSharp;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers;
+using Silk.NET.Core.Native;
 using Silk.NET.OpenGL.Legacy;
 
 //Disable obsolete warning :^)
@@ -74,8 +75,8 @@ public class FixedFunctionOpenGLRenderer : Renderer {
         this._backend.CheckError("end list");
         
         foreach (MappedData mappedData in this._mappedDataList) {
-            Marshal.FreeHGlobal((IntPtr)mappedData.VertexPtr);
-            Marshal.FreeHGlobal((IntPtr)mappedData.IndexPtr);
+            SilkMarshal.Free((IntPtr)mappedData.VertexPtr);
+            SilkMarshal.Free((IntPtr)mappedData.IndexPtr);
         }
         this._backend.CheckError("freeing mapped data");
         
@@ -85,8 +86,8 @@ public class FixedFunctionOpenGLRenderer : Renderer {
     }
 
     public override unsafe MappedData Reserve(ushort vertexCount, uint indexCount) {
-        Vertex* vertexPtr = (Vertex*)Marshal.AllocHGlobal(sizeof(Vertex) * vertexCount);
-        ushort* indexPtr  = (ushort*)Marshal.AllocHGlobal((IntPtr)(sizeof(ushort) * indexCount));
+        Vertex* vertexPtr = (Vertex*)SilkMarshal.Allocate(sizeof(Vertex) * vertexCount);
+        ushort* indexPtr  = (ushort*)SilkMarshal.Allocate((int)(sizeof(ushort) * indexCount));
 
         MappedData data = new MappedData(vertexPtr, indexPtr, vertexCount, indexCount, 0);
 
