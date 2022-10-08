@@ -44,19 +44,7 @@ public class FixedFunctionOpenGLRenderer : Renderer {
         //Start a new display list
         this._gl.NewList(this._list, ListMode.Compile);
         this._gl.Begin(PrimitiveType.Triangles);
-
-        // uint stride = (uint)sizeof(Vertex);
-
-        this._gl.VertexPointer(2, VertexPointerType.Float, 0, (void*)0);
-        this._gl.ColorPointer(4, GLEnum.Float, 0, (void*)0);
-        this._gl.TexCoordPointer(2, TexCoordPointerType.Float, 0, (void*)0);
-        this._backend.CheckError("pointer defs");
         
-        this._gl.EnableClientState(EnableCap.VertexArray);
-        this._gl.EnableClientState(EnableCap.ColorArray);
-        this._gl.EnableClientState(EnableCap.TextureCoordArray);
-        this._backend.CheckError("enable client state");
-
         long lastMappedTex = -1;
         foreach (MappedData mappedData in this._mappedDataList) {
             for (int i = 0; i < mappedData.IndexCount; i++) {
@@ -64,18 +52,18 @@ public class FixedFunctionOpenGLRenderer : Renderer {
 
                 Vertex vertex = mappedData.VertexPtr[index];
 
-                //Map the new texture if it changed
-                if (vertex.TexId != lastMappedTex) {
+                //Map the new texture if it changed, but only on the start of a triangle
+                if (vertex.TexId != lastMappedTex && (i & 3) == 0) {
                     this._gl.End();
                     this._gl.BindTexture(TextureTarget.Texture2D, (uint)vertex.TexId);
                     this._gl.Begin(PrimitiveType.Triangles);
-
+                
                     lastMappedTex = vertex.TexId;
                 }
                 
-                this._gl.Vertex2((float*)&vertex.Position);
-                this._gl.Color4((float*)&vertex.Color);
+                this._gl.Color4(vertex.Color.Rf, vertex.Color.Gf, vertex.Color.Bf, vertex.Color.Af);
                 this._gl.TexCoord2((float*)&vertex.TextureCoordinate);
+                this._gl.Vertex2((float*)&vertex.Position);
             }
         }
         this._backend.CheckError("rendering");
