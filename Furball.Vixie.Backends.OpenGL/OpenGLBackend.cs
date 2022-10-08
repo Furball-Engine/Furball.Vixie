@@ -206,7 +206,7 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
 
         this.gl.Enable(EnableCap.CullFace);
         this.gl.CullFace(CullFaceMode.Back);
-
+        
 #if USE_IMGUI
         OpenGlType type = this.CreationBackend switch {
             Backend.OpenGL when Global.LatestSupportedGl.GL.MajorVersion < 3 => OpenGlType.Legacy,
@@ -312,7 +312,10 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
         if (!this.FixedFunctionPipeline.Boolean) {
             this.CreateShaders();
         
-            gl.Enable(EnableCap.Multisample);
+            this.gl.Enable(EnableCap.Multisample);
+        }
+        else {
+            this.gl.Enable(EnableCap.Texture2D);
         }
     }
     private void CreateShaders() {
