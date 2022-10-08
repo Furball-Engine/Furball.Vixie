@@ -422,7 +422,11 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
         
         if (this.FixedFunctionPipeline.Boolean) {
             this._legacyGl.MatrixMode(Silk.NET.OpenGL.Legacy.MatrixMode.Projection);
+            this._legacyGl.LoadIdentity();
             this._legacyGl.LoadMatrix((float*)&mat);
+            
+            this._legacyGl.MatrixMode(Silk.NET.OpenGL.Legacy.MatrixMode.Modelview);
+            this._legacyGl.LoadIdentity();
         } else {
             this.Shader.Bind();
             this.Shader.SetUniform("ProjectionMatrix", this.ProjectionMatrix);
