@@ -78,7 +78,7 @@ internal sealed class VixieTextureRenderTargetGl : VixieTextureRenderTarget {
         this._backend.BindTexture(TextureTarget.Texture2D, this._textureId);
         this._backend.CheckError("bind fb tex");
         //Set it to Empty
-        this._backend.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat.Rgb, width, height, 0, PixelFormat.Rgb, PixelType.UnsignedByte, null);
+        this._backend.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat.Rgba, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, null);
         this._backend.CheckError("fill fb tex");
         //Set The Filtering to nearest (apperantly necessary, idk)
         this._backend.TexParameterI(TextureTarget.Texture2D, GLEnum.TextureMagFilter, (int)GLEnum.Nearest);

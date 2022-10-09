@@ -435,6 +435,9 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
             this.Shader.SetUniform("ProjectionMatrix", this.ProjectionMatrix);
             this.Shader.Unbind();
         }
+        
+        //Reset the scissor when the framebuffer we are rendering to changes
+        this.ScissorRect = new(0, 0, width, height);
     }
 
     public override Rectangle ScissorRect {
