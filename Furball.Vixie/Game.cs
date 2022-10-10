@@ -221,6 +221,7 @@ public abstract class Game : IDisposable {
     /// </summary>
     private void RendererOnClosing(object sender, EventArgs eventArgs) {
         this.OnClosing();
+        this.Dispose();
     }
     /// <summary>
     /// Gets fired when the Window Focus changes
