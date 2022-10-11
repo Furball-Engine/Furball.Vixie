@@ -1,15 +1,18 @@
 ﻿using System;
 using FontStashSharp.Interfaces;
 using Furball.Vixie.Backends.Shared;
-using Furball.Vixie.Backends.Shared.FontStashSharp;
 using Furball.Vixie.Backends.Shared.Renderers;
+using Furball.Vixie.FontStashSharp;
 
 namespace Furball.Vixie; 
 
 public class Renderer {
     internal VixieRenderer VixieRenderer;
 
-    public VixieFontStashRenderer FontRenderer => this.VixieRenderer.FontRenderer;
+    public IFontStashRenderer2 FontRenderer {
+        get => this.VixieRenderer.FontRenderer;
+        set => this.VixieRenderer.FontRenderer = value;
+    }
 
     public Renderer() {
         this.VixieRenderer = GraphicsBackend.Current.CreateRenderer();
@@ -19,6 +22,8 @@ public class Renderer {
 
     public void Begin() {
         this.VixieRenderer.Begin();
+
+        this.FontRenderer ??= new VixieFontStashRenderer(this.VixieRenderer);
     }
     
     public void End() {

@@ -1,15 +1,15 @@
 using System.Numerics;
 using FontStashSharp.Interfaces;
-using Furball.Vixie.Backends.Shared.Backends;
+using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Renderers;
 
-namespace Furball.Vixie.Backends.Shared.FontStashSharp; 
+namespace Furball.Vixie.FontStashSharp; 
 
 public class VixieFontStashRenderer : IFontStashRenderer2 {
     internal readonly VixieRenderer VixieRenderer;
-    public VixieFontStashRenderer(GraphicsBackend backend, VixieRenderer vixieRenderer) {
+    public VixieFontStashRenderer(VixieRenderer vixieRenderer) {
         this.VixieRenderer      = vixieRenderer;
-        this.TextureManager = new VixieTexture2dManager(backend);
+        this.TextureManager = new VixieTexture2dManager();
     }
     
     public unsafe void DrawQuad(object                         texture,    ref VertexPositionColorTexture topLeft, ref VertexPositionColorTexture topRight,
@@ -31,7 +31,7 @@ public class VixieFontStashRenderer : IFontStashRenderer2 {
         map.VertexPtr[2].TextureCoordinate = bottomLeft.TextureCoordinate;
         map.VertexPtr[3].TextureCoordinate = bottomRight.TextureCoordinate;
 
-        long texId = this.VixieRenderer.GetTextureId((VixieTexture)texture);
+        long texId = this.VixieRenderer.GetTextureId((Texture)texture);
         map.VertexPtr[0].TexId = texId;
         map.VertexPtr[1].TexId = texId;
         map.VertexPtr[2].TexId = texId;

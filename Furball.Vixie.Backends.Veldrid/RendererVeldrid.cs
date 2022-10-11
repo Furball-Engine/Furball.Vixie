@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
 using Furball.Vixie.Backends.Shared;
-using Furball.Vixie.Backends.Shared.FontStashSharp;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Backends.Veldrid.Abstractions;
 using Furball.Vixie.Helpers;
@@ -119,8 +118,6 @@ public unsafe class VixieRendererVeldrid : VixieRenderer {
         };
 
         this._pipeline = backend.ResourceFactory.CreateGraphicsPipeline(ref pipelineDesc);
-        
-        this.FontRenderer = new VixieFontStashRenderer(backend, this);
     }
 
     private bool _isFirst = true;

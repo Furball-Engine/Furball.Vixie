@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Numerics;
 using Furball.Vixie.Backends.Direct3D11.Abstractions;
 using Furball.Vixie.Backends.Shared;
-using Furball.Vixie.Backends.Shared.FontStashSharp;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers;
 using Furball.Vixie.Helpers.Helpers;
@@ -180,8 +179,6 @@ public class Direct3D11VixieRenderer : VixieRenderer {
         };
 
         this._samplerState = this._backend.Device.CreateSamplerState(samplerDescription);
-
-        this.FontRenderer = new VixieFontStashRenderer(backend, this);
     }
 
     private unsafe void UpdateProjectionMatrixBuffer() {

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.OpenGL.Abstractions;
 using Furball.Vixie.Backends.Shared;
-using Furball.Vixie.Backends.Shared.FontStashSharp;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers;
 using Silk.NET.Core.Native;
@@ -32,8 +31,6 @@ public class FixedFunctionOpenGlVixieRenderer : VixieRenderer {
 
         this._list = this._gl.GenLists(1);
         this._backend.CheckError("Failed to generate list");
-
-        this.FontRenderer = new VixieFontStashRenderer(backend, this);
     }
 
     public override void Begin() {
