@@ -2,9 +2,9 @@
 using Furball.Vixie.Backends.Shared.FontStashSharp;
 using Furball.Vixie.Helpers;
 
-namespace Furball.Vixie.Backends.Shared.Renderers; 
+namespace Furball.Vixie.Backends.Shared.Renderers;
 
-public abstract class Renderer : IDisposable {
+public abstract class VixieRenderer : IDisposable {
     /// <summary>
     /// Begins collecting draw calls
     /// </summary>
@@ -54,7 +54,7 @@ public abstract class Renderer : IDisposable {
 
     public VixieFontStashRenderer? FontRenderer;
 
-    ~Renderer() {
+    ~VixieRenderer() {
         DisposeQueue.Enqueue(this);
     }
 }

@@ -6,15 +6,15 @@ using Furball.Vixie.Backends.Shared.Renderers;
 namespace Furball.Vixie.Backends.Shared.FontStashSharp; 
 
 public class VixieFontStashRenderer : IFontStashRenderer2 {
-    internal readonly Renderer Renderer;
-    public VixieFontStashRenderer(GraphicsBackend backend, Renderer renderer) {
-        this.Renderer      = renderer;
+    internal readonly VixieRenderer VixieRenderer;
+    public VixieFontStashRenderer(GraphicsBackend backend, VixieRenderer vixieRenderer) {
+        this.VixieRenderer      = vixieRenderer;
         this.TextureManager = new VixieTexture2dManager(backend);
     }
     
     public unsafe void DrawQuad(object                         texture,    ref VertexPositionColorTexture topLeft, ref VertexPositionColorTexture topRight,
                                 ref VertexPositionColorTexture bottomLeft, ref VertexPositionColorTexture bottomRight) {
-        MappedData map = this.Renderer.Reserve(4, 6);
+        MappedData map = this.VixieRenderer.Reserve(4, 6);
 
         map.VertexPtr[0].Position = new Vector2(topLeft.Position.X, topLeft.Position.Y);
         map.VertexPtr[1].Position = new Vector2(topRight.Position.X, topRight.Position.Y);
@@ -31,7 +31,7 @@ public class VixieFontStashRenderer : IFontStashRenderer2 {
         map.VertexPtr[2].TextureCoordinate = bottomLeft.TextureCoordinate;
         map.VertexPtr[3].TextureCoordinate = bottomRight.TextureCoordinate;
 
-        long texId = this.Renderer.GetTextureId((VixieTexture)texture);
+        long texId = this.VixieRenderer.GetTextureId((VixieTexture)texture);
         map.VertexPtr[0].TexId = texId;
         map.VertexPtr[1].TexId = texId;
         map.VertexPtr[2].TexId = texId;

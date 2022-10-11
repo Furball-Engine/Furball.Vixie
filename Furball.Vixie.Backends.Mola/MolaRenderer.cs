@@ -8,7 +8,7 @@ using Silk.NET.Core.Native;
 
 namespace Furball.Vixie.Backends.Mola;
 
-public class MolaRenderer : Renderer {
+public class MolaVixieRenderer : VixieRenderer {
     private readonly MolaBackend _backend;
 
     private readonly Queue<(IntPtr vertex, IntPtr index)> _freeBuffers = new Queue<(IntPtr vertex, IntPtr index)>();
@@ -30,7 +30,7 @@ public class MolaRenderer : Renderer {
 
     private bool _begun;
 
-    public unsafe MolaRenderer(MolaBackend backend) {
+    public unsafe MolaVixieRenderer(MolaBackend backend) {
         this._backend = backend;
 
         this._currentBatch.VertexPtr = (Vertex*)SilkMarshal.Allocate(VtxBufSize);

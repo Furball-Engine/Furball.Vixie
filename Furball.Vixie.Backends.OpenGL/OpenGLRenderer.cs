@@ -11,7 +11,7 @@ using Silk.NET.OpenGL;
 
 namespace Furball.Vixie.Backends.OpenGL; 
 
-internal unsafe class OpenGlRenderer : Renderer {
+internal unsafe class OpenGlVixieRenderer : VixieRenderer {
     private readonly OpenGLBackend _backend;
     private readonly GL            _gl;
 
@@ -48,7 +48,7 @@ internal unsafe class OpenGlRenderer : Renderer {
 
     private const int QUAD_COUNT = 256;
     
-    public OpenGlRenderer(OpenGLBackend backend) {
+    public OpenGlVixieRenderer(OpenGLBackend backend) {
         this._backend = backend;
         this._gl      = backend.GetModernGl();
         
@@ -278,8 +278,21 @@ internal unsafe class OpenGlRenderer : Renderer {
         
         this._texDict.Clear();
  
+        this._bufferList.ForEach(x => {
+            x.Vtx?.Dispose();
+            x.Idx?.Dispose();
+            x.Dispose();
+        });
+        
         this._vtxMapper.Dispose();
         this._idxMapper.Dispose();
+
+        while(this._vtxQueue.Count > 0) {
+            this._vtxQueue.Pop().Dispose();
+        }
+        while(this._idxQueue.Count > 0) {
+            this._idxQueue.Pop().Dispose();
+        }
         
         this._vtxQueue.Clear();
         this._idxQueue.Clear();

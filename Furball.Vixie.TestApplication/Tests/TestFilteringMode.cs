@@ -12,20 +12,20 @@ public class TestFilteringMode : GameComponent {
     private Texture _pixelatedTexture;
     private Texture _smoothTexture;
 
-    private Renderer _renderer;
+    private Renderer _vixieRenderer;
 
     public override void Initialize() {
-        this._renderer = GraphicsBackend.Current.CreateRenderer();
+        this._vixieRenderer = new Renderer();
         
         this._pixelatedTexture = Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
         this._pixelatedTexture.FilterType = TextureFilterType.Pixelated;
         this._smoothTexture = Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
         this._smoothTexture.FilterType = TextureFilterType.Smooth;
         
-        this._renderer.Begin();
-        this._renderer.AllocateUnrotatedTexturedQuad(this._pixelatedTexture, Vector2.Zero, new Vector2(2), Color.White);
-        this._renderer.AllocateUnrotatedTexturedQuad(this._smoothTexture, new Vector2(100, 0), new Vector2(2), Color.White);
-        this._renderer.End();
+        this._vixieRenderer.Begin();
+        this._vixieRenderer.AllocateUnrotatedTexturedQuad(this._pixelatedTexture, Vector2.Zero, new Vector2(2), Color.White);
+        this._vixieRenderer.AllocateUnrotatedTexturedQuad(this._smoothTexture, new Vector2(100, 0), new Vector2(2), Color.White);
+        this._vixieRenderer.End();
         
         base.Initialize();
     }
@@ -33,7 +33,7 @@ public class TestFilteringMode : GameComponent {
     public override void Draw(double deltaTime) {
         GraphicsBackend.Current.Clear();
         
-        this._renderer.Draw();
+        this._vixieRenderer.Draw();
         
         #region ImGui menu
         #if USE_IMGUI

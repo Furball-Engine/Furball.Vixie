@@ -22,6 +22,7 @@ public static class Global {
         };
     }
     
-    public static readonly List<WeakReference<Texture>>      TrackedTextures       = new();
+    public static readonly List<WeakReference<Texture>>      TrackedTextures      = new();
     public static readonly List<WeakReference<RenderTarget>> TrackedRenderTargets = new();
+    public static readonly List<WeakReference<Renderer>>     TrackedRenderers     = new();
 }

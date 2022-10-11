@@ -10,11 +10,11 @@ using Color=Furball.Vixie.Backends.Shared.Color;
 namespace Furball.Vixie.TestApplication.Tests; 
 
 public class TestQuadRendering : GameComponent {
-    private Renderer _renderer;
+    private Renderer _vixieRenderer;
     private Texture       _texture;
 
     public override void Initialize() {
-        this._renderer = GraphicsBackend.Current.CreateRenderer();
+        this._vixieRenderer = new Renderer();
 
         //Load the Texture
         this._texture = Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
@@ -34,15 +34,15 @@ public class TestQuadRendering : GameComponent {
         if (this._scissorEnable)
             GraphicsBackend.Current.ScissorRect = new Rectangle(100, 100, 400, 200);
             
-        this._renderer.Begin();
+        this._vixieRenderer.Begin();
 
         for (int i = 0; i != this._cirnoDons; i++) {
-            this._renderer.AllocateUnrotatedTexturedQuad(this._texture, new Vector2(i % 1024, i % 2 == 0 ? 0 : 200), new Vector2(0.5f), new Color(1f, 1f, 1f, 0.5f));
+            this._vixieRenderer.AllocateUnrotatedTexturedQuad(this._texture, new Vector2(i % 1024, i % 2 == 0 ? 0 : 200), new Vector2(0.5f), new Color(1f, 1f, 1f, 0.5f));
         }
 
-        this._renderer.End();
+        this._vixieRenderer.End();
         
-        this._renderer.Draw();
+        this._vixieRenderer.Draw();
             
         GraphicsBackend.Current.SetFullScissorRect();
 
@@ -62,7 +62,7 @@ public class TestQuadRendering : GameComponent {
     }
 
     public override void Dispose() {
-        this._renderer.Dispose();
+        this._vixieRenderer.Dispose();
         this._texture.Dispose();
 
         base.Dispose();

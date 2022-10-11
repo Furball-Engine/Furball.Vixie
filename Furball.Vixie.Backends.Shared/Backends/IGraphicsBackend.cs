@@ -34,7 +34,7 @@ public abstract class GraphicsBackend {
     /// Creates a new renderer from the backend
     /// </summary>
     /// <returns>Returns the new renderer</returns>
-    public abstract Renderer CreateRenderer();
+    public abstract VixieRenderer CreateRenderer();
     /// <summary>
     /// Gets the Amount of Texture Units available for use
     /// </summary>

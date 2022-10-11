@@ -11,7 +11,7 @@ namespace Furball.Vixie.TestApplication.Tests;
 
 public class TestRenderTargets : GameComponent {
     private RenderTarget _renderTarget;
-    private Renderer     _quadRenderer;
+    private Renderer     _quadVixieRenderer;
     private Texture      _whitePixel;
     private float        _scale = 1f;
     private Texture      _don;
@@ -19,7 +19,7 @@ public class TestRenderTargets : GameComponent {
     public override void Initialize() {
         this._renderTarget = new RenderTarget(200, 200);
 
-        this._quadRenderer = GraphicsBackend.Current.CreateRenderer();
+        this._quadVixieRenderer = new Renderer();
             
         this._whitePixel = Texture.CreateWhitePixelTexture();
         this._don = Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
@@ -33,21 +33,21 @@ public class TestRenderTargets : GameComponent {
         this._renderTarget.Bind();
         GraphicsBackend.Current.Clear();
 
-        this._quadRenderer.Begin();
-        this._quadRenderer.AllocateUnrotatedTexturedQuad(this._whitePixel, new Vector2(5, 5), new Vector2(128, 128), Color.Green);
-        this._quadRenderer.AllocateUnrotatedTexturedQuad(this._whitePixel, new Vector2(100, 100), new Vector2(100, 100), Color.Red);
-        this._quadRenderer.AllocateUnrotatedTexturedQuad(this._whitePixel, new Vector2(150, 150), new Vector2(100, 100), Color.Blue);
-        this._quadRenderer.End();
+        this._quadVixieRenderer.Begin();
+        this._quadVixieRenderer.AllocateUnrotatedTexturedQuad(this._whitePixel, new Vector2(5, 5), new Vector2(128, 128), Color.Green);
+        this._quadVixieRenderer.AllocateUnrotatedTexturedQuad(this._whitePixel, new Vector2(100, 100), new Vector2(100, 100), Color.Red);
+        this._quadVixieRenderer.AllocateUnrotatedTexturedQuad(this._whitePixel, new Vector2(150, 150), new Vector2(100, 100), Color.Blue);
+        this._quadVixieRenderer.End();
         
-        this._quadRenderer.Draw();
+        this._quadVixieRenderer.Draw();
 
         this._renderTarget.Unbind();
             
-        this._quadRenderer.Begin();
-        this._quadRenderer.AllocateUnrotatedTexturedQuad(this._renderTarget, Vector2.Zero, new Vector2(this._scale), Color.White);
-        this._quadRenderer.End();
+        this._quadVixieRenderer.Begin();
+        this._quadVixieRenderer.AllocateUnrotatedTexturedQuad(this._renderTarget, Vector2.Zero, new Vector2(this._scale), Color.White);
+        this._quadVixieRenderer.End();
         
-        this._quadRenderer.Draw();
+        this._quadVixieRenderer.Draw();
 
         #region ImGui menu
         #if USE_IMGUI
@@ -63,7 +63,7 @@ public class TestRenderTargets : GameComponent {
     }
 
     public override void Dispose() {
-        this._quadRenderer.Dispose();
+        this._quadVixieRenderer.Dispose();
         this._renderTarget.Dispose();
         this._whitePixel.Dispose();
         this._don.Dispose();

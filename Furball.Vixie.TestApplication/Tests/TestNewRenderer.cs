@@ -13,7 +13,7 @@ namespace Furball.Vixie.TestApplication.Tests;
 public unsafe class TestNewRenderer : GameComponent {
     private Texture   _texture;
     private Texture[] _textureArr;
-    private Renderer _renderer;
+    private Renderer _vixieRenderer;
 
     private float   _scale = 0.5f;
     private Texture _whitePixel;
@@ -29,22 +29,22 @@ public unsafe class TestNewRenderer : GameComponent {
                 // Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
         // }
 
-        this._renderer = GraphicsBackend.Current.CreateRenderer();
+        this._vixieRenderer = new Renderer();
 
-        this._renderer.Begin();
+        this._vixieRenderer.Begin();
 
-        this._renderer.AllocateUnrotatedTexturedQuad(this._texture, new Vector2(200), new Vector2(1), Color.White);
-        this._renderer.AllocateRotatedTexturedQuad(this._texture, new Vector2(300), new Vector2(1), 1, Vector2.Zero, Color.LightBlue);
-        this._renderer.AllocateUnrotatedTexturedQuadWithSourceRect(this._texture, new Vector2(500), new Vector2(1), new Rectangle(100, 100, 200, 200), Color.GreenYellow);
-        this._renderer.AllocateRotatedTexturedQuadWithSourceRect(this._texture, new Vector2(600), new Vector2(1), 0.5f, Vector2.Zero, new Rectangle(100, 100, 200, 200), Color.Brown);
+        this._vixieRenderer.AllocateUnrotatedTexturedQuad(this._texture, new Vector2(200), new Vector2(1), Color.White);
+        this._vixieRenderer.AllocateRotatedTexturedQuad(this._texture, new Vector2(300), new Vector2(1), 1, Vector2.Zero, Color.LightBlue);
+        this._vixieRenderer.AllocateUnrotatedTexturedQuadWithSourceRect(this._texture, new Vector2(500), new Vector2(1), new Rectangle(100, 100, 200, 200), Color.GreenYellow);
+        this._vixieRenderer.AllocateRotatedTexturedQuadWithSourceRect(this._texture, new Vector2(600), new Vector2(1), 0.5f, Vector2.Zero, new Rectangle(100, 100, 200, 200), Color.Brown);
 
         for (int i = 0; i < 2000; i++) {
-            this._renderer.AllocateUnrotatedTexturedQuad(this._texture, new Vector2(i*9 % 1200, 0), new Vector2(0.05f), Color.Orange);
+            this._vixieRenderer.AllocateUnrotatedTexturedQuad(this._texture, new Vector2(i*9 % 1200, 0), new Vector2(0.05f), Color.Orange);
         }
         
-        MappedData data = this._renderer.Reserve(6, 15);
+        MappedData data = this._vixieRenderer.Reserve(6, 15);
 
-        long pentagonTex = this._renderer.GetTextureId(this._whitePixel);
+        long pentagonTex = this._vixieRenderer.GetTextureId(this._whitePixel);
         data.VertexPtr[0] = new Vertex {
             Position          = new Vector2(100, 0),
             Color             = Color.Red,
@@ -101,7 +101,7 @@ public unsafe class TestNewRenderer : GameComponent {
         data.IndexPtr[13] = (ushort)(5 + data.IndexOffset);
         data.IndexPtr[14] = (ushort)(0 + data.IndexOffset);
 
-        this._renderer.End();
+        this._vixieRenderer.End();
         
         base.Initialize();
     }
@@ -109,7 +109,7 @@ public unsafe class TestNewRenderer : GameComponent {
     public override void Draw(double deltaTime) {
         GraphicsBackend.Current.Clear();
 
-        this._renderer.Draw();
+        this._vixieRenderer.Draw();
 
         #region ImGui menu
         #if USE_IMGUI
@@ -128,7 +128,7 @@ public unsafe class TestNewRenderer : GameComponent {
     public override void Dispose() {
         this._texture.Dispose();
 
-        this._renderer.Dispose();
+        this._vixieRenderer.Dispose();
 
         base.Dispose();
     }

@@ -13,7 +13,7 @@ using Vortice.DXGI;
 
 namespace Furball.Vixie.Backends.Direct3D11;
 
-public class Direct3D11Renderer : Renderer {
+public class Direct3D11VixieRenderer : VixieRenderer {
     private readonly Direct3D11Backend _backend;
 
     private readonly ID3D11VertexShader _vertexShader;
@@ -64,7 +64,7 @@ public class Direct3D11Renderer : Renderer {
 
     private const int QUAD_AMOUNT = 256;
 
-    public unsafe Direct3D11Renderer(Direct3D11Backend backend) {
+    public unsafe Direct3D11VixieRenderer(Direct3D11Backend backend) {
         this._backend = backend;
 
         byte[] vertexShaderData = ResourceHelpers.GetByteResource(

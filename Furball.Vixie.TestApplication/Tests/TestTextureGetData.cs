@@ -22,7 +22,7 @@ public class TestTextureGetData : GameComponent {
         Effect               = FontSystemEffect.None
     });
     private DynamicSpriteFont _font;
-    private Renderer     _renderer;
+    private Renderer     _vixieRenderer;
 
     public override void Initialize() {
         base.Initialize();
@@ -53,17 +53,17 @@ public class TestTextureGetData : GameComponent {
         this._defaultFont.AddFont(ResourceHelpers.GetByteResource("Resources/font.ttf", typeof(TestGame)));
         this._font = this._defaultFont.GetFont(48);
 
-        this._renderer = GraphicsBackend.Current.CreateRenderer();
+        this._vixieRenderer = new Renderer();
         
-        this._renderer.Begin();
-        this._renderer.DrawString(this._font, $"Result: {this._testPassed}", new Vector2(10), this._testPassed ? Color.LightGreen : Color.Red);
-        this._renderer.End();
+        this._vixieRenderer.Begin();
+        this._vixieRenderer.DrawString(this._font, $"Result: {this._testPassed}", new Vector2(10), this._testPassed ? Color.LightGreen : Color.Red);
+        this._vixieRenderer.End();
     }
 
     public override void Draw(double deltaTime) {
         GraphicsBackend.Current.Clear();
 
-        this._renderer.Draw();
+        this._vixieRenderer.Draw();
         
         #region ImGui menu
         #if USE_IMGUI
@@ -81,6 +81,6 @@ public class TestTextureGetData : GameComponent {
         base.Dispose();
         
         this._defaultFont.Dispose();
-        this._renderer.Dispose();
+        this._vixieRenderer.Dispose();
     }
 }

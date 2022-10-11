@@ -260,7 +260,7 @@ public class Direct3D11Backend : GraphicsBackend {
         this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, right, bottom, 0, 1f, 0f);
     }
 
-    public override Renderer CreateRenderer() => new Direct3D11Renderer(this);
+    public override VixieRenderer CreateRenderer() => new Direct3D11VixieRenderer(this);
 
     public override int QueryMaxTextureUnits() {
         return 128;

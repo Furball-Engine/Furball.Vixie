@@ -1,3 +1,4 @@
+using System;
 using System.Numerics;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Renderers;
@@ -10,7 +11,7 @@ namespace Furball.Vixie.TestApplication.Tests;
 
 public class TestMultipleTextures : GameComponent {
     private Texture[]     _textures = new Texture[32];
-    private Renderer _renderer;
+    private Renderer _vixieRenderer;
 
     private float _scale = 0.5f;
         
@@ -21,7 +22,7 @@ public class TestMultipleTextures : GameComponent {
             else this._textures[i] = Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/test.qoi", typeof(TestGame)));
         }
 
-        this._renderer = GraphicsBackend.Current.CreateRenderer();
+        this._vixieRenderer = new Renderer();
 
         base.Initialize();
     }
@@ -29,13 +30,13 @@ public class TestMultipleTextures : GameComponent {
     public override void Draw(double deltaTime) {
         GraphicsBackend.Current.Clear();
 
-        this._renderer.Begin();
+        this._vixieRenderer.Begin();
 
         int x = 0;
         int y = 0;
 
         for (int i = 0; i != this._textures.Length; i++) {
-            this._renderer.AllocateUnrotatedTexturedQuad(this._textures[i], new Vector2(x, y), new Vector2(this._scale), i % 2 == 0 ? Color.White : new(1f, 1f, 1f, 0.7f), i % 4 == 0 ? TextureFlip.FlipHorizontal : TextureFlip.FlipVertical);
+            this._vixieRenderer.AllocateUnrotatedTexturedQuad(this._textures[i], new Vector2(x, y), new Vector2(this._scale), i % 2 == 0 ? Color.White : new(1f, 1f, 1f, 0.7f), i % 4 == 0 ? TextureFlip.FlipHorizontal : TextureFlip.FlipVertical);
             
             if (i % 3 == 0 && i != 0) {
                 y += 64;
@@ -45,9 +46,9 @@ public class TestMultipleTextures : GameComponent {
             x += 256;
         }
 
-        this._renderer.End();
+        this._vixieRenderer.End();
         
-        this._renderer.Draw();
+        this._vixieRenderer.Draw();
 
         #region ImGui menu
         #if USE_IMGUI
@@ -67,7 +68,7 @@ public class TestMultipleTextures : GameComponent {
         for(int i = 0; i != this._textures.Length; i++)
             this._textures[i].Dispose();
 
-        this._renderer.Dispose();
+        this._vixieRenderer.Dispose();
 
         base.Dispose();
     }

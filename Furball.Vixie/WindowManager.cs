@@ -200,7 +200,14 @@ public class WindowManager : IDisposable {
     }
 
     public void Close() {
-        this.GameView.Close();
+        if (this.GameWindow is not null) {
+            this.GameWindow.Close();
+            this.GameWindow.Dispose();
+        }
+        else {
+            this.GameView.Close();
+            this.GameView.Dispose();
+        }    
     }
 
     public event EventHandler<Vector2> OnFramebufferResize;

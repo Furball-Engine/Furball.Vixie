@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.Shared;
 using Kettu;
 using Silk.NET.Maths;
@@ -29,6 +30,11 @@ public sealed class DummyTexture : VixieTexture {
     }
     public override VixieTexture SetData <pT>(ReadOnlySpan<pT> data) {
         // throw new NotImplementedException();
+        this.Data = new Rgba32[data.Length];
+        
+        ReadOnlySpan<Rgba32> rgba32 = MemoryMarshal.Cast<pT, Rgba32>(data);
+        rgba32.CopyTo(this.Data);
+        
         return this;
     }
     public override VixieTexture SetData <pT>(ReadOnlySpan<pT> data, Rectangle rect) {

@@ -15,7 +15,7 @@ using Silk.NET.OpenGL.Legacy;
 
 namespace Furball.Vixie.Backends.OpenGL;
 
-public class FixedFunctionOpenGLRenderer : Renderer {
+public class FixedFunctionOpenGlVixieRenderer : VixieRenderer {
     private readonly OpenGLBackend _backend;
     private readonly GL            _gl;
 
@@ -25,7 +25,7 @@ public class FixedFunctionOpenGLRenderer : Renderer {
     
     private List<MappedData> _mappedDataList = new List<MappedData>(1);
 
-    public FixedFunctionOpenGLRenderer(OpenGLBackend backend) {
+    public FixedFunctionOpenGlVixieRenderer(OpenGLBackend backend) {
         this._backend = backend;
 
         this._gl = backend.GetLegacyGl();

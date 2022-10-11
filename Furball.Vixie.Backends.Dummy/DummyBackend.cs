@@ -32,8 +32,8 @@ public class DummyBackend : GraphicsBackend {
     public override void HandleFramebufferResize(int width, int height) {
         // throw new System.NotImplementedException();
     }
-    public override Renderer CreateRenderer() {
-        return new DummyRenderer(this);
+    public override VixieRenderer CreateRenderer() {
+        return new DummyVixieRenderer(this);
     }
     public override int QueryMaxTextureUnits() {
         return 1;

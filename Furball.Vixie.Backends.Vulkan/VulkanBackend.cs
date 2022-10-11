@@ -844,7 +844,7 @@ public unsafe class VulkanBackend : GraphicsBackend {
 
     public override void HandleFramebufferResize(int width, int height) {}
 
-    public override Renderer CreateRenderer() => throw new NotImplementedException();
+    public override VixieRenderer CreateRenderer() => throw new NotImplementedException();
 
 
     public override int QueryMaxTextureUnits() => throw new NotImplementedException();

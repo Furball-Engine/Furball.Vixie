@@ -141,6 +141,7 @@ public class Texture : IDisposable {
 
     internal void DisposeInternal() {
         this._texture.Dispose();
+        GC.SuppressFinalize(this._texture);
     }
     
     internal void SaveDataToCpu() {

@@ -13,7 +13,7 @@ using Veldrid.SPIRV;
 
 namespace Furball.Vixie.Backends.Veldrid; 
 
-public unsafe class RendererVeldrid : Renderer {
+public unsafe class VixieRendererVeldrid : VixieRenderer {
     private readonly VeldridBackend _backend;
     
     private readonly VeldridBufferMapper _vtxMapper;
@@ -53,7 +53,7 @@ public unsafe class RendererVeldrid : Renderer {
 
     private List<RenderBuffer> _renderBuffers = new();
     
-    public RendererVeldrid(VeldridBackend backend) {
+    public VixieRendererVeldrid(VeldridBackend backend) {
         this._backend = backend;
 
         this._vtxMapper = new VeldridBufferMapper(backend, (uint)(QUAD_COUNT * 4 * sizeof(Vertex)), BufferUsage.VertexBuffer);

@@ -251,7 +251,7 @@ public class VeldridBackend : GraphicsBackend {
 
         this.SetFullScissorRect();
     }
-    public override Renderer CreateRenderer() => new RendererVeldrid(this);
+    public override VixieRenderer CreateRenderer() => new VixieRendererVeldrid(this);
 
     public const int MAX_TEXTURE_UNITS = 4;
         

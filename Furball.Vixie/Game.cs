@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using Furball.Vixie.Backends.Shared.Backends;
+using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers;
 using JetBrains.Annotations;
 using Kettu;
@@ -187,13 +188,12 @@ public abstract class Game : IDisposable {
             this.Initialize();
 
         if (this._isRecreated) {
-            //TODO: live backend switching for new renderer
-            // foreach (WeakReference<Renderer> rendererRef in Global.TRACKED_RENDERERS) {
-            //     if (rendererRef.TryGetTarget(out Renderer renderer)) {
-            //         renderer.Recreate();
-            //         GC.ReRegisterForFinalize(renderer);
-            //     }
-            // }
+            foreach (WeakReference<Renderer> rendererRef in Global.TrackedRenderers) {
+                if (rendererRef.TryGetTarget(out Renderer renderer)) {
+                    renderer.Recreate();
+                    GC.ReRegisterForFinalize(renderer);
+                }
+            }
             
             foreach (WeakReference<Texture> texRef in Global.TrackedTextures) {
                 if (texRef.TryGetTarget(out Texture tex)) {
@@ -282,8 +282,10 @@ public abstract class Game : IDisposable {
     private void VixieUpdate(object sender, double deltaTime) {
         if (this._recreateQueued) {
             // if(this.EventLoop is HeadlessEventLoop)
-                // Guard.Fail("Window recreation is not save on the headless event loop");
+            // Guard.Fail("Window recreation is not save on the headless event loop");
             
+            EventLoop old = this.EventLoop;
+
             this._recreateQueued = false;
             
             //Unhook the closing event
@@ -292,12 +294,12 @@ public abstract class Game : IDisposable {
             
             this._isRecreated = true;
 
-            // foreach (WeakReference<Renderer> rendererRef in Global.TRACKED_RENDERERS) {
-            //     if (rendererRef.TryGetTarget(out Renderer renderer)) {
-            //         renderer.DisposeInternal();
-            //         GC.SuppressFinalize(renderer);
-            //     }
-            // }
+            foreach (WeakReference<Renderer> rendererRef in Global.TrackedRenderers) {
+                if (rendererRef.TryGetTarget(out Renderer renderer)) {
+                    renderer.DisposeInternal();
+                    GC.SuppressFinalize(renderer);
+                }
+            }
             
             foreach (WeakReference<Texture> texRef in Global.TrackedTextures) {
                 if (texRef.TryGetTarget(out Texture tex)) {
@@ -314,11 +316,17 @@ public abstract class Game : IDisposable {
                     GC.SuppressFinalize(target);
                 }
             }
-            
+
             GraphicsBackend.Current.Cleanup();
-            this.WindowManager.Close();
-        
-            this.WindowManager.Create();
+            
+            old.Close();
+
+            if (this.EventLoop is ViewEventLoop viewEventLoop) {
+                viewEventLoop.WindowManager = this.WindowManager;
+                
+                this.WindowManager.Create();
+            }
+
             this.RehookEvents();
 
             return;

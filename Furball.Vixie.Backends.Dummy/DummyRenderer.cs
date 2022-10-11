@@ -8,9 +8,9 @@ using Silk.NET.Core.Native;
 
 namespace Furball.Vixie.Backends.Dummy;
 
-public class DummyRenderer : Renderer {
+public class DummyVixieRenderer : VixieRenderer {
     private unsafe void* _dataHandle;
-    public DummyRenderer(DummyBackend backend) {
+    public DummyVixieRenderer(DummyBackend backend) {
         this.FontRenderer = new VixieFontStashRenderer(backend, this);
         
         Logger.Log("Creating Dummy renderer!", LoggerLevelDummy.InstanceInfo);

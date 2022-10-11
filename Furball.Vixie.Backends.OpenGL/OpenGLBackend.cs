@@ -399,6 +399,7 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     ///     Used to Cleanup the Backend
     /// </summary>
     public override void Cleanup() {
+        this.Shader.Dispose();
         this.gl.Dispose();
     }
     /// <summary>
@@ -460,9 +461,9 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
         //and Nvidia has not updated the NVX_gpu_memory_info to the modern core profile
         0;
     public override ulong    GetTotalVram()   => 0;
-    public override Renderer CreateRenderer() => this.FixedFunctionPipeline.Boolean 
-        ? new FixedFunctionOpenGLRenderer(this) 
-        : new OpenGlRenderer(this);
+    public override VixieRenderer CreateRenderer() => this.FixedFunctionPipeline.Boolean 
+        ? new FixedFunctionOpenGlVixieRenderer(this) 
+        : new OpenGlVixieRenderer(this);
     /// <summary>
     ///     Gets the Amount of Texture Units available for use
     /// </summary>

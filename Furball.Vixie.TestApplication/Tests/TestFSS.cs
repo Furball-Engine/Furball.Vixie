@@ -12,7 +12,7 @@ using ImGuiNET;
 namespace Furball.Vixie.TestApplication.Tests; 
 
 public class TestFSS : GameComponent {
-    private Renderer     _renderer;
+    private Renderer     _vixieRenderer;
     private DynamicSpriteFont _font;
 
     private readonly FontSystem _defaultFont = new(new FontSystemSettings {
@@ -26,7 +26,7 @@ public class TestFSS : GameComponent {
         this._defaultFont.AddFont(ResourceHelpers.GetByteResource("Resources/font.ttf", typeof(TestGame)));
         this._font = this._defaultFont.GetFont(48);
 
-        this._renderer = GraphicsBackend.Current.CreateRenderer();
+        this._vixieRenderer = new Renderer();
 
         RichTextDefaults.FontResolver = s => {
             return int.TryParse(s, out int size) 
@@ -49,14 +49,14 @@ public class TestFSS : GameComponent {
     public override void Draw(double deltaTime) {
         GraphicsBackend.Current.Clear();
 
-        this._renderer.Begin();
-        this._rtl.Draw(this._renderer.FontRenderer, new Vector2(10), Color.White);
-        this._renderer.DrawString(this._font, "VixieFontStashSharpRenderer Testing",                new Vector2(10,  100), Color.White,      this._rotation,                         new Vector2(_scale), new Vector2(-50));
-        this._renderer.DrawString(this._font, "More Quite Long Text, Foxes Are Cute",               new Vector2(10,  200), Color.LightBlue,  (float)(2f * Math.PI - this._rotation), new Vector2(_scale));
-        this._renderer.DrawString(this._font, "Did You Know That A Bee Should Not Be Able To Fly?", new Vector2(500, 300), Color.LightGreen, (float)(Math.PI - this._rotation),       new Vector2(_scale));
-        this._renderer.End();
+        this._vixieRenderer.Begin();
+        this._rtl.Draw(this._vixieRenderer.FontRenderer, new Vector2(10), Color.White);
+        this._vixieRenderer.DrawString(this._font, "VixieFontStashSharpRenderer Testing",                new Vector2(10,  100), Color.White,      this._rotation,                         new Vector2(_scale), new Vector2(-50));
+        this._vixieRenderer.DrawString(this._font, "More Quite Long Text, Foxes Are Cute",               new Vector2(10,  200), Color.LightBlue,  (float)(2f * Math.PI - this._rotation), new Vector2(_scale));
+        this._vixieRenderer.DrawString(this._font, "Did You Know That A Bee Should Not Be Able To Fly?", new Vector2(500, 300), Color.LightGreen, (float)(Math.PI - this._rotation),       new Vector2(_scale));
+        this._vixieRenderer.End();
         
-        this._renderer.Draw();
+        this._vixieRenderer.Draw();
 
         #region ImGui menu
         #if USE_IMGUI
@@ -75,7 +75,7 @@ public class TestFSS : GameComponent {
 
     public override void Dispose() {
         this._defaultFont.Dispose();
-        this._renderer.Dispose();
+        this._vixieRenderer.Dispose();
 
         base.Dispose();
     }

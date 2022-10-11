@@ -43,8 +43,8 @@ public unsafe class MolaBackend : GraphicsBackend {
             Furball.Mola.Bindings.Mola.CreateRenderBitmap((uint)width, (uint)height, PixelType.Rgba32);
     }
 
-    public override Renderer CreateRenderer() {
-        return new MolaRenderer(this);
+    public override VixieRenderer CreateRenderer() {
+        return new MolaVixieRenderer(this);
     }
 
     public override int QueryMaxTextureUnits() {

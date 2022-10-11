@@ -23,9 +23,9 @@ public static class RendererExtensions {
         return vec;
     }
 
-    private static unsafe void SetQuadVertices(Renderer     renderer, Vertex* ptr,   Vector2     pos, Vector2 size,
+    private static unsafe void SetQuadVertices(Renderer     Renderer, Vertex* ptr,   Vector2     pos, Vector2 size,
                                                VixieTexture tex,      Color   color, TextureFlip flip) {
-        long texId = renderer.GetTextureId(tex);
+        long texId = Renderer.GetTextureId(tex);
         ptr[0].Position          = pos;
         ptr[0].Color             = color;
         ptr[0].TextureCoordinate = FlipVector2(new Vector2(0, tex.InternalFlip ? 1 : 0), flip);
@@ -62,18 +62,18 @@ public static class RendererExtensions {
         mappedData.IndexPtr[5] = (ushort)(0 + mappedData.IndexOffset);
     }
 
-    public static unsafe void AllocateUnrotatedTexturedQuad(this Renderer renderer, VixieTexture tex, Vector2 position,
+    public static unsafe void AllocateUnrotatedTexturedQuad(this Renderer Renderer, VixieTexture tex, Vector2 position,
                                                             Vector2       scale,    Color        color,
                                                             TextureFlip   flip = TextureFlip.None) {
         Vector2 size = new(tex.Width * scale.X, tex.Height * scale.Y);
 
-        MappedData mappedData = renderer.Reserve(4, 6);
+        MappedData mappedData = Renderer.Reserve(4, 6);
 
-        SetQuadVertices(renderer, mappedData.VertexPtr, position, size, tex, color, flip);
+        SetQuadVertices(Renderer, mappedData.VertexPtr, position, size, tex, color, flip);
         SetQuadIndices(mappedData);
     }
 
-    public static unsafe void AllocateUnrotatedTexturedQuadWithSourceRect(this Renderer renderer, VixieTexture tex,
+    public static unsafe void AllocateUnrotatedTexturedQuadWithSourceRect(this Renderer Renderer, VixieTexture tex,
                                                                           Vector2       position,
                                                                           Vector2       scale, Rectangle sourceRect,
                                                                           Color         color,
@@ -83,8 +83,8 @@ public static class RendererExtensions {
         if (tex.InternalFlip)
             sourceRect.Height *= -1;
 
-        MappedData mappedData = renderer.Reserve(4, 6);
-        SetQuadVertices(renderer, mappedData.VertexPtr, position, size, tex, color, flip);
+        MappedData mappedData = Renderer.Reserve(4, 6);
+        SetQuadVertices(Renderer, mappedData.VertexPtr, position, size, tex, color, flip);
         mappedData.VertexPtr[0].TextureCoordinate =
             FlipVector2(new Vector2(sourceRect.X / (float)tex.Width, sourceRect.Y / (float)tex.Height), flip);
         mappedData.VertexPtr[1].TextureCoordinate =
@@ -97,34 +97,34 @@ public static class RendererExtensions {
         SetQuadIndices(mappedData);
     }
 
-    public static unsafe void AllocateRotatedTexturedQuad(this Renderer renderer, VixieTexture tex, Vector2 position,
+    public static unsafe void AllocateRotatedTexturedQuad(this Renderer Renderer, VixieTexture tex, Vector2 position,
                                                           Vector2       scale, float rotation, Vector2 rotationOrigin,
                                                           Color         color, TextureFlip flip = TextureFlip.None) {
         Vector2 size = new(tex.Width * scale.X, tex.Height * scale.Y);
 
-        MappedData mappedData = renderer.Reserve(4, 6);
+        MappedData mappedData = Renderer.Reserve(4, 6);
         mappedData.VertexPtr[0].Position          = Vector2.Zero;
         mappedData.VertexPtr[0].Color             = color;
-        mappedData.VertexPtr[0].TexId             = renderer.GetTextureId(tex);
+        mappedData.VertexPtr[0].TexId             = Renderer.GetTextureId(tex);
         mappedData.VertexPtr[0].TextureCoordinate = FlipVector2(new Vector2(0, 0), flip);
 
         mappedData.VertexPtr[1].Position = size with {
             Y = 0
         };
         mappedData.VertexPtr[1].Color             = color;
-        mappedData.VertexPtr[1].TexId             = renderer.GetTextureId(tex);
+        mappedData.VertexPtr[1].TexId             = Renderer.GetTextureId(tex);
         mappedData.VertexPtr[1].TextureCoordinate = FlipVector2(new Vector2(1, 0), flip);
 
         mappedData.VertexPtr[2].Position          = size;
         mappedData.VertexPtr[2].Color             = color;
-        mappedData.VertexPtr[2].TexId             = renderer.GetTextureId(tex);
+        mappedData.VertexPtr[2].TexId             = Renderer.GetTextureId(tex);
         mappedData.VertexPtr[2].TextureCoordinate = FlipVector2(new Vector2(1, 1), flip);
 
         mappedData.VertexPtr[3].Position = size with {
             X = 0
         };
         mappedData.VertexPtr[3].Color             = color;
-        mappedData.VertexPtr[3].TexId             = renderer.GetTextureId(tex);
+        mappedData.VertexPtr[3].TexId             = Renderer.GetTextureId(tex);
         mappedData.VertexPtr[3].TextureCoordinate = FlipVector2(new Vector2(0, 1), flip);
 
         Matrix4x4 rotMat = Matrix4x4.CreateRotationZ(rotation);
@@ -147,7 +147,7 @@ public static class RendererExtensions {
         SetQuadIndices(mappedData);
     }
 
-    public static unsafe void AllocateRotatedTexturedQuadWithSourceRect(this Renderer renderer, VixieTexture tex,
+    public static unsafe void AllocateRotatedTexturedQuadWithSourceRect(this Renderer Renderer, VixieTexture tex,
                                                                         Vector2       position,
                                                                         Vector2       scale, float rotation,
                                                                         Vector2       rotationOrigin,
@@ -158,11 +158,11 @@ public static class RendererExtensions {
         if (tex.InternalFlip)
             sourceRect.Height *= -1;
 
-        MappedData mappedData = renderer.Reserve(4, 6);
+        MappedData mappedData = Renderer.Reserve(4, 6);
         mappedData.VertexPtr[0] = new Vertex {
             Position = Vector2.Zero,
             Color    = color,
-            TexId    = renderer.GetTextureId(tex),
+            TexId    = Renderer.GetTextureId(tex),
             TextureCoordinate =
                 FlipVector2(new Vector2(sourceRect.X / (float)tex.Width, sourceRect.Y / (float)tex.Height), flip)
         };
@@ -171,14 +171,14 @@ public static class RendererExtensions {
                 Y = 0
             },
             Color = color,
-            TexId = renderer.GetTextureId(tex),
+            TexId = Renderer.GetTextureId(tex),
             TextureCoordinate =
                 FlipVector2(new Vector2(sourceRect.Right / (float)tex.Width, sourceRect.Y / (float)tex.Height), flip)
         };
         mappedData.VertexPtr[2] = new Vertex {
             Position = size,
             Color    = color,
-            TexId    = renderer.GetTextureId(tex),
+            TexId    = Renderer.GetTextureId(tex),
             TextureCoordinate =
                 FlipVector2(new Vector2(sourceRect.Right / (float)tex.Width, sourceRect.Bottom / (float)tex.Height),
                             flip)
@@ -188,7 +188,7 @@ public static class RendererExtensions {
                 X = 0
             },
             Color = color,
-            TexId = renderer.GetTextureId(tex),
+            TexId = Renderer.GetTextureId(tex),
             TextureCoordinate =
                 FlipVector2(new Vector2(sourceRect.X / (float)tex.Width, sourceRect.Bottom / (float)tex.Height), flip)
         };
@@ -213,14 +213,14 @@ public static class RendererExtensions {
         SetQuadIndices(mappedData);
     }
 
-    public static void DrawString(this Renderer renderer, DynamicSpriteFont font,
+    public static void DrawString(this Renderer Renderer, DynamicSpriteFont font,
                                   string        text,     Vector2           position, Color   color, float rotation,
                                   Vector2 scale, Vector2 origin = default(Vector2), TextStyle style = TextStyle.None,
                                   FontSystemEffect effect = FontSystemEffect.None, int effectAmount = 0
     ) {
-        Guard.EnsureNonNull(renderer.FontRenderer, "renderer.FontRenderer");
+        Guard.EnsureNonNull(Renderer.FontRenderer, "renderer.FontRenderer");
 
-        font.DrawText(renderer.FontRenderer, text, position,
+        font.DrawText(Renderer.FontRenderer, text, position,
                       color,
                       scale,
                       rotation,
@@ -233,24 +233,24 @@ public static class RendererExtensions {
                       effectAmount
         );
     }
-    public static void DrawString(this Renderer    renderer, DynamicSpriteFont font, string text, Vector2 position,
+    public static void DrawString(this Renderer    Renderer, DynamicSpriteFont font, string text, Vector2 position,
                                   Color            color,    TextStyle         style = TextStyle.None,
                                   FontSystemEffect effect = FontSystemEffect.None
     ) {
-        Guard.EnsureNonNull(renderer.FontRenderer, "renderer.FontRenderer");
+        Guard.EnsureNonNull(Renderer.FontRenderer, "renderer.FontRenderer");
 
-        font.DrawText(renderer.FontRenderer, text, position,
+        font.DrawText(Renderer.FontRenderer, text, position,
                       color);
     }
-    public static void DrawString(this Renderer renderer, DynamicSpriteFont font, string text, Vector2 position,
+    public static void DrawString(this Renderer Renderer, DynamicSpriteFont font, string text, Vector2 position,
                                   FSColor[]     colors, float rotation, Vector2? scale, Vector2 origin,
                                   TextStyle     style = TextStyle.None, FontSystemEffect effect = FontSystemEffect.None,
                                   int           effectAmount = 0
     ) {
-        Guard.EnsureNonNull(renderer.FontRenderer, "renderer.FontRenderer");
+        Guard.EnsureNonNull(Renderer.FontRenderer, "renderer.FontRenderer");
 
         font.DrawText(
-        renderer.FontRenderer,
+        Renderer.FontRenderer,
         text,
         position,
         colors,
