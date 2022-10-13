@@ -39,9 +39,9 @@ public class TestGame : Game {
         base.Initialize();
     }
 
-    private       double updateDelta = 5f;
-    private const double UPDATE_RATE = 1f;
-    private       long   alloccedMemory;
+    private       double _updateDelta;
+    private const double UPDATE_RATE = 1000f;
+    private       long   _alloccedMemory;
         
     public void Run(Backend backend = Backend.None) {
         var options = WindowOptions.Default;
@@ -72,15 +72,15 @@ public class TestGame : Game {
         );
 #endif
 
-        this.updateDelta += deltaTime;
+        this._updateDelta += deltaTime;
 
-        if (this.updateDelta > UPDATE_RATE) {
-            this.alloccedMemory = GC.GetTotalMemory(true);
-            this.updateDelta    = 0;
+        if (this._updateDelta > UPDATE_RATE) {
+            this._alloccedMemory = GC.GetTotalMemory(true);
+            this._updateDelta    -= UPDATE_RATE;
         }
     
 #if USE_IMGUI
-        ImGui.Text($"RAM Usage: {this.alloccedMemory}");
+        ImGui.Text($"RAM Usage: {this._alloccedMemory}");
             
         if (ImGui.Button("Take Screenshot")) {
             GraphicsBackend.Current.TakeScreenshot();

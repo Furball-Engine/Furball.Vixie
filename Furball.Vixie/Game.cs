@@ -326,7 +326,7 @@ public abstract class Game : IDisposable {
             return;
         }
         
-        this.Update(deltaTime);
+        this.Update(deltaTime * 1000);
     }
     
     /// <summary>
@@ -342,11 +342,11 @@ public abstract class Game : IDisposable {
     [Conditional("DEBUG")]
     private void CheckForInvalidTrackerResourceReferences(double deltaTime) {
         this._trackedDelta += deltaTime;
-        if (this._trackedDelta > 5) {
+        if (this._trackedDelta > 5000) {
             Global.TrackedTextures.RemoveAll(x => !x.TryGetTarget(out _));
             Global.TrackedRenderTargets.RemoveAll(x => !x.TryGetTarget(out _));
 
-            this._trackedDelta = 0;
+            this._trackedDelta -= 5000;
         }
     }
 
@@ -371,9 +371,9 @@ public abstract class Game : IDisposable {
             this.DrawLoadingScreen();
             this._doDisplayLoadingScreen = false;
         } else {
-            this.PreDraw(deltaTime);
-            this.Draw(deltaTime);
-            this.PostDraw(deltaTime);
+            this.PreDraw(deltaTime * 1000);
+            this.Draw(deltaTime * 1000);
+            this.PostDraw(deltaTime * 1000);
         }
 #if USE_IMGUI
         if (!this._isFirstImguiUpdate)
