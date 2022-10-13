@@ -25,10 +25,6 @@ public abstract class Game : IDisposable {
     /// Window Manager, handles everything Window Related, from Creation to the Window Projection Matrix
     /// </summary>
     public WindowManager WindowManager { get; internal set;}
-    /// <summary>
-    /// All of the Game Components
-    /// </summary>
-    public GameComponentCollection Components { get; internal set;}
 
     public event EventHandler WindowRecreation;
     
@@ -80,8 +76,6 @@ public abstract class Game : IDisposable {
         this.RehookEvents();
             
         Global.GameInstance = this;
-
-        this.Components = new GameComponentCollection();
 
         Logger.AddLogger(new ConsoleLogger());
             
@@ -340,8 +334,6 @@ public abstract class Game : IDisposable {
     /// </summary>
     /// <param name="deltaTime">Delta Time</param>
     protected virtual void Update(double deltaTime) {
-        this.Components.Update(deltaTime);
-
         DisposeQueue.DoDispose();
 
         this.CheckForInvalidTrackerResourceReferences(deltaTime);
@@ -408,14 +400,13 @@ public abstract class Game : IDisposable {
     /// </summary>
     /// <param name="deltaTime"></param>
     protected virtual void Draw(double deltaTime) {
-        this.Components.Draw(deltaTime);
+        
     }
     protected virtual void DrawLoadingScreen() {}
     /// <summary>
     /// Dispose any IDisposables and other things left to clean up here
     /// </summary>
     public virtual void Dispose() {
-        this.Components.Dispose();
         this._stopwatch.Stop();
         DisposeQueue.DisposeAll();
     }
