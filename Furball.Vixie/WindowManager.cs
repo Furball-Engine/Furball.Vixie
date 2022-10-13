@@ -43,18 +43,12 @@ public class WindowManager : IDisposable {
     
     public bool Fullscreen {
         get {
-            if (Global.GameInstance.EventLoop is not ViewEventLoop)
-                return false;
-            
             if (this.ViewOnly)
                 throw new NotSupportedException("No fullscreen on view only platforms!");
 
             return this.GameWindow.WindowState == WindowState.Fullscreen;
         }
         set {
-            if (Global.GameInstance.EventLoop is not ViewEventLoop)
-                return;
-            
             if (this.ViewOnly)
                 throw new NotSupportedException("No fullscreen on view only platforms!");
 
@@ -64,18 +58,12 @@ public class WindowManager : IDisposable {
 
     public bool Minimized {
         get {
-            if (Global.GameInstance.EventLoop is not ViewEventLoop)
-                return false;
-
             if (this.ViewOnly)
                 throw new NotSupportedException("No minimization on view only platforms!");
 
             return this.GameWindow.WindowState == WindowState.Minimized;
         }
         set {
-            if (Global.GameInstance.EventLoop is not ViewEventLoop)
-                return;
-
             if (this.ViewOnly)
                 throw new NotSupportedException("No minimization on view only platforms!");
 
@@ -100,9 +88,6 @@ public class WindowManager : IDisposable {
     public IMonitor Monitor => this.ViewOnly ? null : this.GameWindow.Monitor;
 
     public void SetWindowSize(int width, int height) {
-        if (Global.GameInstance.EventLoop is not ViewEventLoop)
-            return;
-        
         if (ViewOnly)
             throw new NotSupportedException("You cant set window size on a view only platform!");
             
