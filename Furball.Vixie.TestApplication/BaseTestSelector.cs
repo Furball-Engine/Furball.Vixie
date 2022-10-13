@@ -6,7 +6,7 @@ using ImGuiNET;
 
 namespace Furball.Vixie.TestApplication; 
 
-public class BaseTestSelector : GameComponent {
+public class BaseTestSelector : Screen {
     public override void Draw(double deltaTime) {
         GraphicsBackend.Current.Clear();
 
@@ -14,53 +14,43 @@ public class BaseTestSelector : GameComponent {
         ImGui.Begin("Test Selector");
         
         if (ImGui.Button("Batched Rendering Test")) {
-            this.BaseGame.Components.Add(new TestQuadRendering());
-            this.BaseGame.Components.Remove(this);
+            TestGame.Instance.ChangeScreen(new TestQuadRendering());
         }
 
         if (ImGui.Button("TextureRenderTarget Test")) {
-            this.BaseGame.Components.Add(new TestRenderTargets());
-            this.BaseGame.Components.Remove(this);
+            TestGame.Instance.ChangeScreen(new TestRenderTargets());
         }
             
         if (ImGui.Button("Rotation Test")) {
-            this.BaseGame.Components.Add(new TestRotation());
-            this.BaseGame.Components.Remove(this);
+            TestGame.Instance.ChangeScreen(new TestRotation());
         }
             
         if (ImGui.Button("Source Rectangle Rendering Test")) {
-            this.BaseGame.Components.Add(new TestSourceRect());
-            this.BaseGame.Components.Remove(this);
+            TestGame.Instance.ChangeScreen(new TestSourceRect());
         }
             
         if (ImGui.Button("FontStashSharp Test")) {
-            this.BaseGame.Components.Add(new TestFSS());
-            this.BaseGame.Components.Remove(this);
+            TestGame.Instance.ChangeScreen(new TestFSS());
         }
             
         if (ImGui.Button("Multiple Textures Test")) {
-            this.BaseGame.Components.Add(new TestMultipleTextures());
-            this.BaseGame.Components.Remove(this);
+            TestGame.Instance.ChangeScreen(new TestMultipleTextures());
         }
         
         if (ImGui.Button("Filtering Mode Test")) {
-            this.BaseGame.Components.Add(new TestFilteringMode());
-            this.BaseGame.Components.Remove(this);
+            TestGame.Instance.ChangeScreen(new TestFilteringMode());
         }
 
         if (ImGui.Button("Test Texture.GetData")) {
-            this.BaseGame.Components.Add(new TestTextureGetData());
-            this.BaseGame.Components.Remove(this);
+            TestGame.Instance.ChangeScreen(new TestTextureGetData());
         }
         
         if (ImGui.Button("Test New Renderer")) {
-            this.BaseGame.Components.Add(new TestNewRenderer());
-            this.BaseGame.Components.Remove(this);
+            TestGame.Instance.ChangeScreen(new TestNewRenderer());
         }
         
         if (ImGui.Button("Empty Screen")) {
-            this.BaseGame.Components.Add(new TestEmptyScreen());
-            this.BaseGame.Components.Remove(this);
+            TestGame.Instance.ChangeScreen(new TestEmptyScreen());
         }
         
         ImGui.End();

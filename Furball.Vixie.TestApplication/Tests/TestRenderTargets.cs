@@ -9,7 +9,7 @@ using ImGuiNET;
 
 namespace Furball.Vixie.TestApplication.Tests; 
 
-public class TestRenderTargets : GameComponent {
+public class TestRenderTargets : Screen {
     private RenderTarget _renderTarget;
     private Renderer     _quadVixieRenderer;
     private Texture      _whitePixel;
@@ -53,8 +53,7 @@ public class TestRenderTargets : GameComponent {
         #if USE_IMGUI
         ImGui.SliderFloat("Final Texture Scale", ref this._scale, 0f, 2f);
         if (ImGui.Button("Go back to test selector")) {
-            this.BaseGame.Components.Add(new BaseTestSelector());
-            this.BaseGame.Components.Remove(this);
+            TestGame.Instance.ChangeScreen(new BaseTestSelector());
         }
         #endif
         #endregion

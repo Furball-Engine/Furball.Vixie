@@ -10,7 +10,7 @@ using Color = Furball.Vixie.Backends.Shared.Color;
 
 namespace Furball.Vixie.TestApplication.Tests; 
 
-public unsafe class TestNewRenderer : GameComponent {
+public unsafe class TestNewRenderer : Screen {
     private Texture   _texture;
     private Texture[] _textureArr;
     private Renderer _vixieRenderer;
@@ -116,8 +116,7 @@ public unsafe class TestNewRenderer : GameComponent {
         ImGui.SliderFloat("Texture Scale", ref this._scale, 0f, 20f);
 
         if (ImGui.Button("Go back to test selector")) {
-            this.BaseGame.Components.Add(new BaseTestSelector());
-            this.BaseGame.Components.Remove(this);
+            TestGame.Instance.ChangeScreen(new BaseTestSelector());
         }
         #endif
         #endregion

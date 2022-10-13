@@ -8,7 +8,7 @@ using ImGuiNET;
 
 namespace Furball.Vixie.TestApplication.Tests; 
 
-public class TestFilteringMode : GameComponent {
+public class TestFilteringMode : Screen {
     private Texture _pixelatedTexture;
     private Texture _smoothTexture;
 
@@ -38,8 +38,7 @@ public class TestFilteringMode : GameComponent {
         #region ImGui menu
         #if USE_IMGUI
         if (ImGui.Button("Go back to test selector")) {
-            this.BaseGame.Components.Add(new BaseTestSelector());
-            this.BaseGame.Components.Remove(this);
+            TestGame.Instance.ChangeScreen(new BaseTestSelector());
         }
         #endif
         #endregion

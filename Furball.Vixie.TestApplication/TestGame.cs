@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Globalization;
 using Furball.Vixie.Backends.Shared.Backends;
@@ -13,13 +14,22 @@ namespace Furball.Vixie.TestApplication;
 
 public class TestGame : Game {
     public TestGame() {}
-
+    
     public static TestGame Instance;
+
+    private Screen? _runningScreen;
+    public void ChangeScreen(Screen screen) {
+        this._runningScreen?.Dispose();
+        
+        screen.Initialize();
+
+        this._runningScreen = screen;
+    }
     
     protected override void Initialize() {
         Instance = this;
         
-        this.Components.Add(new BaseTestSelector());
+        this.ChangeScreen(new BaseTestSelector());
 
         GraphicsBackend.Current.ScreenshotTaken += delegate(object _, Image image) {
             Logger.Log("Writing screenshot!", LoggerLevelImageLoader.Instance);
@@ -45,7 +55,15 @@ public class TestGame : Game {
         base.RunHeadless();
     }
 
+    protected override void Update(double deltaTime) {
+        this._runningScreen?.Update(deltaTime);
+        
+        base.Update(deltaTime);
+    }
+
     protected override void Draw(double deltaTime) {
+        this._runningScreen?.Draw(deltaTime);
+        
 #if USE_IMGUI
         ImGui.Begin("Global Controls");
             

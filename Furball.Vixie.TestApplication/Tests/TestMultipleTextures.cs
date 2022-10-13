@@ -9,7 +9,7 @@ using ImGuiNET;
 
 namespace Furball.Vixie.TestApplication.Tests; 
 
-public class TestMultipleTextures : GameComponent {
+public class TestMultipleTextures : Screen {
     private Texture[]     _textures = new Texture[32];
     private Renderer _vixieRenderer;
 
@@ -55,8 +55,7 @@ public class TestMultipleTextures : GameComponent {
         ImGui.SliderFloat("Texture Scale", ref this._scale, 0f, 20f);
 
         if (ImGui.Button("Go back to test selector")) {
-            this.BaseGame.Components.Add(new BaseTestSelector());
-            this.BaseGame.Components.Remove(this);
+            TestGame.Instance.ChangeScreen(new BaseTestSelector());
         }
         #endif
         #endregion

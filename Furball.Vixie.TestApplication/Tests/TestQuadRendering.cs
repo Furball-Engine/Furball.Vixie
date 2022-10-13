@@ -9,7 +9,7 @@ using Color=Furball.Vixie.Backends.Shared.Color;
 
 namespace Furball.Vixie.TestApplication.Tests; 
 
-public class TestQuadRendering : GameComponent {
+public class TestQuadRendering : Screen {
     private Renderer _vixieRenderer;
     private Texture       _texture;
 
@@ -49,8 +49,7 @@ public class TestQuadRendering : GameComponent {
         #region ImGui menu
         #if USE_IMGUI
         if (ImGui.Button("Go back to test selector")) {
-            this.BaseGame.Components.Add(new BaseTestSelector());
-            this.BaseGame.Components.Remove(this);
+            TestGame.Instance.ChangeScreen(new BaseTestSelector());
         }
         ImGui.SliderInt("Draws", ref this._cirnoDons, 0, 2048);
         ImGui.Checkbox("Scissor", ref this._scissorEnable);

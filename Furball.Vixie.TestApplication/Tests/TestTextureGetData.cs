@@ -12,7 +12,7 @@ using Color = Furball.Vixie.Backends.Shared.Color;
 
 namespace Furball.Vixie.TestApplication.Tests; 
 
-public class TestTextureGetData : GameComponent {
+public class TestTextureGetData : Screen {
     private bool _testPassed;
     
     private readonly FontSystem _defaultFont = new(new FontSystemSettings {
@@ -68,8 +68,7 @@ public class TestTextureGetData : GameComponent {
         #region ImGui menu
         #if USE_IMGUI
         if (ImGui.Button("Go back to test selector")) {
-            this.BaseGame.Components.Add(new BaseTestSelector());
-            this.BaseGame.Components.Remove(this);
+            TestGame.Instance.ChangeScreen(new BaseTestSelector());
         }
         #endif
         #endregion

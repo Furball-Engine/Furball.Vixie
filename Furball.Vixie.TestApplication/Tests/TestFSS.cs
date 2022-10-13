@@ -11,7 +11,7 @@ using ImGuiNET;
 
 namespace Furball.Vixie.TestApplication.Tests; 
 
-public class TestFSS : GameComponent {
+public class TestFSS : Screen {
     private Renderer     _vixieRenderer;
     private DynamicSpriteFont _font;
 
@@ -64,8 +64,7 @@ public class TestFSS : GameComponent {
         ImGui.SliderFloat("Rotation", ref this._rotation, 0f, (float)(Math.PI * 2f));
 
         if (ImGui.Button("Go back to test selector")) {
-            this.BaseGame.Components.Add(new BaseTestSelector());
-            this.BaseGame.Components.Remove(this);
+            TestGame.Instance.ChangeScreen(new BaseTestSelector());
         }
         #endif
         #endregion

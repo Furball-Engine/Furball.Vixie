@@ -4,15 +4,14 @@ using ImGuiNET;
 
 namespace Furball.Vixie.TestApplication.Tests; 
 
-public class TestEmptyScreen : GameComponent {
+public class TestEmptyScreen : Screen {
     public override void Draw(double deltaTime) {
         GraphicsBackend.Current.Clear();
 
         #region ImGui menu
         #if USE_IMGUI
         if (ImGui.Button("Go back to test selector")) {
-            this.BaseGame.Components.Add(new BaseTestSelector());
-            this.BaseGame.Components.Remove(this);
+            TestGame.Instance.ChangeScreen(new BaseTestSelector());
         }
         #endif
         #endregion

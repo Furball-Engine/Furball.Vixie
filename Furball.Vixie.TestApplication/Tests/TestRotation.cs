@@ -9,7 +9,7 @@ using ImGuiNET;
 
 namespace Furball.Vixie.TestApplication.Tests; 
 
-public class TestRotation : GameComponent {
+public class TestRotation : Screen {
     private Renderer _vixieRenderer;
     private Texture       _whiteTexture;
 
@@ -39,8 +39,7 @@ public class TestRotation : GameComponent {
         #if USE_IMGUI
         ImGui.DragFloat("Rotation", ref this._rotation, 0.01f, 0f, 8f);
         if (ImGui.Button("Go back to test selector")) {
-            this.BaseGame.Components.Add(new BaseTestSelector());
-            this.BaseGame.Components.Remove(this);
+            TestGame.Instance.ChangeScreen(new BaseTestSelector());
         }
         #endif
         #endregion
