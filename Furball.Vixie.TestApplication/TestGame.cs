@@ -91,8 +91,7 @@ public class TestGame : Game {
         }
 
         if (ImGui.Button("Recreate Window")) {
-            this.WindowManager.Backend = this.WindowManager.Backend == Backend.OpenGL ? Backend.Direct3D11 : Backend.OpenGL;
-            this.RecreateWindow();
+            throw new NotImplementedException();
         }
         
         ImGui.End();

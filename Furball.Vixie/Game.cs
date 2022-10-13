@@ -26,12 +26,7 @@ public abstract class Game : IDisposable {
     /// </summary>
     public WindowManager WindowManager { get; internal set;}
 
-    public event EventHandler WindowRecreation;
-    
     private bool _doDisplayLoadingScreen;
-
-    private bool _recreateQueued;
-    private bool _isRecreated = false;
 
     public event EventHandler<string[]> FileDrop;
     
@@ -73,7 +68,7 @@ public abstract class Game : IDisposable {
             this.WindowManager.Create();
         }
 
-        this.RehookEvents();
+        this.HookWindowEvents();
             
         Global.GameInstance = this;
 
@@ -82,19 +77,9 @@ public abstract class Game : IDisposable {
         Logger.StartLogging();
             
         this.EventLoop.Run();
-        
-        while(this._isRecreated)
-            this.EventLoop.Run();
-    }
-    
-    public void RecreateWindow([CanBeNull] EventLoop loop = null) {
-        this._recreateQueued = true;
-        
-        if(loop != null)
-            this._eventLoopToChangeTo = loop;
     }
 
-    private void RehookEvents() {
+    private void HookWindowEvents() {
         this.EventLoop.Start   += this.RendererInitialize;
         this.EventLoop.Closing += this.RendererOnClosing;
         this.EventLoop.Update  += this.VixieUpdate;
@@ -112,27 +97,6 @@ public abstract class Game : IDisposable {
             }
         }
     }
-    
-    private void UnhookEvents() {
-        this.EventLoop.Start   -= this.RendererInitialize;
-        this.EventLoop.Closing -= this.RendererOnClosing;
-        this.EventLoop.Update  -= this.VixieUpdate;
-        this.EventLoop.Draw    -= this.VixieDraw;
-
-        if(this.EventLoop is ViewEventLoop) {
-            this.WindowManager.GameView.FocusChanged      -= this.EngineOnFocusChanged;
-            this.WindowManager.GameView.FramebufferResize -= this.EngineFrameBufferResize;
-            this.WindowManager.GameView.Resize            -= this.EngineViewResize;
-
-            if (!this.WindowManager.ViewOnly) {
-                this.WindowManager.GameWindow.FileDrop     -= this.OnFileDrop;
-                this.WindowManager.GameWindow.Move         -= this.OnViewMove;
-                this.WindowManager.GameWindow.StateChanged -= this.EngineOnViewStateChange;
-            }
-        }
-    }
-
-    protected virtual void OnWindowRecreation() {}
     
     protected void RunViewOnly(WindowOptions options, Backend backend = Backend.None) {
         this.RunInternal(options, backend, new ViewEventLoop(), true);
@@ -173,41 +137,10 @@ public abstract class Game : IDisposable {
             GraphicsBackend.Current.HandleFramebufferResize(1280, 720);
         }
 
-        if(!this._isRecreated) {
-            this._doDisplayLoadingScreen = true;
-            this.EventLoop.DoDraw();
-        }
+        this._doDisplayLoadingScreen = true;
+        this.EventLoop.DoDraw();
 
-        if(!this._isRecreated)
-            this.Initialize();
-
-        if (this._isRecreated) {
-            foreach (WeakReference<Renderer> rendererRef in Global.TrackedRenderers) {
-                if (rendererRef.TryGetTarget(out Renderer renderer)) {
-                    renderer.Recreate();
-                    GC.ReRegisterForFinalize(renderer);
-                }
-            }
-            
-            foreach (WeakReference<Texture> texRef in Global.TrackedTextures) {
-                if (texRef.TryGetTarget(out Texture tex)) {
-                    tex.LoadDataFromCpuToNewTexture();
-                    GC.ReRegisterForFinalize(tex);
-                }
-            }
-            
-            foreach (WeakReference<RenderTarget> texRef in Global.TrackedRenderTargets) {
-                if (texRef.TryGetTarget(out RenderTarget target)) {
-                    target.LoadDataFromCpuToNewTexture();
-                    GC.ReRegisterForFinalize(target);
-                }
-            }
-            
-            this.WindowRecreation?.Invoke(this, EventArgs.Empty);
-            this.OnWindowRecreation();
-        }
-
-        this._isRecreated = false;
+        this.Initialize();
     }
 
     /// <summary>
@@ -274,58 +207,6 @@ public abstract class Game : IDisposable {
     public virtual void SetApiFeatureLevels() {}
     private double _trackedDelta = 0;
     private void VixieUpdate(object sender, double deltaTime) {
-        if (this._recreateQueued) {
-            // if(this.EventLoop is HeadlessEventLoop)
-            // Guard.Fail("Window recreation is not save on the headless event loop");
-            
-            EventLoop old = this.EventLoop;
-
-            this._recreateQueued = false;
-            
-            //Unhook the closing event
-            this.UnhookEvents();
-            this.EventLoop = this._eventLoopToChangeTo;
-            
-            this._isRecreated = true;
-
-            foreach (WeakReference<Renderer> rendererRef in Global.TrackedRenderers) {
-                if (rendererRef.TryGetTarget(out Renderer renderer)) {
-                    renderer.DisposeInternal();
-                    GC.SuppressFinalize(renderer);
-                }
-            }
-            
-            foreach (WeakReference<Texture> texRef in Global.TrackedTextures) {
-                if (texRef.TryGetTarget(out Texture tex)) {
-                    tex.SaveDataToCpu();
-                    tex.DisposeInternal();
-                    GC.SuppressFinalize(tex);
-                }
-            }
-            
-            foreach (WeakReference<RenderTarget> targetRef in Global.TrackedRenderTargets) {
-                if (targetRef.TryGetTarget(out RenderTarget target)) {
-                    target.SaveDataToCpu();
-                    target.DisposeInternal();
-                    GC.SuppressFinalize(target);
-                }
-            }
-
-            GraphicsBackend.Current.Cleanup();
-            
-            old.Close();
-
-            if (this.EventLoop is ViewEventLoop viewEventLoop) {
-                viewEventLoop.WindowManager = this.WindowManager;
-                
-                this.WindowManager.Create();
-            }
-
-            this.RehookEvents();
-
-            return;
-        }
-        
         this.Update(deltaTime * 1000);
     }
     
