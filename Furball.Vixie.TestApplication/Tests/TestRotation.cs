@@ -14,9 +14,9 @@ public class TestRotation : Screen {
     private Texture       _whiteTexture;
 
     public override void Initialize() {
-        this._vixieRenderer = new Renderer(TestGame.Instance.WindowManager.GraphicsBackend);
+        this._vixieRenderer = TestGame.Instance.ResourceFactory.CreateRenderer();
         this._whiteTexture =
-            Texture.CreateTextureFromByteArray(TestGame.Instance.WindowManager.GraphicsBackend, ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
+            TestGame.Instance.ResourceFactory.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
 
         base.Initialize();
     }

@@ -15,8 +15,8 @@ public class TestSourceRect : Screen {
     private Texture       _texture;
 
     public override void Initialize() {
-        this._vixieRenderer = new Renderer(TestGame.Instance.WindowManager.GraphicsBackend);
-        this._texture = Texture.CreateTextureFromByteArray(TestGame.Instance.WindowManager.GraphicsBackend, ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
+        this._vixieRenderer = TestGame.Instance.ResourceFactory.CreateRenderer();
+        this._texture = TestGame.Instance.ResourceFactory.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
 
         base.Initialize();
     }

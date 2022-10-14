@@ -29,6 +29,8 @@ public abstract class Game : IDisposable {
     private bool _doDisplayLoadingScreen;
 
     public event EventHandler<string[]> FileDrop;
+    
+    public GraphicsResourceFactory ResourceFactory { get; private set; }
 
     /// <summary>
     ///     Creates a Game Window using `options`
@@ -105,6 +107,8 @@ public abstract class Game : IDisposable {
         this._doDisplayLoadingScreen = true;
         this.WindowManager.TryForceDraw();
 
+        this.ResourceFactory = new GraphicsResourceFactory(this.WindowManager.GraphicsBackend);
+        
         this.Initialize();
     }
 

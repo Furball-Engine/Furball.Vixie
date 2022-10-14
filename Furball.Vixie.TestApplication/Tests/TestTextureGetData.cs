@@ -38,7 +38,7 @@ public class TestTextureGetData : Screen {
 
         Rgba32[] origPixels = pixels.ToArray();
 
-        Texture tex = Texture.CreateTextureFromByteArray(TestGame.Instance.WindowManager.GraphicsBackend, origData);
+        Texture tex = TestGame.Instance.ResourceFactory.CreateTextureFromByteArray(origData);
 
         this._testPassed = true;
         
@@ -53,7 +53,7 @@ public class TestTextureGetData : Screen {
         this._defaultFont.AddFont(ResourceHelpers.GetByteResource("Resources/font.ttf", typeof(TestGame)));
         this._font = this._defaultFont.GetFont(48);
 
-        this._vixieRenderer = new Renderer(TestGame.Instance.WindowManager.GraphicsBackend);
+        this._vixieRenderer = TestGame.Instance.ResourceFactory.CreateRenderer();
         
         this._vixieRenderer.Begin();
         this._vixieRenderer.DrawString(this._font, $"Result: {this._testPassed}", new Vector2(10), this._testPassed ? Color.LightGreen : Color.Red);

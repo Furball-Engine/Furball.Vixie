@@ -1,12 +1,11 @@
 ﻿using System.Numerics;
 using Furball.Vixie.Backends.Shared;
-using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers.Helpers;
 #if USE_IMGUI
 using ImGuiNET;
 #endif
 
-namespace Furball.Vixie.TestApplication.Tests; 
+namespace Furball.Vixie.TestApplication.Tests;
 
 public class TestFilteringMode : Screen {
     private Texture _pixelatedTexture;
@@ -15,32 +14,39 @@ public class TestFilteringMode : Screen {
     private Renderer _vixieRenderer;
 
     public override void Initialize() {
-        this._vixieRenderer = new Renderer(TestGame.Instance.WindowManager.GraphicsBackend);
-        
-        this._pixelatedTexture = Texture.CreateTextureFromByteArray(TestGame.Instance.WindowManager.GraphicsBackend, ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
+        this._vixieRenderer = TestGame.Instance.ResourceFactory.CreateRenderer();
+
+        this._pixelatedTexture = TestGame.Instance.ResourceFactory.CreateTextureFromByteArray(
+            ResourceHelpers.GetByteResource
+                ("Resources/pippidonclear0.png", typeof(TestGame)));
         this._pixelatedTexture.FilterType = TextureFilterType.Pixelated;
-        this._smoothTexture = Texture.CreateTextureFromByteArray(TestGame.Instance.WindowManager.GraphicsBackend, ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
+        this._smoothTexture               = TestGame.Instance.ResourceFactory.CreateTextureFromByteArray(
+                                                                 ResourceHelpers.GetByteResource(
+                                                                     "Resources/pippidonclear0.png", typeof(TestGame)));
         this._smoothTexture.FilterType = TextureFilterType.Smooth;
-        
+
         this._vixieRenderer.Begin();
-        this._vixieRenderer.AllocateUnrotatedTexturedQuad(this._pixelatedTexture, Vector2.Zero, new Vector2(2), Color.White);
-        this._vixieRenderer.AllocateUnrotatedTexturedQuad(this._smoothTexture, new Vector2(100, 0), new Vector2(2), Color.White);
+        this._vixieRenderer.AllocateUnrotatedTexturedQuad(this._pixelatedTexture, Vector2.Zero, new Vector2(2),
+                                                          Color.White);
+        this._vixieRenderer.AllocateUnrotatedTexturedQuad(this._smoothTexture, new Vector2(100, 0), new Vector2(2),
+                                                          Color.White);
         this._vixieRenderer.End();
-        
+
         base.Initialize();
     }
 
     public override void Draw(double deltaTime) {
         this._vixieRenderer.Draw();
-        
+
         #region ImGui menu
-        #if USE_IMGUI
-        if (ImGui.Button("Go back to test selector")) {
+
+#if USE_IMGUI
+        if (ImGui.Button("Go back to test selector"))
             TestGame.Instance.ChangeScreen(new BaseTestSelector());
-        }
-        #endif
+#endif
+
         #endregion
-        
+
         base.Draw(deltaTime);
     }
 }
