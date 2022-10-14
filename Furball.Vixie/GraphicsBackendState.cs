@@ -22,38 +22,53 @@ public static class GraphicsBackendState {
             return backend;
         }
             
+#if VIXIE_BACKEND_VELDRID
         bool preferVeldridOverNative  = PrefferedBackends.HasFlag(Backend.Veldrid);
+#endif
+#if VIXIE_BACKEND_OPENGL
         bool preferOpenGl             = PrefferedBackends.HasFlag(Backend.OpenGL);
         bool preferOpenGlesOverOpenGl = PrefferedBackends.HasFlag(Backend.OpenGLES);
-            
+
         bool supportsGl   = Backends.Shared.Global.LatestSupportedGl.GL.MajorVersion   != 0;
         bool supportsGles = Backends.Shared.Global.LatestSupportedGl.GLES.MajorVersion != 0;
+#endif            
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+#if VIXIE_BACKEND_VELDRID
             if (preferVeldridOverNative)
                 return Backend.Veldrid;
+#endif
 
-            if (!preferOpenGl)
-                return Backend.Direct3D11;
+#if VIXIE_BACKEND_OPENGL
+            if (preferOpenGl) {
+                if ((!supportsGl && supportsGles) || (supportsGles))
+                    if (preferOpenGlesOverOpenGl) {
+                        if (Backends.Shared.Global.LatestSupportedGl.GLES.MajorVersion < 3)
+                            throw new NotSupportedException("Your GPU does not support OpenGLES version 3.0 or above!");
 
-            if ((!supportsGl && supportsGles) || (supportsGles))
-                if (preferOpenGlesOverOpenGl) {
-                    if (Backends.Shared.Global.LatestSupportedGl.GLES.MajorVersion < 3)
-                        throw new NotSupportedException("Your GPU does not support OpenGLES version 3.0 or above!");
-                        
-                    return Backend.OpenGLES;
+                        return Backend.OpenGLES;
+                    }
+
+                if (supportsGl) {
+                    if (Backends.Shared.Global.LatestSupportedGl.GL.MajorVersion >= 2)
+                        return Backend.OpenGL;
                 }
 
-            if (supportsGl) {
-                if(Backends.Shared.Global.LatestSupportedGl.GL.MajorVersion >= 2)
-                    return Backend.OpenGL;
+                throw new NotSupportedException("Your GPU does not support OpenGL!");
             }
+#endif
 
-            throw new NotSupportedException("Your GPU does not support OpenGL!");
+#if VIXIE_BACKEND_D3D11
+            return Backend.Direct3D11;
+#endif
         }
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("ANDROID"))) {
-            if (preferVeldridOverNative) return Backend.Veldrid;
+#if VIXIE_BACKEND_VELDRID
+            if (preferVeldridOverNative)
+                return Backend.Veldrid;
+#endif
 
+#if VIXIE_BACKEND_OPENGL
             if (supportsGles)
                 if (preferOpenGlesOverOpenGl) {
                     if (Backends.Shared.Global.LatestSupportedGl.GLES.MajorVersion < 3)
@@ -63,11 +78,15 @@ public static class GraphicsBackendState {
                 }
 
             throw new NotSupportedException("Your phone does not support GLES?");
+#endif
         }
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
+#if VIXIE_BACKEND_VELDRID
             if (preferVeldridOverNative)
                 return Backend.Veldrid;
+#endif
 
+#if VIXIE_BACKEND_OPENGL
             if ((!supportsGl && supportsGles) || (supportsGles))
                 if (preferOpenGlesOverOpenGl) {
                     if (Backends.Shared.Global.LatestSupportedGl.GLES.MajorVersion < 3)
@@ -82,8 +101,10 @@ public static class GraphicsBackendState {
             }
 
             throw new NotSupportedException("Your GPU does not support OpenGL!");
+#endif
         }
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) {
+#if VIXIE_BACKEND_OPENGL
             if (preferOpenGl) {
                 if (preferOpenGlesOverOpenGl)
                     Logger.Log("OpenGLES is considered unsupported on MacOS!", LoggerLevelDebugMessageCallback.InstanceNotification);
@@ -103,10 +124,14 @@ public static class GraphicsBackendState {
 
                 throw new NotSupportedException("Your GPU does not support OpenGL!");
             }
+#endif
                 
+#if VIXIE_BACKEND_VELDRID
             return Backend.Veldrid;
+#endif
         }
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("FREEBSD"))) {
+#if VIXIE_BACKEND_OPENGL
             if ((!supportsGl && supportsGles) || (supportsGles))
                 if (preferOpenGlesOverOpenGl) {
                     if (Backends.Shared.Global.LatestSupportedGl.GLES.MajorVersion < 3)
@@ -121,10 +146,15 @@ public static class GraphicsBackendState {
             }
 
             throw new NotSupportedException("Your GPU does not support OpenGL!");
+#endif
         }
 
         Logger.Log("You are running on an untested, unsupported platform!", LoggerLevelDebugMessageCallback.InstanceNotification);
         IsOnUnsupportedPlatform = true;
+#if VIXIE_BACKEND_OPENGL
         return Backend.OpenGL;
+#else
+        throw new Exception("Unable to find suitable render backend for your platform!");
+#endif
     }
 }

@@ -1,22 +1,36 @@
 ﻿#nullable enable
 using System;
 using System.Runtime.InteropServices;
+#if VIXIE_BACKEND_D3D11
 using Furball.Vixie.Backends.Direct3D11;
+#endif
+#if VIXIE_BACKEND_DUMMY
 using Furball.Vixie.Backends.Dummy;
+#endif
+#if VIXIE_BACKEND_MOLA
 using Furball.Vixie.Backends.Mola;
+#endif
+#if VIXIE_BACKEND_OPENGL
 using Furball.Vixie.Backends.OpenGL;
-using Furball.Vixie.Backends.Shared.Backends;
+#endif
+#if VIXIE_BACKEND_VELDRID
 using Furball.Vixie.Backends.Veldrid;
+using Silk.NET.Windowing.Extensions.Veldrid;
+#endif
+#if VIXIE_BACKEND_VULKAN
 using Furball.Vixie.Backends.Vulkan;
+#endif
+using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Helpers;
 using Silk.NET.Input;
 using Silk.NET.Input.Glfw;
 using Silk.NET.Input.Sdl;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
-using Silk.NET.Windowing.Extensions.Veldrid;
 using Silk.NET.Windowing.Glfw;
 using Silk.NET.Windowing.Sdl;
+// ReSharper disable HeuristicUnreachableCode
+#pragma warning disable CS0162
 
 namespace Furball.Vixie.WindowManagement;
 
@@ -44,27 +58,51 @@ public class SilkWindowManager : IWindowManager {
 
     private GraphicsAPI GetSilkGraphicsApi() {
         ContextAPI api = this.Backend switch {
+#if VIXIE_BACKEND_OPENGL
             Backend.OpenGLES => ContextAPI.OpenGLES,
             Backend.OpenGL => ContextAPI.OpenGL,
+#endif
+#if VIXIE_BACKEND_VELDRID
             Backend.Veldrid => ContextAPI.None, //Veldrid handles this internally
+#endif
+#if VIXIE_BACKEND_VULKAN
             Backend.Vulkan => ContextAPI.Vulkan,
+#endif
+#if VIXIE_BACKEND_D3D11
             Backend.Direct3D11 => RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
                 ? ContextAPI.Vulkan //If we are on linux and using d3d11, we likely want DXVK-native, so we use vulkan
                 : ContextAPI.None, //If we are on windows, we specify none
+#endif
+#if VIXIE_BACKEND_DUMMY
             Backend.Dummy => ContextAPI.None, //Dummy backend is just a dummy, so we specify none
+#endif
+#if VIXIE_BACKEND_MOLA
             Backend.Mola => ContextAPI
                .None, //Mola is software rendering, and we dont currently output anything to the window
+#endif
             _ => throw new Exception("Invalid API chosen...")
         };
 
         ContextProfile profile = this.Backend switch {
+#if VIXIE_BACKEND_OPENGL
             Backend.OpenGLES   => ContextProfile.Core, //OpenGLES is always core
             Backend.OpenGL     => ContextProfile.Core, //OpenGL is always core
+#endif
+#if VIXIE_BACKEND_VELDRID
             Backend.Veldrid    => ContextProfile.Core, //This doesnt matter for Veldrid
+#endif
+#if VIXIE_BACKEND_VULKAN
             Backend.Vulkan     => ContextProfile.Core, //This doesnt matter for Vulkan
+#endif
+#if VIXIE_BACKEND_D3D11
             Backend.Direct3D11 => ContextProfile.Core, //This doesnt matter for D3D11
+#endif
+#if VIXIE_BACKEND_DUMMY
             Backend.Dummy      => ContextProfile.Core, //This doesnt matter for Dummy
+#endif
+#if VIXIE_BACKEND_MOLA
             Backend.Mola       => ContextProfile.Core, //This doesnt matter for Mola, as it is software rendering
+#endif
             _                  => throw new Exception("Invalid API chosen...")
         };
 
@@ -76,21 +114,32 @@ public class SilkWindowManager : IWindowManager {
 #endif
 
         ContextFlags flags = this.Backend switch {
-            // ReSharper disable HeuristicUnreachableCode
+#if VIXIE_BACKEND_D3D11
             Backend.Direct3D11 => debug ? ContextFlags.Debug : ContextFlags.Default,
+#endif
+#if VIXIE_BACKEND_OPENGL
             Backend.OpenGL     => debug ? ContextFlags.Debug : ContextFlags.Default,
             Backend.OpenGLES   => debug ? ContextFlags.Debug : ContextFlags.Default,
+#endif
+#if VIXIE_BACKEND_VELDRID
             Backend.Veldrid => debug ? ContextFlags.Debug | ContextFlags.ForwardCompatible
                 : ContextFlags.Default                    | ContextFlags.ForwardCompatible,
+#endif
+#if VIXIE_BACKEND_VULKAN
             Backend.Vulkan => debug ? ContextFlags.Debug : ContextFlags.Default,
+#endif
+#if VIXIE_BACKEND_MOLA
             Backend.Mola   => debug ? ContextFlags.Debug : ContextFlags.Default,
+#endif
+#if VIXIE_BACKEND_DUMMY
             Backend.Dummy  => debug ? ContextFlags.Debug : ContextFlags.Default,
-            // ReSharper restore HeuristicUnreachableCode
+#endif
             _ => throw new Exception("Invalid API chosen...")
         };
 
         APIVersion version;
         switch (this.Backend) {
+#if VIXIE_BACKEND_OPENGL
             case Backend.OpenGLES:
                 //If the user's GPU doesnt support GLES 3.0, force 3.0 and mark we are in unsupported mode
                 if (Backends.Shared.Global.LatestSupportedGl.GLES.MajorVersion < 3) {
@@ -110,21 +159,32 @@ public class SilkWindowManager : IWindowManager {
 
                 version = Backends.Shared.Global.LatestSupportedGl.GL;
                 break;
+#endif
+#if VIXIE_BACKEND_VELDRID
             case Backend.Veldrid:
                 version = new APIVersion(0, 0);
                 break;
+#endif
+#if VIXIE_BACKEND_D3D11
             case Backend.Direct3D11:
                 version = new APIVersion(11, 0);
                 break;
+#endif
+#if VIXIE_BACKEND_VULKAN
             case Backend.Vulkan:
                 version = new APIVersion(0, 0);
                 break;
+#endif
+#if VIXIE_BACKEND_DUMMY
             case Backend.Dummy:
                 version = new APIVersion(0, 0);
                 break;
+#endif
+#if VIXIE_BACKEND_MOLA
             case Backend.Mola:
                 version = new APIVersion(0, 0);
                 break;
+#endif
             default:
                 throw new Exception("Invalid API chosen...");
         }
@@ -299,6 +359,7 @@ public class SilkWindowManager : IWindowManager {
         //Disable vsync by default
         options.VSync = false;
 
+#if VIXIE_BACKEND_VELDRID
         //Veldrid specific hacks
         if (this.Backend == Backend.Veldrid) {
             options.API = VeldridBackend.PrefferedBackend.ToGraphicsAPI();
@@ -308,6 +369,7 @@ public class SilkWindowManager : IWindowManager {
             //Veldrid handles the context, so we dont want silk managing it
             options.IsContextControlDisabled = true;
         }
+#endif
 
         //Explicitly request 0 depth bits, as we dont use depth testing
         options.PreferredDepthBufferBits = 0;
@@ -387,13 +449,27 @@ public class SilkWindowManager : IWindowManager {
     private void SilkWindowLoad() {
         // ReSharper disable once SwitchExpressionHandlesSomeKnownEnumValuesWithExceptionInDefault
         this.GraphicsBackend = this.Backend switch {
+#if VIXIE_BACKEND_OPENGL
             Backend.OpenGLES   => new OpenGLBackend(this.Backend),
+#endif
+#if VIXIE_BACKEND_D3D11
             Backend.Direct3D11 => new Direct3D11Backend(),
+#endif
+#if VIXIE_BACKEND_OPENGL
             Backend.OpenGL     => new OpenGLBackend(this.Backend),
+#endif
+#if VIXIE_BACKEND_VELDRID
             Backend.Veldrid    => new VeldridBackend(),
+#endif
+#if VIXIE_BACKEND_VULKAN
             Backend.Vulkan     => new VulkanBackend(),
+#endif
+#if VIXIE_BACKEND_DUMMY
             Backend.Dummy      => new DummyBackend(),
+#endif
+#if VIXIE_BACKEND_MOLA
             Backend.Mola       => new MolaBackend(),
+#endif
             _                  => throw new Exception("Invalid Backend Selected...")
         };
 

@@ -30,15 +30,22 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Furball.Vixie.Backends.Dummy\Furball.Vixie.Backends.Dummy.csproj" />
-      <ProjectReference Include="..\Furball.Vixie.Backends.Mola\Furball.Vixie.Backends.Mola.csproj" />
-      <ProjectReference Include="..\Furball.Vixie.Backends.OpenGL\Furball.Vixie.Backends.OpenGL.csproj" />
       <ProjectReference Include="..\Furball.Vixie.Backends.Shared\Furball.Vixie.Backends.Shared.csproj" />
-      <ProjectReference Include="..\Furball.Vixie.Backends.Direct3D11\Furball.Vixie.Backends.Direct3D11.csproj" />
-      <ProjectReference Include="..\Furball.Vixie.Backends.Vulkan\Furball.Vixie.Backends.Vulkan.csproj" />
-      <ProjectReference Include="..\Furball.Vixie.Helpers\Furball.Vixie.Helpers.csproj" />
-      <ProjectReference Include="..\Furball.Vixie.Backends.Veldrid\Furball.Vixie.Backends.Veldrid.csproj" />
       <ProjectReference Include="..\Furball.Vixie.OpenGLDetector\Furball.Vixie.OpenGLDetector.csproj" />
+      <ProjectReference Include="..\Furball.Vixie.Helpers\Furball.Vixie.Helpers.csproj" />
+        
+      <ProjectReference Condition="$(EnabledBackends.Contains('Dummy'))" 
+                        Include="..\Furball.Vixie.Backends.Dummy\Furball.Vixie.Backends.Dummy.csproj" />
+      <ProjectReference Condition="$(EnabledBackends.Contains('Mola'))" 
+                        Include="..\Furball.Vixie.Backends.Mola\Furball.Vixie.Backends.Mola.csproj" />
+      <ProjectReference Condition="$(EnabledBackends.Contains('OpenGL'))" 
+                        Include="..\Furball.Vixie.Backends.OpenGL\Furball.Vixie.Backends.OpenGL.csproj" />
+      <ProjectReference Condition="$(EnabledBackends.Contains('Direct3D11'))" 
+                        Include="..\Furball.Vixie.Backends.Direct3D11\Furball.Vixie.Backends.Direct3D11.csproj" />
+      <ProjectReference Condition="$(EnabledBackends.Contains('Vulkan'))" 
+                        Include="..\Furball.Vixie.Backends.Vulkan\Furball.Vixie.Backends.Vulkan.csproj" />
+      <ProjectReference Condition="$(EnabledBackends.Contains('Veldrid'))" 
+                        Include="..\Furball.Vixie.Backends.Veldrid\Furball.Vixie.Backends.Veldrid.csproj" />
     </ItemGroup>
 
     <ItemGroup>

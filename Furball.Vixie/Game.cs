@@ -95,8 +95,12 @@ public abstract class Game : IDisposable {
     }
 
     protected void RunHeadless() {
+#if VIXIE_BACKEND_DUMMY
         //TODO: dont always choose `Dummy` backend, Vulkan can work without a window, this may be useful for CI/Automated testing
         this.RunInternal(Backend.Dummy);
+#else
+        throw new NotImplementedException("Dummy backend not enabled!");
+#endif
     }
 
     #region Renderer Actions

@@ -122,6 +122,9 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
 #endif
 
     public OpenGLBackend(Backend backend) {
+#if !VIXIE_BACKEND_OPENGL
+        throw new NotSupportedException("This backend is not enabled!");
+#else
         this.CreationBackend = backend;
 
         this._glBindTexturesFeatureLevel              = FeatureLevels["glBindTextures"];
@@ -171,6 +174,7 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
                 Logger.Log("Marking that we need to use the fixed function pipeline!", LoggerLevelOpenGl.InstanceInfo);
             }
         }
+        #endif
     }
 
     /// <summary>
@@ -209,8 +213,10 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
         
 #if USE_IMGUI
         OpenGlType type = this.CreationBackend switch {
+#if VIXIE_BACKEND_OPENGL
             Backend.OpenGL when Global.LatestSupportedGl.GL.MajorVersion < 3 => OpenGlType.Legacy,
             Backend.OpenGLES                                                 => OpenGlType.Es,
+#endif
             _                                                                => OpenGlType.Modern
         };
 
