@@ -116,14 +116,14 @@ public abstract class Game : IDisposable {
     }
 
     /// <summary>
-    /// Gets Fired when the Window Gets Closed
+    ///     Gets Fired when the Window Gets Closed
     /// </summary>
     private void RendererOnClosing() {
         this.OnClosing();
         this.Dispose();
     }
     /// <summary>
-    /// Gets fired when the Window Focus changes
+    ///     Gets fired when the Window Focus changes
     /// </summary>
     /// <param name="focused">New Focus</param>
     private void EngineOnFocusChanged(bool focused) {
@@ -132,7 +132,7 @@ public abstract class Game : IDisposable {
         this.OnFocusChanged(this.IsActive);
     }
     /// <summary>
-    /// Gets fired when the Window Gets Maxi/Minimized
+    ///     Gets fired when the Window Gets Maxi/Minimized
     /// </summary>
     /// <param name="newState"></param>
     private void EngineOnViewStateChange(WindowState newState) {
@@ -153,7 +153,7 @@ public abstract class Game : IDisposable {
     #region Overrides
 
     /// <summary>
-    /// Used to Initialize any Game Stuff before the Game Begins
+    ///     Used to Initialize any Game Stuff before the Game Begins
     /// </summary>
     protected virtual void Initialize() {
         this.LoadContent();
@@ -161,20 +161,20 @@ public abstract class Game : IDisposable {
         this._stopwatch.Start();
     }
     /// <summary>
-    /// Used to Preload content
+    ///     Used to Preload content
     /// </summary>
     protected virtual void LoadContent() {}
     /// <summary>
-    /// Used to set the feature levels of all the APIs you are using
+    ///     Used to set the feature levels of all the APIs you are using
     /// </summary>
     public virtual void SetApiFeatureLevels() {}
     private double _trackedDelta;
     private void VixieUpdate(double deltaTime) {
         this.Update(deltaTime * 1000);
     }
-    
+
     /// <summary>
-    /// Update Method, Do your Updating work in here
+    ///     Update Method, Do your Updating work in here
     /// </summary>
     /// <param name="deltaTime">Delta Time</param>
     protected virtual void Update(double deltaTime) {
@@ -182,7 +182,7 @@ public abstract class Game : IDisposable {
 
         this.CheckForInvalidTrackerResourceReferences(deltaTime);
     }
-    
+
     [Conditional("DEBUG")]
     private void CheckForInvalidTrackerResourceReferences(double deltaTime) {
         this._trackedDelta += deltaTime;
@@ -202,7 +202,7 @@ public abstract class Game : IDisposable {
 #endif
 
     /// <summary>
-    /// Sets up and ends the scene
+    ///     Sets up and ends the scene
     /// </summary>
     /// <param name="_"></param>
     /// <param name="deltaTime">Delta time</param>
@@ -256,7 +256,7 @@ public abstract class Game : IDisposable {
     /// </summary>
     protected virtual void OnClosing() {}
     /// <summary>
-    /// Gets fired when a File Drag and Drop Occurs
+    ///     Gets fired when a File Drag and Drop Occurs
     /// </summary>
     /// <param name="files">File paths to the Dropped files</param>
     protected virtual void OnFileDrop(string[] files) {
