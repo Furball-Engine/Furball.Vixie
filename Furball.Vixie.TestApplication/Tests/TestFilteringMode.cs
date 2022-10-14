@@ -14,13 +14,13 @@ public class TestFilteringMode : Screen {
     private Renderer _vixieRenderer;
 
     public override void Initialize() {
-        this._vixieRenderer = TestGame.Instance.ResourceFactory.CreateRenderer();
+        this._vixieRenderer = Game.ResourceFactory.CreateRenderer();
 
-        this._pixelatedTexture = TestGame.Instance.ResourceFactory.CreateTextureFromByteArray(
+        this._pixelatedTexture = Game.ResourceFactory.CreateTextureFromByteArray(
             ResourceHelpers.GetByteResource
                 ("Resources/pippidonclear0.png", typeof(TestGame)));
         this._pixelatedTexture.FilterType = TextureFilterType.Pixelated;
-        this._smoothTexture               = TestGame.Instance.ResourceFactory.CreateTextureFromByteArray(
+        this._smoothTexture               = Game.ResourceFactory.CreateTextureFromByteArray(
                                                                  ResourceHelpers.GetByteResource(
                                                                      "Resources/pippidonclear0.png", typeof(TestGame)));
         this._smoothTexture.FilterType = TextureFilterType.Smooth;

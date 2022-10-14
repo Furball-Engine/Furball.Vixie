@@ -17,12 +17,12 @@ public class TestRenderTargets : Screen {
     private Texture      _don;
 
     public override void Initialize() {
-        this._renderTarget = TestGame.Instance.ResourceFactory.CreateRenderTarget(200, 200);
+        this._renderTarget = Game.ResourceFactory.CreateRenderTarget(200, 200);
 
-        this._quadVixieRenderer = TestGame.Instance.ResourceFactory.CreateRenderer();
+        this._quadVixieRenderer = Game.ResourceFactory.CreateRenderer();
             
-        this._whitePixel = TestGame.Instance.ResourceFactory.CreateWhitePixelTexture();
-        this._don = TestGame.Instance.ResourceFactory.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
+        this._whitePixel = Game.ResourceFactory.CreateWhitePixelTexture();
+        this._don = Game.ResourceFactory.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
 
         base.Initialize();
     }

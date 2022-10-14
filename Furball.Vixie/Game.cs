@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Helpers;
 using Furball.Vixie.WindowManagement;
@@ -29,9 +30,11 @@ public abstract class Game : IDisposable {
     private bool _doDisplayLoadingScreen;
 
     public event EventHandler<string[]> FileDrop;
-    
-    public GraphicsResourceFactory ResourceFactory { get; private set; }
 
+    private static readonly ThreadLocal<GraphicsResourceFactory> ResourceFactoryThreadLocal =
+        new ThreadLocal<GraphicsResourceFactory>();
+    public static GraphicsResourceFactory ResourceFactory => ResourceFactoryThreadLocal.Value;
+    
     /// <summary>
     ///     Creates a Game Window using `options`
     /// </summary>
@@ -107,7 +110,7 @@ public abstract class Game : IDisposable {
         this._doDisplayLoadingScreen = true;
         this.WindowManager.TryForceDraw();
 
-        this.ResourceFactory = new GraphicsResourceFactory(this.WindowManager.GraphicsBackend);
+        ResourceFactoryThreadLocal.Value = new GraphicsResourceFactory(this.WindowManager.GraphicsBackend); 
         
         this.Initialize();
     }

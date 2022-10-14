@@ -14,10 +14,10 @@ public class TestQuadRendering : Screen {
     private Texture       _texture;
 
     public override void Initialize() {
-        this._vixieRenderer = TestGame.Instance.ResourceFactory.CreateRenderer();
+        this._vixieRenderer = Game.ResourceFactory.CreateRenderer();
 
         //Load the Texture
-        this._texture = TestGame.Instance.ResourceFactory.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
+        this._texture = Game.ResourceFactory.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
 
         base.Initialize();
     }

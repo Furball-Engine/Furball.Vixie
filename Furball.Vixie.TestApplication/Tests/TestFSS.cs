@@ -26,7 +26,7 @@ public class TestFSS : Screen {
         this._defaultFont.AddFont(ResourceHelpers.GetByteResource("Resources/font.ttf", typeof(TestGame)));
         this._font = this._defaultFont.GetFont(48);
 
-        this._vixieRenderer = TestGame.Instance.ResourceFactory.CreateRenderer();
+        this._vixieRenderer = Game.ResourceFactory.CreateRenderer();
 
         RichTextDefaults.FontResolver = s => {
             return int.TryParse(s, out int size) 
