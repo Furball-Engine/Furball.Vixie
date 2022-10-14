@@ -107,8 +107,6 @@ public unsafe class TestNewRenderer : Screen {
     }
 
     public override void Draw(double deltaTime) {
-        TestGame.Instance.WindowManager.GraphicsBackend.Clear();
-
         this._vixieRenderer.Draw();
 
         #region ImGui menu
