@@ -8,8 +8,6 @@ namespace Furball.Vixie.TestApplication;
 
 public class BaseTestSelector : Screen {
     public override void Draw(double deltaTime) {
-        GraphicsBackend.Current.Clear();
-
 #if USE_IMGUI
         ImGui.Begin("Test Selector");
         

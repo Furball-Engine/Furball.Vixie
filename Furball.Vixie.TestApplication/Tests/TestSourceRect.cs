@@ -15,8 +15,8 @@ public class TestSourceRect : Screen {
     private Texture       _texture;
 
     public override void Initialize() {
-        this._vixieRenderer = new Renderer();
-        this._texture = Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
+        this._vixieRenderer = Game.ResourceFactory.CreateRenderer();
+        this._texture = Game.ResourceFactory.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
 
         base.Initialize();
     }
@@ -24,8 +24,6 @@ public class TestSourceRect : Screen {
     private float _rotation = 1f;
 
     public override void Draw(double deltaTime) {
-        GraphicsBackend.Current.Clear();
-
         this._vixieRenderer.Begin();
         this._vixieRenderer.AllocateRotatedTexturedQuadWithSourceRect(this._texture, new Vector2(1280 / 2, 720 / 2), Vector2.One, this._rotation, Vector2.Zero, new Rectangle(this._texture.Width / 2, 0, this._texture.Width / 2, this._texture.Height / 2), Color.White);
         this._vixieRenderer.End();

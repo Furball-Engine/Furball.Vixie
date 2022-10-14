@@ -1,16 +1,21 @@
 using System.Drawing;
 using FontStashSharp.Interfaces;
-using Furball.Vixie.Backends.Shared;
+using Furball.Vixie.Backends.Shared.Backends;
 using Silk.NET.Maths;
 using Rectangle=System.Drawing.Rectangle;
 
 namespace Furball.Vixie.FontStashSharp; 
 
 public class VixieTexture2dManager : ITexture2DManager {
+    private readonly GraphicsBackend _backend;
+    public VixieTexture2dManager(GraphicsBackend backend) {
+        this._backend = backend;
+    }
+    
     public object CreateTexture(int width, int height) {
-        Texture tex = Texture.CreateEmptyTexture(
-            (uint)width,
-            (uint)height
+        Texture tex = Texture.CreateEmptyTexture(this._backend,
+                                                 (uint)width,
+                                                 (uint)height
         );
 
         return tex;

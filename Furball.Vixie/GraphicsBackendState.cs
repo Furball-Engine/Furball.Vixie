@@ -1,40 +1,12 @@
 using System;
 using System.Runtime.InteropServices;
-using Furball.Vixie.Backends.Direct3D11;
-using Furball.Vixie.Backends.Dummy;
-using Furball.Vixie.Backends.Mola;
-using Furball.Vixie.Backends.OpenGL;
 using Furball.Vixie.Backends.Shared.Backends;
-using Furball.Vixie.Backends.Veldrid;
-using Furball.Vixie.Backends.Vulkan;
 using Furball.Vixie.Helpers.Helpers;
 using Kettu;
 
 namespace Furball.Vixie; 
 
-public class GraphicsBackend {
-    /// <summary>
-    ///     Represents the Currently used Graphics Backend
-    /// </summary>
-    public static Backends.Shared.Backends.GraphicsBackend Current;
-    /// <summary>
-    ///     Sets the Graphics Backend
-    /// </summary>
-    /// <param name="backend">What backend to use</param>
-    /// <exception cref="ArgumentOutOfRangeException">Throws if a Invalid API was chosen</exception>
-    public static void SetBackend(Backend backend) {
-        Current = backend switch {
-            Backend.OpenGLES   => new OpenGLBackend(backend),
-            Backend.Direct3D11 => new Direct3D11Backend(),
-            Backend.OpenGL     => new OpenGLBackend(backend),
-            Backend.Veldrid    => new VeldridBackend(),
-            Backend.Vulkan     => new VulkanBackend(),
-            Backend.Dummy      => new DummyBackend(),
-            Backend.Mola       => new MolaBackend(),
-            _                  => throw new ArgumentOutOfRangeException(nameof (backend), backend, "Invalid API")
-        };
-    }
-
+public static class GraphicsBackendState {
     public static bool IsOnUnsupportedPlatform {
         get;
         internal set;

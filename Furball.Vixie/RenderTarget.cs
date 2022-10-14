@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using Furball.Vixie.Backends.Shared;
+using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Helpers;
 using Silk.NET.Maths;
 using SixLabors.ImageSharp.PixelFormats;
@@ -16,8 +17,8 @@ public class RenderTarget : IDisposable {
     
     private Rgba32[]? _dataCache;
 
-    public RenderTarget(uint width, uint height) {
-        this._target  = GraphicsBackend.Current.CreateRenderTarget(width, height);
+    public RenderTarget(GraphicsBackend backend, uint width, uint height) {
+        this._target  = backend.CreateRenderTarget(width, height);
         this._texture = this._target.GetTexture();
         
         Global.TrackedRenderTargets.Add(new WeakReference<RenderTarget>(this));
@@ -51,30 +52,8 @@ public class RenderTarget : IDisposable {
             return;
 
         this._isDisposed = true;
-        // this._target.Dispose();
     }
     
-    internal void SaveDataToCpu() {
-        this._dataCache = this._texture.GetData();
-    }
-
-    internal void LoadDataFromCpuToNewTexture() {
-        if (this._dataCache == null)
-            throw new InvalidOperationException("Texture data was not saved before the backend switch!");
-        
-        VixieTextureRenderTarget newTex = GraphicsBackend.Current.CreateRenderTarget((uint)this.Size.X, (uint)this.Size.Y);
-        
-        newTex.GetTexture().SetData<Rgba32>(this._dataCache);
-        
-        this._target  = newTex;
-        this._texture = this._target.GetTexture();
-
-        this._dataCache = null;
-    }
-    
-    public static implicit operator Texture(RenderTarget target) => new(target._texture);
+    public static implicit operator Texture(RenderTarget      target) => new Texture(target._texture);
     public static implicit operator VixieTexture(RenderTarget target) => target._texture;
-    public void DisposeInternal() {
-        this._target.Dispose();
-    }
 }

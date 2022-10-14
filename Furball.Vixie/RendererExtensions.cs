@@ -5,7 +5,6 @@ using FontStashSharp;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.FontStashSharp;
-using Furball.Vixie.Helpers;
 using Color = Furball.Vixie.Backends.Shared.Color;
 
 namespace Furball.Vixie;
@@ -219,8 +218,6 @@ public static class RendererExtensions {
                                   Vector2 scale, Vector2 origin = default(Vector2), TextStyle style = TextStyle.None,
                                   FontSystemEffect effect = FontSystemEffect.None, int effectAmount = 0
     ) {
-        Renderer.FontRenderer ??= new VixieFontStashRenderer(Renderer.VixieRenderer);
-
         font.DrawText(Renderer.FontRenderer, text, position,
                       color,
                       scale,
@@ -238,8 +235,6 @@ public static class RendererExtensions {
                                   Color            color,    TextStyle         style = TextStyle.None,
                                   FontSystemEffect effect = FontSystemEffect.None
     ) {
-        Renderer.FontRenderer ??= new VixieFontStashRenderer(Renderer.VixieRenderer);
-
         font.DrawText(Renderer.FontRenderer, text, position,
                       color);
     }
@@ -248,8 +243,6 @@ public static class RendererExtensions {
                                   TextStyle     style = TextStyle.None, FontSystemEffect effect = FontSystemEffect.None,
                                   int           effectAmount = 0
     ) {
-        Renderer.FontRenderer ??= new VixieFontStashRenderer(Renderer.VixieRenderer);
-
         font.DrawText(
         Renderer.FontRenderer,
         text,

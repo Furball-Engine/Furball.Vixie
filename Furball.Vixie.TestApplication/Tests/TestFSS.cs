@@ -26,7 +26,7 @@ public class TestFSS : Screen {
         this._defaultFont.AddFont(ResourceHelpers.GetByteResource("Resources/font.ttf", typeof(TestGame)));
         this._font = this._defaultFont.GetFont(48);
 
-        this._vixieRenderer = new Renderer();
+        this._vixieRenderer = Game.ResourceFactory.CreateRenderer();
 
         RichTextDefaults.FontResolver = s => {
             return int.TryParse(s, out int size) 
@@ -47,8 +47,6 @@ public class TestFSS : Screen {
     private RichTextLayout _rtl;
 
     public override void Draw(double deltaTime) {
-        GraphicsBackend.Current.Clear();
-
         this._vixieRenderer.Begin();
         this._rtl.Draw(this._vixieRenderer.FontRenderer, new Vector2(10), Color.White);
         this._vixieRenderer.DrawString(this._font, "VixieFontStashSharpRenderer Testing",                new Vector2(10,  100), Color.White,      this._rotation,                         new Vector2(_scale), new Vector2(-50));

@@ -20,8 +20,8 @@ public unsafe class TestNewRenderer : Screen {
 
     public override void Initialize() {
         this._texture =
-            Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
-        this._whitePixel = Texture.CreateWhitePixelTexture();
+            Game.ResourceFactory.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
+        this._whitePixel = Game.ResourceFactory.CreateWhitePixelTexture();
 
         // this._textureArr = new Texture[64];
         // for (int i = 0; i < this._textureArr.Length; i++) {
@@ -29,7 +29,7 @@ public unsafe class TestNewRenderer : Screen {
                 // Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
         // }
 
-        this._vixieRenderer = new Renderer();
+        this._vixieRenderer = Game.ResourceFactory.CreateRenderer();
 
         this._vixieRenderer.Begin();
 
@@ -107,8 +107,6 @@ public unsafe class TestNewRenderer : Screen {
     }
 
     public override void Draw(double deltaTime) {
-        GraphicsBackend.Current.Clear();
-
         this._vixieRenderer.Draw();
 
         #region ImGui menu
