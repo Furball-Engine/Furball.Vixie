@@ -14,9 +14,9 @@ public class TestRotation : Screen {
     private Texture       _whiteTexture;
 
     public override void Initialize() {
-        this._vixieRenderer = new Renderer();
+        this._vixieRenderer = new Renderer(TestGame.Instance.WindowManager.GraphicsBackend);
         this._whiteTexture =
-            Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
+            Texture.CreateTextureFromByteArray(TestGame.Instance.WindowManager.GraphicsBackend, ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
 
         base.Initialize();
     }
@@ -24,8 +24,6 @@ public class TestRotation : Screen {
     private float _rotation = 1f;
 
     public override void Draw(double deltaTime) {
-        GraphicsBackend.Current.Clear();
-
         this._vixieRenderer.Begin();
 
         for(int i = 0; i != 360; i ++)

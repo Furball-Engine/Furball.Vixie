@@ -31,7 +31,7 @@ public class TestGame : Game {
         
         this.ChangeScreen(new BaseTestSelector());
 
-        GraphicsBackend.Current.ScreenshotTaken += delegate(object _, Image image) {
+        this.WindowManager.GraphicsBackend.ScreenshotTaken += delegate(object _, Image image) {
             Logger.Log("Writing screenshot!", LoggerLevelImageLoader.Instance);
             image.SaveAsPng("testoutput.png");
         };
@@ -43,12 +43,9 @@ public class TestGame : Game {
     private const double UPDATE_RATE = 1000f;
     private       long   _alloccedMemory;
         
+    
     public void Run(Backend backend = Backend.None) {
-        var options = WindowOptions.Default;
-
-        options.VSync = false;
-            
-        this.Run(options, backend);
+        base.Run(backend);
     }
 
     public new void RunHeadless() {
@@ -62,6 +59,8 @@ public class TestGame : Game {
     }
 
     protected override void Draw(double deltaTime) {
+        this.WindowManager.GraphicsBackend.Clear();
+        
         this._runningScreen?.Draw(deltaTime);
         
 #if USE_IMGUI
@@ -83,7 +82,7 @@ public class TestGame : Game {
         ImGui.Text($"RAM Usage: {this._alloccedMemory}");
             
         if (ImGui.Button("Take Screenshot")) {
-            GraphicsBackend.Current.TakeScreenshot();
+            this.WindowManager.GraphicsBackend.TakeScreenshot();
         }
 
         if (ImGui.Button("Force GC Clear")) {

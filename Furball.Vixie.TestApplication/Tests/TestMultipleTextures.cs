@@ -18,18 +18,16 @@ public class TestMultipleTextures : Screen {
     public override void Initialize() {
         for (int i = 0; i != this._textures.Length; i++) {
             if (i % 2 == 0 && i != 0)
-                this._textures[i]  = Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
-            else this._textures[i] = Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/test.qoi", typeof(TestGame)));
+                this._textures[i]  = Texture.CreateTextureFromByteArray(TestGame.Instance.WindowManager.GraphicsBackend, ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
+            else this._textures[i] = Texture.CreateTextureFromByteArray(TestGame.Instance.WindowManager.GraphicsBackend, ResourceHelpers.GetByteResource("Resources/test.qoi", typeof(TestGame)));
         }
 
-        this._vixieRenderer = new Renderer();
+        this._vixieRenderer = new Renderer(TestGame.Instance.WindowManager.GraphicsBackend);
 
         base.Initialize();
     }
 
     public override void Draw(double deltaTime) {
-        GraphicsBackend.Current.Clear();
-
         this._vixieRenderer.Begin();
 
         int x = 0;

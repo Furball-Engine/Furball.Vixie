@@ -15,11 +15,11 @@ public class TestFilteringMode : Screen {
     private Renderer _vixieRenderer;
 
     public override void Initialize() {
-        this._vixieRenderer = new Renderer();
+        this._vixieRenderer = new Renderer(TestGame.Instance.WindowManager.GraphicsBackend);
         
-        this._pixelatedTexture = Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
+        this._pixelatedTexture = Texture.CreateTextureFromByteArray(TestGame.Instance.WindowManager.GraphicsBackend, ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
         this._pixelatedTexture.FilterType = TextureFilterType.Pixelated;
-        this._smoothTexture = Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
+        this._smoothTexture = Texture.CreateTextureFromByteArray(TestGame.Instance.WindowManager.GraphicsBackend, ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
         this._smoothTexture.FilterType = TextureFilterType.Smooth;
         
         this._vixieRenderer.Begin();
@@ -31,8 +31,6 @@ public class TestFilteringMode : Screen {
     }
 
     public override void Draw(double deltaTime) {
-        GraphicsBackend.Current.Clear();
-        
         this._vixieRenderer.Draw();
         
         #region ImGui menu

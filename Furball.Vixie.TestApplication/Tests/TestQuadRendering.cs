@@ -14,10 +14,10 @@ public class TestQuadRendering : Screen {
     private Texture       _texture;
 
     public override void Initialize() {
-        this._vixieRenderer = new Renderer();
+        this._vixieRenderer = new Renderer(TestGame.Instance.WindowManager.GraphicsBackend);
 
         //Load the Texture
-        this._texture = Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
+        this._texture = Texture.CreateTextureFromByteArray(TestGame.Instance.WindowManager.GraphicsBackend, ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
 
         base.Initialize();
     }
@@ -29,10 +29,8 @@ public class TestQuadRendering : Screen {
     private bool _scissorEnable = false;
 
     public override void Draw(double deltaTime) {
-        GraphicsBackend.Current.Clear();
-
         if (this._scissorEnable)
-            GraphicsBackend.Current.ScissorRect = new Rectangle(100, 100, 400, 200);
+            TestGame.Instance.WindowManager.GraphicsBackend.ScissorRect = new Rectangle(100, 100, 400, 200);
             
         this._vixieRenderer.Begin();
 
@@ -44,7 +42,7 @@ public class TestQuadRendering : Screen {
         
         this._vixieRenderer.Draw();
             
-        GraphicsBackend.Current.SetFullScissorRect();
+        TestGame.Instance.WindowManager.GraphicsBackend.SetFullScissorRect();
 
         #region ImGui menu
         #if USE_IMGUI

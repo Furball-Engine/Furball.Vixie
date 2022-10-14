@@ -17,21 +17,19 @@ public class TestRenderTargets : Screen {
     private Texture      _don;
 
     public override void Initialize() {
-        this._renderTarget = new RenderTarget(200, 200);
+        this._renderTarget = new RenderTarget(TestGame.Instance.WindowManager.GraphicsBackend, 200, 200);
 
-        this._quadVixieRenderer = new Renderer();
+        this._quadVixieRenderer = new Renderer(TestGame.Instance.WindowManager.GraphicsBackend);
             
-        this._whitePixel = Texture.CreateWhitePixelTexture();
-        this._don = Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
+        this._whitePixel = Texture.CreateWhitePixelTexture(TestGame.Instance.WindowManager.GraphicsBackend);
+        this._don = Texture.CreateTextureFromByteArray(TestGame.Instance.WindowManager.GraphicsBackend, ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
 
         base.Initialize();
     }
 
     public override void Draw(double deltaTime) {
-        GraphicsBackend.Current.Clear();
-
         this._renderTarget.Bind();
-        GraphicsBackend.Current.Clear();
+        TestGame.Instance.WindowManager.GraphicsBackend.Clear();
 
         this._quadVixieRenderer.Begin();
         this._quadVixieRenderer.AllocateUnrotatedTexturedQuad(this._whitePixel, new Vector2(5, 5), new Vector2(128, 128), Color.Green);

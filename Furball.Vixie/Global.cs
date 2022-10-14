@@ -8,7 +8,6 @@ namespace Furball.Vixie;
 public static class Global {
     internal static bool          AlreadyInitialized;
     internal static Game          GameInstance;
-    internal static WindowManager WindowManager;
         
     internal static Dictionary<string, FeatureLevel> GetFeatureLevels(Backend backend) {
         return backend switch {

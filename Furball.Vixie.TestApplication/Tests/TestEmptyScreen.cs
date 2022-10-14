@@ -6,8 +6,6 @@ namespace Furball.Vixie.TestApplication.Tests;
 
 public class TestEmptyScreen : Screen {
     public override void Draw(double deltaTime) {
-        GraphicsBackend.Current.Clear();
-
         #region ImGui menu
         #if USE_IMGUI
         if (ImGui.Button("Go back to test selector")) {
