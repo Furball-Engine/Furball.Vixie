@@ -72,7 +72,7 @@ public class SilkWindowManager : IWindowManager {
 #if DEBUG
             = true;
 #else
-            false;
+            = false;
 #endif
 
         ContextFlags flags = this.Backend switch {
@@ -95,7 +95,7 @@ public class SilkWindowManager : IWindowManager {
                 //If the user's GPU doesnt support GLES 3.0, force 3.0 and mark we are in unsupported mode
                 if (Backends.Shared.Global.LatestSupportedGl.GLES.MajorVersion < 3) {
                     Backends.Shared.Global.LatestSupportedGl.GLES = new APIVersion(3, 0);
-                    Vixie.GraphicsBackendState.IsOnUnsupportedPlatform = true; //mark us as running on an unsupported 
+                    GraphicsBackendState.IsOnUnsupportedPlatform = true; //mark us as running on an unsupported 
                 }
 
                 version = Backends.Shared.Global.LatestSupportedGl.GLES;
@@ -104,7 +104,7 @@ public class SilkWindowManager : IWindowManager {
                 //If the user's GPU doesnt support GL 2.0, force 2.0 and mark we are in unsupported mode
                 if (Backends.Shared.Global.LatestSupportedGl.GL.MajorVersion < 2) {
                     Backends.Shared.Global.LatestSupportedGl.GL = new APIVersion(2, 0);
-                    Vixie.GraphicsBackendState.IsOnUnsupportedPlatform =
+                    GraphicsBackendState.IsOnUnsupportedPlatform =
                         true; //mark us as running on an unsupported configuration
                 }
 
