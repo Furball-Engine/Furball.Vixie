@@ -1,11 +1,11 @@
 ﻿using System;
 
-namespace Furball.Vixie.WindowManagement; 
+namespace Furball.Vixie.WindowManagement;
 
 [Flags]
 public enum WindowState {
-    Minimized,
-    Maximized,
-    Windowed,
-    Fullscreen
+    Minimized  = 1,
+    Maximized  = 2,
+    Windowed   = 4,
+    Fullscreen = 8
 }
