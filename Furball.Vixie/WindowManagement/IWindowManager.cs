@@ -4,6 +4,8 @@ using System;
 using Furball.Vixie.Backends.Shared.Backends;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Furball.Vixie.WindowManagement;
 
@@ -32,6 +34,8 @@ public interface IWindowManager : IDisposable {
     public bool Focused { get; }
 
     public void Focus();
+    
+    public void SetIcon(Image<Rgba32> image);
 
     public bool VSync { get; set; }
 

@@ -22,6 +22,7 @@ using Furball.Vixie.Backends.Vulkan;
 #endif
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Helpers;
+using Silk.NET.Core;
 using Silk.NET.Input;
 using Silk.NET.Input.Glfw;
 using Silk.NET.Input.Sdl;
@@ -29,6 +30,8 @@ using Silk.NET.Maths;
 using Silk.NET.Windowing;
 using Silk.NET.Windowing.Glfw;
 using Silk.NET.Windowing.Sdl;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 // ReSharper disable HeuristicUnreachableCode
 #pragma warning disable CS0162
 
@@ -327,6 +330,14 @@ public class SilkWindowManager : IWindowManager {
 
     public void Focus() {
         throw new NotImplementedException("This is not implemented in Silk.NET!");
+    }
+    public void SetIcon(Image<Rgba32> image) {
+        byte[] imgData = new byte[image.Width * image.Height];
+        image.CopyPixelDataTo(imgData);
+        
+        RawImage rawImage = new RawImage(image.Width, image.Height, new Memory<byte>(imgData));
+
+        this._window.SetWindowIcon(ref rawImage);
     }
 
     //We have a backing field for this, as we need to set the VSync value on the window independently of the value the user chooses
