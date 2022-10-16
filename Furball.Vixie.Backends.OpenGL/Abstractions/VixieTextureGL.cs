@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Furball.Vixie.Backends.Shared;
+using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Helpers;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
@@ -12,7 +13,7 @@ using Rectangle=System.Drawing.Rectangle;
 namespace Furball.Vixie.Backends.OpenGL.Abstractions; 
 
 internal sealed class VixieTextureGl : VixieTexture {
-    private readonly IGlBasedBackend _backend;
+    private readonly OpenGLBackend _backend;
     /// <summary>
     /// All the Currently Bound Textures
     /// </summary>
@@ -88,7 +89,7 @@ internal sealed class VixieTextureGl : VixieTexture {
     /// <param name="backend"></param>
     /// <param name="imageData">Image Data</param>
     /// <param name="parameters"></param>
-    public VixieTextureGl(IGlBasedBackend backend, byte[] imageData, TextureParameters parameters) {
+    public VixieTextureGl(OpenGLBackend backend, byte[] imageData, TextureParameters parameters) {
         this._backend = backend;
         this._backend.GlCheckThread();
         this._mipmaps = parameters.RequestMipmaps;
@@ -118,7 +119,7 @@ internal sealed class VixieTextureGl : VixieTexture {
     /// <summary>
     /// Creates a Texture with a single White Pixel
     /// </summary>
-    public unsafe VixieTextureGl(IGlBasedBackend backend) {
+    public unsafe VixieTextureGl(OpenGLBackend backend) {
         this._backend = backend;
         this._backend.GlCheckThread();
             
@@ -154,7 +155,7 @@ internal sealed class VixieTextureGl : VixieTexture {
     /// <param name="width">Desired Width</param>
     /// <param name="height">Desired Height</param>
     /// <param name="parameters"></param>
-    public unsafe VixieTextureGl(IGlBasedBackend backend, uint width, uint height, TextureParameters parameters) {
+    public unsafe VixieTextureGl(OpenGLBackend backend, uint width, uint height, TextureParameters parameters) {
         this._backend = backend;
         this._backend.GlCheckThread();
         this._mipmaps = parameters.RequestMipmaps;
@@ -162,8 +163,10 @@ internal sealed class VixieTextureGl : VixieTexture {
         this.TextureId = this._backend.GenTexture();
         //Bind as we will be working on the Texture
         this._backend.BindTexture(TextureTarget.Texture2D, this.TextureId);
+        this._backend.CheckError("bind");
         //Apply Linear filtering, and make Image wrap around and repeat
         this.FilterType = parameters.FilterType;
+        this._backend.CheckError("filtertype");
         this._backend.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)GLEnum.Repeat);
         this._backend.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)GLEnum.Repeat);
         //Upload Image Data
@@ -180,7 +183,7 @@ internal sealed class VixieTextureGl : VixieTexture {
     /// <param name="backend"></param>
     /// <param name="stream">Image Data Stream</param>
     /// <param name="parameters"></param>
-    public VixieTextureGl(IGlBasedBackend backend, Stream stream, TextureParameters parameters) {
+    public VixieTextureGl(OpenGLBackend backend, Stream stream, TextureParameters parameters) {
         this._backend = backend;
         this._backend.GlCheckThread();
         this._mipmaps = parameters.RequestMipmaps;
@@ -203,7 +206,7 @@ internal sealed class VixieTextureGl : VixieTexture {
         if (!this._mipmaps)
             return;
 
-        this._backend.GenerateMipmaps(this);
+        ((IGlBasedBackend)this._backend).GenerateMipmaps(this);
     }
     
     ~VixieTextureGl() {
@@ -233,7 +236,7 @@ internal sealed class VixieTextureGl : VixieTexture {
     /// <param name="textureId">OpenGL Texture ID</param>
     /// <param name="width">Width of the Texture</param>
     /// <param name="height">Height of the Texture</param>
-    internal VixieTextureGl(IGlBasedBackend backend, uint textureId, uint width, uint height) {
+    internal VixieTextureGl(OpenGLBackend backend, uint textureId, uint width, uint height) {
         this._backend = backend;
         this._backend.GlCheckThread();
         this.TextureId = textureId;
@@ -314,8 +317,26 @@ internal sealed class VixieTextureGl : VixieTexture {
         Rgba32[] arr = new Rgba32[this.Width * this.Height];
 
         this.Bind();
-        fixed(void* ptr = arr)
-            this._backend.GetTexImage(TextureTarget.Texture2D, 0, PixelFormat.Rgba, PixelType.UnsignedByte, ptr);
+        
+        fixed (void* ptr = arr) {
+            if (this._backend.CreationBackend == Backend.OpenGLES) {
+                this._backend.gl.GetInteger(GetPName.DrawFramebufferBinding, out int currFbo);
+                
+                uint fbo = this._backend.GenFramebuffer(); 
+                this._backend.BindFramebuffer(FramebufferTarget.Framebuffer, fbo);
+                this._backend.FramebufferTexture(FramebufferTarget.Framebuffer, FramebufferAttachment
+                                                    .ColorAttachment0, this.TextureId, 0);
+
+                this._backend.gl.ReadPixels(0, 0, (uint)this.Width, (uint)this.Height, PixelFormat.Rgba, PixelType
+                .UnsignedByte, ptr);
+
+                this._backend.gl.BindFramebuffer(FramebufferTarget.Framebuffer, (uint)currFbo);
+                this._backend.gl.DeleteFramebuffers(1, &fbo);
+            } else {
+                this._backend.GetTexImage(TextureTarget.Texture2D, 0, PixelFormat.Rgba, PixelType.UnsignedByte, ptr);
+            }
+        }
+        this._backend.CheckError("get tex image");
         
         return arr;
     }
@@ -330,7 +351,9 @@ internal sealed class VixieTextureGl : VixieTexture {
         if (this.Locked)
             return null;
 
+        this._backend.CheckError("prebind");
         this._backend.ActiveTexture(textureSlot);
+        this._backend.CheckError("active texture");
         this._backend.BindTexture(TextureTarget.Texture2D, this.TextureId);
         this._backend.CheckError("bind tex with tex slot");
 

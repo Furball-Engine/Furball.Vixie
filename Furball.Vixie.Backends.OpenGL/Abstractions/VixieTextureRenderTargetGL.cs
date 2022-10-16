@@ -51,7 +51,7 @@ internal sealed class VixieTextureRenderTargetGl : VixieTextureRenderTarget {
         protected set => throw new Exception("Setting the size of TextureRenderTargets is currently unsupported.");
     }
 
-    private IGlBasedBackend _backend;
+    private OpenGLBackend _backend;
 
     /// <summary>
     /// Creates a TextureRenderTarget
@@ -60,7 +60,7 @@ internal sealed class VixieTextureRenderTargetGl : VixieTextureRenderTarget {
     /// <param name="width">Desired Width</param>
     /// <param name="height">Desired Width</param>
     /// <exception cref="Exception">Throws Exception if the Target didn't create properly</exception>
-    public unsafe VixieTextureRenderTargetGl(IGlBasedBackend backend, uint width, uint height) {
+    public unsafe VixieTextureRenderTargetGl(OpenGLBackend backend, uint width, uint height) {
         this._backend = backend;
         this._backend.GlCheckThread();
 

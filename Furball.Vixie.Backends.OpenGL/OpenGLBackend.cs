@@ -33,7 +33,7 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     ///     OpenGL API
     /// </summary>
     // ReSharper disable once InconsistentNaming
-    private GL gl;
+    internal GL gl;
     private Silk.NET.OpenGL.Legacy.GL _legacyGl;
     private Silk.NET.OpenGLES.GL      _gles;
 
@@ -317,8 +317,12 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
 
         if (!this.FixedFunctionPipeline.Boolean) {
             this.CreateShaders();
-        
-            this.gl.Enable(EnableCap.Multisample);
+            this.CheckError("create shaders");
+
+            if (this.CreationBackend != Backend.OpenGLES) {
+                this.gl.Enable(EnableCap.Multisample);
+                this.CheckError("enable multisampling");
+            }
         }
         else {
             this.gl.Enable(EnableCap.Texture2D);
@@ -326,25 +330,36 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     }
     private void CreateShaders() {
         Guard.Assert(!this.FixedFunctionPipeline.Boolean, "Cannot create shaders when fixed function pipeline is enabled!");
+
+        string vtxShader = ResourceHelpers.GetStringResource("Shaders/VertexShader.glsl", typeof(OpenGLBackend));
+        string frgShader = RendererShaderGenerator.GetFragment(this);
+
+        if (this.CreationBackend == Backend.OpenGLES) {
+            vtxShader = vtxShader.Replace("#version 110", "#version 100\nprecision mediump float;");
+            frgShader = frgShader.Replace("#version 110", "#version 100\nprecision mediump float;");
+        }
         
         this.Shader = new ShaderGl(this);
         this.Shader.AttachShader(
         ShaderType.VertexShader,
-        ResourceHelpers.GetStringResource("Shaders/VertexShader.glsl", typeof(OpenGLBackend))
+        vtxShader
         );
-        this.Shader.AttachShader(ShaderType.FragmentShader, RendererShaderGenerator.GetFragment(this));
+        this.Shader.AttachShader(ShaderType.FragmentShader, frgShader);
         this.Shader.Link();
+        this.CheckError("link");
 
         this.Shader.Bind();
         for (int i = 0; i < this.QueryMaxTextureUnits(); i++)
             this.Shader.BindUniformToTexUnit($"tex_{i}", i);
+        this.CheckError("bind uniform to tex unit");
 
         this.gl.BindAttribLocation(this.Shader.ProgramId, 0, "VertexPosition");
         this.gl.BindAttribLocation(this.Shader.ProgramId, 1, "TextureCoordinate");
         this.gl.BindAttribLocation(this.Shader.ProgramId, 2, "VertexColor");
         this.gl.BindAttribLocation(this.Shader.ProgramId, 3, "TextureId2");
         this.gl.BindAttribLocation(this.Shader.ProgramId, 4, "TextureId");
-
+        this.CheckError("bind attrib location");
+        
         this.Shader.Unbind();
     }
 
