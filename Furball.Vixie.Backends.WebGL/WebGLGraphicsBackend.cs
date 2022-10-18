@@ -97,18 +97,18 @@ gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);");
     }
     public override VixieTexture CreateTextureFromByteArray(byte[]            imageData,
                                                             TextureParameters parameters = default(TextureParameters)) {
-        throw new NotImplementedException();
+        return new WebGLTexture(imageData, parameters);
     }
     public override VixieTexture CreateTextureFromStream(Stream            stream,
                                                          TextureParameters parameters = default(TextureParameters)) {
-        throw new NotImplementedException();
+        return new WebGLTexture(stream, parameters);
     }
     public override VixieTexture CreateEmptyTexture(uint              width, uint height,
                                                     TextureParameters parameters = default(TextureParameters)) {
-        throw new NotImplementedException();
+        return new WebGLTexture(width, height, parameters);
     }
     public override VixieTexture CreateWhitePixelTexture() {
-        throw new NotImplementedException();
+        return new WebGLTexture();
     }
 #if USE_IMGUI
     public override void ImGuiUpdate(double deltaTime) {
