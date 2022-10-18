@@ -152,14 +152,12 @@ window.requestAnimationFrame = (function() {
 running = true;
 
 //Infinite requestAnimationFrame
-(function animLoop(time) {
+(function animLoop() {
     if(!running) return;
 
     Module.mono_bind_static_method(""[Furball.Vixie] Furball.Vixie.WindowManagement.JSCanvas.Exports:Frame"")();
     requestAnimationFrame(animLoop);
 })();
-
-requestAnimationFrame(animLoop);
 ");
     }
     

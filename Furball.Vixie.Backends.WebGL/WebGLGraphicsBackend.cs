@@ -48,7 +48,13 @@ console.log('Initialized WebGL!');");
     }
     
     public override void HandleFramebufferResize(int width, int height) {
-        // throw new NotImplementedException();
+        this.CurrentViewport.X = width;
+        this.CurrentViewport.Y = height;
+        
+        //Set the viewport
+        WebAssemblyRuntime.InvokeJS($@"gl.viewport(0, 0, {width}, {height});");
+
+        this.ScissorRect = new Rectangle(0, 0, width, height);
     }
     
     public override VixieRenderer CreateRenderer() {
@@ -69,11 +75,14 @@ gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);");
         // throw new NotImplementedException();
     }
     public override Rectangle ScissorRect {
-        get;
-        set;
+        get => this._lastScissor;
+        set {
+            this._lastScissor = value;
+            WebAssemblyRuntime.InvokeJS($"gl.scissor({value.X}, {value.Y}, {value.Width}, {value.Height});");
+        }
     }
     public override void SetFullScissorRect() {
-        // throw new NotImplementedException();
+        this.ScissorRect = new Rectangle(0, 0, this.CurrentViewport.X, this.CurrentViewport.Y);
     }
     public override ulong GetVramUsage() {
         // throw new NotImplementedException();
