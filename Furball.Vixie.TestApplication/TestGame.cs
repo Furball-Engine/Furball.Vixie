@@ -35,6 +35,8 @@ public class TestGame : Game {
             Logger.Log("Writing screenshot!", LoggerLevelImageLoader.Instance);
             image.SaveAsPng("testoutput.png");
         };
+        
+        Logger.Log("Initializing TestGame!", LoggerLevelUnknown.Instance);
             
         base.Initialize();
     }

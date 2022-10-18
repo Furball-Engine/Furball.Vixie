@@ -208,8 +208,6 @@ public struct Color {
     public override bool Equals(object obj) => obj is Color color && this.Equals(color);
     // ReSharper disable CompareOfFloatsByEqualityOperator
 
-    public override int GetHashCode() => HashCode.Combine(this.Rf, this.Gf, this.Bf, this.Af);
-
     public static bool operator ==(Color a, Color b) => a.Equals(b);
 
     public static bool operator !=(Color a, Color b) => !a.Equals(b);

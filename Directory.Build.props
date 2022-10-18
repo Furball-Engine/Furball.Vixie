@@ -1,7 +1,8 @@
 <Project>
     <PropertyGroup>
-        <UseImGui>true</UseImGui>
-        <EnabledBackends>Vulkan;Direct3D11;Mola;OpenGL;Veldrid;Dummy</EnabledBackends>
+        <UseImGui>false</UseImGui>
+<!--        <EnabledBackends>Vulkan;Direct3D11;Mola;OpenGL;Veldrid;Dummy</EnabledBackends>-->
+        <EnabledBackends>Dummy;WebGL</EnabledBackends>
     </PropertyGroup>
     
     <PropertyGroup>
@@ -14,5 +15,7 @@
         <DefineConstants Condition="$(EnabledBackends.Contains('Veldrid'))">$(DefineConstants);VIXIE_BACKEND_VELDRID</DefineConstants>
         <DefineConstants Condition="$(EnabledBackends.Contains('Dummy'))">$(DefineConstants);
             VIXIE_BACKEND_DUMMY</DefineConstants>
+        <DefineConstants Condition="$(EnabledBackends.Contains('WebGL'))">$(DefineConstants);
+            VIXIE_BACKEND_WEBGL</DefineConstants>
     </PropertyGroup>
 </Project>

@@ -2,16 +2,20 @@
 
     <PropertyGroup>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <Configurations>Debug;Release;DebugWithGL</Configurations>
+        <Configurations>Debug;Release</Configurations>
         <Platforms>AnyCPU</Platforms>
         <LangVersion>10</LangVersion>
-        <TargetFrameworks>net461;net6.0</TargetFrameworks>
+        <TargetFrameworks>net6.0</TargetFrameworks>
         <OutputType>Exe</OutputType>
+        <MonoRuntimeDebuggerEnabled>true</MonoRuntimeDebuggerEnabled>
     </PropertyGroup>
-
-    <PropertyGroup Condition=" '$(Configuration)' == 'DebugWithGL' ">
-      <DebugSymbols Condition=" '$(DebugSymbols)' == '' ">true</DebugSymbols>
-      <Optimize Condition=" '$(Optimize)' == '' ">false</Optimize>
+    
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <DebugType>portable</DebugType>
+      <DebugSymbols>true</DebugSymbols>
+      <MonoRuntimeDebuggerEnabled>true</MonoRuntimeDebuggerEnabled>
+      <DefineConstants>$(DefineConstants);TRACE;DEBUG</DefineConstants>
+      <WasmShellMonoRuntimeExecutionMode>Interpreter</WasmShellMonoRuntimeExecutionMode>
     </PropertyGroup>
 
     <ItemGroup>
@@ -29,6 +33,9 @@
       <PackageReference Include="Silk.NET.Input" Version="2.16.0" />
       <PackageReference Include="Silk.NET.Input.Extensions" Version="2.16.0" />
       <PackageReference Include="Silk.NET.Windowing" Version="2.16.0" />
+
+      <PackageReference Include="Uno.Wasm.Bootstrap" Version="3.3.1" />
+      <PackageReference Include="Uno.Wasm.Bootstrap.DevServer" Version="3.3.1" PrivateAssets="all" />
     </ItemGroup>
 
 </Project>

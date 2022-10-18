@@ -14,6 +14,11 @@ public static class GraphicsBackendState {
 
     public static Backend PrefferedBackends = Backend.None;
     public static Backend GetReccomendedBackend() {
+        if(Environment.GetEnvironmentVariable("UNO_BOOTSTRAP_APP_BASE") != null) {
+            //we are running in a uno app, so we have to use the WebGL backend
+            return Backend.WebGL;
+        }
+
         string backendForce = Environment.GetEnvironmentVariable("VIXIE_BACKEND_FORCE", EnvironmentVariableTarget.Process);
         if (backendForce != null) {
             if (!Enum.TryParse(backendForce, out Backend backend))

@@ -59,7 +59,10 @@ public abstract class Game : IDisposable {
         if (backend == Backend.None)
             backend = GraphicsBackendState.GetReccomendedBackend();
 
-        this.WindowManager = new SilkWindowManager(backend);
+        if (backend == Backend.WebGL)
+            this.WindowManager = new JSCanvasWindowManager(backend);
+        else
+            this.WindowManager = new SilkWindowManager(backend);
 
         this.WindowManager.CreateWindow();
 
