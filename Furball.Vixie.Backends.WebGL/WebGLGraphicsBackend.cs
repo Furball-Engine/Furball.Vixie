@@ -19,10 +19,7 @@ public class WebGLGraphicsBackend : GraphicsBackend {
         throw new NotImplementedException();
 #endif
         
-        WebAssemblyRuntime.InvokeJS(@"
-var canvas = document.getElementById('webgl-canvas');
-
-var gl = canvas.getContext('webgl');
+        WebAssemblyRuntime.InvokeJS(@"gl = canvas.getContext('webgl');
 
 gl.enable(gl.BLEND);
 gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -40,16 +37,6 @@ console.log('WebGL Renderer: ' + gl.getParameter(gl.RENDERER));
 console.log('WebGL Extensions: ' + gl.getSupportedExtensions());
 
 console.log('Initialized WebGL!');");
-
-        WebAssemblyRuntime.InvokeJS("console.log(gl);");
-        JSObject jsObject = new Uno.Foundation.Interop.JSObject();
-
-        this.CurrentViewport = new Vector2D<int>(view.FramebufferSize.X, view.FramebufferSize.Y);
-        this._lastScissor    = new(0, 0, view.FramebufferSize.X, view.FramebufferSize.Y);
-        
-        #if NET6_0_OR_GREATER
-        ashtshtsha
-        #endif
     }
     
     private  bool          _screenshotQueued;
@@ -57,35 +44,44 @@ console.log('Initialized WebGL!');");
     private  Rectangle     _lastScissor;
 
     public override void Cleanup() {
-        throw new NotImplementedException();
+        // throw new NotImplementedException();
     }
+    
     public override void HandleFramebufferResize(int width, int height) {
-        throw new NotImplementedException();
+        // throw new NotImplementedException();
     }
+    
     public override VixieRenderer CreateRenderer() {
         throw new NotImplementedException();
     }
+    
     public override int QueryMaxTextureUnits() {
-        throw new NotImplementedException();
+        // throw new NotImplementedException();
+
+        return Convert.ToInt32(WebAssemblyRuntime.InvokeJS("gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS)"));
     }
+    
     public override void Clear() {
-        throw new NotImplementedException();
+        WebAssemblyRuntime.InvokeJS(@"gl.clearColor(0.0, 0.0, 0.0, 1.0);
+gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);");
     }
     public override void TakeScreenshot() {
-        throw new NotImplementedException();
+        // throw new NotImplementedException();
     }
     public override Rectangle ScissorRect {
         get;
         set;
     }
     public override void SetFullScissorRect() {
-        throw new NotImplementedException();
+        // throw new NotImplementedException();
     }
     public override ulong GetVramUsage() {
-        throw new NotImplementedException();
+        // throw new NotImplementedException();
+        return 0;
     }
     public override ulong GetTotalVram() {
-        throw new NotImplementedException();
+        // throw new NotImplementedException();
+        return 0;
     }
     public override VixieTextureRenderTarget CreateRenderTarget(uint width, uint height) {
         throw new NotImplementedException();

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using Furball.Vixie.Backends.Dummy;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.WebGL;
+using Furball.Vixie.WindowManagement.JSCanvas;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
@@ -12,11 +13,15 @@ using Uno.Foundation;
 namespace Furball.Vixie.WindowManagement; 
 
 public class JSCanvasWindowManager : IWindowManager {
-    private bool _running;
-    
+    private  bool          _running;
+    internal Vector2D<int> _framebufferSize;
+    private  Stopwatch     _stopwatch;
+
     public JSCanvasWindowManager(Backend backend) {
         if (backend != Backend.WebGL)
             throw new PlatformNotSupportedException("You must use WebGL when using a JS canvas!");
+
+        Exports.WindowManager = this;
     }
     
     public void Dispose() {
@@ -24,34 +29,30 @@ public class JSCanvasWindowManager : IWindowManager {
     }
     
     public Backend Backend {
-        get;
+        get => Backend.WebGL;
     }
     
     public WindowState WindowState {
-        get;
-        set;
+        get => WindowState.Windowed; //TODO implement this
+        set {}
     }
     
-    public nint WindowHandle {
-        get;
-    }
-    
-    public IMonitor Monitor {
-        get;
-    }
+    public nint WindowHandle => 0;
+
+    public IMonitor Monitor => null;
     
     public Vector2D<int> WindowSize {
-        get;
-        set;
+        get => this._framebufferSize;
+        set {}
     }
     
     public Vector2D<int> FramebufferSize {
-        get;
+        get => this._framebufferSize;
     }
     
     public Vector2D<int> WindowPosition {
-        get;
-        set;
+        get => Vector2D<int>.Zero;
+        set {}
     }
     
     public double TargetFramerate {
@@ -84,10 +85,8 @@ public class JSCanvasWindowManager : IWindowManager {
         set;
     }
     
-    public bool Focused {
-        get;
-    }
-    
+    public bool Focused => bool.Parse(WebAssemblyRuntime.InvokeJS("document.hasFocus()"));
+
     public void Focus() {
         throw new NotImplementedException();
     }
@@ -102,8 +101,12 @@ public class JSCanvasWindowManager : IWindowManager {
     }
     
     public string WindowTitle {
-        get;
-        set;
+        get => WebAssemblyRuntime.InvokeJS("return window.document.title");
+        set {
+            string escapedTitle = WebAssemblyRuntime.EscapeJs(value);
+            
+            WebAssemblyRuntime.InvokeJS($"window.document.title = \"{escapedTitle}\"");
+        }
     }
     
     public GraphicsBackend GraphicsBackend {
@@ -112,7 +115,7 @@ public class JSCanvasWindowManager : IWindowManager {
     }
 
     public void CreateWindow() {
-        WebAssemblyRuntime.InvokeJS(@"var canvas = document.createElement('canvas');
+        WebAssemblyRuntime.InvokeJS(@"canvas = document.createElement('canvas');
 canvas.style.position = ""absolute"";
 canvas.style.left       = ""0px"";
 canvas.style.top        = ""0px"";
@@ -124,25 +127,56 @@ canvas.style.height = ""100%"";
 canvas.id = 'webgl-canvas';
 document.body.appendChild(canvas);");
     }
+
+    private void HookCanvasEvents() {
+        WebAssemblyRuntime.InvokeJS(@"
+window.addEventListener('resize', function() {
+    var canvas = document.getElementById('webgl-canvas');
+
+    var resizeWindow = Module.mono_bind_static_method(""[Furball.Vixie] Furball.Vixie.WindowManagement.JSCanvas.Exports:WindowResize"");
+    var result = resizeWindow(canvas.clientWidth, canvas.clientHeight);
+});
+
+//Request animation frame
+window.requestAnimationFrame = (function() {
+    return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+            window.setTimeout(callback, 1000 / 60);
+        };
+})();
+
+running = true;
+
+//Infinite requestAnimationFrame
+(function animLoop(time) {
+    if(!running) return;
+
+    Module.mono_bind_static_method(""[Furball.Vixie] Furball.Vixie.WindowManagement.JSCanvas.Exports:Frame"")();
+    requestAnimationFrame(animLoop);
+})();
+
+requestAnimationFrame(animLoop);
+");
+    }
+    
+    
     
     public void RunWindow() {
+        this._stopwatch = Stopwatch.StartNew();
+        
+        Exports.WindowResize(1920, 1080);
+        
         this.CreateGraphicsDevice();
+        this.HookCanvasEvents();
         
         this.WindowLoad?.Invoke();
 
-        Stopwatch stopwatch = Stopwatch.StartNew();
-        double deltaTime = 0;
-        double lastTime = 0;
-        while (this._running) {
-            this.Update?.Invoke(deltaTime);
-            this.Draw?.Invoke(deltaTime);
-            
-            deltaTime = (stopwatch.Elapsed.TotalSeconds - lastTime) * 1000;
-            lastTime = stopwatch.Elapsed.TotalSeconds;
-        }
-        stopwatch.Stop();
-        
-        this.WindowClosing?.Invoke();
+        this._running = true;
+        Exports.Frame();
     }
     private void CreateGraphicsDevice() {
         this.GraphicsBackend = new WebGLGraphicsBackend();
@@ -153,6 +187,9 @@ document.body.appendChild(canvas);");
 
     public void CloseWindow() {
         this._running = false;
+        
+        //Stop the frame loop
+        WebAssemblyRuntime.InvokeJS("running = false;");
     }
     
     public bool TryForceUpdate() {
@@ -171,4 +208,20 @@ document.body.appendChild(canvas);");
     public event Action<Vector2D<int>> FramebufferResize;
     public event Action<WindowState>   StateChanged;
     public event Action<string[]>      FileDrop;
+
+    private double _deltaTime;
+    private double _lastTime;
+    public void JsFrame() {
+        this.Update?.Invoke(this._deltaTime);
+        this.Draw?.Invoke(this._deltaTime);
+
+        this._deltaTime = this._stopwatch.Elapsed.TotalMilliseconds - this._lastTime;
+        this._lastTime  = this._stopwatch.Elapsed.TotalMilliseconds;
+    }
+    
+    internal void Resize(int width, int height) {
+        this._framebufferSize = new Vector2D<int>(width, height);
+        
+        this.GraphicsBackend?.HandleFramebufferResize(width, height);
+    }
 }

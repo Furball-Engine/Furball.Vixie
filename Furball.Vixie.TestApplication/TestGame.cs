@@ -3,6 +3,7 @@ using System;
 using System.Globalization;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Helpers.Helpers;
+using Furball.Vixie.TestApplication.Tests;
 #if USE_IMGUI
 using ImGuiNET;
 #endif
@@ -29,7 +30,7 @@ public class TestGame : Game {
     protected override void Initialize() {
         Instance = this;
         
-        this.ChangeScreen(new BaseTestSelector());
+        this.ChangeScreen(new TestNewRenderer());
 
         this.WindowManager.GraphicsBackend.ScreenshotTaken += delegate(object _, Image image) {
             Logger.Log("Writing screenshot!", LoggerLevelImageLoader.Instance);
