@@ -52,7 +52,7 @@ console.log('Initialized WebGL!');");
     }
     
     public override VixieRenderer CreateRenderer() {
-        throw new NotImplementedException();
+        return new WebGLRenderer();
     }
     
     public override int QueryMaxTextureUnits() {
@@ -84,7 +84,7 @@ gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);");
         return 0;
     }
     public override VixieTextureRenderTarget CreateRenderTarget(uint width, uint height) {
-        throw new NotImplementedException();
+        return new WebGLRenderTarget(width, height);
     }
     public override VixieTexture CreateTextureFromByteArray(byte[]            imageData,
                                                             TextureParameters parameters = default(TextureParameters)) {

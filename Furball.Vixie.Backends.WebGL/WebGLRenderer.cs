@@ -3,6 +3,7 @@ using Furball.Vixie.Backends.Shared.Renderers;
 
 namespace Furball.Vixie.Backends.WebGL; 
 
+// ReSharper disable once InconsistentNaming
 public class WebGLRenderer : VixieRenderer {
     public override void Begin() {
         throw new System.NotImplementedException();
