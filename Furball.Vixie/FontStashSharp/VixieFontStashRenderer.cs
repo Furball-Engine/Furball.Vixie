@@ -21,10 +21,22 @@ public class VixieFontStashRenderer : IFontStashRenderer2 {
         map.VertexPtr[2].Position = new Vector2(bottomLeft.Position.X, bottomLeft.Position.Y);
         map.VertexPtr[3].Position = new Vector2(bottomRight.Position.X, bottomRight.Position.Y);
 
-        map.VertexPtr[0].Color = topLeft.Color;
-        map.VertexPtr[1].Color = topRight.Color;
-        map.VertexPtr[2].Color = bottomLeft.Color;
-        map.VertexPtr[3].Color = bottomRight.Color;
+        map.VertexPtr[0].Color.R = topLeft.Color.R;
+        map.VertexPtr[0].Color.G = topLeft.Color.G;
+        map.VertexPtr[0].Color.B = topLeft.Color.B;
+        map.VertexPtr[0].Color.A = topLeft.Color.A;
+        map.VertexPtr[1].Color.R = topRight.Color.R;
+        map.VertexPtr[1].Color.G = topRight.Color.G;
+        map.VertexPtr[1].Color.B = topRight.Color.B;
+        map.VertexPtr[1].Color.A = topRight.Color.A;
+        map.VertexPtr[2].Color.R = bottomLeft.Color.R;
+        map.VertexPtr[2].Color.G = bottomLeft.Color.G;
+        map.VertexPtr[2].Color.B = bottomLeft.Color.B;
+        map.VertexPtr[2].Color.A = bottomLeft.Color.A;
+        map.VertexPtr[3].Color.R = bottomRight.Color.R;
+        map.VertexPtr[3].Color.G = bottomRight.Color.G;
+        map.VertexPtr[3].Color.B = bottomRight.Color.B;
+        map.VertexPtr[3].Color.A = bottomRight.Color.A;
 
         map.VertexPtr[0].TextureCoordinate = topLeft.TextureCoordinate;
         map.VertexPtr[1].TextureCoordinate = topRight.TextureCoordinate;
