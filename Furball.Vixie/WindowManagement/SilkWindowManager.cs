@@ -219,6 +219,8 @@ public class SilkWindowManager : IWindowManager {
                 default:
                     throw new ArgumentOutOfRangeException(nameof (value), value, null);
             }
+
+            this._windowState = value;
         }
     }
 
