@@ -21,8 +21,8 @@ public class Renderer {
         this.VixieRenderer = backend.CreateRenderer();
         
         Global.TrackedRenderers.Add(new WeakReference<Renderer>(this));
-        
-        this.FontRenderer = new VixieFontStashRenderer(this._backend, this.VixieRenderer);
+
+        this.FontRenderer = new VixieFontStashRenderer(this._backend, this);
     }
 
     public void Begin() {
@@ -36,8 +36,18 @@ public class Renderer {
     public void Draw() {
         this.VixieRenderer.Draw();
     }
+
+    public static ulong VertexCount;
+    public static ulong IndexCount;
     
     public MappedData Reserve(ushort vertexCount, uint indexCount) {
+        //NOTE: this is in an unchecked block to prevent crashes when the vertex/index count is too high
+        //it shouldnt EVER reach that point, but this is for safety
+        unchecked {
+            VertexCount += vertexCount;
+            IndexCount  += indexCount;
+        }
+    
         return this.VixieRenderer.Reserve(vertexCount, indexCount);
     }
 
