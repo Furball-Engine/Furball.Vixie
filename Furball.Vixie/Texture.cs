@@ -143,4 +143,6 @@ public class Texture : IDisposable {
     public static implicit operator VixieTexture(Texture tex) {
         return tex._texture;
     }
+
+    public override string ToString() => string.IsNullOrWhiteSpace(this.Name) ? base.ToString() : this.Name;
 }
