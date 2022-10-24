@@ -420,7 +420,8 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     ///     Used to Cleanup the Backend
     /// </summary>
     public override void Cleanup() {
-        this.Shader.Dispose();
+        if (this.FixedFunctionPipeline.Boolean)
+            this.Shader.Dispose();
         this.gl.Dispose();
     }
     /// <summary>
