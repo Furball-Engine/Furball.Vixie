@@ -110,9 +110,14 @@ public unsafe class WebGPUBackend : GraphicsBackend {
         //  - Set a flag backend wide (probably being this.ClearASAP), which will tell the renderer that:
         //    next time it creates a render pass, to set the load op to clear
         //If there *is* a scissor set, the logic is a bit more complicated:
+        // OPTION 1:
         //  - Create a render pass with the load op set to 'none' and the store op set to 'clear'
         //  - Draw a quad with the area of the scissor rect, the details of the quad do not matter, as long as the pixels
         //    dont get discarded in the shader (so a quad with color[1, 1, 1, 1] is ideal)
+        // OPTION 2:
+        //  - At the start of the next render pass, set the pipeline to one specifically for clearing, that pipeline
+        //    has specific alpha settings, to allow us to draw a color[0, 0, 0, 0] quad, which will clear the screen
+        //    then after, switch the pipeline to the normal rendering one
     }
 
     public override void TakeScreenshot() {
