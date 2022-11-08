@@ -9,26 +9,34 @@ using Silk.NET.Input;
 using Silk.NET.WebGPU;
 using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
+using Color = Silk.NET.WebGPU.Color;
 
 namespace Furball.Vixie.Backends.WebGPU;
 
 public unsafe class WebGPUBackend : GraphicsBackend {
     private Silk.NET.WebGPU.WebGPU _webgpu;
 
+    public int NumQueuesSubmit;
+    
     private IView _view;
 
     private Instance* _instance;
     private Adapter*  _adapter;
     private Device*   _device;
-    
+
     private TextureFormat _swapchainFormat;
-    
-    private Surface*      _surface;
-    private SwapChain*    Swapchain;
-    
+
+    private Surface*     _surface;
+    private SwapChain*   Swapchain;
+    private TextureView* SwapchainTextureView;
+
     public override void Initialize(IView view, IInputContext inputContext) {
         this._view = view;
-        
+
+        //These parameters are required for the WebGPU backend
+        this._view.IsContextControlDisabled = true;  //Stop Silk from managing the GL context, WebGPU does that
+        this._view.ShouldSwapAutomatically  = false; //Stop silk from attempting to swap buffers, we do that
+
 #if USE_IMGUI
             throw new NotImplementedException();
 #endif
@@ -40,7 +48,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
         this._surface = view.CreateWebGPUSurface(this._webgpu, this._instance);
 
         RequestAdapterOptions adapterOptions = new RequestAdapterOptions {
-            PowerPreference = PowerPreference.HighPerformance,
+            PowerPreference   = PowerPreference.HighPerformance,
             CompatibleSurface = this._surface
         };
 
@@ -50,8 +58,10 @@ public unsafe class WebGPUBackend : GraphicsBackend {
             new
                 PfnRequestAdapterCallback(
                     (response, adapter, message, _) => {
-                        Logger.Log($"Got adapter {(ulong)adapter:X} [{response}], with message \"{SilkMarshal.PtrToString((nint)message)}\"", LoggerLevelWebGPU.InstanceInfo);
-                        
+                        Logger.Log(
+                            $"Got adapter {(ulong)adapter:X} [{response}], with message \"{SilkMarshal.PtrToString((nint)message)}\"",
+                            LoggerLevelWebGPU.InstanceInfo);
+
                         if (response != RequestAdapterStatus.Success)
                             throw new Exception("Unable to get adapter!");
 
@@ -76,8 +86,10 @@ public unsafe class WebGPUBackend : GraphicsBackend {
             this._adapter,
             deviceDescriptor,
             new PfnRequestDeviceCallback((response, device, message, _) => {
-                Logger.Log($"Got device {(ulong)device:X} [{response}], with message \"{SilkMarshal.PtrToString((nint)message)}\"", LoggerLevelWebGPU.InstanceInfo);
-                        
+                Logger.Log(
+                    $"Got device {(ulong)device:X} [{response}], with message \"{SilkMarshal.PtrToString((nint)message)}\"",
+                    LoggerLevelWebGPU.InstanceInfo);
+
                 if (response != RequestDeviceStatus.Success)
                     throw new Exception("Unable to get device!");
 
@@ -87,19 +99,21 @@ public unsafe class WebGPUBackend : GraphicsBackend {
         );
 
         this.SetCallbacks();
-        
+
         this._swapchainFormat = this._webgpu.SurfaceGetPreferredFormat(this._surface, this._adapter);
-        
+
         this.CreateSwapchain();
     }
-    
+
     private void SetCallbacks() {
-        this._webgpu.DeviceSetDeviceLostCallback(this._device, new PfnDeviceLostCallback(this.DeviceLostCallback), null);
+        this._webgpu.DeviceSetDeviceLostCallback(this._device, new PfnDeviceLostCallback(this.DeviceLostCallback),
+                                                 null);
         this._webgpu.DeviceSetUncapturedErrorCallback(this._device, new PfnErrorCallback(this.ErrorCallback), null);
     }
-    
+
     private void DeviceLostCallback(DeviceLostReason reason, byte* message, void* userData) {
-        Logger.Log($"Device Lost! Reason: {reason}, Message: {SilkMarshal.PtrToString((nint)message)}", LoggerLevelWebGPU.InstanceCallbackError);
+        Logger.Log($"Device Lost! Reason: {reason}, Message: {SilkMarshal.PtrToString((nint)message)}",
+                   LoggerLevelWebGPU.InstanceCallbackError);
     }
 
     private void ErrorCallback(ErrorType errorType, byte* message, void* userData) {
@@ -116,8 +130,71 @@ public unsafe class WebGPUBackend : GraphicsBackend {
         };
 
         this.Swapchain = this._webgpu.DeviceCreateSwapChain(this._device, this._surface, descriptor);
+
+        Logger.Log($"Created swapchain with width {descriptor.Width} and height {descriptor.Height}",
+                   LoggerLevelWebGPU.InstanceInfo);
+    }
+
+    public override void BeginScene() {
+        base.BeginScene();
+
+        this.SwapchainTextureView = null;
+
+        for (int attempt = 0; attempt < 2; attempt++) {
+            this.SwapchainTextureView = this._webgpu.SwapChainGetCurrentTextureView(this.Swapchain);
+
+            if (attempt == 0 && this.SwapchainTextureView == null) {
+                Logger.Log(
+                    "SwapChainGetCurrentTextureView failed; trying to create a new swap chain...",
+                    LoggerLevelWebGPU.InstanceWarning
+                );
+                this.CreateSwapchain();
+                continue;
+            }
+
+            break;
+        }
+    }
+
+    public override void EndScene() {
+        base.EndScene();
+
+        if (this.NumQueuesSubmit != 0)
+            return;
         
-        Logger.Log($"Created swapchain with width {descriptor.Width} and height {descriptor.Height}", LoggerLevelWebGPU.InstanceInfo);
+        //NOTE: this shouldn't be required, but due to an issue in wgpu, it is, as things break if no work is submitted
+        //once https://github.com/gfx-rs/wgpu/issues/3189 is fixed, this can be removed
+        
+        CommandEncoder* encoder = this._webgpu.DeviceCreateCommandEncoder(this._device, new CommandEncoderDescriptor());
+
+        RenderPassColorAttachment colorAttachment = new RenderPassColorAttachment {
+            View          = this.SwapchainTextureView,
+            LoadOp        = LoadOp.Clear,
+            StoreOp       = StoreOp.Store,
+            ResolveTarget = null, ClearValue = new Color(0, 0, 0, 1)
+        };
+
+        RenderPassDescriptor renderPassDescriptor = new RenderPassDescriptor {
+            ColorAttachments       = &colorAttachment,
+            ColorAttachmentCount   = 1,
+            DepthStencilAttachment = null
+        };
+
+        RenderPassEncoder* renderPass = this._webgpu.CommandEncoderBeginRenderPass(encoder, renderPassDescriptor);
+        this._webgpu.RenderPassEncoderEnd(renderPass);
+
+        CommandBuffer* commandBuffer = this._webgpu.CommandEncoderFinish(encoder, new CommandBufferDescriptor());
+
+        Queue* queue = this._webgpu.DeviceGetQueue(this._device);
+        this._webgpu.QueueSubmit(queue, 1, &commandBuffer);
+    }
+
+    public override void Present() {
+        base.Present();
+
+        this._webgpu.SwapChainPresent(this.Swapchain);
+
+        this.NumQueuesSubmit = 0;
     }
 
     public override void Cleanup() {
