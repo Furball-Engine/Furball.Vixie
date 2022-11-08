@@ -15,13 +15,20 @@ namespace Furball.Vixie.Backends.WebGPU;
 public unsafe class WebGPUBackend : GraphicsBackend {
     private Silk.NET.WebGPU.WebGPU _webgpu;
 
+    private IView _view;
+
     private Instance* _instance;
     private Adapter*  _adapter;
     private Device*   _device;
     
-    private Surface*  _surface;
-
+    private TextureFormat _swapchainFormat;
+    
+    private Surface*      _surface;
+    private SwapChain*    Swapchain;
+    
     public override void Initialize(IView view, IInputContext inputContext) {
+        this._view = view;
+        
 #if USE_IMGUI
             throw new NotImplementedException();
 #endif
@@ -43,7 +50,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
             new
                 PfnRequestAdapterCallback(
                     (response, adapter, message, _) => {
-                        Logger.Log($"Got adapter {(ulong)adapter:X} [{response}], with message {SilkMarshal.PtrToString((nint)message)}", LoggerLevelWebGPU.InstanceInfo);
+                        Logger.Log($"Got adapter {(ulong)adapter:X} [{response}], with message \"{SilkMarshal.PtrToString((nint)message)}\"", LoggerLevelWebGPU.InstanceInfo);
                         
                         if (response != RequestAdapterStatus.Success)
                             throw new Exception("Unable to get adapter!");
@@ -69,7 +76,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
             this._adapter,
             deviceDescriptor,
             new PfnRequestDeviceCallback((response, device, message, _) => {
-                Logger.Log($"Got device {(ulong)device:X} [{response}], with message {SilkMarshal.PtrToString((nint)message)}", LoggerLevelWebGPU.InstanceInfo);
+                Logger.Log($"Got device {(ulong)device:X} [{response}], with message \"{SilkMarshal.PtrToString((nint)message)}\"", LoggerLevelWebGPU.InstanceInfo);
                         
                 if (response != RequestDeviceStatus.Success)
                     throw new Exception("Unable to get device!");
@@ -79,11 +86,31 @@ public unsafe class WebGPUBackend : GraphicsBackend {
             null
         );
 
+        this.SetCallbacks();
+        
+        this._swapchainFormat = this._webgpu.SurfaceGetPreferredFormat(this._surface, this._adapter);
+        
         this.CreateSwapchain();
     }
     
+    private void SetCallbacks() {
+        this._webgpu.DeviceSetUncapturedErrorCallback(this._device, new PfnErrorCallback(this.ErrorCallback), null);
+    }
+    
+    private void ErrorCallback(ErrorType errorType, byte* message, void* userData) {
+        Logger.Log($"{errorType}: {SilkMarshal.PtrToString((nint)message)}", LoggerLevelWebGPU.InstanceCallbackError);
+    }
+
     private void CreateSwapchain() {
-        
+        SwapChainDescriptor descriptor = new SwapChainDescriptor {
+            Usage       = TextureUsage.RenderAttachment,
+            Format      = this._swapchainFormat,
+            PresentMode = PresentMode.Fifo,
+            Width       = (uint)this._view.Size.X,
+            Height      = (uint)this._view.Size.Y
+        };
+
+        this.Swapchain = this._webgpu.DeviceCreateSwapChain(this._device, this._surface, descriptor);
     }
 
     public override void Cleanup() {
