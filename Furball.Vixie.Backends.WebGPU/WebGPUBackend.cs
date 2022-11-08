@@ -43,8 +43,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
             new
                 PfnRequestAdapterCallback(
                     (response, adapter, message, _) => {
-                        Logger.Log($"Got adapter {(nuint)adapter:X} [{response}], with message {SilkMarshal.PtrToString((nint)message)}", 
-                        LoggerLevelWebGPU.InstanceInfo);
+                        Logger.Log($"Got adapter {(ulong)adapter:X} [{response}], with message {SilkMarshal.PtrToString((nint)message)}", LoggerLevelWebGPU.InstanceInfo);
                         
                         if (response != RequestAdapterStatus.Success)
                             throw new Exception("Unable to get adapter!");
@@ -70,8 +69,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
             this._adapter,
             deviceDescriptor,
             new PfnRequestDeviceCallback((response, device, message, _) => {
-                Logger.Log($"Got device {(nuint)device:X} [{response}], with message {SilkMarshal.PtrToString((nint)message)}", 
-                           LoggerLevelWebGPU.InstanceInfo);
+                Logger.Log($"Got device {(ulong)device:X} [{response}], with message {SilkMarshal.PtrToString((nint)message)}", LoggerLevelWebGPU.InstanceInfo);
                         
                 if (response != RequestDeviceStatus.Success)
                     throw new Exception("Unable to get device!");
