@@ -3,7 +3,7 @@
 namespace Furball.Vixie.Backends.WebGPU; 
 
 public class LoggerLevelWebGPU : LoggerLevel {
-    public override string Name => "VulkanInfo";
+    public override string Name => "WebGPUInfo";
 
     private new enum Channel {
         Info,
