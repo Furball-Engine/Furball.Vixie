@@ -27,6 +27,9 @@ public static class Global {
 #if VIXIE_BACKEND_VULKAN
             Backend.Vulkan     => new Dictionary<string, FeatureLevel>(),
 #endif
+#if VIXIE_BACKEND_WEBGPU
+            Backend.WebGPU     => new Dictionary<string, FeatureLevel>(),            
+#endif
             _                  => throw new ArgumentOutOfRangeException(nameof (backend), backend, null)
         };
     }

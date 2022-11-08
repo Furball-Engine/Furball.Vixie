@@ -2,6 +2,7 @@
 using System;
 using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.Shared.Backends;
+using Furball.Vixie.Backends.WebGPU;
 using Furball.Vixie.Helpers;
 using Silk.NET.Core;
 using Silk.NET.Input;
@@ -80,6 +81,9 @@ public class SilkWindowManager : IWindowManager {
 #if VIXIE_BACKEND_DUMMY
             Backend.Dummy => ContextAPI.None, //Dummy backend is just a dummy, so we specify none
 #endif
+#if VIXIE_BACKEND_WEBGPU
+            Backend.WebGPU => ContextAPI.None, //Dummy backend is just a dummy, so we specify none
+#endif
 #if VIXIE_BACKEND_MOLA
             Backend.Mola => ContextAPI
                .None, //Mola is software rendering, and we dont currently output anything to the window
@@ -105,7 +109,10 @@ public class SilkWindowManager : IWindowManager {
             Backend.Dummy      => ContextProfile.Core, //This doesnt matter for Dummy
 #endif
 #if VIXIE_BACKEND_MOLA
-            Backend.Mola       => ContextProfile.Core, //This doesnt matter for Mola, as it is software rendering
+            Backend.Mola => ContextProfile.Core, //This doesnt matter for Mola, as it is software rendering
+#endif
+#if VIXIE_BACKEND_WEBGPU
+            Backend.WebGPU => ContextProfile.Core, //This doesnt matter for Mola, as it is software rendering
 #endif
             _                  => throw new Exception("Invalid API chosen...")
         };
@@ -136,7 +143,10 @@ public class SilkWindowManager : IWindowManager {
             Backend.Mola   => debug ? ContextFlags.Debug : ContextFlags.Default,
 #endif
 #if VIXIE_BACKEND_DUMMY
-            Backend.Dummy  => debug ? ContextFlags.Debug : ContextFlags.Default,
+            Backend.Dummy => debug ? ContextFlags.Debug : ContextFlags.Default,
+#endif
+#if VIXIE_BACKEND_WEBGPU
+            Backend.WebGPU => debug ? ContextFlags.Debug : ContextFlags.Default,
 #endif
             _ => throw new Exception("Invalid API chosen...")
         };
@@ -186,6 +196,11 @@ public class SilkWindowManager : IWindowManager {
 #endif
 #if VIXIE_BACKEND_MOLA
             case Backend.Mola:
+                version = new APIVersion(0, 0);
+                break;
+#endif
+#if VIXIE_BACKEND_WEBGPU
+            case Backend.WebGPU:
                 version = new APIVersion(0, 0);
                 break;
 #endif
@@ -486,6 +501,9 @@ public class SilkWindowManager : IWindowManager {
 #endif
 #if VIXIE_BACKEND_MOLA
             Backend.Mola       => new MolaBackend(),
+#endif
+#if VIXIE_BACKEND_WEBGPU
+            Backend.WebGPU     => new WebGPUBackend(),      
 #endif
             _                  => throw new Exception("Invalid Backend Selected...")
         };

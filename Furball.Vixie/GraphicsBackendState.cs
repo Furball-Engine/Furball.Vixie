@@ -31,8 +31,24 @@ public static class GraphicsBackendState {
 
         bool supportsGl   = Backends.Shared.Global.LatestSupportedGl.GL.MajorVersion   != 0;
         bool supportsGles = Backends.Shared.Global.LatestSupportedGl.GLES.MajorVersion != 0;
-#endif            
+#endif
 
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("BROWSER"))) {
+            //TODO: check if we are able to use WebGPU (for now we will assume we can,
+            //      but due to the fact that most browsers do not support WebGPU [at the time of writing neither
+            //      chrome nor firefox have it enabled by default], this assumption is bad)
+            
+#if VIXIE_BACKEND_OPENGL
+            //If the user wants to use OpenGL, use it instead of WebGPU
+            if (preferOpenGl)
+                return Backend.OpenGL;
+#endif
+
+#if VIXIE_BACKEND_WEBGPU
+            //WebGPU is the fastest API available on the web, so its the default
+            return Backend.WebGPU;
+#endif
+        }
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
 #if VIXIE_BACKEND_VELDRID
             if (preferVeldridOverNative)

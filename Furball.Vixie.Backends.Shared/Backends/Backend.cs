@@ -24,6 +24,9 @@ public enum Backend {
     Mola       = 1 << 6,
 #endif
 #if VIXIE_BACKEND_DUMMY
-    Dummy      = 1 << 7
+    Dummy      = 1 << 7,
+#endif
+#if VIXIE_BACKEND_WEBGPU
+    WebGPU     = 1 << 8,
 #endif
 }

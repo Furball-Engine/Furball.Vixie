@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <LangVersion>10</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Reference Include="Silk.NET.WebGPU">
+        <HintPath>..\Silk.NET.WebGPU.dll</HintPath>
+      </Reference>
+      <Reference Include="Silk.NET.WebGPU.Extensions.Dawn">
+        <HintPath>..\Silk.NET.WebGPU.Extensions.Dawn.dll</HintPath>
+      </Reference>
+      <Reference Include="Silk.NET.WebGPU.Extensions.WGPU">
+        <HintPath>..\Silk.NET.WebGPU.Extensions.WGPU.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Furball.Vixie.Backends.Shared\Furball.Vixie.Backends.Shared.csproj" />
+    </ItemGroup>
+
+</Project>
