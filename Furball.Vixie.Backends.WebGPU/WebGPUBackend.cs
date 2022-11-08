@@ -106,11 +106,13 @@ public unsafe class WebGPUBackend : GraphicsBackend {
             Usage       = TextureUsage.RenderAttachment,
             Format      = this._swapchainFormat,
             PresentMode = PresentMode.Fifo,
-            Width       = (uint)this._view.Size.X,
-            Height      = (uint)this._view.Size.Y
+            Width       = (uint)this._view.FramebufferSize.X,
+            Height      = (uint)this._view.FramebufferSize.Y
         };
 
         this.Swapchain = this._webgpu.DeviceCreateSwapChain(this._device, this._surface, descriptor);
+        
+        Logger.Log($"Created swapchain with width {descriptor.Width} and height {descriptor.Height}", LoggerLevelWebGPU.InstanceInfo);
     }
 
     public override void Cleanup() {
