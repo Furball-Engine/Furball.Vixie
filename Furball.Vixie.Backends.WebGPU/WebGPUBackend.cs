@@ -171,7 +171,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
             View          = this.SwapchainTextureView,
             LoadOp        = LoadOp.Clear,
             StoreOp       = StoreOp.Store,
-            ResolveTarget = null, ClearValue = new Color(0, 0, 0, 1)
+            ResolveTarget = null, ClearValue = new Color(0, 0, 0, 0)
         };
 
         RenderPassDescriptor renderPassDescriptor = new RenderPassDescriptor {
