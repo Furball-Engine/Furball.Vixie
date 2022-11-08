@@ -94,9 +94,14 @@ public unsafe class WebGPUBackend : GraphicsBackend {
     }
     
     private void SetCallbacks() {
+        this._webgpu.DeviceSetDeviceLostCallback(this._device, new PfnDeviceLostCallback(this.DeviceLostCallback), null);
         this._webgpu.DeviceSetUncapturedErrorCallback(this._device, new PfnErrorCallback(this.ErrorCallback), null);
     }
     
+    private void DeviceLostCallback(DeviceLostReason reason, byte* message, void* userData) {
+        Logger.Log($"Device Lost! Reason: {reason}, Message: {SilkMarshal.PtrToString((nint)message)}", LoggerLevelWebGPU.InstanceCallbackError);
+    }
+
     private void ErrorCallback(ErrorType errorType, byte* message, void* userData) {
         Logger.Log($"{errorType}: {SilkMarshal.PtrToString((nint)message)}", LoggerLevelWebGPU.InstanceCallbackError);
     }
