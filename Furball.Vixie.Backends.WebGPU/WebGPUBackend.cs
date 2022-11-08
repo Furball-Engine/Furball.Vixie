@@ -78,6 +78,12 @@ public unsafe class WebGPUBackend : GraphicsBackend {
             }),
             null
         );
+
+        this.CreateSwapchain();
+    }
+    
+    private void CreateSwapchain() {
+        
     }
 
     public override void Cleanup() {
@@ -85,7 +91,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
     }
 
     public override void HandleFramebufferResize(int width, int height) {
-        throw new NotImplementedException();
+        this.CreateSwapchain();
     }
 
     public override VixieRenderer CreateRenderer() {
@@ -97,7 +103,16 @@ public unsafe class WebGPUBackend : GraphicsBackend {
     }
 
     public override void Clear() {
-        throw new NotImplementedException();
+        //TODO: implement arbitrary clearing of the screen
+        //This is not as simple in WebGPU as in OpenGL
+        //To clear the full screen in WebGPU we need to do it at the START of a render pass, it cannot be done at any time
+        //This means we need to do it in the renderer, so if there is no scissor set:
+        //  - Set a flag backend wide (probably being this.ClearASAP), which will tell the renderer that:
+        //    next time it creates a render pass, to set the load op to clear
+        //If there *is* a scissor set, the logic is a bit more complicated:
+        //  - Create a render pass with the load op set to 'none' and the store op set to 'clear'
+        //  - Draw a quad with the area of the scissor rect, the details of the quad do not matter, as long as the pixels
+        //    dont get discarded in the shader (so a quad with color[1, 1, 1, 1] is ideal)
     }
 
     public override void TakeScreenshot() {
@@ -110,7 +125,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
     }
 
     public override void SetFullScissorRect() {
-        throw new NotImplementedException();
+        //TODO
     }
 
     public override ulong GetVramUsage() {
