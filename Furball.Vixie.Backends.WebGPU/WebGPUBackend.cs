@@ -17,6 +17,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
     private Silk.NET.WebGPU.WebGPU _webgpu;
 
     public int NumQueuesSubmit;
+    public bool ClearASAP;
     
     private IView _view;
 
@@ -29,6 +30,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
     private Surface*     _surface;
     private SwapChain*   Swapchain;
     private TextureView* SwapchainTextureView;
+
 
     public override void Initialize(IView view, IInputContext inputContext) {
         this._view = view;
@@ -169,7 +171,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
 
         RenderPassColorAttachment colorAttachment = new RenderPassColorAttachment {
             View          = this.SwapchainTextureView,
-            LoadOp        = LoadOp.Clear,
+            LoadOp        = this.ClearASAP ? LoadOp.Clear : LoadOp.Load,
             StoreOp       = StoreOp.Store,
             ResolveTarget = null, ClearValue = new Color(0, 0, 0, 0)
         };
@@ -187,6 +189,9 @@ public unsafe class WebGPUBackend : GraphicsBackend {
 
         Queue* queue = this._webgpu.DeviceGetQueue(this._device);
         this._webgpu.QueueSubmit(queue, 1, &commandBuffer);
+
+        //This code clears the screen, so reset this flag
+        this.ClearASAP = false;
     }
 
     public override void Present() {
@@ -195,6 +200,8 @@ public unsafe class WebGPUBackend : GraphicsBackend {
         this._webgpu.SwapChainPresent(this.Swapchain);
 
         this.NumQueuesSubmit = 0;
+        
+        this.ClearASAP = false;
     }
 
     public override void Cleanup() {
@@ -214,6 +221,8 @@ public unsafe class WebGPUBackend : GraphicsBackend {
     }
 
     public override void Clear() {
+        this.ClearASAP = true;
+
         //TODO: implement arbitrary clearing of the screen
         //This is not as simple in WebGPU as in OpenGL
         //To clear the full screen in WebGPU we need to do it at the START of a render pass, it cannot be done at any time
