@@ -14,7 +14,9 @@ public unsafe class WebGPUTexture : VixieTexture {
     private readonly TextureParameters _parameters;
 
     public readonly Texture*     Texture;
-    public readonly TextureView* View;
+    public readonly TextureView* TextureView;
+
+    private BindGroup* BindGroup;
 
     public WebGPUTexture(WebGPUBackend backend, int width, int height, TextureParameters parameters) {
         this._backend    = backend;
@@ -36,7 +38,7 @@ public unsafe class WebGPUTexture : VixieTexture {
             ViewFormatCount = 1
         });
 
-        this.View = this._webGpu.TextureCreateView(this.Texture, new TextureViewDescriptor {
+        this.TextureView = this._webGpu.TextureCreateView(this.Texture, new TextureViewDescriptor {
             ArrayLayerCount = 1,
             MipLevelCount   = parameters.RequestMipmaps ? (uint)this.MipMapCount(width, height) : 1,
             Format          = TextureFormat.Rgba8Unorm,
@@ -45,11 +47,41 @@ public unsafe class WebGPUTexture : VixieTexture {
             BaseMipLevel    = 0,
             Aspect          = TextureAspect.None
         });
+
+        this.CreateBindGroup();
+    }
+    
+    private void CreateBindGroup() {
+        BindGroupEntry* bindGroupEntries = stackalloc BindGroupEntry[2];
+        bindGroupEntries[0] = new BindGroupEntry
+        {
+            Binding     = 0,
+            TextureView = this.TextureView
+        };
+        bindGroupEntries[1] = new BindGroupEntry
+        {
+            Binding = 1,
+            Sampler = this.FilterType == TextureFilterType.Pixelated 
+                ? this._backend.NearestSampler 
+                : this._backend.LinearSampler
+        };
+
+        this.BindGroup = this._webGpu.DeviceCreateBindGroup(this._backend.Device, new BindGroupDescriptor
+        {
+            Entries    = bindGroupEntries,
+            EntryCount = 2,
+            Layout     = this._backend.TextureSamplerBindGroupLayout
+        });
     }
 
+    private TextureFilterType _filterType;
     public override TextureFilterType FilterType {
-        get;
-        set;
+        get => this._filterType;
+        set {
+            this._filterType = value;
+            
+            this.CreateBindGroup();
+        }
     }
 
     public override bool Mipmaps => this._webGpu.TextureGetMipLevelCount(this.Texture) > 1;
@@ -108,7 +140,7 @@ public unsafe class WebGPUTexture : VixieTexture {
         return Array.Empty<Rgba32>();
     }
 
-    private bool _isDisposed;
+    private bool       _isDisposed;
     public override void Dispose() {
         base.Dispose();
 

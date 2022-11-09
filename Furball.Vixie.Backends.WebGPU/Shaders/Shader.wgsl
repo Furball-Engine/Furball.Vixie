@@ -3,11 +3,14 @@ struct VertexOutputs {
     @builtin(position) position: vec4<f32>,
     //The texture cooridnate of the vertex
     @location(0) tex_coord: vec2<f32>,
+    //The color of the vertex
     @location(1) vertex_col: vec4<f32>
 }
 
 struct FragmentInputs {
+    //Texture coordinate
     @location(0) tex_coord: vec2<f32>,
+    //The Vertex color
     @location(1) vertex_col: vec4<f32>
 }
 
@@ -18,8 +21,7 @@ fn vs_main(
     @location(0) pos: vec2<f32>,
     @location(1) tex_coord: vec2<f32>,
     @location(2) vertex_col: vec4<f32>,
-    @location(3) tex_id1: u32,
-    @location(4) tex_id2: u32 //note: this is actually a single u64, but there is no u64 in wgsl :^)
+    @location(3) tex_id: vec2<u32> //note: this is actually a single u64, but there is no u64 in wgsl :^)
 ) -> VertexOutputs {
     var output: VertexOutputs;
 

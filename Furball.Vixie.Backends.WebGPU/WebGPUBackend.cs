@@ -1,14 +1,18 @@
 ﻿using System;
 using System.IO;
+using System.Numerics;
+using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.Renderers;
+using Furball.Vixie.Helpers.Helpers;
 using Kettu;
 using Silk.NET.Core.Native;
 using Silk.NET.Input;
 using Silk.NET.WebGPU;
 using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
+using Buffer = Silk.NET.WebGPU.Buffer;
 using Color = Silk.NET.WebGPU.Color;
 
 namespace Furball.Vixie.Backends.WebGPU;
@@ -17,22 +21,33 @@ public unsafe class WebGPUBackend : GraphicsBackend {
     public Silk.NET.WebGPU.WebGPU WebGPU;
 
     public int  NumQueuesSubmit;
-    public bool ClearASAP;
+    public bool ClearAsap;
 
     private IView _view;
 
-    public Instance* _instance;
-    public Adapter*  _adapter;
+    public Instance* Instance;
+    public Adapter*  Adapter;
     public Device*   Device;
 
     private TextureFormat _swapchainFormat;
 
     private Surface*     _surface;
-    private SwapChain*   Swapchain;
-    private TextureView* SwapchainTextureView;
+    public  SwapChain*   Swapchain;
+    public  TextureView* SwapchainTextureView;
 
-    private Sampler* LinearSampler;
-    private Sampler* NearestSampler;
+    public Sampler* LinearSampler;
+    public Sampler* NearestSampler;
+
+    public BindGroupLayout* TextureSamplerBindGroupLayout;
+
+    public Buffer*          ProjectionMatrixBuffer;
+    public BindGroupLayout* ProjectionMatrixBindGroupLayout;
+    public BindGroup*       ProjectionMatrixBindGroup;
+
+    public PipelineLayout* PipelineLayout;
+    public RenderPipeline* Pipeline;
+
+    public ShaderModule* Shader;
 
     public override void Initialize(IView view, IInputContext inputContext) {
         this._view = view;
@@ -47,9 +62,9 @@ public unsafe class WebGPUBackend : GraphicsBackend {
 
         this.WebGPU = Silk.NET.WebGPU.WebGPU.GetApi();
 
-        this._instance = this.WebGPU.CreateInstance(new InstanceDescriptor());
+        this.Instance = this.WebGPU.CreateInstance(new InstanceDescriptor());
 
-        this._surface = view.CreateWebGPUSurface(this.WebGPU, this._instance);
+        this._surface = view.CreateWebGPUSurface(this.WebGPU, this.Instance);
 
         RequestAdapterOptions adapterOptions = new RequestAdapterOptions {
             PowerPreference   = PowerPreference.HighPerformance,
@@ -57,7 +72,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
         };
 
         this.WebGPU.InstanceRequestAdapter(
-            this._instance,
+            this.Instance,
             adapterOptions,
             new
                 PfnRequestAdapterCallback(
@@ -69,7 +84,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
                         if (response != RequestAdapterStatus.Success)
                             throw new Exception("Unable to get adapter!");
 
-                        this._adapter = adapter;
+                        this.Adapter = adapter;
                     }),
             null
         );
@@ -77,17 +92,18 @@ public unsafe class WebGPUBackend : GraphicsBackend {
         RequiredLimits* requiredLimits = stackalloc RequiredLimits[1] {
             new RequiredLimits {
                 Limits = new Limits {
-                    MaxBindGroups = 1
+                    MaxBindGroups =
+                        2 //We use 2 bind groups, one for the projection matrix, one for the sampler and texture
                 }
             }
         };
 
         DeviceDescriptor deviceDescriptor = new DeviceDescriptor {
-            RequiredLimits = requiredLimits,
+            RequiredLimits = requiredLimits
         };
 
         this.WebGPU.AdapterRequestDevice(
-            this._adapter,
+            this.Adapter,
             deviceDescriptor,
             new PfnRequestDeviceCallback((response, device, message, _) => {
                 Logger.Log(
@@ -104,29 +120,215 @@ public unsafe class WebGPUBackend : GraphicsBackend {
 
         this.SetCallbacks();
 
-        this._swapchainFormat = this.WebGPU.SurfaceGetPreferredFormat(this._surface, this._adapter);
+        this._swapchainFormat = this.WebGPU.SurfaceGetPreferredFormat(this._surface, this.Adapter);
+
+        this.CreateProjectionMatrixBuffer();
 
         this.CreateSamplers();
+        this.CreateShaders();
+        this.CreatePipelines();
     }
-    
+
+    private void CreateShaders() {
+        ShaderModuleWGSLDescriptor wgslDescriptor = new ShaderModuleWGSLDescriptor {
+            Code = (byte*)SilkMarshal.StringToPtr(
+                ResourceHelpers.GetStringResource("Shaders/Shader.wgsl", typeof(WebGPUBackend))
+            ),
+            Chain = new ChainedStruct {
+                SType = SType.ShaderModuleWgsldescriptor
+            }
+        };
+
+        this.Shader = this.WebGPU.DeviceCreateShaderModule(this.Device, new ShaderModuleDescriptor {
+            NextInChain = (ChainedStruct*)(&wgslDescriptor)
+        });
+
+        //Free the shader code, we dont want that permanently in memory, that would be simply silly
+        SilkMarshal.FreeString((nint)wgslDescriptor.Code);
+        
+        Logger.Log(
+            $"Created Shader {(ulong)this.Shader:X}",
+            LoggerLevelWebGPU.InstanceInfo
+        );
+    }
+
+    private void CreateProjectionMatrixBuffer() {
+        this.ProjectionMatrixBuffer = this.WebGPU.DeviceCreateBuffer(this.Device, new BufferDescriptor {
+            Size             = (ulong)sizeof(Matrix4x4),
+            Usage            = BufferUsage.Uniform | BufferUsage.CopyDst,
+            MappedAtCreation = false
+        });
+
+        BindGroupLayoutEntry bindGroupLayoutEntry = new BindGroupLayoutEntry {
+            Buffer = new BufferBindingLayout {
+                Type           = BufferBindingType.Uniform,
+                MinBindingSize = (ulong)sizeof(Matrix4x4)
+            },
+            Binding    = 0,
+            Visibility = ShaderStage.Vertex
+        };
+
+        this.ProjectionMatrixBindGroupLayout = this.WebGPU.DeviceCreateBindGroupLayout(
+            this.Device,
+            new BindGroupLayoutDescriptor {
+                Entries    = &bindGroupLayoutEntry,
+                EntryCount = 1
+            }
+        );
+
+        BindGroupEntry bindGroupEntry = new BindGroupEntry {
+            Binding = 0,
+            Buffer  = this.ProjectionMatrixBuffer, 
+            Size = (ulong)sizeof(Matrix4x4)
+        };
+
+        this.ProjectionMatrixBindGroup = this.WebGPU.DeviceCreateBindGroup(this.Device, new BindGroupDescriptor {
+            Entries    = &bindGroupEntry,
+            EntryCount = 1,
+            Layout     = this.ProjectionMatrixBindGroupLayout
+        });
+    }
+
+    private void CreatePipelines() {
+        BindGroupLayoutEntry* textureSamplerBindGroupLayoutEntries = stackalloc BindGroupLayoutEntry[2];
+        textureSamplerBindGroupLayoutEntries[0] = new BindGroupLayoutEntry {
+            Binding = 0,
+            Texture = new TextureBindingLayout {
+                Multisampled  = false,
+                SampleType    = TextureSampleType.Float,
+                ViewDimension = TextureViewDimension.TextureViewDimension2D
+            },
+            Visibility = ShaderStage.Fragment
+        };
+        textureSamplerBindGroupLayoutEntries[1] = new BindGroupLayoutEntry {
+            Binding = 1,
+            Sampler = new SamplerBindingLayout {
+                Type = SamplerBindingType.Filtering
+            },
+            Visibility = ShaderStage.Fragment
+        };
+
+        this.TextureSamplerBindGroupLayout = this.WebGPU.DeviceCreateBindGroupLayout(
+            this.Device, new BindGroupLayoutDescriptor {
+                Entries    = textureSamplerBindGroupLayoutEntries,
+                EntryCount = 2
+            });
+
+        BindGroupLayout** bindGroupLayouts = stackalloc BindGroupLayout*[2];
+        bindGroupLayouts[0] = this.TextureSamplerBindGroupLayout;
+        bindGroupLayouts[1] = this.ProjectionMatrixBindGroupLayout;
+
+        this.PipelineLayout = this.WebGPU.DeviceCreatePipelineLayout(this.Device, new PipelineLayoutDescriptor {
+            BindGroupLayouts     = bindGroupLayouts,
+            BindGroupLayoutCount = 2
+        });
+
+        BlendState blendState = new BlendState {
+            Color = new BlendComponent {
+                SrcFactor = BlendFactor.SrcAlpha,
+                DstFactor = BlendFactor.OneMinusSrcAlpha,
+                Operation = BlendOperation.None
+            },
+            Alpha = new BlendComponent {
+                SrcFactor = BlendFactor.One,
+                DstFactor = BlendFactor.OneMinusSrcAlpha,
+                Operation = BlendOperation.Add
+            }
+        };
+
+        ColorTargetState colorTargetState = new ColorTargetState {
+            Blend     = &blendState,
+            Format    = this._swapchainFormat,
+            WriteMask = ColorWriteMask.All
+        };
+
+        FragmentState fragmentState = new FragmentState {
+            Module      = this.Shader,
+            Targets     = &colorTargetState,
+            TargetCount = 1,
+            EntryPoint  = (byte*)SilkMarshal.StringToPtr("fs_main") //TODO: free this
+        };
+
+        VertexAttribute* vertexAttributes = stackalloc VertexAttribute[4];
+
+        //Position
+        vertexAttributes[0] = new VertexAttribute {
+            Format         = VertexFormat.Float32x2,
+            Offset         = (ulong)Marshal.OffsetOf<Vertex>(nameof (Vertex.Position)),
+            ShaderLocation = 0
+        };
+        //Texture coord
+        vertexAttributes[1] = new VertexAttribute {
+            Format         = VertexFormat.Float32x2,
+            Offset         = (ulong)Marshal.OffsetOf<Vertex>(nameof (Vertex.TextureCoordinate)),
+            ShaderLocation = 1
+        };
+        //Vertex color
+        vertexAttributes[2] = new VertexAttribute {
+            Format         = VertexFormat.Float32x4,
+            Offset         = (ulong)Marshal.OffsetOf<Vertex>(nameof (Vertex.Color)),
+            ShaderLocation = 2
+        };
+        //Texture index
+        vertexAttributes[3] = new VertexAttribute {
+            Format         = VertexFormat.Uint32x2, //Note: this is a ulong, not 2 uints, but theres no u64 in WGSL
+            Offset         = (ulong)Marshal.OffsetOf<Vertex>(nameof (Vertex.TexId)),
+            ShaderLocation = 3
+        };
+
+        VertexBufferLayout vertexBufferLayout = new VertexBufferLayout {
+            Attributes     = vertexAttributes,
+            AttributeCount = 4,
+            StepMode       = VertexStepMode.Vertex,
+            ArrayStride    = (ulong)sizeof(Vertex)
+        };
+
+        this.Pipeline = this.WebGPU.DeviceCreateRenderPipeline(this.Device, new RenderPipelineDescriptor {
+            Layout   = this.PipelineLayout,
+            Fragment = &fragmentState,
+            Vertex = new VertexState {
+                Buffers     = &vertexBufferLayout,
+                BufferCount = 1,
+                Module      = this.Shader,
+                EntryPoint  = (byte*)SilkMarshal.StringToPtr("vs_main") //TODO: free this
+            },
+            Multisample = new MultisampleState {
+                Count                  = 1,
+                Mask                   = ~0u,
+                AlphaToCoverageEnabled = true
+            },
+            Primitive = new PrimitiveState {
+                CullMode  = CullMode.Back,
+                Topology  = PrimitiveTopology.TriangleList,
+                FrontFace = FrontFace.CW
+            },
+            DepthStencil = null
+        });
+
+        Logger.Log(
+            $"Created Pipeline {(ulong)this.Pipeline:X}",
+            LoggerLevelWebGPU.InstanceInfo
+        );
+    }
+
     private void CreateSamplers() {
         this.LinearSampler = this.WebGPU.DeviceCreateSampler(this.Device, new SamplerDescriptor {
             AddressModeU = AddressMode.Repeat,
             AddressModeV = AddressMode.Repeat,
-            AddressModeW = AddressMode.Repeat, 
-            Compare = CompareFunction.Undefined, 
-            MagFilter = FilterMode.Linear, 
-            MinFilter = FilterMode.Linear, 
+            AddressModeW = AddressMode.Repeat,
+            Compare      = CompareFunction.Undefined,
+            MagFilter    = FilterMode.Linear,
+            MinFilter    = FilterMode.Linear,
             MipmapFilter = MipmapFilterMode.Linear
         });
         this.NearestSampler = this.WebGPU.DeviceCreateSampler(this.Device, new SamplerDescriptor {
             AddressModeU = AddressMode.Repeat,
             AddressModeV = AddressMode.Repeat,
-            AddressModeW = AddressMode.Repeat, 
-            Compare      = CompareFunction.Undefined, 
-            MagFilter    = FilterMode.Nearest, 
-            MinFilter    = FilterMode.Nearest, 
-            MipmapFilter = MipmapFilterMode.Nearest 
+            AddressModeW = AddressMode.Repeat,
+            Compare      = CompareFunction.Undefined,
+            MagFilter    = FilterMode.Nearest,
+            MinFilter    = FilterMode.Nearest,
+            MipmapFilter = MipmapFilterMode.Nearest
         });
 
         Logger.Log(
@@ -199,7 +401,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
 
         RenderPassColorAttachment colorAttachment = new RenderPassColorAttachment {
             View          = this.SwapchainTextureView,
-            LoadOp        = this.ClearASAP ? LoadOp.Clear : LoadOp.Load,
+            LoadOp        = this.ClearAsap ? LoadOp.Clear : LoadOp.Load,
             StoreOp       = StoreOp.Store,
             ResolveTarget = null, ClearValue = new Color(0, 0, 0, 0)
         };
@@ -219,7 +421,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
         this.WebGPU.QueueSubmit(queue, 1, &commandBuffer);
 
         //This code clears the screen, so reset this flag
-        this.ClearASAP = false;
+        this.ClearAsap = false;
     }
 
     public override void Present() {
@@ -229,7 +431,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
 
         this.NumQueuesSubmit = 0;
 
-        this.ClearASAP = false;
+        this.ClearAsap = false;
     }
 
     public override void Cleanup() {
@@ -250,7 +452,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
     }
 
     public override void Clear() {
-        this.ClearASAP = true;
+        this.ClearAsap = true;
 
         //TODO: implement arbitrary clearing of the screen
         //This is not as simple in WebGPU as in OpenGL
@@ -294,15 +496,18 @@ public unsafe class WebGPUBackend : GraphicsBackend {
         throw new NotImplementedException();
     }
 
-    public override VixieTexture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default) {
+    public override VixieTexture CreateTextureFromByteArray(byte[]            imageData,
+                                                            TextureParameters parameters = default(TextureParameters)) {
         throw new NotImplementedException();
     }
 
-    public override VixieTexture CreateTextureFromStream(Stream stream, TextureParameters parameters = default) {
+    public override VixieTexture CreateTextureFromStream(Stream            stream,
+                                                         TextureParameters parameters = default(TextureParameters)) {
         throw new NotImplementedException();
     }
 
-    public override VixieTexture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default) {
+    public override VixieTexture CreateEmptyTexture(uint              width, uint height,
+                                                    TextureParameters parameters = default(TextureParameters)) {
         return new WebGPUTexture(this, (int)width, (int)height, parameters);
     }
 

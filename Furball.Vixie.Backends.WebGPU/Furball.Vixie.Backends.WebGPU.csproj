@@ -22,4 +22,9 @@
       <ProjectReference Include="..\Furball.Vixie.Backends.Shared\Furball.Vixie.Backends.Shared.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="Shaders\Shader.wgsl" />
+      <EmbeddedResource Include="Shaders\Shader.wgsl" />
+    </ItemGroup>
+
 </Project>
