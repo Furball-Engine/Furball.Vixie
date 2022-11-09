@@ -54,6 +54,9 @@ public unsafe class WebGPUTexture : VixieTexture {
     }
 
     public override VixieTexture SetData <T>(ReadOnlySpan<T> data) {
+        if (data.Length * sizeof(T) < this.Size.X * this.Size.Y * sizeof(Rgba32))
+            throw new ArgumentException($"{nameof(data)} is too small!", nameof (data));
+        
         this.SetData(data, new Rectangle(0, 0, this.Width, this.Height));
 
         return this;
