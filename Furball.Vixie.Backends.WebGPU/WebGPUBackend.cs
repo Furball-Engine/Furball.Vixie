@@ -275,7 +275,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
     }
 
     public override VixieTexture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default) {
-        throw new NotImplementedException();
+        return new WebGPUTexture(this, (int)width, (int)height, parameters);
     }
 
     public override VixieTexture CreateWhitePixelTexture() {

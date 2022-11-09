@@ -9,14 +9,17 @@ namespace Furball.Vixie.Backends.WebGPU;
 
 public unsafe class WebGPUTexture : VixieTexture {
     private readonly WebGPUBackend          _backend;
-    private          Silk.NET.WebGPU.WebGPU _webGpu;
+    private readonly Silk.NET.WebGPU.WebGPU _webGpu;
+
+    private readonly TextureParameters _parameters;
 
     public readonly Texture*     Texture;
     public readonly TextureView* View;
 
-    public WebGPUTexture(WebGPUBackend backend, int width, int height) {
-        this._backend = backend;
-        this._webGpu  = backend.WebGPU;
+    public WebGPUTexture(WebGPUBackend backend, int width, int height, TextureParameters parameters) {
+        this._backend    = backend;
+        this._parameters = parameters;
+        this._webGpu     = backend.WebGPU;
 
         this.Size = new Vector2D<int>(width, height);
 
@@ -27,7 +30,7 @@ public unsafe class WebGPUTexture : VixieTexture {
             Format          = TextureFormat.Rgba8Unorm,
             Size            = new Extent3D((uint)width, (uint)height, 1),
             Usage           = TextureUsage.CopyDst | TextureUsage.CopySrc | TextureUsage.TextureBinding,
-            MipLevelCount   = (uint)this.MipMapCount(width, height),
+            MipLevelCount   = parameters.RequestMipmaps ? (uint)this.MipMapCount(width, height) : 1,
             SampleCount     = 1,
             ViewFormats     = &format,
             ViewFormatCount = 1
@@ -35,7 +38,7 @@ public unsafe class WebGPUTexture : VixieTexture {
 
         this.View = this._webGpu.TextureCreateView(this.Texture, new TextureViewDescriptor {
             ArrayLayerCount = 1,
-            MipLevelCount   = (uint)this.MipMapCount(width, height),
+            MipLevelCount   = parameters.RequestMipmaps ? (uint)this.MipMapCount(width, height) : 1,
             Format          = TextureFormat.Rgba8Unorm,
             Dimension       = TextureViewDimension.TextureViewDimension2D,
             BaseArrayLayer  = 0,
@@ -49,14 +52,12 @@ public unsafe class WebGPUTexture : VixieTexture {
         set;
     }
 
-    public override bool Mipmaps {
-        get;
-    }
+    public override bool Mipmaps => this._webGpu.TextureGetMipLevelCount(this.Texture) > 1;
 
     public override VixieTexture SetData <T>(ReadOnlySpan<T> data) {
         if (data.Length * sizeof(T) < this.Size.X * this.Size.Y * sizeof(Rgba32))
-            throw new ArgumentException($"{nameof(data)} is too small!", nameof (data));
-        
+            throw new ArgumentException($"{nameof (data)} is too small!", nameof (data));
+
         this.SetData(data, new Rectangle(0, 0, this.Width, this.Height));
 
         return this;
@@ -65,7 +66,8 @@ public unsafe class WebGPUTexture : VixieTexture {
     public override VixieTexture SetData <T>(ReadOnlySpan<T> data, Rectangle rect) {
         Queue* queue = this._webGpu.DeviceGetQueue(this._backend.Device);
 
-        CommandEncoder* encoder = this._webGpu.DeviceCreateCommandEncoder(this._backend.Device, new CommandEncoderDescriptor());
+        CommandEncoder* encoder =
+            this._webGpu.DeviceCreateCommandEncoder(this._backend.Device, new CommandEncoderDescriptor());
 
         fixed (T* ptr = data)
             this._webGpu.QueueWriteTexture(
@@ -106,7 +108,7 @@ public unsafe class WebGPUTexture : VixieTexture {
         return Array.Empty<Rgba32>();
     }
 
-    private bool _isDisposed = false;
+    private bool _isDisposed;
     public override void Dispose() {
         base.Dispose();
 
