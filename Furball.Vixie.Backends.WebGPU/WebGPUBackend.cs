@@ -16,14 +16,14 @@ namespace Furball.Vixie.Backends.WebGPU;
 public unsafe class WebGPUBackend : GraphicsBackend {
     public Silk.NET.WebGPU.WebGPU WebGPU;
 
-    public int NumQueuesSubmit;
+    public int  NumQueuesSubmit;
     public bool ClearASAP;
-    
+
     private IView _view;
 
     public Instance* _instance;
     public Adapter*  _adapter;
-    public  Device*   Device;
+    public Device*   Device;
 
     private TextureFormat _swapchainFormat;
 
@@ -31,6 +31,8 @@ public unsafe class WebGPUBackend : GraphicsBackend {
     private SwapChain*   Swapchain;
     private TextureView* SwapchainTextureView;
 
+    private Sampler* LinearSampler;
+    private Sampler* NearestSampler;
 
     public override void Initialize(IView view, IInputContext inputContext) {
         this._view = view;
@@ -104,12 +106,38 @@ public unsafe class WebGPUBackend : GraphicsBackend {
 
         this._swapchainFormat = this.WebGPU.SurfaceGetPreferredFormat(this._surface, this._adapter);
 
-        this.CreateSwapchain();
+        this.CreateSamplers();
+    }
+    
+    private void CreateSamplers() {
+        this.LinearSampler = this.WebGPU.DeviceCreateSampler(this.Device, new SamplerDescriptor {
+            AddressModeU = AddressMode.Repeat,
+            AddressModeV = AddressMode.Repeat,
+            AddressModeW = AddressMode.Repeat, 
+            Compare = CompareFunction.Undefined, 
+            MagFilter = FilterMode.Linear, 
+            MinFilter = FilterMode.Linear, 
+            MipmapFilter = MipmapFilterMode.Linear
+        });
+        this.NearestSampler = this.WebGPU.DeviceCreateSampler(this.Device, new SamplerDescriptor {
+            AddressModeU = AddressMode.Repeat,
+            AddressModeV = AddressMode.Repeat,
+            AddressModeW = AddressMode.Repeat, 
+            Compare      = CompareFunction.Undefined, 
+            MagFilter    = FilterMode.Nearest, 
+            MinFilter    = FilterMode.Nearest, 
+            MipmapFilter = MipmapFilterMode.Nearest 
+        });
+
+        Logger.Log(
+            $"Created Linear Sampler {(ulong)this.LinearSampler:X} and Nearest Sampler {(ulong)this.NearestSampler:X}",
+            LoggerLevelWebGPU.InstanceInfo
+        );
     }
 
     private void SetCallbacks() {
         this.WebGPU.DeviceSetDeviceLostCallback(this.Device, new PfnDeviceLostCallback(this.DeviceLostCallback),
-                                                 null);
+                                                null);
         this.WebGPU.DeviceSetUncapturedErrorCallback(this.Device, new PfnErrorCallback(this.ErrorCallback), null);
     }
 
@@ -163,10 +191,10 @@ public unsafe class WebGPUBackend : GraphicsBackend {
 
         if (this.NumQueuesSubmit != 0)
             return;
-        
+
         //NOTE: this shouldn't be required, but due to an issue in wgpu, it is, as things break if no work is submitted
         //once https://github.com/gfx-rs/wgpu/issues/3189 is fixed, this can be removed
-        
+
         CommandEncoder* encoder = this.WebGPU.DeviceCreateCommandEncoder(this.Device, new CommandEncoderDescriptor());
 
         RenderPassColorAttachment colorAttachment = new RenderPassColorAttachment {
@@ -200,7 +228,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
         this.WebGPU.SwapChainPresent(this.Swapchain);
 
         this.NumQueuesSubmit = 0;
-        
+
         this.ClearASAP = false;
     }
 
