@@ -14,16 +14,16 @@ using Color = Silk.NET.WebGPU.Color;
 namespace Furball.Vixie.Backends.WebGPU;
 
 public unsafe class WebGPUBackend : GraphicsBackend {
-    private Silk.NET.WebGPU.WebGPU _webgpu;
+    public Silk.NET.WebGPU.WebGPU WebGPU;
 
     public int NumQueuesSubmit;
     public bool ClearASAP;
     
     private IView _view;
 
-    private Instance* _instance;
-    private Adapter*  _adapter;
-    private Device*   _device;
+    public Instance* _instance;
+    public Adapter*  _adapter;
+    public  Device*   Device;
 
     private TextureFormat _swapchainFormat;
 
@@ -43,18 +43,18 @@ public unsafe class WebGPUBackend : GraphicsBackend {
             throw new NotImplementedException();
 #endif
 
-        this._webgpu = Silk.NET.WebGPU.WebGPU.GetApi();
+        this.WebGPU = Silk.NET.WebGPU.WebGPU.GetApi();
 
-        this._instance = this._webgpu.CreateInstance(new InstanceDescriptor());
+        this._instance = this.WebGPU.CreateInstance(new InstanceDescriptor());
 
-        this._surface = view.CreateWebGPUSurface(this._webgpu, this._instance);
+        this._surface = view.CreateWebGPUSurface(this.WebGPU, this._instance);
 
         RequestAdapterOptions adapterOptions = new RequestAdapterOptions {
             PowerPreference   = PowerPreference.HighPerformance,
             CompatibleSurface = this._surface
         };
 
-        this._webgpu.InstanceRequestAdapter(
+        this.WebGPU.InstanceRequestAdapter(
             this._instance,
             adapterOptions,
             new
@@ -84,7 +84,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
             RequiredLimits = requiredLimits,
         };
 
-        this._webgpu.AdapterRequestDevice(
+        this.WebGPU.AdapterRequestDevice(
             this._adapter,
             deviceDescriptor,
             new PfnRequestDeviceCallback((response, device, message, _) => {
@@ -95,22 +95,22 @@ public unsafe class WebGPUBackend : GraphicsBackend {
                 if (response != RequestDeviceStatus.Success)
                     throw new Exception("Unable to get device!");
 
-                this._device = device;
+                this.Device = device;
             }),
             null
         );
 
         this.SetCallbacks();
 
-        this._swapchainFormat = this._webgpu.SurfaceGetPreferredFormat(this._surface, this._adapter);
+        this._swapchainFormat = this.WebGPU.SurfaceGetPreferredFormat(this._surface, this._adapter);
 
         this.CreateSwapchain();
     }
 
     private void SetCallbacks() {
-        this._webgpu.DeviceSetDeviceLostCallback(this._device, new PfnDeviceLostCallback(this.DeviceLostCallback),
+        this.WebGPU.DeviceSetDeviceLostCallback(this.Device, new PfnDeviceLostCallback(this.DeviceLostCallback),
                                                  null);
-        this._webgpu.DeviceSetUncapturedErrorCallback(this._device, new PfnErrorCallback(this.ErrorCallback), null);
+        this.WebGPU.DeviceSetUncapturedErrorCallback(this.Device, new PfnErrorCallback(this.ErrorCallback), null);
     }
 
     private void DeviceLostCallback(DeviceLostReason reason, byte* message, void* userData) {
@@ -131,7 +131,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
             Height      = (uint)this._view.FramebufferSize.Y
         };
 
-        this.Swapchain = this._webgpu.DeviceCreateSwapChain(this._device, this._surface, descriptor);
+        this.Swapchain = this.WebGPU.DeviceCreateSwapChain(this.Device, this._surface, descriptor);
 
         Logger.Log($"Created swapchain with width {descriptor.Width} and height {descriptor.Height}",
                    LoggerLevelWebGPU.InstanceInfo);
@@ -143,7 +143,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
         this.SwapchainTextureView = null;
 
         for (int attempt = 0; attempt < 2; attempt++) {
-            this.SwapchainTextureView = this._webgpu.SwapChainGetCurrentTextureView(this.Swapchain);
+            this.SwapchainTextureView = this.WebGPU.SwapChainGetCurrentTextureView(this.Swapchain);
 
             if (attempt == 0 && this.SwapchainTextureView == null) {
                 Logger.Log(
@@ -167,7 +167,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
         //NOTE: this shouldn't be required, but due to an issue in wgpu, it is, as things break if no work is submitted
         //once https://github.com/gfx-rs/wgpu/issues/3189 is fixed, this can be removed
         
-        CommandEncoder* encoder = this._webgpu.DeviceCreateCommandEncoder(this._device, new CommandEncoderDescriptor());
+        CommandEncoder* encoder = this.WebGPU.DeviceCreateCommandEncoder(this.Device, new CommandEncoderDescriptor());
 
         RenderPassColorAttachment colorAttachment = new RenderPassColorAttachment {
             View          = this.SwapchainTextureView,
@@ -182,13 +182,13 @@ public unsafe class WebGPUBackend : GraphicsBackend {
             DepthStencilAttachment = null
         };
 
-        RenderPassEncoder* renderPass = this._webgpu.CommandEncoderBeginRenderPass(encoder, renderPassDescriptor);
-        this._webgpu.RenderPassEncoderEnd(renderPass);
+        RenderPassEncoder* renderPass = this.WebGPU.CommandEncoderBeginRenderPass(encoder, renderPassDescriptor);
+        this.WebGPU.RenderPassEncoderEnd(renderPass);
 
-        CommandBuffer* commandBuffer = this._webgpu.CommandEncoderFinish(encoder, new CommandBufferDescriptor());
+        CommandBuffer* commandBuffer = this.WebGPU.CommandEncoderFinish(encoder, new CommandBufferDescriptor());
 
-        Queue* queue = this._webgpu.DeviceGetQueue(this._device);
-        this._webgpu.QueueSubmit(queue, 1, &commandBuffer);
+        Queue* queue = this.WebGPU.DeviceGetQueue(this.Device);
+        this.WebGPU.QueueSubmit(queue, 1, &commandBuffer);
 
         //This code clears the screen, so reset this flag
         this.ClearASAP = false;
@@ -197,7 +197,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
     public override void Present() {
         base.Present();
 
-        this._webgpu.SwapChainPresent(this.Swapchain);
+        this.WebGPU.SwapChainPresent(this.Swapchain);
 
         this.NumQueuesSubmit = 0;
         
@@ -205,7 +205,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
     }
 
     public override void Cleanup() {
-        this._webgpu.Dispose();
+        this.WebGPU.Dispose();
     }
 
     public override void HandleFramebufferResize(int width, int height) {
@@ -217,7 +217,8 @@ public unsafe class WebGPUBackend : GraphicsBackend {
     }
 
     public override int QueryMaxTextureUnits() {
-        throw new NotImplementedException();
+        //This is a technique called: lying!
+        return 0;
     }
 
     public override void Clear() {
@@ -254,11 +255,11 @@ public unsafe class WebGPUBackend : GraphicsBackend {
     }
 
     public override ulong GetVramUsage() {
-        throw new NotImplementedException();
+        return 0;
     }
 
     public override ulong GetTotalVram() {
-        throw new NotImplementedException();
+        return 0;
     }
 
     public override VixieTextureRenderTarget CreateRenderTarget(uint width, uint height) {
