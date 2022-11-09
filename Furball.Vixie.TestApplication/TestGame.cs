@@ -56,6 +56,8 @@ public class TestGame : Game {
 
             this.IpcClient = new IpcClient();
             this.IpcClient.Initialize(this.HostPort);
+            
+            Logger.Log($"Hosting IPC on {this.ClientPort}, connected to {this.HostPort}", LoggerLevelUnknown.Instance);
         }
     }
 
