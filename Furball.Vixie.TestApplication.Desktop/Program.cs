@@ -1,3 +1,3 @@
 using Furball.Vixie.TestApplication;
 
-new TestGame().Run();
+new TestGame(false, 0, 0).Run();

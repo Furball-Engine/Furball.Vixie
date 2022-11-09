@@ -9,41 +9,60 @@ using ImGuiNET;
 using Kettu;
 using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
+using ZetaIpc.Runtime.Client;
+using ZetaIpc.Runtime.Server;
 
-namespace Furball.Vixie.TestApplication; 
+namespace Furball.Vixie.TestApplication;
 
 public class TestGame : Game {
-    public TestGame() {}
-    
+    public readonly bool      UnderTestHarness;
+    public          IpcServer IpcServer;
+    public          IpcClient IpcClient;
+    public          int       HostPort;
+    public          int       ClientPort;
+
+    public TestGame(bool underTestHarness, int hostPort, int clientPort) {
+        this.UnderTestHarness = underTestHarness;
+        this.HostPort         = hostPort;
+        this.ClientPort       = clientPort;
+    }
+
     public static TestGame Instance;
 
     private Screen? _runningScreen;
     public void ChangeScreen(Screen screen) {
         this._runningScreen?.Dispose();
-        
+
         screen.Initialize();
 
         this._runningScreen = screen;
     }
-    
+
     protected override void Initialize() {
         Instance = this;
-        
+
         this.ChangeScreen(new BaseTestSelector());
 
         this.WindowManager.GraphicsBackend.ScreenshotTaken += delegate(object _, Image image) {
             Logger.Log("Writing screenshot!", LoggerLevelImageLoader.Instance);
             image.SaveAsPng("testoutput.png");
         };
-            
+
         base.Initialize();
+
+        if (this.UnderTestHarness) {
+            this.IpcServer = new IpcServer();
+            this.IpcServer.Start(this.ClientPort);
+
+            this.IpcClient = new IpcClient();
+            this.IpcClient.Initialize(this.HostPort);
+        }
     }
 
     private       double _updateDelta;
     private const double UPDATE_RATE = 1000f;
     private       long   _alloccedMemory;
-        
-    
+
     public void Run(Backend backend = Backend.None) {
         base.Run(backend);
     }
@@ -54,33 +73,34 @@ public class TestGame : Game {
 
     protected override void Update(double deltaTime) {
         this._runningScreen?.Update(deltaTime);
-        
+
         base.Update(deltaTime);
     }
 
     protected override void Draw(double deltaTime) {
         this.WindowManager.GraphicsBackend.Clear();
-        
+
         this._runningScreen?.Draw(deltaTime);
-        
+
 #if USE_IMGUI
         ImGui.Begin("Global Controls");
-            
-        ImGui.Text($"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
-                   $"Framerate: {Math.Round(ImGui.GetIO().Framerate,           2).ToString(CultureInfo.InvariantCulture)}"
+
+        ImGui.Text(
+            $"Frametime: {Math.Round(1000.0f / ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)} " +
+            $"Framerate: {Math.Round(ImGui.GetIO().Framerate, 2).ToString(CultureInfo.InvariantCulture)}"
         );
 #endif
 
         this._updateDelta += deltaTime;
 
         if (this._updateDelta > UPDATE_RATE) {
-            this._alloccedMemory = GC.GetTotalMemory(true);
+            this._alloccedMemory =  GC.GetTotalMemory(true);
             this._updateDelta    -= UPDATE_RATE;
         }
-    
+
 #if USE_IMGUI
         ImGui.Text($"RAM Usage: {this._alloccedMemory}");
-            
+
         if (ImGui.Button("Take Screenshot")) {
             this.WindowManager.GraphicsBackend.TakeScreenshot();
         }
@@ -92,10 +112,10 @@ public class TestGame : Game {
         if (ImGui.Button("Recreate Window")) {
             throw new NotImplementedException();
         }
-        
+
         ImGui.End();
 #endif
-            
+
         base.Draw(deltaTime);
     }
 }
