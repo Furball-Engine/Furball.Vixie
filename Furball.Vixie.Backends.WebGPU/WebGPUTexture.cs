@@ -16,7 +16,7 @@ public unsafe class WebGPUTexture : VixieTexture {
     public readonly Texture*     Texture;
     public readonly TextureView* TextureView;
 
-    private BindGroup* BindGroup;
+    public BindGroup* BindGroup;
 
     public WebGPUTexture(WebGPUBackend backend, int width, int height, TextureParameters parameters) {
         this._backend    = backend;
@@ -125,7 +125,7 @@ public unsafe class WebGPUTexture : VixieTexture {
 
         CommandBuffer* commandBuffer = this._webGpu.CommandEncoderFinish(encoder, new CommandBufferDescriptor());
 
-        this._webGpu.QueueSubmit(queue, 1, commandBuffer);
+        this._webGpu.QueueSubmit(queue, 1, &commandBuffer);
 
         return this;
     }
