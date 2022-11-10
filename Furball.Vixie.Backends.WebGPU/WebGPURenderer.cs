@@ -252,7 +252,7 @@ public unsafe class WebGPURenderer : VixieRenderer {
 
         if (this._currentTexture != null && tex != this._currentTexture) {
             RenderBuffer buf = new RenderBuffer();
-            buf.Texture     = tex;
+            buf.Texture     = this._currentTexture;
             buf.IndexOffset = this._lastIndexOffset;
             buf.IndexCount  = this._indexCount - this._lastIndexCount;
 
