@@ -11,8 +11,8 @@ public unsafe class WebGPUBufferMapper : BufferMapper {
     private readonly BufferUsage            _usage;
     private readonly Silk.NET.WebGPU.WebGPU _webgpu;
 
-    public Buffer* Buffer;
-    public void*   Ptr;
+    public Buffer* MappedBuffer;
+    public void*   MappedBufferPtr;
 
     public WebGPUBufferMapper(WebGPUBackend backend, uint byteSize, BufferUsage usage) {
         this._backend = backend;
@@ -23,64 +23,100 @@ public unsafe class WebGPUBufferMapper : BufferMapper {
                      "(usage & ~(BufferUsage.Index | BufferUsage.Vertex)) == 0");
 
         this.SizeInBytes = byteSize;
+
+        this.MappedBuffer = this._webgpu.DeviceCreateBuffer(this._backend.Device, new BufferDescriptor {
+            Size             = byteSize,
+            MappedAtCreation = true,
+            Usage            = BufferUsage.MapWrite | BufferUsage.CopySrc
+        });
+
+        this.MappedBufferPtr = this._webgpu.BufferGetMappedRange(this.MappedBuffer, 0, byteSize);
     }
 
-    public Buffer* ResetFromExistingBuffer(Buffer* buffer) {
-        Guard.Assert((this._webgpu.BufferGetUsage(buffer) & BufferUsage.MapWrite) != 0,
-                     "(this._webgpu.BufferGetUsage(buffer) | BufferUsage.MapWrite) != 0");
+    public void CopyMappedDataToExistingBuffer(Buffer* buffer) {
+        //TODO: readd this check once https://github.com/gfx-rs/wgpu-native/issues/227 is fixed
+        // Guard.Assert((this._webgpu.BufferGetUsage(buffer) & BufferUsage.MapWrite) != 0,
+        // "(this._webgpu.BufferGetUsage(buffer) | BufferUsage.MapWrite) != 0");
 
         this.ReservedBytes = 0;
 
-        //Get the current buffer
-        Buffer* old = this.Buffer;
+        this.Unmap();
+        
+        CommandEncoder* encoder =
+            this._webgpu.DeviceCreateCommandEncoder(this._backend.Device, new CommandEncoderDescriptor());
 
-        //Set the current buffer to the new one
-        this.Buffer = buffer;
+        this._webgpu.CommandEncoderCopyBufferToBuffer(encoder, this.MappedBuffer, 0, buffer, 0, this.SizeInBytes);
 
-        //Unmap the old buffer
-        if (old != null)
-            this._webgpu.BufferUnmap(old);
+        CommandBuffer* commandBuffer = this._webgpu.CommandEncoderFinish(encoder, new CommandBufferDescriptor());
+        Queue*         queue         = this._webgpu.DeviceGetQueue(this._backend.Device);
+        this._webgpu.QueueSubmit(queue, 1, &commandBuffer);
 
-        //Map the new buffer
-        this._webgpu.BufferMapAsync(this.Buffer, MapMode.Write, 0, this.SizeInBytes, new PfnBufferMapCallback(
-                                        (status, ptr) => {
-                                            if (status != BufferMapAsyncStatus.Success)
-                                                throw new Exception($"Failed to map buffer! Status: {status}");
-
-                                            this.Ptr = ptr;
-                                        }), null);
-
-        return old;
+        this.Map();
     }
 
-    public Buffer* ResetFromFreshBuffer() {
+    public Buffer* CopyMappedDataToNewBuffer() {
         Buffer* buffer = this._webgpu.DeviceCreateBuffer(this._backend.Device, new BufferDescriptor {
             Size             = this.SizeInBytes,
-            Usage            = this._usage | BufferUsage.MapWrite,
+            Usage            = this._usage | BufferUsage.CopyDst,
             MappedAtCreation = false
         });
 
-        return this.ResetFromExistingBuffer(buffer);
+        this.CopyMappedDataToExistingBuffer(buffer);
+
+        return buffer;
     }
 
     public override void Map() {
-        Guard.Fail("We should not be here! Use the `Reset*` methods!");
+        // Guard.Fail("We should not be here! Use the `Reset*` methods!");
+
+        //TODO: remap existing buffer, dont recreate
+        // this._webgpu.BufferMapAsync(
+            // this.MappedBuffer,
+            // MapMode.Write,
+            // 0,
+            // this.SizeInBytes,
+            // new PfnBufferMapCallback((status, ptr) => {
+                // if (status != BufferMapAsyncStatus.Success)
+                    // throw new Exception("Unable to map buffer!");
+
+                // this.MappedBufferPtr = ptr;
+            // }),
+            // null
+        // );
+
+        // this._backend.WGPU.DevicePoll(this._backend.Device, true, null);
+
+        if(this.MappedBuffer != null)
+            this._webgpu.BufferDestroy(this.MappedBuffer);
+        
+        this.MappedBuffer = this._webgpu.DeviceCreateBuffer(this._backend.Device, new BufferDescriptor {
+            Size             = this.SizeInBytes,
+            MappedAtCreation = true,
+            Usage            = BufferUsage.MapWrite | BufferUsage.CopySrc
+        });
+
+        this.MappedBufferPtr = this._webgpu.BufferGetMappedRange(this.MappedBuffer, 0, this.SizeInBytes);
+        
+        // this.MappedBufferPtr = this._webgpu.BufferGetMappedRange(this.MappedBuffer, 0, this.SizeInBytes);
     }
 
     public override void Unmap() {
-        Guard.Assert(this.Buffer != null, "this.Buffer != null");
+        Guard.EnsureNonNull(this.MappedBuffer, "this.MappedBuffer");
+
+        this._webgpu.BufferUnmap(this.MappedBuffer);
+        this.MappedBufferPtr = null;
 
         //Unmap the buffer
-        this._webgpu.BufferUnmap(this.Buffer);
+        // this._webgpu.BufferUnmap(this.Buffer);
 
-        this._webgpu.BufferDestroy(this.Buffer);
+        // this._webgpu.BufferDestroy(this.Buffer);
 
         //Say we no longer are using any buffers
-        this.Buffer = null;
+        // this.Buffer = null;
     }
 
     public override void* Reserve(nuint byteCount) {
-        nuint ptr = (nuint)this.Ptr + this.ReservedBytes;
+        nuint ptr = (nuint)this.MappedBufferPtr + this.ReservedBytes;
 
         //If this reserve will push us over the limit, return nullptr
         if (this.ReservedBytes + byteCount > this.SizeInBytes)
@@ -92,7 +128,7 @@ public unsafe class WebGPUBufferMapper : BufferMapper {
     }
 
     protected override void DisposeInternal() {
-        if (this.Buffer != null)
-            this._webgpu.BufferDestroy(this.Buffer);
+        if (this.MappedBuffer != null)
+            this._webgpu.BufferDestroy(this.MappedBuffer);
     }
 }

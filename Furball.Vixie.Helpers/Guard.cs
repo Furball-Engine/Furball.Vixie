@@ -22,6 +22,20 @@ public static class Guard {
     }
     
     /// <summary>
+    /// Ensures an object is not null
+    /// </summary>
+    /// <param name="obj">Object to check</param>
+    /// <param name="valueExpression">The expression </param>
+    /// <exception cref="ArgumentNullException">When the object is null</exception>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe void EnsureNonNull<T>(T* obj, string valueExpression = "") where T : unmanaged {
+#if DEBUG
+        if(obj == null) 
+            throw new ArgumentNullException(nameof (obj), valueExpression);
+#endif
+    }
+    
+    /// <summary>
     /// Ensures an object is null
     /// </summary>
     /// <param name="obj">Object to check</param>
@@ -29,6 +43,20 @@ public static class Guard {
     /// <exception cref="ArgumentException">When the object is non-null</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void EnsureNull(object? obj, string msg) {
+#if DEBUG
+        if(obj != null)
+            throw new ArgumentException(msg);
+#endif
+    }
+    
+    /// <summary>
+    /// Ensures an object is null
+    /// </summary>
+    /// <param name="obj">Object to check</param>
+    /// <param name="msg">The message to display in the exception</param>
+    /// <exception cref="ArgumentException">When the object is non-null</exception>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe void EnsureNull<T>(T* obj, string msg) where T : unmanaged {
 #if DEBUG
         if(obj != null)
             throw new ArgumentException(msg);

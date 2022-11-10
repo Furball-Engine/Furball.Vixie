@@ -10,8 +10,10 @@ using Kettu;
 using Silk.NET.Core.Native;
 using Silk.NET.Input;
 using Silk.NET.WebGPU;
+using Silk.NET.WebGPU.Extensions.WGPU;
 using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using Buffer = Silk.NET.WebGPU.Buffer;
 using Color = Silk.NET.WebGPU.Color;
 
@@ -48,6 +50,8 @@ public unsafe class WebGPUBackend : GraphicsBackend {
     public RenderPipeline* Pipeline;
 
     public ShaderModule* Shader;
+
+    public Wgpu WGPU;
 
     public override void Initialize(IView view, IInputContext inputContext) {
         this._view = view;
@@ -127,6 +131,8 @@ public unsafe class WebGPUBackend : GraphicsBackend {
         this.CreateSamplers();
         this.CreateShaders();
         this.CreatePipelines();
+
+        // this.WebGPU.TryGetDeviceExtension(this.Device, out this.WGPU);
     }
 
     private void CreateShaders() {
@@ -145,7 +151,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
 
         //Free the shader code, we dont want that permanently in memory, that would be simply silly
         SilkMarshal.FreeString((nint)wgslDescriptor.Code);
-        
+
         Logger.Log(
             $"Created Shader {(ulong)this.Shader:X}",
             LoggerLevelWebGPU.InstanceInfo
@@ -178,8 +184,8 @@ public unsafe class WebGPUBackend : GraphicsBackend {
 
         BindGroupEntry bindGroupEntry = new BindGroupEntry {
             Binding = 0,
-            Buffer  = this.ProjectionMatrixBuffer, 
-            Size = (ulong)sizeof(Matrix4x4)
+            Buffer  = this.ProjectionMatrixBuffer,
+            Size    = (ulong)sizeof(Matrix4x4)
         };
 
         this.ProjectionMatrixBindGroup = this.WebGPU.DeviceCreateBindGroup(this.Device, new BindGroupDescriptor {
@@ -227,7 +233,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
             Color = new BlendComponent {
                 SrcFactor = BlendFactor.SrcAlpha,
                 DstFactor = BlendFactor.OneMinusSrcAlpha,
-                Operation = BlendOperation.None
+                Operation = BlendOperation.Add
             },
             Alpha = new BlendComponent {
                 SrcFactor = BlendFactor.One,
@@ -300,7 +306,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
             Primitive = new PrimitiveState {
                 CullMode  = CullMode.Back,
                 Topology  = PrimitiveTopology.TriangleList,
-                FrontFace = FrontFace.CW
+                FrontFace = FrontFace.Ccw
             },
             DepthStencil = null
         });
@@ -438,12 +444,32 @@ public unsafe class WebGPUBackend : GraphicsBackend {
         this.WebGPU.Dispose();
     }
 
+    public void UpdateProjectionMatrix(float width, float height, bool fbProjMatrix) {
+        float right  = fbProjMatrix ? width : width / (float)height * 720f;
+        float bottom = fbProjMatrix ? height : 720f;
+
+        Matrix4x4 projectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, right, bottom, 0,
+                                                                           0, 1); 
+        
+        Queue* queue = this.WebGPU.DeviceGetQueue(this.Device);
+
+        CommandEncoder* commandEncoder = this.WebGPU.DeviceCreateCommandEncoder(this.Device, new 
+                                                                                    CommandEncoderDescriptor());
+
+        this.WebGPU.QueueWriteBuffer(queue, this.ProjectionMatrixBuffer, 0, &projectionMatrix, (nuint)sizeof(Matrix4x4));
+
+        CommandBuffer* commandBuffer = this.WebGPU.CommandEncoderFinish(commandEncoder, new CommandBufferDescriptor());
+
+        this.WebGPU.QueueSubmit(queue, 1, &commandBuffer);
+    }
+    
     public override void HandleFramebufferResize(int width, int height) {
         this.CreateSwapchain();
+        this.UpdateProjectionMatrix(width, height, false);
     }
 
     public override VixieRenderer CreateRenderer() {
-        throw new NotImplementedException();
+        return new WebGPURenderer(this);
     }
 
     public override int QueryMaxTextureUnits() {
@@ -498,12 +524,44 @@ public unsafe class WebGPUBackend : GraphicsBackend {
 
     public override VixieTexture CreateTextureFromByteArray(byte[]            imageData,
                                                             TextureParameters parameters = default(TextureParameters)) {
-        throw new NotImplementedException();
+        Image<Rgba32> image;
+
+        bool qoi = imageData.Length > 3 && imageData[0] == 'q' && imageData[1] == 'o' && imageData[2] == 'i' &&
+                   imageData[3]     == 'f';
+
+        if (qoi) {
+            (Rgba32[] pixels, QoiLoader.QoiHeader header) data = QoiLoader.Load(imageData);
+
+            image = Image.LoadPixelData(data.pixels, (int)data.header.Width, (int)data.header.Height);
+        }
+        else {
+            image = Image.Load<Rgba32>(imageData);
+        }
+
+        WebGPUTexture texture = new WebGPUTexture(this, image.Width, image.Height, parameters);
+
+        image.ProcessPixelRows(x => {
+            for (int y = 0; y < x.Height; y++) {
+                texture.SetData<Rgba32>(x.GetRowSpan(y), new System.Drawing.Rectangle(0, y, x.Width, 1));
+            }
+        });
+
+        return texture;
     }
 
     public override VixieTexture CreateTextureFromStream(Stream            stream,
                                                          TextureParameters parameters = default(TextureParameters)) {
-        throw new NotImplementedException();
+        Image<Rgba32> image = Image.Load<Rgba32>(stream);
+
+        WebGPUTexture texture = new WebGPUTexture(this, image.Width, image.Height, parameters);
+
+        image.ProcessPixelRows(x => {
+            for (int y = 0; y < x.Height; y++) {
+                texture.SetData<Rgba32>(x.GetRowSpan(y), new System.Drawing.Rectangle(0, y, x.Width, 1));
+            }
+        });
+
+        return texture;
     }
 
     public override VixieTexture CreateEmptyTexture(uint              width, uint height,
@@ -512,7 +570,12 @@ public unsafe class WebGPUBackend : GraphicsBackend {
     }
 
     public override VixieTexture CreateWhitePixelTexture() {
-        throw new NotImplementedException();
+        WebGPUTexture texture = new WebGPUTexture(this, 1, 1, new TextureParameters());
+
+        //Set the data to one pixel of all white
+        texture.SetData<byte>(new byte[] { 255, 255, 255, 255 });
+
+        return texture;
     }
 
 #if USE_IMGUI

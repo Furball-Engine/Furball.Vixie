@@ -32,6 +32,7 @@ fn vs_main(
     return output;
 }
 
+//TODO: keep an eye on the spec, once we are able to support texture and sampler arrays, PLEASE USE THEM
 //The texture we're sampling
 @group(0) @binding(0) var t: texture_2d<f32>;
 //The sampler we're using to sample the texture
