@@ -301,7 +301,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
             Multisample = new MultisampleState {
                 Count                  = 1,
                 Mask                   = ~0u,
-                AlphaToCoverageEnabled = true
+                AlphaToCoverageEnabled = false
             },
             Primitive = new PrimitiveState {
                 CullMode  = CullMode.Back,
