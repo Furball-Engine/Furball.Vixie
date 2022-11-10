@@ -30,7 +30,7 @@ public class TestGame : Game {
     protected override void Initialize() {
         Instance = this;
         
-        this.ChangeScreen(new TestQuadRendering());
+        this.ChangeScreen(new TestMultipleTextures());
 
         this.WindowManager.GraphicsBackend.ScreenshotTaken += delegate(object _, Image image) {
             Logger.Log("Writing screenshot!", LoggerLevelImageLoader.Instance);

@@ -52,6 +52,10 @@ public unsafe class WebGPUTexture : VixieTexture {
     }
     
     private void CreateBindGroup() {
+        if (this.BindGroup != null) {
+            //TODO: delete bind group
+        }
+        
         BindGroupEntry* bindGroupEntries = stackalloc BindGroupEntry[2];
         bindGroupEntries[0] = new BindGroupEntry
         {

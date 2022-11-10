@@ -181,7 +181,7 @@ public unsafe class VixieRendererVeldrid : VixieRenderer {
 
     private int                    _usedTextures;
     private VixieTextureVeldrid?[] _textures = new VixieTextureVeldrid?[VeldridBackend.MAX_TEXTURE_UNITS];
-    public override long GetTextureId(VixieTexture tex) {
+    private long GetTextureId(VixieTexture tex) {
         if (tex is not VixieTextureVeldrid texVeldrid)
             throw new InvalidOperationException();
 
@@ -241,7 +241,7 @@ public unsafe class VixieRendererVeldrid : VixieRenderer {
 
     private ushort _indexOffset;
     private uint   _indexCount;
-    public override MappedData Reserve(ushort vertexCount, uint indexCount) {
+    public override MappedData Reserve(ushort vertexCount, uint indexCount, VixieTexture tex) {
         Guard.Assert(vertexCount != 0, "vertexCount != 0");
         Guard.Assert(indexCount  != 0, "indexCount != 0");
         
@@ -258,14 +258,15 @@ public unsafe class VixieRendererVeldrid : VixieRenderer {
             
             this.DumpToBuffers();
             this._reserveRecursionCount++;
-            return this.Reserve(vertexCount, indexCount);
+            return this.Reserve(vertexCount, indexCount, tex);
         }
 
         this._indexOffset += vertexCount;
         this._indexCount  += indexCount;
 
         this._reserveRecursionCount = 0;
-        return new MappedData((Vertex*)vtx, (ushort*)idx, vertexCount, indexCount, (uint)(this._indexOffset - vertexCount));
+        return new MappedData((Vertex*)vtx, (ushort*)idx, vertexCount, indexCount, (uint)(this._indexOffset - 
+        vertexCount), this.GetTextureId(tex));
     }
     
     public override void Draw() {

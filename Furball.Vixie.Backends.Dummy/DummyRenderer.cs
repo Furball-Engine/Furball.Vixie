@@ -19,10 +19,11 @@ public class DummyVixieRenderer : VixieRenderer {
     public override void End() {
         // throw new System.NotImplementedException();
     }
-    public override unsafe MappedData Reserve(ushort vertexCount, uint indexCount) {
-        return new MappedData((Vertex*)this._dataHandle, (ushort*)this._dataHandle, vertexCount, indexCount, 0);
+    public override unsafe MappedData Reserve(ushort vertexCount, uint indexCount, VixieTexture tex) {
+        return new MappedData((Vertex*)this._dataHandle, (ushort*)this._dataHandle, vertexCount, indexCount, 0, this
+                                 .GetTextureId(tex));
     }
-    public override long GetTextureId(VixieTexture tex) {
+    private long GetTextureId(VixieTexture tex) {
         return 0;
     }
     public override void Draw() {

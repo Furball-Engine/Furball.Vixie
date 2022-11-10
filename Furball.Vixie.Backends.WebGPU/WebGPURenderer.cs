@@ -199,7 +199,7 @@ public unsafe class WebGPURenderer : VixieRenderer {
     private int    _usedTextures;
 
     private int _reserveRecursionCount = 0;
-    public override MappedData Reserve(ushort vertexCount, uint indexCount) {
+    public override MappedData Reserve(ushort vertexCount, uint indexCount, VixieTexture tex) {
         Guard.Assert(vertexCount != 0, "vertexCount != 0");
         Guard.Assert(indexCount  != 0, "indexCount != 0");
 
@@ -215,6 +215,8 @@ public unsafe class WebGPURenderer : VixieRenderer {
         void* vtx = this._vtxMapper.Reserve((nuint)(vertexCount * sizeof(Vertex)));
         void* idx = this._idxMapper.Reserve(indexCount * sizeof(ushort));
 
+        long textureId = this.GetTextureId(tex);
+        
         if (vtx == null || idx == null) {
             //We should *never* recurse multiple times in this function, if we do, that indicates that for some reason,
             //even after dumping to a buffer to draw, we still are unable to reserve memory.
@@ -222,9 +224,9 @@ public unsafe class WebGPURenderer : VixieRenderer {
 
             this.DumpToBuffers();
             this._reserveRecursionCount++;
-            return this.Reserve(vertexCount, indexCount);
+            return this.Reserve(vertexCount, indexCount, tex);
         }
-
+        
         this._indexOffset += vertexCount;
         this._indexCount  += indexCount;
 
@@ -234,13 +236,14 @@ public unsafe class WebGPURenderer : VixieRenderer {
             (ushort*)idx,
             vertexCount,
             indexCount,
-            (uint)(this._indexOffset - vertexCount)
+            (uint)(this._indexOffset - vertexCount), 
+            textureId
         );
     }
 
     private uint _lastIndexOffset = 0;
     private uint _lastIndexCount  = 0;
-    public override long GetTextureId(VixieTexture texOrig) {
+    private long GetTextureId(VixieTexture texOrig) {
         this._backend.CheckThread();
 
         Guard.EnsureNonNull(texOrig, "texOrig");

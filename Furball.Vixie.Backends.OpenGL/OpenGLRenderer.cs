@@ -191,7 +191,7 @@ internal unsafe class OpenGlVixieRenderer : VixieRenderer {
 
     private uint _indexOffset;
     private uint _indexCount;
-    public override MappedData Reserve(ushort vertexCount, uint indexCount) {
+    public override MappedData Reserve(ushort vertexCount, uint indexCount, VixieTexture tex) {
         Guard.Assert(vertexCount != 0, "vertexCount != 0");
         Guard.Assert(indexCount  != 0, "indexCount != 0");
         
@@ -204,17 +204,18 @@ internal unsafe class OpenGlVixieRenderer : VixieRenderer {
         if (vertex == null || index == null) {
             this.DumpToBuffers();
 
-            return this.Reserve(vertexCount, indexCount);
+            return this.Reserve(vertexCount, indexCount, tex);
         }
         
         this._indexCount  += indexCount;
         this._indexOffset += vertexCount;
 
-        return new MappedData((Vertex*)vertex, (ushort*)index, vertexCount, indexCount, this._indexOffset - vertexCount);
+        return new MappedData((Vertex*)vertex, (ushort*)index, vertexCount, indexCount, this._indexOffset - 
+        vertexCount, this.GetTextureId(tex));
     }
 
     private readonly Dictionary<VixieTexture, long> _texDict = new();
-    public override long GetTextureId(VixieTexture tex) {
+    private long GetTextureId(VixieTexture tex) {
         if (tex is not VixieTextureGl texGl)
             throw new InvalidOperationException($"You must pass a {typeof(VixieTextureGl)} into this function!");
 
