@@ -25,11 +25,11 @@ public unsafe class WebGPUTexture : VixieTexture {
 
         this.Size = new Vector2D<int>(width, height);
 
-        TextureFormat format = TextureFormat.Rgba8Unorm;
+        TextureFormat format = TextureFormat.Rgba8UnormSrgb;
 
         this.Texture = this._webGpu.DeviceCreateTexture(backend.Device, new TextureDescriptor {
             Dimension       = TextureDimension.TextureDimension2D,
-            Format          = TextureFormat.Rgba8Unorm,
+            Format          = format,
             Size            = new Extent3D((uint)width, (uint)height, 1),
             Usage           = TextureUsage.CopyDst | TextureUsage.CopySrc | TextureUsage.TextureBinding,
             MipLevelCount   = parameters.RequestMipmaps ? (uint)this.MipMapCount(width, height) : 1,
@@ -41,7 +41,7 @@ public unsafe class WebGPUTexture : VixieTexture {
         this.TextureView = this._webGpu.TextureCreateView(this.Texture, new TextureViewDescriptor {
             ArrayLayerCount = 1,
             MipLevelCount   = parameters.RequestMipmaps ? (uint)this.MipMapCount(width, height) : 1,
-            Format          = TextureFormat.Rgba8Unorm,
+            Format          = format,
             Dimension       = TextureViewDimension.TextureViewDimension2D,
             BaseArrayLayer  = 0,
             BaseMipLevel    = 0,

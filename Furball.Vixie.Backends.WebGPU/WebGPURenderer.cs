@@ -27,6 +27,8 @@ public unsafe class WebGPURenderer : VixieRenderer {
     private Queue<WebGPUBuffer> _idxBufferQueue = new Queue<WebGPUBuffer>();
 
     private WebGPUTexture? _currentTexture;
+    
+    private readonly List<RenderBuffer> _workingBuffers = new List<RenderBuffer>();
 
     private class RenderBuffer : IDisposable {
         public WebGPUBuffer? Vtx;
@@ -36,6 +38,8 @@ public unsafe class WebGPURenderer : VixieRenderer {
         public WebGPUTexture? Texture;
 
         public uint IndexCount;
+
+        public uint IndexOffset;
 
         private bool _isDisposed;
         public void Dispose() {
@@ -111,9 +115,13 @@ public unsafe class WebGPURenderer : VixieRenderer {
             }
         }
 
-        this._usedTextures = 0;
         this._indexCount   = 0;
         this._indexOffset  = 0;
+
+        this._lastIndexOffset = 0;
+        this._lastIndexCount  = 0;
+
+        this._currentTexture = null;
     }
 
     public override void End() {
@@ -153,21 +161,37 @@ public unsafe class WebGPURenderer : VixieRenderer {
         Guard.Assert(vtx != null);
         Guard.Assert(idx != null);
 
-        this._renderBuffers.Add(
-            new RenderBuffer {
-                Vtx          = new WebGPUBuffer(this._webgpu, vtx!),
-                Idx          = new WebGPUBuffer(this._webgpu, idx!),
-                IndexCount   = this._indexCount,
-                UsedTextures = this._usedTextures,
-                Texture      = this._currentTexture
+        if (this._workingBuffers.Count == 0) {
+            this._renderBuffers.Add(
+                new RenderBuffer {
+                    Vtx          = new WebGPUBuffer(this._webgpu, vtx!),
+                    Idx          = new WebGPUBuffer(this._webgpu, idx!),
+                    IndexCount   = this._indexCount,
+                    UsedTextures = this._usedTextures,
+                    Texture      = this._currentTexture,
+                    IndexOffset  = this._lastIndexOffset
+                }
+            );
+        }
+        else {
+            foreach (RenderBuffer workingBuffer in this._workingBuffers) {
+                workingBuffer.Vtx = new WebGPUBuffer(this._webgpu, vtx);
+                workingBuffer.Idx = new WebGPUBuffer(this._webgpu, idx);
+
+                this._renderBuffers.Add(workingBuffer);
             }
-        );
+
+            this._workingBuffers.Clear();
+        }
 
         this._currentTexture = null;
 
         this._usedTextures = 0;
         this._indexOffset  = 0;
         this._indexCount   = 0;
+
+        this._lastIndexCount  = 0;
+        this._lastIndexOffset = 0;
     }
 
     private ushort _indexOffset;
@@ -214,6 +238,8 @@ public unsafe class WebGPURenderer : VixieRenderer {
         );
     }
 
+    private uint _lastIndexOffset = 0;
+    private uint _lastIndexCount  = 0;
     public override long GetTextureId(VixieTexture texOrig) {
         this._backend.CheckThread();
 
@@ -222,7 +248,15 @@ public unsafe class WebGPURenderer : VixieRenderer {
         WebGPUTexture tex = (WebGPUTexture)texOrig;
 
         if (this._currentTexture != null && tex != this._currentTexture) {
-            this.DumpToBuffers();
+            RenderBuffer buf = new RenderBuffer();
+            buf.Texture     = tex;
+            buf.IndexOffset = this._lastIndexOffset;
+            buf.IndexCount  = this._indexCount - this._lastIndexCount;
+
+            this._lastIndexCount  = this._indexCount;
+            this._lastIndexOffset = this._indexCount;
+            
+            this._workingBuffers.Add(buf);
         }
 
         this._currentTexture = tex;
@@ -258,8 +292,13 @@ public unsafe class WebGPURenderer : VixieRenderer {
             Guard.EnsureNonNull(buf.Idx);
             Guard.EnsureNonNull(buf.Texture);
 
-            this._webgpu.RenderPassEncoderSetVertexBuffer(renderPass, 0, buf.Vtx!.Buffer, 0,
-                                                          this._vtxMapper.SizeInBytes);
+            this._webgpu.RenderPassEncoderSetVertexBuffer(
+                renderPass,
+                0,
+                buf.Vtx!.Buffer,
+                0,
+                this._vtxMapper.SizeInBytes
+            );
             this._webgpu.RenderPassEncoderSetIndexBuffer(
                 renderPass,
                 buf.Idx!.Buffer,
@@ -268,9 +307,15 @@ public unsafe class WebGPURenderer : VixieRenderer {
                 this._idxMapper.SizeInBytes
             );
 
-            this._webgpu.RenderPassEncoderSetBindGroup(renderPass, 0, buf.Texture!.BindGroup, 0, null);
+            this._webgpu.RenderPassEncoderSetBindGroup(
+                renderPass, 
+                0, 
+                buf.Texture!.BindGroup, 
+                0, 
+                null
+            );
 
-            this._webgpu.RenderPassEncoderDrawIndexed(renderPass, buf.IndexCount, 1, 0, 0, 0);
+            this._webgpu.RenderPassEncoderDrawIndexed(renderPass, buf.IndexCount, 1, buf.IndexOffset, 0, 0);
         }
 
         this._webgpu.RenderPassEncoderEnd(renderPass);
