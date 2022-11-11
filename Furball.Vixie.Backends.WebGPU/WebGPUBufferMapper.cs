@@ -50,7 +50,7 @@ public unsafe class WebGPUBufferMapper : BufferMapper {
         CommandBuffer* commandBuffer = this._webgpu.CommandEncoderFinish(encoder, new CommandBufferDescriptor());
         Queue*         queue         = this._webgpu.DeviceGetQueue(this._backend.Device);
         this._webgpu.QueueSubmit(queue, 1, &commandBuffer);
-
+        
         this.Map();
     }
 

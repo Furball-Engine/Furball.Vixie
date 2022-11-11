@@ -7,24 +7,19 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Reference Include="Silk.NET.WebGPU">
-        <HintPath>..\Silk.NET.WebGPU.dll</HintPath>
-      </Reference>
-      <Reference Include="Silk.NET.WebGPU.Extensions.Dawn">
-        <HintPath>..\Silk.NET.WebGPU.Extensions.Dawn.dll</HintPath>
-      </Reference>
-      <Reference Include="Silk.NET.WebGPU.Extensions.WGPU">
-        <HintPath>..\Silk.NET.WebGPU.Extensions.WGPU.dll</HintPath>
-      </Reference>
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\Furball.Vixie.Backends.Shared\Furball.Vixie.Backends.Shared.csproj" />
     </ItemGroup>
 
     <ItemGroup>
       <None Remove="Shaders\Shader.wgsl" />
       <EmbeddedResource Include="Shaders\Shader.wgsl" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Silk.NET.WebGPU" Version="2.16.0-build2652.0" />
+      <PackageReference Include="Silk.NET.WebGPU.Extensions.Dawn" Version="2.16.0-build2652.0" />
+      <PackageReference Include="Silk.NET.WebGPU.Extensions.Disposal" Version="2.16.0-build2652.0" />
+      <PackageReference Include="Silk.NET.WebGPU.Extensions.WGPU" Version="2.16.0-build2652.0" />
     </ItemGroup>
 
 </Project>

@@ -10,6 +10,7 @@ using Kettu;
 using Silk.NET.Core.Native;
 using Silk.NET.Input;
 using Silk.NET.WebGPU;
+using Silk.NET.WebGPU.Extensions.Disposal;
 using Silk.NET.WebGPU.Extensions.WGPU;
 using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
@@ -51,7 +52,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
 
     public ShaderModule* Shader;
 
-    public Wgpu WGPU;
+    public WebGPUDisposal Disposal;
 
     public override void Initialize(IView view, IInputContext inputContext) {
         this._view = view;
@@ -132,7 +133,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
         this.CreateShaders();
         this.CreatePipelines();
 
-        // this.WebGPU.TryGetDeviceExtension(this.Device, out this.WGPU);
+        this.Disposal = new WebGPUDisposal(this.WebGPU);
     }
 
     private void CreateShaders() {
@@ -434,6 +435,8 @@ public unsafe class WebGPUBackend : GraphicsBackend {
         base.Present();
 
         this.WebGPU.SwapChainPresent(this.Swapchain);
+        
+        this.Disposal.Dispose(this.SwapchainTextureView);
 
         this.NumQueuesSubmit = 0;
 
