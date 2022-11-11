@@ -96,6 +96,39 @@ public unsafe class WebGPUBackend : GraphicsBackend {
             null
         );
 
+        SupportedLimits supported = new SupportedLimits();
+        
+        BackendInfoSection supportedLimitsSection = new BackendInfoSection("Supported Limits");
+        if (this.WebGPU.AdapterGetLimits(this.Adapter, &supported)) {
+            supportedLimitsSection.Contents.Add(("MaxBindGroups", supported.Limits.MaxBindGroups.ToString()));
+            supportedLimitsSection.Contents.Add(("MaxBufferSize", supported.Limits.MaxBufferSize.ToString()));
+            supportedLimitsSection.Contents.Add(("MaxVertexBuffers", supported.Limits.MaxVertexBuffers.ToString()));
+            supportedLimitsSection.Contents.Add(("MaxVertexAttributes", supported.Limits.MaxVertexAttributes.ToString()));
+            supportedLimitsSection.Contents.Add(("MaxVertexBufferArrayStride", supported.Limits.MaxVertexBufferArrayStride.ToString()));
+            supportedLimitsSection.Contents.Add(("MaxDynamicUniformBuffersPerPipelineLayout", supported.Limits.MaxDynamicUniformBuffersPerPipelineLayout.ToString()));
+            supportedLimitsSection.Contents.Add(("MaxDynamicStorageBuffersPerPipelineLayout", supported.Limits.MaxDynamicStorageBuffersPerPipelineLayout.ToString()));
+            supportedLimitsSection.Contents.Add(("MaxSampledTexturesPerShaderStage", supported.Limits.MaxSampledTexturesPerShaderStage.ToString()));
+            supportedLimitsSection.Contents.Add(("MaxSamplersPerShaderStage", supported.Limits.MaxSamplersPerShaderStage.ToString()));
+            supportedLimitsSection.Contents.Add(("MaxStorageBuffersPerShaderStage", supported.Limits.MaxStorageBuffersPerShaderStage.ToString()));
+            supportedLimitsSection.Contents.Add(("MaxStorageTexturesPerShaderStage", supported.Limits.MaxStorageTexturesPerShaderStage.ToString()));
+            supportedLimitsSection.Contents.Add(("MaxUniformBuffersPerShaderStage", supported.Limits.MaxUniformBuffersPerShaderStage.ToString()));
+            supportedLimitsSection.Contents.Add(("MaxUniformBufferBindingSize", supported.Limits.MaxUniformBufferBindingSize.ToString()));
+            supportedLimitsSection.Contents.Add(("MaxStorageBufferBindingSize", supported.Limits.MaxStorageBufferBindingSize.ToString()));
+            supportedLimitsSection.Contents.Add(("MaxInterStageShaderComponents", supported.Limits.MaxInterStageShaderComponents.ToString()));
+            supportedLimitsSection.Contents.Add(("MaxComputeWorkgroupStorageSize", supported.Limits.MaxComputeWorkgroupStorageSize.ToString()));
+            supportedLimitsSection.Contents.Add(("MaxComputeInvocationsPerWorkgroup", supported.Limits.MaxComputeInvocationsPerWorkgroup.ToString()));
+            supportedLimitsSection.Contents.Add(("MaxComputeWorkgroupSizeX", supported.Limits.MaxComputeWorkgroupSizeX.ToString()));
+            supportedLimitsSection.Contents.Add(("MaxComputeWorkgroupSizeY", supported.Limits.MaxComputeWorkgroupSizeY.ToString()));
+            supportedLimitsSection.Contents.Add(("MaxComputeWorkgroupSizeZ", supported.Limits.MaxComputeWorkgroupSizeZ.ToString()));
+            supportedLimitsSection.Contents.Add(("MaxComputeWorkgroupsPerDimension", supported.Limits.MaxComputeWorkgroupsPerDimension.ToString()));
+            supportedLimitsSection.Contents.Add(("MaxTextureDimension1D", supported.Limits.MaxTextureDimension1D.ToString()));
+            supportedLimitsSection.Contents.Add(("MaxTextureDimension2D", supported.Limits.MaxTextureDimension2D.ToString()));
+            supportedLimitsSection.Contents.Add(("MaxTextureDimension3D", supported.Limits.MaxTextureDimension3D.ToString()));
+            supportedLimitsSection.Contents.Add(("MaxTextureArrayLayers", supported.Limits.MaxTextureArrayLayers.ToString()));
+            supportedLimitsSection.Contents.Add(("MaxColorAttachments", supported.Limits.MaxColorAttachments.ToString()));
+        }
+        this.InfoSections.Add(supportedLimitsSection);
+
         RequiredLimits* requiredLimits = stackalloc RequiredLimits[1] {
             new RequiredLimits {
                 Limits = new Limits {
@@ -138,6 +171,8 @@ public unsafe class WebGPUBackend : GraphicsBackend {
         this.CreatePipelines();
         
         this.Disposal = new WebGPUDisposal(this.WebGPU);
+        
+        this.InfoSections.ForEach(x => x.Log(LoggerLevelWebGPU.InstanceInfo));
     }
 
     private void CreateShaders() {
