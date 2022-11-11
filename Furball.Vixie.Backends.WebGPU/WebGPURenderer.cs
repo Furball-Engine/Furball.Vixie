@@ -351,26 +351,26 @@ public unsafe class WebGPURenderer : VixieRenderer {
     }
 
     protected override void DisposeInternal() {
-        // this._idxMapper.Dispose();
-        // this._vtxMapper.Dispose();
+        this._idxMapper.Dispose();
+        this._vtxMapper.Dispose();
 
         this._currentTexture = null;
         
-        // foreach (RenderBuffer buf in this._renderBuffers) {
-            // buf.Dispose();
-        // }
+        foreach (RenderBuffer buf in this._renderBuffers) {
+            buf.Dispose();
+        }
 
-        // while (this._vtxBufferQueue.Count > 0) {
-            // WebGPUBuffer buf = this._vtxBufferQueue.Dequeue();
-            // buf.Dispose();
-        // }    
-        // while (this._idxBufferQueue.Count > 0) {
-            // WebGPUBuffer buf = this._idxBufferQueue.Dequeue();
-            // buf.Dispose();
-        // }
+        while (this._vtxBufferQueue.Count > 0) {
+            WebGPUBuffer buf = this._vtxBufferQueue.Dequeue();
+            buf.Dispose();
+        }    
+        while (this._idxBufferQueue.Count > 0) {
+            WebGPUBuffer buf = this._idxBufferQueue.Dequeue();
+            buf.Dispose();
+        }
         
-        // this._workingBuffers.Clear();
-        // this._renderBuffers.Clear();
+        this._workingBuffers.Clear();
+        this._renderBuffers.Clear();
         this.FontRenderer = null;
     }
 }
