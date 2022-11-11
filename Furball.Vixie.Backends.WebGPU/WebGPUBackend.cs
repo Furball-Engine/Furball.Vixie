@@ -132,7 +132,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
         this.CreateSamplers();
         this.CreateShaders();
         this.CreatePipelines();
-
+        
         this.Disposal = new WebGPUDisposal(this.WebGPU);
     }
 
