@@ -344,10 +344,7 @@ public unsafe class WebGPURenderer : VixieRenderer {
         this._webgpu.RenderPassEncoderEnd(renderPass);
         CommandBuffer* commandBuffer = this._webgpu.CommandEncoderFinish(commandEncoder, new CommandBufferDescriptor());
 
-        //TODO: maybe we can use a single queue for the whole frame?
-        Queue* queue = this._webgpu.DeviceGetQueue(this._backend.Device);
-
-        this._webgpu.QueueSubmit(queue, 1, &commandBuffer);
+        this._webgpu.QueueSubmit(this._backend.Queue, 1, &commandBuffer);
     }
 
     protected override void DisposeInternal() {

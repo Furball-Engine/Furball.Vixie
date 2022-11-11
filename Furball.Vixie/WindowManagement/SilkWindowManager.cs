@@ -245,11 +245,14 @@ public class SilkWindowManager : IWindowManager {
 
     public IMonitor? Monitor => this._window.Monitor;
 
+    private Vector2D<int> _windowSize = Vector2D<int>.Zero;
     public Vector2D<int> WindowSize {
-        get => this._window.Size;
+        get => this._windowSize;
         set => this._window.Size = value;
     }
-    public Vector2D<int> FramebufferSize => this._window.FramebufferSize;
+    
+    private Vector2D<int> _framebufferSize = new Vector2D<int>(0, 0);
+    public Vector2D<int> FramebufferSize => this._framebufferSize;
 
     public Vector2D<int> WindowPosition {
         get => this._window.Position;
@@ -452,9 +455,15 @@ public class SilkWindowManager : IWindowManager {
         this._window.Render            += this.SilkWindowRender;
         this._window.FocusChanged      += this.SilkWindowFocusChange;
         this._window.FramebufferResize += this.SilkWindowFramebufferResize;
+
+        this._window.Resize += newWindowSize => {
+            this._windowSize = newWindowSize;
+        };
     }
 
     private void SilkWindowFramebufferResize(Vector2D<int> obj) {
+        this._framebufferSize = obj;
+        
         this.FramebufferResize?.Invoke(obj);
     }
 
@@ -481,6 +490,9 @@ public class SilkWindowManager : IWindowManager {
     }
 
     private void SilkWindowLoad() {
+        this._windowSize      = this._window.Size;
+        this._framebufferSize = this._window.FramebufferSize;
+        
         // ReSharper disable once SwitchExpressionHandlesSomeKnownEnumValuesWithExceptionInDefault
         this.GraphicsBackend = this.Backend switch {
 #if VIXIE_BACKEND_OPENGL

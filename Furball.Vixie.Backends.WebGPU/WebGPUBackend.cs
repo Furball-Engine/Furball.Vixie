@@ -31,6 +31,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
     public Instance* Instance;
     public Adapter*  Adapter;
     public Device*   Device;
+    public Queue*    Queue;
 
     private TextureFormat _swapchainFormat;
 
@@ -53,6 +54,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
     public ShaderModule* Shader;
 
     public WebGPUDisposal Disposal;
+    public Wgpu           Wgpu;
 
     public override void Initialize(IView view, IInputContext inputContext) {
         this._view = view;
@@ -122,6 +124,8 @@ public unsafe class WebGPUBackend : GraphicsBackend {
             }),
             null
         );
+
+        this.Queue = this.WebGPU.DeviceGetQueue(this.Device);
 
         this.SetCallbacks();
 
@@ -363,7 +367,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
         SwapChainDescriptor descriptor = new SwapChainDescriptor {
             Usage       = TextureUsage.RenderAttachment,
             Format      = this._swapchainFormat,
-            PresentMode = PresentMode.Fifo,
+            PresentMode = PresentMode.Immediate,
             Width       = (uint)this._view.FramebufferSize.X,
             Height      = (uint)this._view.FramebufferSize.Y
         };
@@ -424,8 +428,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
 
         CommandBuffer* commandBuffer = this.WebGPU.CommandEncoderFinish(encoder, new CommandBufferDescriptor());
 
-        Queue* queue = this.WebGPU.DeviceGetQueue(this.Device);
-        this.WebGPU.QueueSubmit(queue, 1, &commandBuffer);
+        this.WebGPU.QueueSubmit(this.Queue, 1, &commandBuffer);
 
         //This code clears the screen, so reset this flag
         this.ClearAsap = false;
@@ -454,16 +457,14 @@ public unsafe class WebGPUBackend : GraphicsBackend {
         Matrix4x4 projectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, right, bottom, 0,
                                                                            0, 1); 
         
-        Queue* queue = this.WebGPU.DeviceGetQueue(this.Device);
-
         CommandEncoder* commandEncoder = this.WebGPU.DeviceCreateCommandEncoder(this.Device, new 
                                                                                     CommandEncoderDescriptor());
 
-        this.WebGPU.QueueWriteBuffer(queue, this.ProjectionMatrixBuffer, 0, &projectionMatrix, (nuint)sizeof(Matrix4x4));
+        this.WebGPU.QueueWriteBuffer(this.Queue, this.ProjectionMatrixBuffer, 0, &projectionMatrix, (nuint)sizeof(Matrix4x4));
 
         CommandBuffer* commandBuffer = this.WebGPU.CommandEncoderFinish(commandEncoder, new CommandBufferDescriptor());
 
-        this.WebGPU.QueueSubmit(queue, 1, &commandBuffer);
+        this.WebGPU.QueueSubmit(this.Queue, 1, &commandBuffer);
     }
     
     public override void HandleFramebufferResize(int width, int height) {

@@ -102,14 +102,12 @@ public unsafe class WebGPUTexture : VixieTexture {
     }
 
     public override VixieTexture SetData <T>(ReadOnlySpan<T> data, Rectangle rect) {
-        Queue* queue = this._webGpu.DeviceGetQueue(this._backend.Device);
-
         CommandEncoder* encoder =
             this._webGpu.DeviceCreateCommandEncoder(this._backend.Device, new CommandEncoderDescriptor());
 
         fixed (T* ptr = data)
             this._webGpu.QueueWriteTexture(
-                queue,
+            this._backend.Queue,
                 new ImageCopyTexture {
                     Texture  = this.Texture,
                     Aspect   = TextureAspect.None,
@@ -131,7 +129,7 @@ public unsafe class WebGPUTexture : VixieTexture {
 
         CommandBuffer* commandBuffer = this._webGpu.CommandEncoderFinish(encoder, new CommandBufferDescriptor());
 
-        this._webGpu.QueueSubmit(queue, 1, &commandBuffer);
+        this._webGpu.QueueSubmit(this._backend.Queue, 1, &commandBuffer);
 
         return this;
     }
