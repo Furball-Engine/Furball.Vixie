@@ -19,7 +19,7 @@ public unsafe class WebGPURenderer : VixieRenderer {
     private readonly WebGPUBufferMapper _idxMapper;
 
     //TODO: keep an eye on the spec, once we are able to support texture and sampler arrays, PLEASE USE THEM!!! THIS IS EXTREMELY BAD!!!
-    private const int QUADS_PER_BUFFER = 128;
+    private const int QUADS_PER_BUFFER = 4;
 
     private readonly List<RenderBuffer> _renderBuffers = new List<RenderBuffer>();
 
@@ -71,14 +71,22 @@ public unsafe class WebGPURenderer : VixieRenderer {
 
         bool wasLastEmpty = this._renderBuffers.Count == 0;
 
+        Buffer* lastVtx = null;
+        Buffer* lastIdx = null;
         //Save all the buffers from the render queue
         foreach (RenderBuffer? x in this._renderBuffers) {
             Guard.EnsureNonNull(x.Vtx, "x.Vtx");
             Guard.EnsureNonNull(x.Idx, "x.Idx");
 
+            if(lastVtx == x.Vtx.Buffer && lastIdx == x.Idx.Buffer)
+                continue;
+
             this._vtxBufferQueue.Enqueue(x.Vtx!);
             this._idxBufferQueue.Enqueue(x.Idx!);
 
+            lastVtx = x.Vtx.Buffer;
+            lastIdx = x.Idx.Buffer;
+            
             //We set these to null to ensure that they dont get disposed when `RenderBuffer.Dispose` is called by the
             //destructor
             x.Vtx = null;
@@ -174,6 +182,18 @@ public unsafe class WebGPURenderer : VixieRenderer {
             );
         }
         else {
+            if (this._indexCount != this._lastIndexCount) {
+                RenderBuffer buf = new RenderBuffer();
+                buf.Texture     = this._currentTexture;
+                buf.IndexOffset = this._lastIndexOffset;
+                buf.IndexCount  = this._indexCount - this._lastIndexCount;
+
+                this._lastIndexCount  = this._indexCount;
+                this._lastIndexOffset = this._indexCount;
+            
+                this._workingBuffers.Add(buf); 
+            }
+            
             foreach (RenderBuffer workingBuffer in this._workingBuffers) {
                 workingBuffer.Vtx = new WebGPUBuffer(this._webgpu, vtx);
                 workingBuffer.Idx = new WebGPUBuffer(this._webgpu, idx);
@@ -290,7 +310,8 @@ public unsafe class WebGPURenderer : VixieRenderer {
         
         this._webgpu.RenderPassEncoderSetBindGroup(renderPass, 1, this._backend.ProjectionMatrixBindGroup, 0, 0);
 
-        foreach (RenderBuffer buf in this._renderBuffers) {
+        for (int i = 0; i < this._renderBuffers.Count; i++) {
+            RenderBuffer buf = this._renderBuffers[i];
             Guard.EnsureNonNull(buf.Vtx);
             Guard.EnsureNonNull(buf.Idx);
             Guard.EnsureNonNull(buf.Texture);
@@ -311,13 +332,14 @@ public unsafe class WebGPURenderer : VixieRenderer {
             );
 
             this._webgpu.RenderPassEncoderSetBindGroup(
-                renderPass, 
-                0, 
-                buf.Texture!.BindGroup, 
-                0, 
+                renderPass,
+                0,
+                buf.Texture!.BindGroup,
+                0,
                 null
             );
 
+            Console.WriteLine($"bound vtx buf {(ulong)buf.Vtx!.Buffer:X} for draw call {i}");
             this._webgpu.RenderPassEncoderDrawIndexed(renderPass, buf.IndexCount, 1, buf.IndexOffset, 0, 0);
         }
 
