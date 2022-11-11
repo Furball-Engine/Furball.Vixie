@@ -19,7 +19,7 @@ public unsafe class WebGPURenderer : VixieRenderer {
     private readonly WebGPUBufferMapper _idxMapper;
 
     //TODO: keep an eye on the spec, once we are able to support texture and sampler arrays, PLEASE USE THEM!!! THIS IS EXTREMELY BAD!!!
-    private const int QUADS_PER_BUFFER = 4;
+    private const int QUADS_PER_BUFFER = 512;
 
     private readonly List<RenderBuffer> _renderBuffers = new List<RenderBuffer>();
 
