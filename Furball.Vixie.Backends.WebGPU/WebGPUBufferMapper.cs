@@ -134,9 +134,9 @@ public unsafe class WebGPUBufferMapper : BufferMapper {
         if (this._isDisposed)
             return;
         
-        // if (this.MappedBuffer != null)
-            // this._webgpu.BufferDestroy(this.MappedBuffer);
-        // this.MappedBuffer = null;
+        if (this.MappedBuffer != null)
+            this._backend.Disposal.Dispose(this.MappedBuffer);
+        this.MappedBuffer = null;
         
         this._isDisposed = true;
     }
