@@ -12,7 +12,20 @@ public unsafe class WebGPUBuffer : IDisposable {
         this.Buffer  = buffer;
     }
 
+    private bool _isDisposed = false;
     public void Dispose() {
-        this._webgpu.BufferDestroy(this.Buffer);
+        if (this._isDisposed)
+            return;
+        
+        this._isDisposed = true;
+        
+        // if(this.Buffer != null)
+            // this._webgpu.BufferDestroy(this.Buffer);
+
+        this.Buffer = null;
+    }
+
+    ~WebGPUBuffer() {
+        this.Dispose();
     }
 }

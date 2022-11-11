@@ -2,7 +2,6 @@
 using System;
 using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.Shared.Backends;
-using Furball.Vixie.Backends.WebGPU;
 using Furball.Vixie.Helpers;
 using Silk.NET.Core;
 using Silk.NET.Input;
@@ -15,6 +14,9 @@ using Silk.NET.Windowing.Sdl;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+#if VIXIE_BACKEND_WEBGPU
+using Furball.Vixie.Backends.WebGPU;
+#endif
 #if VIXIE_BACKEND_D3D11
 using Furball.Vixie.Backends.Direct3D11;
 #endif

@@ -117,7 +117,7 @@ public unsafe class WebGPUTexture : VixieTexture {
                 ptr,
                 (nuint)(sizeof(T) * data.Length),
                 new TextureDataLayout {
-                    BytesPerRow  = (uint)(rect.Width * sizeof(T)),
+                    BytesPerRow  = (uint)(rect.Width * sizeof(Rgba32)),
                     RowsPerImage = (uint)rect.Height
                 },
                 new Extent3D {

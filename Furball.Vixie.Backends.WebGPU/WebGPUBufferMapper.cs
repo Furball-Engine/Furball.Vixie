@@ -86,8 +86,10 @@ public unsafe class WebGPUBufferMapper : BufferMapper {
 
         // this._backend.WGPU.DevicePoll(this._backend.Device, true, null);
 
-        if(this.MappedBuffer != null)
-            this._webgpu.BufferDestroy(this.MappedBuffer);
+        // if(this.MappedBuffer != null)
+            // this._webgpu.BufferDestroy(this.MappedBuffer);
+
+        // this.MappedBuffer = null;
         
         this.MappedBuffer = this._webgpu.DeviceCreateBuffer(this._backend.Device, new BufferDescriptor {
             Size             = this.SizeInBytes,
@@ -127,8 +129,15 @@ public unsafe class WebGPUBufferMapper : BufferMapper {
         return (void*)ptr;
     }
 
+    private bool _isDisposed;
     protected override void DisposeInternal() {
-        if (this.MappedBuffer != null)
-            this._webgpu.BufferDestroy(this.MappedBuffer);
+        if (this._isDisposed)
+            return;
+        
+        // if (this.MappedBuffer != null)
+            // this._webgpu.BufferDestroy(this.MappedBuffer);
+        // this.MappedBuffer = null;
+        
+        this._isDisposed = true;
     }
 }
