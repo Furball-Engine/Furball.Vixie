@@ -287,9 +287,6 @@ public unsafe class WebGPURenderer : VixieRenderer {
     }
 
     public override void Draw() {
-        CommandEncoder* commandEncoder =
-            this._webgpu.DeviceCreateCommandEncoder(this._backend.Device, new CommandEncoderDescriptor());
-
         RenderPassColorAttachment colorAttachment = new RenderPassColorAttachment {
             View          = this._backend.SwapchainTextureView,
             LoadOp        = this._backend.ClearAsap ? LoadOp.Clear : LoadOp.Load,
@@ -299,7 +296,7 @@ public unsafe class WebGPURenderer : VixieRenderer {
         this._backend.ClearAsap = false;
         
         RenderPassEncoder* renderPass =
-            this._webgpu.CommandEncoderBeginRenderPass(commandEncoder, new RenderPassDescriptor {
+            this._webgpu.CommandEncoderBeginRenderPass(this._backend.CommandEncoder, new RenderPassDescriptor {
                 ColorAttachments = &colorAttachment,
                 ColorAttachmentCount = 1
             });
@@ -337,14 +334,10 @@ public unsafe class WebGPURenderer : VixieRenderer {
                 null
             );
 
-            Console.WriteLine($"bound vtx buf {(ulong)buf.Vtx!.Buffer:X} for draw call {i}");
             this._webgpu.RenderPassEncoderDrawIndexed(renderPass, buf.IndexCount, 1, buf.IndexOffset, 0, 0);
         }
 
         this._webgpu.RenderPassEncoderEnd(renderPass);
-        CommandBuffer* commandBuffer = this._webgpu.CommandEncoderFinish(commandEncoder, new CommandBufferDescriptor());
-
-        this._webgpu.QueueSubmit(this._backend.Queue, 1, &commandBuffer);
     }
 
     protected override void DisposeInternal() {

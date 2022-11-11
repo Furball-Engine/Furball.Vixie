@@ -33,7 +33,6 @@ public unsafe class WebGPUBufferMapper : BufferMapper {
         // "(this._webgpu.BufferGetUsage(buffer) | BufferUsage.MapWrite) != 0");
         
         this._webgpu.QueueWriteBuffer(this._backend.Queue, buffer, 0, this.Ptr, this.ReservedBytes);
-        this._webgpu.QueueSubmit(this._backend.Queue, 0, null);
         
         this.ReservedBytes = 0;
     }

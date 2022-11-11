@@ -378,6 +378,8 @@ public unsafe class WebGPUBackend : GraphicsBackend {
                    LoggerLevelWebGPU.InstanceInfo);
     }
 
+    public CommandEncoder* CommandEncoder;
+
     public override void BeginScene() {
         base.BeginScene();
 
@@ -397,41 +399,70 @@ public unsafe class WebGPUBackend : GraphicsBackend {
 
             break;
         }
+
+        this.CommandEncoder = this.WebGPU.DeviceCreateCommandEncoder(this.Device, new CommandEncoderDescriptor());
     }
 
     public override void EndScene() {
         base.EndScene();
 
-        if (this.NumQueuesSubmit != 0)
-            return;
+        if (this.ClearAsap) {
+            //NOTE: this shouldn't be required, but due to an issue in wgpu, it is, as things break if no work is submitted
+            //once https://github.com/gfx-rs/wgpu/issues/3189 is fixed, this can be removed
 
-        //NOTE: this shouldn't be required, but due to an issue in wgpu, it is, as things break if no work is submitted
-        //once https://github.com/gfx-rs/wgpu/issues/3189 is fixed, this can be removed
+            CommandEncoder* encoder = this.WebGPU.DeviceCreateCommandEncoder(
+            this.Device,
+            new CommandEncoderDescriptor()
+            );
 
-        CommandEncoder* encoder = this.WebGPU.DeviceCreateCommandEncoder(this.Device, new CommandEncoderDescriptor());
+            RenderPassColorAttachment colorAttachment = new RenderPassColorAttachment {
+                View          = this.SwapchainTextureView,
+                LoadOp        = this.ClearAsap ? LoadOp.Clear : LoadOp.Load,
+                StoreOp       = StoreOp.Store,
+                ResolveTarget = null,
+                ClearValue    = new Color(0, 0, 0, 0)
+            };
 
-        RenderPassColorAttachment colorAttachment = new RenderPassColorAttachment {
-            View          = this.SwapchainTextureView,
-            LoadOp        = this.ClearAsap ? LoadOp.Clear : LoadOp.Load,
-            StoreOp       = StoreOp.Store,
-            ResolveTarget = null, ClearValue = new Color(0, 0, 0, 0)
-        };
+            RenderPassDescriptor renderPassDescriptor = new RenderPassDescriptor {
+                ColorAttachments       = &colorAttachment,
+                ColorAttachmentCount   = 1,
+                DepthStencilAttachment = null
+            };
 
-        RenderPassDescriptor renderPassDescriptor = new RenderPassDescriptor {
-            ColorAttachments       = &colorAttachment,
-            ColorAttachmentCount   = 1,
-            DepthStencilAttachment = null
-        };
+            RenderPassEncoder* renderPass = this.WebGPU.CommandEncoderBeginRenderPass(encoder, renderPassDescriptor);
+            this.WebGPU.RenderPassEncoderEnd(renderPass);
 
-        RenderPassEncoder* renderPass = this.WebGPU.CommandEncoderBeginRenderPass(encoder, renderPassDescriptor);
-        this.WebGPU.RenderPassEncoderEnd(renderPass);
+            CommandBuffer* clearCommandBuffer = this.WebGPU.CommandEncoderFinish(encoder, new CommandBufferDescriptor());
 
-        CommandBuffer* commandBuffer = this.WebGPU.CommandEncoderFinish(encoder, new CommandBufferDescriptor());
+            this.AddCommandBuffer(clearCommandBuffer);
 
-        this.WebGPU.QueueSubmit(this.Queue, 1, &commandBuffer);
+            //This code clears the screen, so reset this flag
+            this.ClearAsap = false;
+        }
+        
+        CommandBuffer* commandBuffer = this.WebGPU.CommandEncoderFinish(this.CommandEncoder, new CommandBufferDescriptor());
+        this.AddCommandBuffer(commandBuffer);
+        
+        fixed(CommandBuffer** buffers = this._commandBuffers)
+            this.WebGPU.QueueSubmit(this.Queue, this._commandBuffersUsed, buffers);
+        
+        // Console.WriteLine(this._commandBuffersUsed);
 
-        //This code clears the screen, so reset this flag
-        this.ClearAsap = false;
+        this._commandBuffersUsed = 0;
+    }
+
+    private CommandBuffer*[] _commandBuffers = new CommandBuffer*[100];
+    private uint             _commandBuffersUsed;
+    public void AddCommandBuffer(CommandBuffer* commandBuffer) {
+        if (this._commandBuffersUsed == this._commandBuffers.Length) {
+            //Resize _commandBuffers array to be 10 larger than it currently is if we dont have the space for any more
+            
+            CommandBuffer*[] newCommandBuffers = new CommandBuffer*[this._commandBuffers.Length + 10];
+            Array.Copy(this._commandBuffers, newCommandBuffers, this._commandBuffers.Length);
+            this._commandBuffers = newCommandBuffers;
+        }
+        
+        this._commandBuffers[this._commandBuffersUsed++] = commandBuffer;
     }
 
     public override void Present() {
@@ -457,14 +488,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
         Matrix4x4 projectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, right, bottom, 0,
                                                                            0, 1); 
         
-        CommandEncoder* commandEncoder = this.WebGPU.DeviceCreateCommandEncoder(this.Device, new 
-                                                                                    CommandEncoderDescriptor());
-
         this.WebGPU.QueueWriteBuffer(this.Queue, this.ProjectionMatrixBuffer, 0, &projectionMatrix, (nuint)sizeof(Matrix4x4));
-
-        CommandBuffer* commandBuffer = this.WebGPU.CommandEncoderFinish(commandEncoder, new CommandBufferDescriptor());
-
-        this.WebGPU.QueueSubmit(this.Queue, 1, &commandBuffer);
     }
     
     public override void HandleFramebufferResize(int width, int height) {
