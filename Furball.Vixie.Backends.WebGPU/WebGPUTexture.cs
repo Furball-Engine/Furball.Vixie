@@ -53,7 +53,9 @@ public unsafe class WebGPUTexture : VixieTexture {
     
     private void CreateBindGroup() {
         if (this.BindGroup != null) {
-            //TODO: delete bind group
+            this._backend.Disposal.Dispose(this.BindGroup);
+            
+            this.BindGroup = null;
         }
         
         BindGroupEntry* bindGroupEntries = stackalloc BindGroupEntry[2];
@@ -151,7 +153,9 @@ public unsafe class WebGPUTexture : VixieTexture {
         if (this._isDisposed)
             return;
 
-        this._webGpu.TextureDestroy(this.Texture);
+        this._backend.Disposal.Dispose(this.Texture);
+        this._backend.Disposal.Dispose(this.TextureView);
+        this._backend.Disposal.Dispose(this.BindGroup);
 
         this._isDisposed = true;
     }
