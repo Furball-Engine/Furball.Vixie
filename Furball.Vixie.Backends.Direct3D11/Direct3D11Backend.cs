@@ -372,22 +372,32 @@ public class Direct3D11Backend : GraphicsBackend {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             return 0;
 
-        this._dxgiFactory.EnumAdapters1(0, out IDXGIAdapter1 adapter);
+        try {
+            this._dxgiFactory.EnumAdapters1(0, out IDXGIAdapter1 adapter);
 
-        IDXGIAdapter3 adapter3 = new(adapter.NativePointer);
+            IDXGIAdapter3 adapter3 = new(adapter.NativePointer);
 
-        QueryVideoMemoryInfo info = adapter3.QueryVideoMemoryInfo(0, MemorySegmentGroup.Local);
+            QueryVideoMemoryInfo info = adapter3.QueryVideoMemoryInfo(0, MemorySegmentGroup.Local);
 
-        return info.CurrentUsage;
+            return info.CurrentUsage;
+        }
+        catch {
+            return 0;
+        }
     }
     public override unsafe ulong GetTotalVram() {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             return 0;
 
-        this._dxgiFactory.EnumAdapters1(0, out IDXGIAdapter1 adapter);
+        try {
+            this._dxgiFactory.EnumAdapters1(0, out IDXGIAdapter1 adapter);
 
-        IDXGIAdapter4 adapter4 = new(adapter.NativePointer);
+            IDXGIAdapter4 adapter4 = new(adapter.NativePointer);
 
-        return (ulong)(void*)adapter4.Description3.DedicatedVideoMemory;
+            return (ulong)(void*)adapter4.Description3.DedicatedVideoMemory;
+        }
+        catch {
+            return 0;
+        }
     } 
 }
