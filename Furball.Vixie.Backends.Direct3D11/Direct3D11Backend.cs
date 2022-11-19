@@ -84,37 +84,42 @@ public class Direct3D11Backend : GraphicsBackend {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             goto skipAdapterPrint;
 
-        int adapterCount = this._dxgiFactory.GetAdapterCount1();
-        for (int i = 0; i < adapterCount; i++) {
-            AdapterDescription description = this._dxgiFactory.GetAdapter(i).Description;
+        try {
+            int adapterCount = this._dxgiFactory.GetAdapterCount1();
+            for (int i = 0; i < adapterCount; i++) {
+                AdapterDescription description = this._dxgiFactory.GetAdapter(i).Description;
 
 #pragma warning disable CS0675
-            long luid = description.Luid.LowPart | description.Luid.HighPart;
+                long luid = description.Luid.LowPart | description.Luid.HighPart;
 #pragma warning restore CS0675
 
-            string dedicatedSysMemMb = Math.Round((description.DedicatedSystemMemory / 1024.0) / 1024.0, 2)
-                .ToString(CultureInfo.InvariantCulture);
-            string dedicatedVidMemMb = Math.Round((description.DedicatedVideoMemory / 1024.0) / 1024.0, 2)
-                .ToString(CultureInfo.InvariantCulture);
-            string dedicatedShrMemMb = Math.Round((description.SharedSystemMemory / 1024.0) / 1024.0, 2)
-                .ToString(CultureInfo.InvariantCulture);
+                string dedicatedSysMemMb = Math.Round((description.DedicatedSystemMemory / 1024.0) / 1024.0, 2)
+                                               .ToString(CultureInfo.InvariantCulture);
+                string dedicatedVidMemMb = Math.Round((description.DedicatedVideoMemory / 1024.0) / 1024.0, 2)
+                                               .ToString(CultureInfo.InvariantCulture);
+                string dedicatedShrMemMb = Math.Round((description.SharedSystemMemory / 1024.0) / 1024.0, 2)
+                                               .ToString(CultureInfo.InvariantCulture);
 
-            BackendInfoSection section = new($"Adapter [{i}]");
-            section.Contents.Add(("Adapter Description", description.Description));
-            section.Contents.Add(("Revision", description.Revision.ToString()));
-            section.Contents.Add(("PCI Vendor ID", description.VendorId.ToString()));
-            section.Contents.Add(("PCI Device ID", description.DeviceId.ToString()));
-            section.Contents.Add(("PCI Subsystem ID", description.SubsystemId.ToString()));
-            section.Contents.Add(("Locally Unique Identifier", luid.ToString()));
-            section.Contents.Add(("Dedicated System Memory", $"{dedicatedSysMemMb}mb"));
-            section.Contents.Add(("Dedicated Video Memory", $"{dedicatedVidMemMb}mb"));
-            section.Contents.Add(("Dedicated Shared Memory", $"{dedicatedShrMemMb}mb"));
-            this.InfoSections.Add(section);
+                BackendInfoSection section = new($"Adapter [{i}]");
+                section.Contents.Add(("Adapter Description", description.Description));
+                section.Contents.Add(("Revision", description.Revision.ToString()));
+                section.Contents.Add(("PCI Vendor ID", description.VendorId.ToString()));
+                section.Contents.Add(("PCI Device ID", description.DeviceId.ToString()));
+                section.Contents.Add(("PCI Subsystem ID", description.SubsystemId.ToString()));
+                section.Contents.Add(("Locally Unique Identifier", luid.ToString()));
+                section.Contents.Add(("Dedicated System Memory", $"{dedicatedSysMemMb}mb"));
+                section.Contents.Add(("Dedicated Video Memory", $"{dedicatedVidMemMb}mb"));
+                section.Contents.Add(("Dedicated Shared Memory", $"{dedicatedShrMemMb}mb"));
+                this.InfoSections.Add(section);
 
-            i++;
+                i++;
+            }
+        }
+        catch {
+            //this damn code breaks so much so lets shove it in a try/catch and cry about it
         }
 
-        skipAdapterPrint:
+    skipAdapterPrint:
 
         IntPtr outputWindow = RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
                                   ? view.Handle
