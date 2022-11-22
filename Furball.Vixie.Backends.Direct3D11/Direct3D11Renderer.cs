@@ -307,7 +307,7 @@ public class Direct3D11VixieRenderer : VixieRenderer {
     private uint   _indexCount;
 
     private int _reserveRecursionCount = 0;
-    public override unsafe MappedData Reserve(ushort vertexCount, uint indexCount) {
+    public override unsafe MappedData Reserve(ushort vertexCount, uint indexCount, VixieTexture tex) {
         Guard.Assert(vertexCount != 0, "vertexCount != 0");
         Guard.Assert(indexCount != 0,  "indexCount != 0");
 
@@ -330,8 +330,10 @@ public class Direct3D11VixieRenderer : VixieRenderer {
 
             this.DumpToBuffers();
             this._reserveRecursionCount++;
-            return this.Reserve(vertexCount, indexCount);
+            return this.Reserve(vertexCount, indexCount, tex);
         }
+
+        long texId = this.GetTextureId(tex);
 
         this._indexOffset += vertexCount;
         this._indexCount  += indexCount;
@@ -342,12 +344,13 @@ public class Direct3D11VixieRenderer : VixieRenderer {
         (ushort*)idx,
         vertexCount,
         indexCount,
-        (uint)(this._indexOffset - vertexCount)
+        (uint)(this._indexOffset - vertexCount),
+        texId
         );
     }
 
-    private Dictionary<VixieTexture, int> _texDict = new();
-    public override long GetTextureId(VixieTexture texOrig) {
+    private Dictionary<VixieTexture, int> _texDict = new Dictionary<VixieTexture, int>();
+    private long GetTextureId(VixieTexture texOrig) {
         this._backend.CheckThread();
 
         Guard.EnsureNonNull(texOrig, "texOrig");

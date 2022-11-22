@@ -91,7 +91,7 @@ public class MolaVixieRenderer : VixieRenderer {
         };
     }
 
-    public override unsafe MappedData Reserve(ushort vertexCount, uint indexCount) {
+    public override unsafe MappedData Reserve(ushort vertexCount, uint indexCount, VixieTexture tex) {
         if (sizeof(Vertex) * vertexCount > VtxBufSize || sizeof(ushort) * indexCount > IdxBufSize)
             throw new Exception();
 
@@ -107,11 +107,12 @@ public class MolaVixieRenderer : VixieRenderer {
             this._currentBatch.IndexPtr  + this._currentBatch.IndexCount - indexCount,
             vertexCount,
             indexCount,
-            (uint)(this._currentBatch.VertexCount - vertexCount)
+            (uint)(this._currentBatch.VertexCount - vertexCount), 
+            this.GetTextureId(tex)
         );
     }
 
-    public override unsafe long GetTextureId(VixieTexture tex) {
+    private unsafe long GetTextureId(VixieTexture tex) {
         if (tex is not MolaTexture molaTexture)
             throw new ArgumentException($"Texture should be a {typeof(MolaTexture)}", nameof (tex));
 

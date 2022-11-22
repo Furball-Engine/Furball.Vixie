@@ -40,7 +40,7 @@ public class Renderer {
     public static ulong VertexCount;
     public static ulong IndexCount;
     
-    public MappedData Reserve(ushort vertexCount, uint indexCount) {
+    public MappedData Reserve(ushort vertexCount, uint indexCount, VixieTexture tex) {
         //NOTE: this is in an unchecked block to prevent crashes when the vertex/index count is too high
         //it shouldnt EVER reach that point, but this is for safety
         unchecked {
@@ -48,13 +48,9 @@ public class Renderer {
             IndexCount  += indexCount;
         }
     
-        return this.VixieRenderer.Reserve(vertexCount, indexCount);
+        return this.VixieRenderer.Reserve(vertexCount, indexCount, tex);
     }
 
-    public long GetTextureId(VixieTexture tex) {
-        return this.VixieRenderer.GetTextureId(tex);
-    }
-    
     public void Dispose() {
         this.VixieRenderer.Dispose();
     }

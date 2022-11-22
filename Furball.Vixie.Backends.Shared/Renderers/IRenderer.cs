@@ -24,15 +24,8 @@ public abstract class VixieRenderer : IDisposable {
     /// <param name="vertexCount">The amount of vertexes to reserve</param>
     /// <param name="indexCount">Thn amount of indexes to reserve</param>
     /// <returns>The mapped data pointers</returns>
-    public abstract MappedData Reserve(ushort vertexCount, uint indexCount);
+    public abstract MappedData Reserve(ushort vertexCount, uint indexCount, VixieTexture tex);
 
-    /// <summary>
-    /// Gets the texture id to put in your vertex definition
-    /// </summary>
-    /// <param name="tex">The texture to get the ID for</param>
-    /// <returns>The texture id of the texture</returns>
-    public abstract long GetTextureId(VixieTexture tex);
-    
     /// <summary>
     /// Draws the collected buffers to the screen, can be run as many times as you want
     /// </summary>

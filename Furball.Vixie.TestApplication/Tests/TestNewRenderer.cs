@@ -42,9 +42,9 @@ public unsafe class TestNewRenderer : Screen {
             this._vixieRenderer.AllocateUnrotatedTexturedQuad(this._texture, new Vector2(i*9 % 1200, 0), new Vector2(0.05f), Color.Orange);
         }
         
-        MappedData data = this._vixieRenderer.Reserve(6, 15);
+        MappedData data = this._vixieRenderer.Reserve(6, 15, this._whitePixel);
 
-        long pentagonTex = this._vixieRenderer.GetTextureId(this._whitePixel);
+        long pentagonTex = data.TextureId;
         data.VertexPtr[0] = new Vertex {
             Position          = new Vector2(100, 0),
             Color             = Color.Red,

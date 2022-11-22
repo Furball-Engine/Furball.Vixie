@@ -503,8 +503,8 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     ///     Clears the Screen
     /// </summary>
     public override void Clear() {
-        this.gl.Clear(ClearBufferMask.ColorBufferBit);
         this.gl.ClearColor(0, 0, 0, 0);
+        this.gl.Clear(ClearBufferMask.ColorBufferBit);
     }
     public override void TakeScreenshot() {
         this._screenshotQueued = true;

@@ -14,6 +14,9 @@ using Silk.NET.Windowing.Sdl;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+#if VIXIE_BACKEND_WEBGPU
+using Furball.Vixie.Backends.WebGPU;
+#endif
 #if VIXIE_BACKEND_D3D11
 using Furball.Vixie.Backends.Direct3D11;
 #endif
@@ -43,7 +46,7 @@ public class SilkWindowManager : IWindowManager {
     public  IInputContext InputContext;
     
     private IWindow       _window;
-    private WindowState   _windowState;
+    private WindowState   _windowState = WindowState.Windowed;
 
     public SilkWindowManager(Backend backend) {
         this.Backend = backend;
@@ -80,6 +83,9 @@ public class SilkWindowManager : IWindowManager {
 #if VIXIE_BACKEND_DUMMY
             Backend.Dummy => ContextAPI.None, //Dummy backend is just a dummy, so we specify none
 #endif
+#if VIXIE_BACKEND_WEBGPU
+            Backend.WebGPU => ContextAPI.None, //Dummy backend is just a dummy, so we specify none
+#endif
 #if VIXIE_BACKEND_MOLA
             Backend.Mola => ContextAPI
                .None, //Mola is software rendering, and we dont currently output anything to the window
@@ -105,7 +111,10 @@ public class SilkWindowManager : IWindowManager {
             Backend.Dummy      => ContextProfile.Core, //This doesnt matter for Dummy
 #endif
 #if VIXIE_BACKEND_MOLA
-            Backend.Mola       => ContextProfile.Core, //This doesnt matter for Mola, as it is software rendering
+            Backend.Mola => ContextProfile.Core, //This doesnt matter for Mola, as it is software rendering
+#endif
+#if VIXIE_BACKEND_WEBGPU
+            Backend.WebGPU => ContextProfile.Core, //This doesnt matter for Mola, as it is software rendering
 #endif
             _                  => throw new Exception("Invalid API chosen...")
         };
@@ -136,7 +145,10 @@ public class SilkWindowManager : IWindowManager {
             Backend.Mola   => debug ? ContextFlags.Debug : ContextFlags.Default,
 #endif
 #if VIXIE_BACKEND_DUMMY
-            Backend.Dummy  => debug ? ContextFlags.Debug : ContextFlags.Default,
+            Backend.Dummy => debug ? ContextFlags.Debug : ContextFlags.Default,
+#endif
+#if VIXIE_BACKEND_WEBGPU
+            Backend.WebGPU => debug ? ContextFlags.Debug : ContextFlags.Default,
 #endif
             _ => throw new Exception("Invalid API chosen...")
         };
@@ -189,6 +201,11 @@ public class SilkWindowManager : IWindowManager {
                 version = new APIVersion(0, 0);
                 break;
 #endif
+#if VIXIE_BACKEND_WEBGPU
+            case Backend.WebGPU:
+                version = new APIVersion(0, 0);
+                break;
+#endif
             default:
                 throw new Exception("Invalid API chosen...");
         }
@@ -228,11 +245,14 @@ public class SilkWindowManager : IWindowManager {
 
     public IMonitor? Monitor => this._window.Monitor;
 
+    private Vector2D<int> _windowSize = Vector2D<int>.Zero;
     public Vector2D<int> WindowSize {
-        get => this._window.Size;
+        get => this._windowSize;
         set => this._window.Size = value;
     }
-    public Vector2D<int> FramebufferSize => this._window.FramebufferSize;
+    
+    private Vector2D<int> _framebufferSize = new Vector2D<int>(0, 0);
+    public Vector2D<int> FramebufferSize => this._framebufferSize;
 
     public Vector2D<int> WindowPosition {
         get => this._window.Position;
@@ -329,7 +349,7 @@ public class SilkWindowManager : IWindowManager {
     public bool Focused {
         get;
         private set;
-    }
+    } = true;
 
     public void Focus() {
         throw new NotImplementedException("This is not implemented in Silk.NET!");
@@ -435,9 +455,15 @@ public class SilkWindowManager : IWindowManager {
         this._window.Render            += this.SilkWindowRender;
         this._window.FocusChanged      += this.SilkWindowFocusChange;
         this._window.FramebufferResize += this.SilkWindowFramebufferResize;
+
+        this._window.Resize += newWindowSize => {
+            this._windowSize = newWindowSize;
+        };
     }
 
     private void SilkWindowFramebufferResize(Vector2D<int> obj) {
+        this._framebufferSize = obj;
+        
         this.FramebufferResize?.Invoke(obj);
     }
 
@@ -464,6 +490,9 @@ public class SilkWindowManager : IWindowManager {
     }
 
     private void SilkWindowLoad() {
+        this._windowSize      = this._window.Size;
+        this._framebufferSize = this._window.FramebufferSize;
+        
         // ReSharper disable once SwitchExpressionHandlesSomeKnownEnumValuesWithExceptionInDefault
         this.GraphicsBackend = this.Backend switch {
 #if VIXIE_BACKEND_OPENGL
@@ -486,6 +515,9 @@ public class SilkWindowManager : IWindowManager {
 #endif
 #if VIXIE_BACKEND_MOLA
             Backend.Mola       => new MolaBackend(),
+#endif
+#if VIXIE_BACKEND_WEBGPU
+            Backend.WebGPU     => new WebGPUBackend(),      
 #endif
             _                  => throw new Exception("Invalid Backend Selected...")
         };

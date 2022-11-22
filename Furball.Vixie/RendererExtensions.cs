@@ -23,9 +23,9 @@ public static class RendererExtensions {
         return vec;
     }
 
-    private static unsafe void SetQuadVertices(Renderer     Renderer, Vertex* ptr,   Vector2     pos, Vector2 size,
-                                               VixieTexture tex,      Color   color, TextureFlip flip) {
-        long texId = Renderer.GetTextureId(tex);
+    private static unsafe void SetQuadVertices(Renderer     Renderer, Vertex* ptr, Vector2 pos, Vector2 size,
+                                               long         texId,
+                                               VixieTexture tex, Color color, TextureFlip flip) {
         ptr[0].Position          = pos;
         ptr[0].Color             = color;
         ptr[0].TextureCoordinate = FlipVector2(new Vector2(0, tex.InternalFlip ? 1 : 0), flip);
@@ -65,11 +65,11 @@ public static class RendererExtensions {
     public static unsafe void AllocateUnrotatedTexturedQuad(this Renderer Renderer, VixieTexture tex, Vector2 position,
                                                             Vector2       scale,    Color        color,
                                                             TextureFlip   flip = TextureFlip.None) {
-        Vector2 size = new(tex.Width * scale.X, tex.Height * scale.Y);
+        Vector2 size = new Vector2(tex.Width * scale.X, tex.Height * scale.Y);
 
-        MappedData mappedData = Renderer.Reserve(4, 6);
+        MappedData mappedData = Renderer.Reserve(4, 6, tex);
 
-        SetQuadVertices(Renderer, mappedData.VertexPtr, position, size, tex, color, flip);
+        SetQuadVertices(Renderer, mappedData.VertexPtr, position, size, mappedData.TextureId, tex, color, flip);
         SetQuadIndices(mappedData);
     }
 
@@ -83,8 +83,8 @@ public static class RendererExtensions {
         if (tex.InternalFlip)
             sourceRect.Height *= -1;
 
-        MappedData mappedData = Renderer.Reserve(4, 6);
-        SetQuadVertices(Renderer, mappedData.VertexPtr, position, size, tex, color, flip);
+        MappedData mappedData = Renderer.Reserve(4, 6, tex);
+        SetQuadVertices(Renderer, mappedData.VertexPtr, position, size, mappedData.TextureId, tex, color, flip);
         mappedData.VertexPtr[0].TextureCoordinate =
             FlipVector2(new Vector2(sourceRect.X / (float)tex.Width, sourceRect.Y / (float)tex.Height), flip);
         mappedData.VertexPtr[1].TextureCoordinate =
@@ -102,29 +102,29 @@ public static class RendererExtensions {
                                                           Color         color, TextureFlip flip = TextureFlip.None) {
         Vector2 size = new(tex.Width * scale.X, tex.Height * scale.Y);
 
-        MappedData mappedData = Renderer.Reserve(4, 6);
+        MappedData mappedData = Renderer.Reserve(4, 6, tex);
         mappedData.VertexPtr[0].Position          = Vector2.Zero;
         mappedData.VertexPtr[0].Color             = color;
-        mappedData.VertexPtr[0].TexId             = Renderer.GetTextureId(tex);
+        mappedData.VertexPtr[0].TexId             = mappedData.TextureId;
         mappedData.VertexPtr[0].TextureCoordinate = FlipVector2(new Vector2(0, 0), flip);
 
         mappedData.VertexPtr[1].Position = size with {
             Y = 0
         };
         mappedData.VertexPtr[1].Color             = color;
-        mappedData.VertexPtr[1].TexId             = Renderer.GetTextureId(tex);
+        mappedData.VertexPtr[1].TexId             = mappedData.TextureId;
         mappedData.VertexPtr[1].TextureCoordinate = FlipVector2(new Vector2(1, 0), flip);
 
         mappedData.VertexPtr[2].Position          = size;
         mappedData.VertexPtr[2].Color             = color;
-        mappedData.VertexPtr[2].TexId             = Renderer.GetTextureId(tex);
+        mappedData.VertexPtr[2].TexId             = mappedData.TextureId;
         mappedData.VertexPtr[2].TextureCoordinate = FlipVector2(new Vector2(1, 1), flip);
 
         mappedData.VertexPtr[3].Position = size with {
             X = 0
         };
         mappedData.VertexPtr[3].Color             = color;
-        mappedData.VertexPtr[3].TexId             = Renderer.GetTextureId(tex);
+        mappedData.VertexPtr[3].TexId             = mappedData.TextureId;
         mappedData.VertexPtr[3].TextureCoordinate = FlipVector2(new Vector2(0, 1), flip);
 
         Matrix4x4 rotMat = Matrix4x4.CreateRotationZ(rotation);
@@ -158,11 +158,11 @@ public static class RendererExtensions {
         if (tex.InternalFlip)
             sourceRect.Height *= -1;
 
-        MappedData mappedData = Renderer.Reserve(4, 6);
+        MappedData mappedData = Renderer.Reserve(4, 6, tex);
         mappedData.VertexPtr[0] = new Vertex {
             Position = Vector2.Zero,
             Color    = color,
-            TexId    = Renderer.GetTextureId(tex),
+            TexId    = mappedData.TextureId,
             TextureCoordinate =
                 FlipVector2(new Vector2(sourceRect.X / (float)tex.Width, sourceRect.Y / (float)tex.Height), flip)
         };
@@ -171,14 +171,14 @@ public static class RendererExtensions {
                 Y = 0
             },
             Color = color,
-            TexId = Renderer.GetTextureId(tex),
+            TexId = mappedData.TextureId,
             TextureCoordinate =
                 FlipVector2(new Vector2(sourceRect.Right / (float)tex.Width, sourceRect.Y / (float)tex.Height), flip)
         };
         mappedData.VertexPtr[2] = new Vertex {
             Position = size,
             Color    = color,
-            TexId    = Renderer.GetTextureId(tex),
+            TexId    = mappedData.TextureId,
             TextureCoordinate =
                 FlipVector2(new Vector2(sourceRect.Right / (float)tex.Width, sourceRect.Bottom / (float)tex.Height),
                             flip)
@@ -188,7 +188,7 @@ public static class RendererExtensions {
                 X = 0
             },
             Color = color,
-            TexId = Renderer.GetTextureId(tex),
+            TexId = mappedData.TextureId,
             TextureCoordinate =
                 FlipVector2(new Vector2(sourceRect.X / (float)tex.Width, sourceRect.Bottom / (float)tex.Height), flip)
         };
@@ -214,7 +214,7 @@ public static class RendererExtensions {
     }
 
     public static void DrawString(this Renderer Renderer, DynamicSpriteFont font,
-                                  string        text,     Vector2           position, Color   color, float rotation,
+                                  string text, Vector2 position, Color color, float rotation,
                                   Vector2 scale, Vector2 origin = default(Vector2), TextStyle style = TextStyle.None,
                                   FontSystemEffect effect = FontSystemEffect.None, int effectAmount = 0
     ) {
@@ -244,19 +244,19 @@ public static class RendererExtensions {
                                   int           effectAmount = 0
     ) {
         font.DrawText(
-        Renderer.FontRenderer,
-        text,
-        position,
-        colors,
-        scale,
-        rotation,
-        origin,
-        0,
-        0,
-        0,
-        style,
-        effect,
-        effectAmount
+            Renderer.FontRenderer,
+            text,
+            position,
+            colors,
+            scale,
+            rotation,
+            origin,
+            0,
+            0,
+            0,
+            style,
+            effect,
+            effectAmount
         );
     }
 }

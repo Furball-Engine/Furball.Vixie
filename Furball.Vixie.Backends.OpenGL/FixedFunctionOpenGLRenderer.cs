@@ -82,17 +82,17 @@ public class FixedFunctionOpenGlVixieRenderer : VixieRenderer {
         this._isBegun = false;
     }
 
-    public override unsafe MappedData Reserve(ushort vertexCount, uint indexCount) {
+    public override unsafe MappedData Reserve(ushort vertexCount, uint indexCount, VixieTexture tex) {
         Vertex* vertexPtr = (Vertex*)SilkMarshal.Allocate(sizeof(Vertex) * vertexCount);
         ushort* indexPtr  = (ushort*)SilkMarshal.Allocate((int)(sizeof(ushort) * indexCount));
 
-        MappedData data = new MappedData(vertexPtr, indexPtr, vertexCount, indexCount, 0);
+        MappedData data = new MappedData(vertexPtr, indexPtr, vertexCount, indexCount, 0, this.GetTextureId(tex));
 
         this._mappedDataList.Add(data);
         
         return data;
     }
-    public override long GetTextureId(VixieTexture tex) {
+    private long GetTextureId(VixieTexture tex) {
         if (tex is not VixieTextureGl glTex)
             throw new Exception($"You can only pass textures of type {typeof(VixieTextureGl)} into this function!");
 
