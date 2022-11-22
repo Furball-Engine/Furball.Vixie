@@ -16,10 +16,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Silk.NET.WebGPU" Version="2.16.0-build2652.0" />
-      <PackageReference Include="Silk.NET.WebGPU.Extensions.Dawn" Version="2.16.0-build2652.0" />
-      <PackageReference Include="Silk.NET.WebGPU.Extensions.Disposal" Version="2.16.0-build2652.0" />
-      <PackageReference Include="Silk.NET.WebGPU.Extensions.WGPU" Version="2.16.0-build2652.0" />
+      <PackageReference Include="Silk.NET.WebGPU" Version="2.17.0-build2669.0" />
+      <PackageReference Include="Silk.NET.WebGPU.Extensions.Dawn" Version="2.17.0-build2669.0" />
+      <PackageReference Include="Silk.NET.WebGPU.Extensions.Disposal" Version="2.17.0-build2669.0" />
+      <PackageReference Include="Silk.NET.WebGPU.Extensions.WGPU" Version="2.17.0-build2669.0" />
     </ItemGroup>
 
 </Project>

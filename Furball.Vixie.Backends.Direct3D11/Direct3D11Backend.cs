@@ -123,8 +123,7 @@ public class Direct3D11Backend : GraphicsBackend {
 
     skipAdapterPrint:
 
-        IntPtr outputWindow = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? view.Handle
-                                  : view.Native!.Win32!.Value.Hwnd;
+        IntPtr outputWindow = (IntPtr)view.Native!.DXHandle!;
 
         SwapChainDescription1 swapChainDescription = new() {
             Width  = view.FramebufferSize.X,
