@@ -9,6 +9,7 @@ using Furball.Vixie.Helpers.Helpers;
 using Kettu;
 using Silk.NET.Core.Native;
 using Silk.NET.Input;
+using Silk.NET.Maths;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.Disposal;
 using Silk.NET.WebGPU.Extensions.WGPU;
@@ -17,6 +18,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using Buffer = Silk.NET.WebGPU.Buffer;
 using Color = Silk.NET.WebGPU.Color;
+using Rectangle=SixLabors.ImageSharp.Rectangle;
 
 namespace Furball.Vixie.Backends.WebGPU;
 
@@ -534,10 +536,13 @@ public unsafe class WebGPUBackend : GraphicsBackend {
     public override VixieRenderer CreateRenderer() {
         return new WebGPURenderer(this);
     }
-
-    public override int QueryMaxTextureUnits() {
-        //This is a technique called: lying!
-        return 0;
+    public override Vector2D<int> MaxTextureSize {
+        get {
+            SupportedLimits limits = new SupportedLimits();
+            return this.WebGPU.AdapterGetLimits(this.Adapter, ref limits) 
+                       ? new Vector2D<int>((int)limits.Limits.MaxTextureDimension2D) 
+                       : new Vector2D<int>(1024); //if it fails for whatever reason, just assume 1024
+        }
     }
 
     public override void Clear() {

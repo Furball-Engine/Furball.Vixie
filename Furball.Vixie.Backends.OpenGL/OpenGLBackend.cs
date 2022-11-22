@@ -486,11 +486,12 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     public override VixieRenderer CreateRenderer() => this.FixedFunctionPipeline.Boolean 
         ? new FixedFunctionOpenGlVixieRenderer(this) 
         : new OpenGlVixieRenderer(this);
+    public override Vector2D<int> MaxTextureSize => new Vector2D<int>(this.gl.GetInteger((GLEnum)GetPName.MaxTextureSize));
     /// <summary>
     ///     Gets the Amount of Texture Units available for use
     /// </summary>
     /// <returns>Amount of Texture Units supported</returns>
-    public override int QueryMaxTextureUnits() {
+    public int QueryMaxTextureUnits() {
         if (this._maxTextureUnits == -1) {
             this.gl.GetInteger(GetPName.MaxTextureImageUnits, out int maxTexSlots);
             this.CheckError("get max tex slots");

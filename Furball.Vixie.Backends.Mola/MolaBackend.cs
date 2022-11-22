@@ -6,9 +6,11 @@ using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Silk.NET.Input;
+using Silk.NET.Maths;
 using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using Rectangle=SixLabors.ImageSharp.Rectangle;
 
 namespace Furball.Vixie.Backends.Mola;
 
@@ -46,11 +48,9 @@ public unsafe class MolaBackend : GraphicsBackend {
     public override VixieRenderer CreateRenderer() {
         return new MolaVixieRenderer(this);
     }
-
-    public override int QueryMaxTextureUnits() {
-        //We can support as many as you can fit into RAM, which is probably a lot
-        return int.MaxValue;
-    }
+    
+    //This is defined this small because anything larger gets increasingly silly memory wise
+    public override Vector2D<int> MaxTextureSize => new Vector2D<int>(2048);
 
     public override void Clear() {
         Furball.Mola.Bindings.Mola.ClearRenderBitmap(this._renderBitmap);

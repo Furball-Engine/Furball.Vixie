@@ -5,9 +5,11 @@ using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers;
 using Kettu;
 using Silk.NET.Input;
+using Silk.NET.Maths;
 using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using Rectangle=SixLabors.ImageSharp.Rectangle;
 
 namespace Furball.Vixie.Backends.Dummy;
 
@@ -35,8 +37,8 @@ public class DummyBackend : GraphicsBackend {
     public override VixieRenderer CreateRenderer() {
         return new DummyVixieRenderer(this);
     }
-    public override int QueryMaxTextureUnits() {
-        return 1;
+    public override Vector2D<int> MaxTextureSize {
+        get;
     }
     public override void Clear() {
         // throw new System.NotImplementedException();

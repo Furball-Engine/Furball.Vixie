@@ -10,6 +10,7 @@ using Furball.Vixie.Backends.Shared.Renderers;
 using Kettu;
 using SharpGen.Runtime;
 using Silk.NET.Input;
+using Silk.NET.Maths;
 using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -20,6 +21,7 @@ using Vortice.DXGI;
 using Vortice.Mathematics;
 using Configuration=SixLabors.ImageSharp.Configuration;
 using FeatureLevel=Vortice.Direct3D.FeatureLevel;
+using Rectangle=SixLabors.ImageSharp.Rectangle;
 
 namespace Furball.Vixie.Backends.Direct3D11;
 
@@ -42,7 +44,7 @@ public class Direct3D11Backend : GraphicsBackend {
     private ImGuiControllerD3D11 _imGuiController = null!;
 #endif
 
-    private VixieTextureD3D11 _privateWhitePixelVixieTexture = null!;
+    private  VixieTextureD3D11 _privateWhitePixelVixieTexture = null!;
     internal VixieTextureD3D11 GetPrivateWhitePixelTexture() => this._privateWhitePixelVixieTexture;
 
     public override void Initialize(IView view, IInputContext inputContext) {
@@ -121,8 +123,7 @@ public class Direct3D11Backend : GraphicsBackend {
 
     skipAdapterPrint:
 
-        IntPtr outputWindow = RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
-                                  ? view.Handle
+        IntPtr outputWindow = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? view.Handle
                                   : view.Native!.Win32!.Value.Hwnd;
 
         SwapChainDescription1 swapChainDescription = new() {
@@ -267,7 +268,10 @@ public class Direct3D11Backend : GraphicsBackend {
 
     public override VixieRenderer CreateRenderer() => new Direct3D11VixieRenderer(this);
 
-    public override int QueryMaxTextureUnits() {
+    //According to the docs, this is always 16384 for feature level 11 hardware: https://learn.microsoft.com/en-us/windows/win32/direct3d11/overviews-direct3d-11-resources-limits#resource-limits-for-feature-level-11-hardware
+    public override Vector2D<int> MaxTextureSize => new Vector2D<int>(16384);
+
+    public int QueryMaxTextureUnits() {
         return 128;
     }
 
@@ -284,14 +288,14 @@ public class Direct3D11Backend : GraphicsBackend {
         return new VixieTextureRenderTargetD3D11(this, width, height);
     }
 
-    public override VixieTexture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default) =>
-        new VixieTextureD3D11(this, imageData, parameters);
+    public override VixieTexture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default)
+        => new VixieTextureD3D11(this, imageData, parameters);
 
-    public override VixieTexture CreateTextureFromStream(Stream stream, TextureParameters parameters = default) =>
-        new VixieTextureD3D11(this, stream, parameters);
+    public override VixieTexture CreateTextureFromStream(Stream stream, TextureParameters parameters = default)
+        => new VixieTextureD3D11(this, stream, parameters);
 
-    public override VixieTexture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default) =>
-        new VixieTextureD3D11(this, width, height, parameters);
+    public override VixieTexture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default)
+        => new VixieTextureD3D11(this, width, height, parameters);
 
     public override VixieTexture CreateWhitePixelTexture() {
         return new VixieTextureD3D11(this);
@@ -399,5 +403,5 @@ public class Direct3D11Backend : GraphicsBackend {
         catch {
             return 0;
         }
-    } 
+    }
 }

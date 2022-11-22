@@ -5,7 +5,7 @@ using Furball.Vixie.Helpers.Helpers;
 namespace Furball.Vixie.Backends.OpenGL; 
 
 public static class RendererShaderGenerator {
-    public static string GetFragment(GraphicsBackend backend) {
+    public static string GetFragment(OpenGLBackend backend) {
         string orig = ResourceHelpers.GetStringResource("Shaders/FragmentShader.glsl", typeof(OpenGLBackend));
 
         StringBuilder uniformBuilder = new();

@@ -5,10 +5,12 @@ using System.IO;
 using System.Threading;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Silk.NET.Input;
+using Silk.NET.Maths;
 using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
+using Rectangle=SixLabors.ImageSharp.Rectangle;
 
-namespace Furball.Vixie.Backends.Shared.Backends; 
+namespace Furball.Vixie.Backends.Shared.Backends;
 
 /// <summary>
 /// Specification for a Graphics Backend
@@ -36,10 +38,9 @@ public abstract class GraphicsBackend {
     /// <returns>Returns the new renderer</returns>
     public abstract VixieRenderer CreateRenderer();
     /// <summary>
-    /// Gets the Amount of Texture Units available for use
+    /// The maximum texture size supported by the backend
     /// </summary>
-    /// <returns>Amount of Texture Units supported</returns>
-    public abstract int QueryMaxTextureUnits();
+    public abstract Vector2D<int> MaxTextureSize { get; }
     /// <summary>
     /// Clears the Screen
     /// </summary>
@@ -83,7 +84,7 @@ public abstract class GraphicsBackend {
     public abstract ulong GetTotalVram();
 
     #endregion
-    
+
     #region Render Targets
 
     /// <summary>
@@ -128,7 +129,7 @@ public abstract class GraphicsBackend {
 
     #endregion
 
-    #if USE_IMGUI
+#if USE_IMGUI
     #region Imgui
     /// <summary>
     /// Used to Update the ImGuiController in charge of rendering ImGui on this backend
@@ -141,22 +142,16 @@ public abstract class GraphicsBackend {
     /// <param name="deltaTime">Delta Time</param>
     public abstract void ImGuiDraw(double deltaTime);
     #endregion
-    #endif
-    
+#endif
+
     /// <summary>
     /// Presents
     /// </summary>
-    public virtual void Present() {
+    public virtual void Present() {}
 
-    }
+    public virtual void BeginScene() {}
 
-    public virtual void BeginScene() {
-
-    }
-
-    public virtual void EndScene() {
-
-    }
+    public virtual void EndScene() {}
 
     public List<BackendInfoSection> InfoSections = new();
 }
