@@ -46,7 +46,7 @@ public class SilkWindowManager : IWindowManager {
     public  IInputContext InputContext;
     
     private IWindow       _window;
-    private WindowState   _windowState;
+    private WindowState   _windowState = WindowState.Windowed;
 
     public SilkWindowManager(Backend backend) {
         this.Backend = backend;
@@ -349,7 +349,7 @@ public class SilkWindowManager : IWindowManager {
     public bool Focused {
         get;
         private set;
-    }
+    } = true;
 
     public void Focus() {
         throw new NotImplementedException("This is not implemented in Silk.NET!");
