@@ -20,7 +20,7 @@ internal sealed class VixieTextureRenderTargetD3D11 : VixieTextureRenderTarget {
 
     private readonly VixieTexture _vixieTexture;
 
-    public VixieTextureRenderTargetD3D11(Direct3D11Backend backend, uint width, uint height) {
+    public unsafe VixieTextureRenderTargetD3D11(Direct3D11Backend backend, uint width, uint height) {
         this._backend = backend;
         this._backend.CheckThread();
 
@@ -29,9 +29,9 @@ internal sealed class VixieTextureRenderTargetD3D11 : VixieTextureRenderTarget {
             Height    = height,
             MipLevels = 1,
             ArraySize = 1,
-            Format    = Format.R8G8B8A8_UNorm,
-            BindFlags = BindFlags.ShaderResource | BindFlags.RenderTarget,
-            Usage     = ResourceUsage.Default,
+            Format    = Format.FormatR8G8B8A8Unorm,
+            BindFlags = (uint)(BindFlag.ShaderResource | BindFlag.RenderTarget),
+            Usage     = Usage.Default,
             SampleDesc = new SampleDesc {
                 Count   = 1,
                 Quality = 0
@@ -40,28 +40,33 @@ internal sealed class VixieTextureRenderTargetD3D11 : VixieTextureRenderTarget {
 
         this._texDesc = renderTargetTextureDesc;
 
-        ID3D11Texture2D renderTargetTexture = backend.Device.CreateTexture2D(renderTargetTextureDesc);
+        ComPtr<ID3D11Texture2D> renderTargetTexture = null;
+        backend.Device.CreateTexture2D(renderTargetTextureDesc, null, ref renderTargetTexture);
 
-        RenderTargetViewDesc renderTargetDesc = new() {
+        RenderTargetViewDesc renderTargetDesc = new RenderTargetViewDesc {
             Format        = renderTargetTextureDesc.Format,
-            ViewDimension = RenderTargetViewDimension.Texture2D,
+            ViewDimension = RtvDimension.Texture2D,
         };
 
-        renderTargetDesc.Texture2D.MipSlice = 0;
+        renderTargetDesc.Texture2D = new Tex2DRtv {
+            MipSlice = 0
+        };
 
-        ID3D11RenderTargetView renderTarget =
-            backend.Device.CreateRenderTargetView(renderTargetTexture, renderTargetDesc);
+        ComPtr<ID3D11RenderTargetView> renderTarget = null;
+        backend.Device.CreateRenderTargetView(renderTargetTexture, renderTargetDesc, ref renderTarget);
 
         ShaderResourceViewDesc shaderResourceViewDesc = new() {
             Format        = renderTargetDesc.Format,
-            ViewDimension = ShaderResourceViewDimension.Texture2D,
+            ViewDimension = D3DSrvDimension.D3DSrvDimensionTexture2D,
         };
 
-        shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
-        shaderResourceViewDesc.Texture2D.MipLevels       = 1;
+        shaderResourceViewDesc.Texture2D = new Tex2DSrv {
+            MostDetailedMip = 0,
+            MipLevels       = 1
+        };
 
-        ID3D11ShaderResourceView shaderResourceView =
-            backend.Device.CreateShaderResourceView(renderTargetTexture, shaderResourceViewDesc);
+        ComPtr<ID3D11ShaderResourceView> shaderResourceView = null;
+        backend.Device.CreateShaderResourceView(renderTargetTexture, shaderResourceViewDesc, ref shaderResourceView);
 
         this._renderTargetTexture = renderTargetTexture;
         this._renderTarget        = renderTarget;
@@ -81,13 +86,22 @@ internal sealed class VixieTextureRenderTargetD3D11 : VixieTextureRenderTarget {
         DisposeQueue.Enqueue(this);
     }
 
-    public override void Bind() {
+    public override unsafe void Bind() {
         this._backend.CheckThread();
-        this._backend.DeviceContext.OMSetRenderTargets(this._renderTarget);
+        this._backend.DeviceContext.OMSetRenderTargets(0, this._renderTarget, (ID3D11DepthStencilView*)null);
         this._backend.CurrentlyBoundTarget = this._renderTarget;
         this._backend.ResetBlendState();
 
-        this._startingViewport = this._backend.DeviceContext.RSGetViewport();
+        uint viewportCount = 0;
+        this._backend.DeviceContext.RSGetViewports(ref viewportCount, null);
+        
+        if (viewportCount == 0)
+            throw new Exception("No viewports?");
+        
+        Viewport* viewports = stackalloc Viewport[(int)viewportCount];
+        this._backend.DeviceContext.RSGetViewports(ref viewportCount, viewports);
+
+        this._startingViewport = viewports[0];
 
         Viewport newViewport = new(
             0,
@@ -97,7 +111,7 @@ internal sealed class VixieTextureRenderTargetD3D11 : VixieTextureRenderTarget {
             this._startingViewport.MinDepth,
             this._startingViewport.MaxDepth
         );
-        this._backend.DeviceContext.RSSetViewport(newViewport);
+        this._backend.DeviceContext.RSSetViewports(1, newViewport);
         this._backend.SetProjectionMatrix(this.Size.X, this.Size.Y, true);
     }
 
@@ -105,7 +119,7 @@ internal sealed class VixieTextureRenderTargetD3D11 : VixieTextureRenderTarget {
         this._backend.CheckThread();
         this._backend.SetDefaultRenderTarget();
 
-        this._backend.DeviceContext.RSSetViewport(this._startingViewport);
+        this._backend.DeviceContext.RSSetViewports(1, this._startingViewport);
         this._backend.SetProjectionMatrix((int)this._startingViewport.Width, (int)this._startingViewport.Height, false);
     }
 
