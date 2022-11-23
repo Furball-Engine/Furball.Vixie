@@ -41,7 +41,7 @@ public unsafe class Direct3D11Backend : GraphicsBackend {
     public Viewport  Viewport         { get; private set; }
     public Matrix4x4 ProjectionMatrix { get; private set; }
 
-    internal ID3D11RenderTargetView* CurrentlyBoundTarget = null!;
+    internal ComPtr<ID3D11RenderTargetView> CurrentlyBoundTarget = null!;
 
 #if USE_IMGUI
     private ImGuiControllerD3D11 _imGuiController = null!;
