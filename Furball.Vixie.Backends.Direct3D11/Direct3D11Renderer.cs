@@ -6,38 +6,38 @@ using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers;
 using Furball.Vixie.Helpers.Helpers;
-using Vortice.Direct3D;
-using Vortice.Direct3D11;
-using Vortice.DXGI;
+using Silk.NET.Core.Native;
+using Silk.NET.Direct3D11;
+using Silk.NET.DXGI;
 
 namespace Furball.Vixie.Backends.Direct3D11;
 
 public class Direct3D11VixieRenderer : VixieRenderer {
     private readonly Direct3D11Backend _backend;
 
-    private readonly ID3D11VertexShader _vertexShader;
-    private readonly ID3D11PixelShader  _pixelShader;
+    private readonly ComPtr<ID3D11VertexShader> _vertexShader;
+    private readonly ComPtr<ID3D11PixelShader>  _pixelShader;
 
-    private readonly ID3D11InputLayout _inputLayout;
+    private readonly ComPtr<ID3D11InputLayout> _inputLayout;
 
-    private readonly ID3D11Buffer _projectionMatrixBuffer;
+    private readonly ComPtr<ID3D11Buffer> _projectionMatrixBuffer;
 
     private readonly Direct3D11BufferMapper _vtxMapper;
     private readonly Direct3D11BufferMapper _idxMapper;
 
-    private ID3D11ShaderResourceView?[] _boundShaderViews;
-    private ID3D11ShaderResourceView[]  _nullShaderViews;
+    private ComPtr<ID3D11ShaderResourceView>[] _boundShaderViews;
+    private ComPtr<ID3D11ShaderResourceView>[]  _nullShaderViews;
     private VixieTextureD3D11?[]        _boundTextures;
     private int                         _usedTextures;
 
     private readonly ID3D11SamplerState _samplerState;
 
     private class RenderBuffer : IDisposable {
-        public ID3D11Buffer? Vtx;
-        public ID3D11Buffer? Idx;
+        public ComPtr<ID3D11Buffer> Vtx;
+        public ComPtr<ID3D11Buffer> Idx;
 
         public int                         UsedTextures;
-        public ID3D11ShaderResourceView[]? Textures;
+        public ComPtr<ID3D11ShaderResourceView>[]? Textures;
 
         public uint IndexCount;
 
@@ -48,8 +48,8 @@ public class Direct3D11VixieRenderer : VixieRenderer {
 
             this._isDisposed = true;
 
-            this.Vtx?.Dispose();
-            this.Idx?.Dispose();
+            this.Vtx.Dispose();
+            this.Idx.Dispose();
 
             this.Textures     = null;
             this.UsedTextures = 0;
@@ -67,93 +67,93 @@ public class Direct3D11VixieRenderer : VixieRenderer {
         this._backend = backend;
 
         byte[] vertexShaderData = ResourceHelpers.GetByteResource(
-        "Shaders/VertexShader.obj",
-        typeof(Direct3D11Backend)
+            "Shaders/VertexShader.obj",
+            typeof(Direct3D11Backend)
         );
         byte[] pixelShaderData = ResourceHelpers.GetByteResource("Shaders/PixelShader.obj", typeof(Direct3D11Backend));
 
         //Safety checks for shader data
         Guard.EnsureNonNull(vertexShaderData, "vertexShaderData");
-        Guard.EnsureNonNull(pixelShaderData,  "pixelShaderData");
+        Guard.EnsureNonNull(pixelShaderData, "pixelShaderData");
         Guard.Assert(vertexShaderData.Length != 0, "vertexShaderData.Length != 0");
-        Guard.Assert(pixelShaderData.Length != 0,  "pixelShaderData.Length != 0");
+        Guard.Assert(pixelShaderData.Length  != 0, "pixelShaderData.Length != 0");
 
         //Create shaders
         this._vertexShader = this._backend.Device.CreateVertexShader(vertexShaderData);
         this._pixelShader  = this._backend.Device.CreatePixelShader(pixelShaderData);
 
-        InputElementDescription[] inputLayoutDescription = {
+        InputElementDesc[] inputLayoutDesc = {
             new(
-            "POSITION",
-            0,
-            Format.R32G32_Float,
-            InputElementDescription.AppendAligned,
-            0,
-            InputClassification.PerVertexData,
-            0
+                "POSITION",
+                0,
+                Format.R32G32_Float,
+                InputElementDesc.AppendAligned,
+                0,
+                InputClassification.PerVertexData,
+                0
             ),
             new(
-            "TEXCOORD",
-            0,
-            Format.R32G32_Float,
-            InputElementDescription.AppendAligned,
-            0,
-            InputClassification.PerVertexData,
-            0
+                "TEXCOORD",
+                0,
+                Format.R32G32_Float,
+                InputElementDesc.AppendAligned,
+                0,
+                InputClassification.PerVertexData,
+                0
             ),
             new(
-            "COLOR",
-            0,
-            Format.R32G32B32A32_Float,
-            InputElementDescription.AppendAligned,
-            0,
-            InputClassification.PerVertexData,
-            0
+                "COLOR",
+                0,
+                Format.R32G32B32A32_Float,
+                InputElementDesc.AppendAligned,
+                0,
+                InputClassification.PerVertexData,
+                0
             ),
             new(
-            "TEXID",
-            0,
-            Format.R32_UInt,
-            InputElementDescription.AppendAligned,
-            0,
-            InputClassification.PerVertexData,
-            0
+                "TEXID",
+                0,
+                Format.R32_UInt,
+                InputElementDesc.AppendAligned,
+                0,
+                InputClassification.PerVertexData,
+                0
             ),
             //Note: the reason we add `sizeof(int)` is because in the actual vertex definition it is a long, but HLSL
             //does not have a `long` type, so we just split it into 2 32bit integers
             new(
-            "TEXID",
-            1,
-            Format.R32_UInt,
-            InputElementDescription.AppendAligned,
-            0,
-            InputClassification.PerVertexData,
-            0
+                "TEXID",
+                1,
+                Format.R32_UInt,
+                InputElementDesc.AppendAligned,
+                0,
+                InputClassification.PerVertexData,
+                0
             )
         };
 
         //Create the input layout for the shader
-        this._inputLayout = this._backend.Device.CreateInputLayout(inputLayoutDescription, vertexShaderData);
+        this._inputLayout = this._backend.Device.CreateInputLayout(inputLayoutDesc, vertexShaderData);
 
-        BufferDescription projectionBufferDescription = new() {
+        BufferDesc projectionBufferDesc = new() {
             BindFlags      = BindFlags.ConstantBuffer,
             ByteWidth      = sizeof(Matrix4x4),
             CPUAccessFlags = CpuAccessFlags.Write,
             Usage          = ResourceUsage.Dynamic
         };
 
-        this._projectionMatrixBuffer = this._backend.Device.CreateBuffer(projectionBufferDescription);
+        this._projectionMatrixBuffer = this._backend.Device.CreateBuffer(projectionBufferDesc);
         this.UpdateProjectionMatrixBuffer();
 
         this._vtxMapper = new Direct3D11BufferMapper(
-        backend,
-        (uint)(sizeof(Vertex) * 4 * QUAD_AMOUNT),
-        BindFlags.VertexBuffer
+            backend,
+            (uint)(sizeof(Vertex) * 4 * QUAD_AMOUNT),
+            BindFlags.VertexBuffer
         );
         this._idxMapper = new Direct3D11BufferMapper(
-        backend,
-        (uint)(sizeof(Vertex) * 6 * QUAD_AMOUNT),
-        BindFlags.IndexBuffer
+            backend,
+            (uint)(sizeof(Vertex) * 6 * QUAD_AMOUNT),
+            BindFlags.IndexBuffer
         );
 
         this._boundShaderViews = new ID3D11ShaderResourceView[backend.QueryMaxTextureUnits()];
@@ -167,7 +167,7 @@ public class Direct3D11VixieRenderer : VixieRenderer {
             this._boundTextures[i]    = vixieTexture;
         }
 
-        SamplerDescription samplerDescription = new() {
+        SamplerDesc samplerDesc = new() {
             Filter             = Filter.MinMagMipLinear,
             AddressU           = TextureAddressMode.Wrap,
             AddressV           = TextureAddressMode.Wrap,
@@ -178,7 +178,7 @@ public class Direct3D11VixieRenderer : VixieRenderer {
             MaxLOD             = float.MaxValue
         };
 
-        this._samplerState = this._backend.Device.CreateSamplerState(samplerDescription);
+        this._samplerState = this._backend.Device.CreateSamplerState(samplerDesc);
     }
 
     private unsafe void UpdateProjectionMatrixBuffer() {
@@ -231,7 +231,8 @@ public class Direct3D11VixieRenderer : VixieRenderer {
             }
 
             this._isFirst = false;
-        } else {
+        }
+        else {
             ID3D11Buffer? vtxBuf = this._vtxMapper.ResetFromExistingBuffer(this._vtxBufferQueue.Dequeue());
             ID3D11Buffer? idxBuf = this._idxMapper.ResetFromExistingBuffer(this._idxBufferQueue.Dequeue());
 
@@ -271,7 +272,8 @@ public class Direct3D11VixieRenderer : VixieRenderer {
         if (this._vtxBufferQueue.Count > 0) {
             vtx = this._vtxMapper.ResetFromExistingBuffer(this._vtxBufferQueue.Dequeue());
             idx = this._idxMapper.ResetFromExistingBuffer(this._idxBufferQueue.Dequeue());
-        } else {
+        }
+        else {
             vtx = this._vtxMapper.ResetFromFreshBuffer();
             idx = this._idxMapper.ResetFromFreshBuffer();
         }
@@ -281,13 +283,13 @@ public class Direct3D11VixieRenderer : VixieRenderer {
 
         RenderBuffer buf;
         this._renderBuffers.Add(
-        buf = new RenderBuffer {
-            Vtx          = vtx!,
-            Idx          = idx!,
-            IndexCount   = this._indexCount,
-            UsedTextures = this._usedTextures,
-            Textures     = new ID3D11ShaderResourceView[this._boundShaderViews.Length]
-        }
+            buf = new RenderBuffer {
+                Vtx          = vtx!,
+                Idx          = idx!,
+                IndexCount   = this._indexCount,
+                UsedTextures = this._usedTextures,
+                Textures     = new ID3D11ShaderResourceView[this._boundShaderViews.Length]
+            }
         );
         Array.Copy(this._boundShaderViews, buf.Textures, this._usedTextures);
 
@@ -309,15 +311,15 @@ public class Direct3D11VixieRenderer : VixieRenderer {
     private int _reserveRecursionCount = 0;
     public override unsafe MappedData Reserve(ushort vertexCount, uint indexCount, VixieTexture tex) {
         Guard.Assert(vertexCount != 0, "vertexCount != 0");
-        Guard.Assert(indexCount != 0,  "indexCount != 0");
+        Guard.Assert(indexCount  != 0, "indexCount != 0");
 
         Guard.Assert(
-        vertexCount * sizeof(Vertex) < (int)this._vtxMapper.SizeInBytes,
-        "vertexCount * sizeof(Vertex) < this._vtxMapper.SizeInBytes"
+            vertexCount * sizeof(Vertex) < (int)this._vtxMapper.SizeInBytes,
+            "vertexCount * sizeof(Vertex) < this._vtxMapper.SizeInBytes"
         );
         Guard.Assert(
-        indexCount * sizeof(ushort) < (int)this._idxMapper.SizeInBytes,
-        "indexCount * sizeof(ushort) < (int)this._idxMapper.SizeInBytes"
+            indexCount * sizeof(ushort) < (int)this._idxMapper.SizeInBytes,
+            "indexCount * sizeof(ushort) < (int)this._idxMapper.SizeInBytes"
         );
 
         void* vtx = this._vtxMapper.Reserve((nuint)(vertexCount * sizeof(Vertex)));
@@ -340,12 +342,12 @@ public class Direct3D11VixieRenderer : VixieRenderer {
 
         this._reserveRecursionCount = 0;
         return new MappedData(
-        (Vertex*)vtx,
-        (ushort*)idx,
-        vertexCount,
-        indexCount,
-        (uint)(this._indexOffset - vertexCount),
-        texId
+            (Vertex*)vtx,
+            (ushort*)idx,
+            vertexCount,
+            indexCount,
+            (uint)(this._indexOffset - vertexCount),
+            texId
         );
     }
 

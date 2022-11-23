@@ -1,23 +1,22 @@
 using System;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Helpers;
+using Silk.NET.Core.Native;
+using Silk.NET.Direct3D11;
+using Silk.NET.DXGI;
 using Silk.NET.Maths;
-using Vortice.Direct3D;
-using Vortice.Direct3D11;
-using Vortice.DXGI;
-using Vortice.Mathematics;
 
 namespace Furball.Vixie.Backends.Direct3D11.Abstractions;
 
 internal sealed class VixieTextureRenderTargetD3D11 : VixieTextureRenderTarget {
     public override Vector2D<int> Size { get; protected set; }
 
-    private readonly Direct3D11Backend        _backend;
-    private readonly ID3D11Texture2D          _renderTargetTexture;
-    private readonly ID3D11RenderTargetView   _renderTarget;
-    private readonly ID3D11ShaderResourceView _shaderResourceView;
+    private readonly Direct3D11Backend                _backend;
+    private readonly ComPtr<ID3D11Texture2D>          _renderTargetTexture;
+    private readonly ComPtr<ID3D11RenderTargetView>   _renderTarget;
+    private readonly ComPtr<ID3D11ShaderResourceView> _shaderResourceView;
 
-    private readonly Texture2DDescription _texDesc;
+    private readonly Texture2DDesc _texDesc;
 
     private readonly VixieTexture _vixieTexture;
 
@@ -25,44 +24,44 @@ internal sealed class VixieTextureRenderTargetD3D11 : VixieTextureRenderTarget {
         this._backend = backend;
         this._backend.CheckThread();
 
-        Texture2DDescription renderTargetTextureDescription = new() {
-            Width     = (int)width,
-            Height    = (int)height,
+        Texture2DDesc renderTargetTextureDesc = new() {
+            Width     = width,
+            Height    = height,
             MipLevels = 1,
             ArraySize = 1,
             Format    = Format.R8G8B8A8_UNorm,
             BindFlags = BindFlags.ShaderResource | BindFlags.RenderTarget,
             Usage     = ResourceUsage.Default,
-            SampleDescription = new SampleDescription {
+            SampleDesc = new SampleDesc {
                 Count   = 1,
                 Quality = 0
             },
         };
 
-        this._texDesc = renderTargetTextureDescription;
+        this._texDesc = renderTargetTextureDesc;
 
-        ID3D11Texture2D renderTargetTexture = backend.Device.CreateTexture2D(renderTargetTextureDescription);
+        ID3D11Texture2D renderTargetTexture = backend.Device.CreateTexture2D(renderTargetTextureDesc);
 
-        RenderTargetViewDescription renderTargetDescription = new() {
-            Format        = renderTargetTextureDescription.Format,
+        RenderTargetViewDesc renderTargetDesc = new() {
+            Format        = renderTargetTextureDesc.Format,
             ViewDimension = RenderTargetViewDimension.Texture2D,
         };
 
-        renderTargetDescription.Texture2D.MipSlice = 0;
+        renderTargetDesc.Texture2D.MipSlice = 0;
 
         ID3D11RenderTargetView renderTarget =
-            backend.Device.CreateRenderTargetView(renderTargetTexture, renderTargetDescription);
+            backend.Device.CreateRenderTargetView(renderTargetTexture, renderTargetDesc);
 
-        ShaderResourceViewDescription shaderResourceViewDescription = new() {
-            Format        = renderTargetDescription.Format,
+        ShaderResourceViewDesc shaderResourceViewDesc = new() {
+            Format        = renderTargetDesc.Format,
             ViewDimension = ShaderResourceViewDimension.Texture2D,
         };
 
-        shaderResourceViewDescription.Texture2D.MostDetailedMip = 0;
-        shaderResourceViewDescription.Texture2D.MipLevels       = 1;
+        shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
+        shaderResourceViewDesc.Texture2D.MipLevels       = 1;
 
         ID3D11ShaderResourceView shaderResourceView =
-            backend.Device.CreateShaderResourceView(renderTargetTexture, shaderResourceViewDescription);
+            backend.Device.CreateShaderResourceView(renderTargetTexture, shaderResourceViewDesc);
 
         this._renderTargetTexture = renderTargetTexture;
         this._renderTarget        = renderTarget;
@@ -70,11 +69,11 @@ internal sealed class VixieTextureRenderTargetD3D11 : VixieTextureRenderTarget {
         this.Size                 = new Vector2D<int>((int)width, (int)height);
 
         this._vixieTexture = new VixieTextureD3D11(
-        this._backend,
-        this._renderTargetTexture,
-        this._shaderResourceView,
-        this.Size,
-        this._texDesc
+            this._backend,
+            this._renderTargetTexture,
+            this._shaderResourceView,
+            this.Size,
+            this._texDesc
         );
     }
 
@@ -91,12 +90,12 @@ internal sealed class VixieTextureRenderTargetD3D11 : VixieTextureRenderTarget {
         this._startingViewport = this._backend.DeviceContext.RSGetViewport();
 
         Viewport newViewport = new(
-        0,
-        0,
-        this.Size.X,
-        this.Size.Y,
-        this._startingViewport.MinDepth,
-        this._startingViewport.MaxDepth
+            0,
+            0,
+            this.Size.X,
+            this.Size.Y,
+            this._startingViewport.MinDepth,
+            this._startingViewport.MaxDepth
         );
         this._backend.DeviceContext.RSSetViewport(newViewport);
         this._backend.SetProjectionMatrix(this.Size.X, this.Size.Y, true);
@@ -124,7 +123,7 @@ internal sealed class VixieTextureRenderTargetD3D11 : VixieTextureRenderTarget {
         try {
             this._renderTarget.Dispose();
         }
-        catch (NullReferenceException) {/* Apperantly thing?.Dispose can still throw a NullRefException? */
+        catch (NullReferenceException) { /* Apperantly thing?.Dispose can still throw a NullRefException? */
         }
     }
 }
