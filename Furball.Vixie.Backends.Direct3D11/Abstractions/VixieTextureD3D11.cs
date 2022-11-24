@@ -233,8 +233,6 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
         ComPtr<ID3D11Texture2D> stagingTex = null;
         int ret = this._backend.Device.CreateTexture2D(desc, null, ref stagingTex);
 
-        this._backend.PrintInfoLog();
-
         //Copy texture to staging texture
         this._backend.DeviceContext.CopyResource(stagingTex, this._texture);
 
