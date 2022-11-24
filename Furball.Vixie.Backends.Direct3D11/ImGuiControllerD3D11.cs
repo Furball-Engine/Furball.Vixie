@@ -103,7 +103,7 @@ public class ImGuiControllerD3D11 : IDisposable {
         if (drawData.DisplaySize.X <= 0.0f || drawData.DisplaySize.Y <= 0.0f)
             return;
 
-        if (this._vertexBuffer == null || this._vertexBufferSize < drawData.TotalVtxCount) {
+        if (this._vertexBuffer.Handle == null || this._vertexBufferSize < drawData.TotalVtxCount) {
             this._vertexBuffer.Dispose();
 
             this._vertexBufferSize += 5000;
@@ -137,7 +137,7 @@ public class ImGuiControllerD3D11 : IDisposable {
 
         MappedSubresource vertexResource = new MappedSubresource();
         MappedSubresource indexResource  = new MappedSubresource();
-        
+
         this._backend.DeviceContext.Map(this._vertexBuffer, 0, Map.WriteDiscard, 0, ref vertexResource);
         this._backend.DeviceContext.Map(this._indexBuffer, 0, Map.WriteDiscard, 0, ref indexResource);
 
@@ -181,7 +181,7 @@ public class ImGuiControllerD3D11 : IDisposable {
         #region Save Render State
 
         uint oldNumScissorRects = 0;
-        int oldVertexShaderInstancesCount, oldGeometryShaderInstancesCount;
+        uint oldVertexShaderInstancesCount, oldGeometryShaderInstancesCount;
 
         Box2D<int>[]                     oldScissorRectangles           = new Box2D<int>[16];
         Viewport                         oldViewport                    = new();
@@ -192,16 +192,16 @@ public class ImGuiControllerD3D11 : IDisposable {
         ComPtr<ID3D11ClassInstance>[]    oldGeometryShaderInstances     = new ComPtr<ID3D11ClassInstance>[256];
         ComPtr<ID3D11Buffer>[]           oldVertexShaderConstantBuffers = new ComPtr<ID3D11Buffer>[1];
         ComPtr<ID3D11Buffer>[]           oldVertexBuffers               = new ComPtr<ID3D11Buffer>[1];
-        int[]                            oldVertexBufferStrides         = new int[1];
-        int[]                            oldVertexBufferOffsets         = new int[1];
+        uint[]                            oldVertexBufferStrides         = new uint[1];
+        uint[]                            oldVertexBufferOffsets         = new uint[1];
 
         this._backend.DeviceContext.RSGetScissorRects(ref oldNumScissorRects, ref oldScissorRectangles[0]);
         uint viewportCount = 0;
         this._backend.DeviceContext.RSGetViewports(ref viewportCount, ref oldViewport);
-        
+
         if (viewportCount == 0)
             throw new Exception("No viewports?");
-        
+
         ComPtr<ID3D11RasterizerState> oldRasterizerState = null;
         this._backend.DeviceContext.RSGetState(ref oldRasterizerState);
 
@@ -217,47 +217,43 @@ public class ImGuiControllerD3D11 : IDisposable {
         ComPtr<ID3D11DepthStencilState> oldDepthStencilState = null;
         uint                            oldStencilRef        = 0;
         this._backend.DeviceContext.OMGetDepthStencilState(
-            ref oldDepthStencilState, 
+            ref oldDepthStencilState,
             ref oldStencilRef
         );
 
         this._backend.DeviceContext.PSGetShaderResources(0, 1, ref oldShaderResourceView);
         this._backend.DeviceContext.PSGetSamplers(0, 1, ref oldSamplerState);
 
-        int oldPixelShaderInstancesCount = oldVertexShaderInstancesCount = oldGeometryShaderInstancesCount = 256;
+        uint oldPixelShaderInstancesCount = oldVertexShaderInstancesCount = oldGeometryShaderInstancesCount = 256;
 
-        this._backend.DeviceContext.PSGetShader(
-            out ID3D11PixelShader oldPixelShader,
-            oldPixelShaderInstances,
-            ref oldPixelShaderInstancesCount
-        );
-        this._backend.DeviceContext.VSGetShader(
-            out ID3D11VertexShader oldVertexShader,
-            oldVertexShaderInstances,
-            ref oldVertexShaderInstancesCount
-        );
-        this._backend.DeviceContext.GSGetShader(
-            out ID3D11GeometryShader oldGeometryShader,
-            oldGeometryShaderInstances,
-            ref oldGeometryShaderInstancesCount
-        );
+        ComPtr<ID3D11VertexShader>   oldVertexShader   = null;
+        ComPtr<ID3D11PixelShader>    oldPixelShader    = null;
+        ComPtr<ID3D11GeometryShader> oldGeometryShader = null;
+        this._backend.DeviceContext.PSGetShader(ref oldPixelShader, ref oldPixelShaderInstances[0],
+                                                ref oldPixelShaderInstancesCount);
+        this._backend.DeviceContext.VSGetShader(ref oldVertexShader, ref oldVertexShaderInstances[0],
+                                                ref oldVertexShaderInstancesCount);
+        this._backend.DeviceContext.GSGetShader(ref oldGeometryShader, ref oldGeometryShaderInstances[0],
+                                                ref oldGeometryShaderInstancesCount);
 
-        this._backend.DeviceContext.VSGetConstantBuffers(0, 1, oldVertexShaderConstantBuffers);
+        this._backend.DeviceContext.VSGetConstantBuffers(0, 1, ref oldVertexShaderConstantBuffers[0]);
 
-        PrimitiveTopology oldPrimitiveTopology = this._backend.DeviceContext.IAGetPrimitiveTopology();
-        this._backend.DeviceContext.IAGetIndexBuffer(
-            out ID3D11Buffer oldIndexBuffer,
-            out Format oldIndexBufferFormat,
-            out int oldIndexBufferOffset
-        );
+        D3DPrimitiveTopology oldPrimitiveTopology = D3DPrimitiveTopology.D3D10PrimitiveTopologyLinelist;
+        this._backend.DeviceContext.IAGetPrimitiveTopology(ref oldPrimitiveTopology);
+        ComPtr<ID3D11Buffer> oldIndexBuffer       = null;
+        Format               oldIndexBufferFormat = Format.FormatUnknown;
+        uint                 oldIndexBufferOffset = 0;
+        this._backend.DeviceContext.IAGetIndexBuffer(ref oldIndexBuffer, ref oldIndexBufferFormat,
+                                                     ref oldIndexBufferOffset);
         this._backend.DeviceContext.IAGetVertexBuffers(
             0,
             1,
-            oldVertexBuffers,
-            oldVertexBufferStrides,
-            oldVertexBufferOffsets
+            ref oldVertexBuffers[0],
+            ref oldVertexBufferStrides[0],
+            ref oldVertexBufferOffsets[0]
         );
-        ID3D11InputLayout oldInputLayout = this._backend.DeviceContext.IAGetInputLayout();
+        ComPtr<ID3D11InputLayout> oldInputLayout = null;
+        this._backend.DeviceContext.IAGetInputLayout(ref oldInputLayout);
 
         #endregion
 
@@ -277,22 +273,22 @@ public class ImGuiControllerD3D11 : IDisposable {
                 if (cmd.UserCallback != IntPtr.Zero)
                     throw new NotImplementedException("No!");
 
-                RawRect rectangle = new(
+                Box2D<int> rectangle = new(
                     (int)(cmd.ClipRect.X - clipOff.X),
                     (int)(cmd.ClipRect.Y - clipOff.Y),
                     (int)(cmd.ClipRect.Z - clipOff.X),
                     (int)(cmd.ClipRect.W - clipOff.Y)
                 );
-                this._backend.DeviceContext.RSSetScissorRect(rectangle);
+                this._backend.DeviceContext.RSSetScissorRects(1, rectangle);
 
-                this._textureResources.TryGetValue(cmd.TextureId, out ID3D11ShaderResourceView? texture);
+                this._textureResources.TryGetValue(cmd.TextureId, out ComPtr<ID3D11ShaderResourceView> texture);
 
                 if (texture != null) {
-                    this._backend.DeviceContext.PSSetShaderResource(0, texture);
+                    this._backend.DeviceContext.PSSetShaderResources(0, 1, texture);
                     this._backend.DeviceContext.DrawIndexed(
-                        (int)cmd.ElemCount,
-                        (int)(cmd.IdxOffset + globalIndexOffset),
-                        (int)(cmd.VtxOffset + globalVertexOffset)
+                        cmd.ElemCount,
+                        (uint)(cmd.IdxOffset + globalIndexOffset),
+                        (int)(cmd.VtxOffset  + globalVertexOffset)
                     );
                 }
             }
@@ -304,90 +300,91 @@ public class ImGuiControllerD3D11 : IDisposable {
         #region Restore Render State
 
         this._backend.DeviceContext.RSSetScissorRects(oldNumScissorRects, oldScissorRectangles);
-        this._backend.DeviceContext.RSSetViewport(oldViewport);
+        this._backend.DeviceContext.RSSetViewports(1, oldViewport);
         this._backend.DeviceContext.RSSetState(oldRasterizerState);
 
-        if (oldRasterizerState?.NativePointer != IntPtr.Zero)
-            oldRasterizerState?.Dispose();
+        if (oldRasterizerState.Handle != null)
+            oldRasterizerState.Dispose();
 
-        this._backend.DeviceContext.OMSetBlendState(oldBlendState, oldBlendFactor, oldSampleMask);
+        this._backend.DeviceContext.OMSetBlendState(oldBlendState, (float*)&oldBlendFactor, oldSampleMask);
 
-        if (oldBlendState.NativePointer != IntPtr.Zero)
+        if (oldBlendState.Handle != null)
             oldBlendState.Dispose();
 
         this._backend.DeviceContext.OMSetDepthStencilState(oldDepthStencilState, oldStencilRef);
 
-        if (oldDepthStencilState?.NativePointer != IntPtr.Zero)
-            oldDepthStencilState?.Dispose();
+        if (oldDepthStencilState.Handle != null)
+            oldDepthStencilState.Dispose();
 
         this._backend.DeviceContext.PSSetShaderResources(0, 1, oldShaderResourceView!);
 
-        if (oldShaderResourceView[0]?.NativePointer != IntPtr.Zero)
-            oldShaderResourceView[0]?.Dispose();
+        if (oldShaderResourceView.Handle != null)
+            oldShaderResourceView.Dispose();
 
-        this._backend.DeviceContext.PSSetSamplers(0, 1, oldSamplerStates!);
+        this._backend.DeviceContext.PSSetSamplers(0, 1, ref oldSamplerState);
 
-        if (oldSamplerStates[0]?.NativePointer != IntPtr.Zero)
-            oldSamplerStates[0]?.Dispose();
+        if (oldSamplerState.Handle != null)
+            oldSamplerState.Dispose();
 
-        this._backend.DeviceContext.PSSetShader(oldPixelShader, oldPixelShaderInstances, oldPixelShaderInstancesCount);
+        this._backend.DeviceContext.PSSetShader(oldPixelShader, ref oldPixelShaderInstances[0],
+                                                oldPixelShaderInstancesCount);
 
-        if (oldPixelShader?.NativePointer != IntPtr.Zero)
-            oldPixelShader?.Dispose();
+        if (oldPixelShader.Handle != null)
+            oldPixelShader.Dispose();
 
         for (int i = 0; i < oldPixelShaderInstancesCount; i++)
-            oldPixelShaderInstances[i]?.Dispose();
+            oldPixelShaderInstances[i].Dispose();
 
         this._backend.DeviceContext.VSSetShader(
             oldVertexShader,
-            oldVertexShaderInstances,
+            ref oldVertexShaderInstances[0],
             oldVertexShaderInstancesCount
         );
 
-        if (oldVertexShader?.NativePointer != IntPtr.Zero)
-            oldVertexShader?.Dispose();
+        if (oldVertexShader.Handle != null)
+            oldVertexShader.Dispose();
 
         for (int i = 0; i < oldVertexShaderInstancesCount; i++)
-            oldVertexShaderInstances[i]?.Dispose();
+            oldVertexShaderInstances[i].Dispose();
 
         this._backend.DeviceContext.GSSetShader(
             oldGeometryShader,
-            oldGeometryShaderInstances,
+            ref oldGeometryShaderInstances[0],
             oldGeometryShaderInstancesCount
         );
 
-        if (oldGeometryShader?.NativePointer != IntPtr.Zero)
-            oldGeometryShader?.Dispose();
+        if (oldGeometryShader.Handle != null)
+            oldGeometryShader.Dispose();
 
         for (int i = 0; i < oldGeometryShaderInstancesCount; i++)
-            oldGeometryShaderInstances[i]?.Dispose();
+            oldGeometryShaderInstances[i].Dispose();
 
-        this._backend.DeviceContext.VSSetConstantBuffers(0, 1, oldVertexShaderConstantBuffers!);
+        this._backend.DeviceContext.VSSetConstantBuffers(0, 1, ref oldVertexShaderConstantBuffers[0]);
 
-        if (oldVertexShaderConstantBuffers[0]?.NativePointer != IntPtr.Zero)
-            oldVertexShaderConstantBuffers[0]?.Dispose();
+        if (oldVertexShaderConstantBuffers[0].Handle != null)
+            oldVertexShaderConstantBuffers[0].Dispose();
 
         this._backend.DeviceContext.IASetPrimitiveTopology(oldPrimitiveTopology);
         this._backend.DeviceContext.IASetIndexBuffer(oldIndexBuffer, oldIndexBufferFormat, oldIndexBufferOffset);
 
-        if (oldIndexBuffer?.NativePointer != IntPtr.Zero)
-            oldIndexBuffer?.Dispose();
+        if (oldIndexBuffer.Handle != null)
+            oldIndexBuffer.Dispose();
 
         this._backend.DeviceContext.IASetVertexBuffers(
-            0,
-            1,
-            oldVertexBuffers!,
-            oldVertexBufferStrides,
-            oldVertexBufferOffsets
+            0u,
+            1u,
+            in oldVertexBuffers[0].Handle,
+            in oldVertexBufferStrides[0],
+            in oldVertexBufferOffsets[0]
         );
 
-        if (oldVertexBuffers[0]?.NativePointer != IntPtr.Zero)
-            oldVertexBuffers[0]?.Dispose();
+        if (oldVertexBuffers[0].Handle != null)
+            oldVertexBuffers[0].Dispose();
 
         this._backend.DeviceContext.IASetInputLayout(oldInputLayout);
 
-        if (oldInputLayout?.NativePointer != IntPtr.Zero)
-            oldInputLayout?.Dispose();
+        if (oldInputLayout.Handle != null)
+            oldInputLayout.Dispose();
 
         #endregion
     }
@@ -395,37 +392,31 @@ public class ImGuiControllerD3D11 : IDisposable {
     private unsafe void SetupRenderState(ImDrawDataPtr drawData) {
         Viewport viewport = new(0, 0, drawData.DisplaySize.X, drawData.DisplaySize.Y, 0, 1);
 
-        this._backend.DeviceContext.RSSetViewport(viewport);
+        this._backend.DeviceContext.RSSetViewports(1, in viewport);
 
-        int stride = sizeof(ImDrawVert);
-        int offset = 0;
+        uint stride = (uint)sizeof(ImDrawVert);
+        uint offset = 0;
 
         this._backend.DeviceContext.IASetInputLayout(this._inputLayout);
         this._backend.DeviceContext.IASetVertexBuffers(
-            0,
-            1,
-            new[] {
-                _vertexBuffer!
-            },
-            new[] {
-                stride
-            },
-            new[] {
-                offset
-            }
+            0u,
+            1u,
+            in this._vertexBuffer.Handle,
+            in stride,
+            in offset
         );
-        this._backend.DeviceContext.IASetIndexBuffer(this._indexBuffer, Format.R16_UInt, 0);
-        this._backend.DeviceContext.IASetPrimitiveTopology(PrimitiveTopology.TriangleList);
-        this._backend.DeviceContext.VSSetShader(this._vertexShader);
-        this._backend.DeviceContext.VSSetConstantBuffer(0, this._constantBuffer);
-        this._backend.DeviceContext.PSSetShader(this._pixelShader);
-        this._backend.DeviceContext.PSSetSampler(0, this._fontSampler);
-        this._backend.DeviceContext.GSSetShader(null);
-        this._backend.DeviceContext.HSSetShader(null);
-        this._backend.DeviceContext.DSSetShader(null);
-        this._backend.DeviceContext.CSSetShader(null);
-        this._backend.DeviceContext.OMSetBlendState(this._blendState);
-        this._backend.DeviceContext.OMSetDepthStencilState(this._depthStencilState);
+        this._backend.DeviceContext.IASetIndexBuffer(this._indexBuffer, Format.FormatR16Uint, 0);
+        this._backend.DeviceContext.IASetPrimitiveTopology(D3DPrimitiveTopology.D3DPrimitiveTopologyTrianglelist);
+        this._backend.DeviceContext.VSSetShader(this._vertexShader, null, 0);
+        this._backend.DeviceContext.VSSetConstantBuffers(0, 1, this._constantBuffer);
+        this._backend.DeviceContext.PSSetShader(this._pixelShader, null, 0);
+        this._backend.DeviceContext.PSSetSamplers(0, 1, this._fontSampler);
+        this._backend.DeviceContext.GSSetShader((ID3D11GeometryShader*)null, null, 0);
+        this._backend.DeviceContext.HSSetShader((ID3D11HullShader*)null, null, 0);
+        this._backend.DeviceContext.DSSetShader((ID3D11DomainShader*)null, null, 0);
+        this._backend.DeviceContext.CSSetShader((ID3D11ComputeShader*)null, null, 0);
+        this._backend.DeviceContext.OMSetBlendState(this._blendState, null, 0xFFFFFFFF);
+        this._backend.DeviceContext.OMSetDepthStencilState(this._depthStencilState, 0);
         this._backend.DeviceContext.RSSetState(this._rasterizerState);
     }
 
