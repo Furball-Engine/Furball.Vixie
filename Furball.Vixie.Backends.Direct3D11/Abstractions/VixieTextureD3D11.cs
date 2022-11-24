@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Helpers;
@@ -46,7 +46,7 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
             Height    = 1,
             MipLevels = 0,
             ArraySize = 1,
-            Format    = Format.FormatR8G8B8A8UnormSrgb,
+            Format    = Format.FormatR8G8B8A8Unorm,
             SampleDesc = new SampleDesc {
                 Count = 1
             },
@@ -68,8 +68,6 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
         this._backend.Device.CreateShaderResourceView(this._texture, null, ref this.TextureView);
 
         this._textureDesc = textureDesc;
-
-        this.GenerateMips();
 
         this.Size = Vector2D<int>.One;
     }
@@ -227,12 +225,15 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
         Texture2DDesc desc = this._textureDesc;
         desc.Usage          = Usage.Staging;
         desc.CPUAccessFlags = (uint)CpuAccessFlag.Read;
-        desc.Format         = Format.FormatR8G8B8A8UnormSrgb;
+        desc.Format         = Format.FormatR8G8B8A8Unorm;
         desc.MipLevels      = 1;
+        desc.BindFlags      = 0;
 
         //Create staging texture
         ComPtr<ID3D11Texture2D> stagingTex = null;
-        this._backend.Device.CreateTexture2D(desc, null, ref stagingTex);
+        int ret = this._backend.Device.CreateTexture2D(desc, null, ref stagingTex);
+
+        this._backend.PrintInfoLog();
 
         //Copy texture to staging texture
         this._backend.DeviceContext.CopyResource(stagingTex, this._texture);
@@ -243,7 +244,7 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
 
         //Copy into array
         // Span<Rgba32> rawData = mapped.AsSpan<Rgba32>(stagingTex, 0, 0);
-        Span<Rgba32> rawData = new Span<Rgba32>(mapped.PData, (int)(mapped.RowPitch * Direct3D11Backend.CalculateMipSize(0, 0)));
+        Span<Rgba32> rawData = new Span<Rgba32>(mapped.PData, (int)(desc.Width * desc.Height));
         
         //Create new array to store the pixels contiguously
         Rgba32[] data = new Rgba32[desc.Width * desc.Height];

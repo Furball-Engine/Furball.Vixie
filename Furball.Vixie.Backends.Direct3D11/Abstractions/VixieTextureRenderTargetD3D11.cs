@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Helpers;
 using Silk.NET.Core.Native;
@@ -48,7 +48,7 @@ internal sealed class VixieTextureRenderTargetD3D11 : VixieTextureRenderTarget {
             ViewDimension = RtvDimension.Texture2D,
         };
 
-        renderTargetDesc.Texture2D = new Tex2DRtv {
+        renderTargetDesc.Anonymous.Texture2D = new Tex2DRtv {
             MipSlice = 0
         };
 
@@ -60,7 +60,7 @@ internal sealed class VixieTextureRenderTargetD3D11 : VixieTextureRenderTarget {
             ViewDimension = D3DSrvDimension.D3DSrvDimensionTexture2D,
         };
 
-        shaderResourceViewDesc.Texture2D = new Tex2DSrv {
+        shaderResourceViewDesc.Anonymous.Texture2D = new Tex2DSrv {
             MostDetailedMip = 0,
             MipLevels       = 1
         };

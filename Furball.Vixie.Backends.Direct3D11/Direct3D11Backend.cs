@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Numerics;
@@ -24,6 +25,7 @@ namespace Furball.Vixie.Backends.Direct3D11;
 
 public unsafe class Direct3D11Backend : GraphicsBackend {
     public ComPtr<ID3D11Debug>            DebugDevice       = null!;
+    private ComPtr<ID3D11InfoQueue>       InfoQueue;
     public ComPtr<ID3D11Device>           Device            = null!;
     public ComPtr<ID3D11DeviceContext>    DeviceContext     = null!;
     public ComPtr<IDXGISwapChain1>        SwapChain         = null!;
@@ -77,6 +79,13 @@ public unsafe class Direct3D11Backend : GraphicsBackend {
 #if DEBUG
         try {
             this.DebugDevice = this.Device.QueryInterface<ID3D11Debug>();
+            this.InfoQueue = this.Device.QueryInterface<ID3D11InfoQueue>();
+
+            if (this.DebugDevice.Handle == null)
+                throw new Exception("Unable to get Debug Device!");
+
+            if (this.InfoQueue.Handle == null)
+                throw new Exception("Unable to get info log");
         }
         catch {
             Logger.Log(
@@ -210,6 +219,25 @@ public unsafe class Direct3D11Backend : GraphicsBackend {
         this.InfoSections.ForEach(x => x.Log(LoggerLevelD3D11.InstanceInfo));
 
         this.ScissorRect = new Rectangle(0, 0, view.FramebufferSize.X, view.FramebufferSize.Y);
+    }
+
+    public void PrintInfoLog() {
+        ulong messages = this.InfoQueue.GetNumStoredMessages();
+    
+        for(ulong i = 0; i < messages; i++) {
+            nuint length = 0;
+            this.InfoQueue.GetMessageA(i, null, ref length);
+
+            Message* message = (Message*)SilkMarshal.Allocate((int)length);
+
+            this.InfoQueue.GetMessageA(i, message, ref length);
+
+            Debug.WriteLine($"Debug Message: {SilkMarshal.PtrToString((nint)message->PDescription)}");
+
+            SilkMarshal.Free((nint)message);
+        }
+
+        this.InfoQueue.ClearStoredMessages();
     }
 
     private void CreateSwapchainResources() {
@@ -350,7 +378,7 @@ public unsafe class Direct3D11Backend : GraphicsBackend {
 
             MappedSubresource mapped = new MappedSubresource();
             this.DeviceContext.Map(stagingTex, 0, Map.Read, 0, &mapped);
-            Span<Bgra32> rawData = new Span<Bgra32>(mapped.PData, (int)(mapped.RowPitch * CalculateMipSize(0, 0)));
+            Span<Bgra32> rawData = new Span<Bgra32>(mapped.PData, (int)(desc.Width * desc.Height));
 
             Bgra32[] data = new Bgra32[desc.Width * desc.Height];
 
@@ -362,7 +390,7 @@ public unsafe class Direct3D11Backend : GraphicsBackend {
 
             stagingTex.Dispose();
 
-            this.InvokeScreenshotTaken(image);
+            this.InvokeScreenshotTaken(image.CloneAs<Rgb24>());
         }
 
         this.SwapChain.Present(0, 0); //0 = PresentFlags.None

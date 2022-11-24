@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 using System;
 using System.Globalization;
 using Furball.Vixie.Backends.Shared.Backends;
@@ -30,7 +30,7 @@ public class TestGame : Game {
     protected override void Initialize() {
         Instance = this;
         
-        this.ChangeScreen(new TestMultipleTextures());
+        this.ChangeScreen(new BaseTestSelector());
 
         this.WindowManager.GraphicsBackend.ScreenshotTaken += delegate(object _, Image image) {
             Logger.Log("Writing screenshot!", LoggerLevelImageLoader.Instance);

@@ -1,4 +1,4 @@
-#if USE_IMGUI
+﻿#if USE_IMGUI
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -199,8 +199,8 @@ public class ImGuiControllerD3D11 : IDisposable {
         uint viewportCount = 0;
         this._backend.DeviceContext.RSGetViewports(ref viewportCount, ref oldViewport);
 
-        if (viewportCount == 0)
-            throw new Exception("No viewports?");
+        //if (viewportCount == 0)
+          //  throw new Exception("No viewports?");
 
         ComPtr<ID3D11RasterizerState> oldRasterizerState = null;
         this._backend.DeviceContext.RSGetState(ref oldRasterizerState);
@@ -283,7 +283,7 @@ public class ImGuiControllerD3D11 : IDisposable {
 
                 this._textureResources.TryGetValue(cmd.TextureId, out ComPtr<ID3D11ShaderResourceView> texture);
 
-                if (texture != null) {
+                if (texture.Handle != null) {
                     this._backend.DeviceContext.PSSetShaderResources(0, 1, texture);
                     this._backend.DeviceContext.DrawIndexed(
                         cmd.ElemCount,
@@ -415,7 +415,8 @@ public class ImGuiControllerD3D11 : IDisposable {
         this._backend.DeviceContext.HSSetShader((ID3D11HullShader*)null, null, 0);
         this._backend.DeviceContext.DSSetShader((ID3D11DomainShader*)null, null, 0);
         this._backend.DeviceContext.CSSetShader((ID3D11ComputeShader*)null, null, 0);
-        this._backend.DeviceContext.OMSetBlendState(this._blendState, null, 0xFFFFFFFF);
+        D3Dcolorvalue blendFactor = new D3Dcolorvalue(0, 0, 0, 1);
+        this._backend.DeviceContext.OMSetBlendState(this._blendState, (float*)&blendFactor, 0xFFFFFFFF);
         this._backend.DeviceContext.OMSetDepthStencilState(this._depthStencilState, 0);
         this._backend.DeviceContext.RSSetState(this._rasterizerState);
     }
@@ -557,9 +558,9 @@ public class ImGuiControllerD3D11 : IDisposable {
         InputElementDesc[] inputElementDesc = {
             new((byte*)SilkMarshal.StringToPtr("POSITION"), 0, Format.FormatR32G32Float, 0, 0, InputClassification
                    .PerVertexData, 0),
-            new((byte*)SilkMarshal.StringToPtr("TEXCOORD"), 0, Format.FormatR32G32Float, 8, 0, InputClassification
+            new((byte*)SilkMarshal.StringToPtr("TEXCOORD"), 0, Format.FormatR32G32Float, 0, 8, InputClassification
                    .PerVertexData, 0),
-            new((byte*)SilkMarshal.StringToPtr("COLOR"), 0, Format.FormatR8G8B8A8Unorm, 16, 0, InputClassification
+            new((byte*)SilkMarshal.StringToPtr("COLOR"), 0, Format.FormatR8G8B8A8Unorm, 0, 16, InputClassification
                    .PerVertexData, 0),
         };
 
@@ -676,11 +677,12 @@ public class ImGuiControllerD3D11 : IDisposable {
 
         ShaderResourceViewDesc shaderResourceViewDesc = new() {
             Format        = Format.FormatR8G8B8A8Unorm,
-            ViewDimension = D3DSrvDimension.D3DSrvDimensionTexture2D,
-            Texture2D = new Tex2DSrv {
-                MipLevels       = 1,
-                MostDetailedMip = 0
-            }
+            ViewDimension = D3DSrvDimension.D3DSrvDimensionTexture2D
+        };
+
+        shaderResourceViewDesc.Anonymous.Texture2D = new Tex2DSrv {
+            MipLevels = 1,
+            MostDetailedMip = 0
         };
 
         this._backend.Device.CreateShaderResourceView(fontTexture, shaderResourceViewDesc, ref this._fontTextureView);
