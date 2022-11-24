@@ -218,15 +218,15 @@ public class Direct3D11VixieRenderer : VixieRenderer {
 
     private bool _isFirst = true;
     public override unsafe void Begin() {
-        Guard.EnsureNull(this._vtxMapper.Buffer, "this._vtxMapper._buffer");
-        Guard.EnsureNull(this._idxMapper.Buffer, "this._idxMapper._buffer");
+        Guard.EnsureNull(this._vtxMapper.Buffer.Handle, "this._vtxMapper._buffer");
+        Guard.EnsureNull(this._idxMapper.Buffer.Handle, "this._idxMapper._buffer");
 
         bool wasLastEmpty = this._renderBuffers.Count == 0;
 
         //Save all the buffers from the render queue
         foreach (RenderBuffer? x in this._renderBuffers) {
-            Guard.EnsureNonNull(x.Vtx, "x.Vtx");
-            Guard.EnsureNonNull(x.Idx, "x.Idx");
+            Guard.EnsureNonNull(x.Vtx.Handle, "x.Vtx");
+            Guard.EnsureNonNull(x.Idx.Handle, "x.Idx");
 
             this._vtxBufferQueue.Enqueue(x.Vtx);
             this._idxBufferQueue.Enqueue(x.Idx);
@@ -414,8 +414,8 @@ public class Direct3D11VixieRenderer : VixieRenderer {
         for (int i = 0; i < this._renderBuffers.Count; i++) {
             RenderBuffer buf = this._renderBuffers[i];
 
-            Guard.EnsureNonNull(buf.Vtx);
-            Guard.EnsureNonNull(buf.Idx);
+            Guard.EnsureNonNull(buf.Vtx.Handle);
+            Guard.EnsureNonNull(buf.Idx.Handle);
 
             this._backend.DeviceContext.IASetVertexBuffers(0, 1, ref buf.Vtx, (uint)sizeof(Vertex), 0);
             this._backend.DeviceContext.IASetIndexBuffer(buf.Idx!, Format.FormatR16Uint, 0);
