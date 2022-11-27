@@ -37,7 +37,6 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
     private uint                         _currentBuffer = 0;
     private ComPtr<ID3D12DescriptorHeap> _renderTargetViewHeap;
     private ComPtr<ID3D12Resource>[]     _renderTargets = new ComPtr<ID3D12Resource>[BackbufferCount];
-    private uint                         rtvDescriptorSize;
 
     private ComPtr<IDXGISwapChain3> _swapchain;
     private Viewport                _viewport;
@@ -104,11 +103,11 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         else {
             SwapChainDesc1 desc = new SwapChainDesc1 {
                 BufferCount = BackbufferCount,
-                Width = (uint)this._view.FramebufferSize.X,
-                Height = (uint)this._view.FramebufferSize.Y,
-                Format = Format.FormatR8G8B8A8Unorm,
+                Width       = (uint)this._view.FramebufferSize.X,
+                Height      = (uint)this._view.FramebufferSize.Y,
+                Format      = Format.FormatR8G8B8A8Unorm,
                 BufferUsage = DXGI.UsageRenderTargetOutput,
-                SwapEffect = SwapEffect.FlipDiscard,
+                SwapEffect  = SwapEffect.FlipDiscard,
                 SampleDesc = new SampleDesc {
                     Count = 1
                 }
@@ -123,8 +122,36 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
                 pRestrictToOutput: null,
                 newSwapchain.GetAddressOf()
             );
-            
+
             this._swapchain = newSwapchain.QueryInterface<IDXGISwapChain3>();
+        }
+
+        this.FrameIndex = this._swapchain.GetCurrentBackBufferIndex();
+
+        //Describe and create a render target view (RTV) descriptor heap.
+        DescriptorHeapDesc rtvHeapDesc = new DescriptorHeapDesc {
+            NumDescriptors = BackbufferCount,
+            Type           = DescriptorHeapType.Rtv,
+            Flags          = DescriptorHeapFlags.None
+        };
+        this._renderTargetViewHeap = this.Device.CreateDescriptorHeap<ID3D12DescriptorHeap>(rtvHeapDesc);
+
+        uint rtvDescriptorSize = this.Device.GetDescriptorHandleIncrementSize(DescriptorHeapType.Rtv);
+
+        //Create frame resources
+        
+        //BROKEN
+        // CpuDescriptorHandle rtvHandle = this._renderTargetViewHeap.GetCPUDescriptorHandleForHeapStart();
+        
+        //WORKING
+        ID3D12DescriptorHeap* rtvHeap   = this._renderTargetViewHeap;
+        CpuDescriptorHandle   rtvHandle = rtvHeap->GetCPUDescriptorHandleForHeapStart();
+
+        // Create a RTV for each frame.
+        for (uint i = 0; i < BackbufferCount; i++) {
+            this._renderTargets[i] = this._swapchain.GetBuffer<ID3D12Resource>(i);
+            this.Device.CreateRenderTargetView(this._renderTargets[i], null, rtvHandle);
+            rtvHandle.Ptr += 1 * rtvDescriptorSize;
         }
     }
 
