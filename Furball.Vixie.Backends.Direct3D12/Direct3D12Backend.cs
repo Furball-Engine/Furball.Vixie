@@ -25,6 +25,8 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
     public  ComPtr<ID3D12CommandQueue>     CommandQueue;
     private ComPtr<ID3D12CommandAllocator> CommandAllocator;
 
+    private ComPtr<ID3D12Fence> Fence;
+
     public override void Initialize(IView view, IInputContext inputContext) {
         //Get the D3D12 and DXGI APIs
         this.D3D12 = D3D12.GetApi();
@@ -54,6 +56,13 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
 
         //Create the command queue we will use throughout the application
         this.CreateCommandQueueAndAllocator();
+
+        //Create the fence to do CPU/GPU synchronization
+        this.CreateFence();
+    }
+
+    private void CreateFence() {
+        this.Fence = this.Device.CreateFence<ID3D12Fence>(0, FenceFlags.None);
     }
 
     private void CreateDebugAndInfoQueue() {
