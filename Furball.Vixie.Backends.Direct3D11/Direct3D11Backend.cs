@@ -175,11 +175,11 @@ public unsafe class Direct3D11Backend : GraphicsBackend {
         RasterizerDesc rasterizerDesc = new() {
             FillMode              = FillMode.Solid,
             CullMode              = CullMode.None,
-            FrontCounterClockwise = 1, //true
-            DepthClipEnable       = 0, //false
-            ScissorEnable         = 1, //true
-            MultisampleEnable     = 1, //true
-            AntialiasedLineEnable = 1  //true
+            FrontCounterClockwise = true,
+            DepthClipEnable       = false, 
+            ScissorEnable         = true, 
+            MultisampleEnable     = true,
+            AntialiasedLineEnable = true  
         };
 
         ComPtr<ID3D11RasterizerState> rasterizerState = null;
@@ -188,11 +188,11 @@ public unsafe class Direct3D11Backend : GraphicsBackend {
         this.DeviceContext.RSSetState(rasterizerState);
 
         BlendDesc blendDesc = new() {
-            AlphaToCoverageEnable  = 0, //false
-            IndependentBlendEnable = 0, //false
+            AlphaToCoverageEnable  = false,
+            IndependentBlendEnable = false,
             RenderTarget = new BlendDesc.RenderTargetBuffer {
                 Element0 = new() {
-                    BlendEnable           = 1, //true
+                    BlendEnable           = true,
                     SrcBlend              = Blend.SrcAlpha,
                     DestBlend             = Blend.InvSrcAlpha,
                     BlendOp               = BlendOp.Add,

@@ -588,10 +588,10 @@ public class ImGuiControllerD3D11 : IDisposable {
         this._backend.Device.CreateBuffer(constantBufferDesc, null, ref this._constantBuffer);
 
         BlendDesc blendDesc = new() {
-            AlphaToCoverageEnable = 0, //false
+            AlphaToCoverageEnable = false,
             RenderTarget = new BlendDesc.RenderTargetBuffer() {
                 Element0 = new() {
-                    BlendEnable           = 1, //true
+                    BlendEnable           = true,
                     SrcBlend              = Blend.SrcAlpha,
                     DestBlend             = Blend.InvSrcAlpha,
                     BlendOp               = BlendOp.Add,
@@ -609,7 +609,7 @@ public class ImGuiControllerD3D11 : IDisposable {
         RasterizerDesc rasterizerDesc = new() {
             FillMode        = FillMode.Solid,
             CullMode        = CullMode.None,
-            ScissorEnable   = 1, //true
+            ScissorEnable   = true,
             DepthClipEnable = 1  //true
         };
 
@@ -624,10 +624,10 @@ public class ImGuiControllerD3D11 : IDisposable {
         );
 
         DepthStencilDesc depthStencilDesc = new() {
-            DepthEnable    = 0, //false
+            DepthEnable    = false,
             DepthWriteMask = DepthWriteMask.All,
             DepthFunc      = ComparisonFunc.Always,
-            StencilEnable  = 0, //false
+            StencilEnable  = false,
             FrontFace      = depthStencilOperationDesc,
             BackFace       = depthStencilOperationDesc
         };
