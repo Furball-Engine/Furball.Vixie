@@ -6,38 +6,38 @@ using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers;
 using Furball.Vixie.Helpers.Helpers;
-using Vortice.Direct3D;
-using Vortice.Direct3D11;
-using Vortice.DXGI;
+using Silk.NET.Core.Native;
+using Silk.NET.Direct3D11;
+using Silk.NET.DXGI;
 
 namespace Furball.Vixie.Backends.Direct3D11;
 
 public class Direct3D11VixieRenderer : VixieRenderer {
     private readonly Direct3D11Backend _backend;
 
-    private readonly ID3D11VertexShader _vertexShader;
-    private readonly ID3D11PixelShader  _pixelShader;
+    private readonly ComPtr<ID3D11VertexShader> _vertexShader;
+    private readonly ComPtr<ID3D11PixelShader>  _pixelShader;
 
-    private readonly ID3D11InputLayout _inputLayout;
+    private readonly ComPtr<ID3D11InputLayout> _inputLayout;
 
-    private readonly ID3D11Buffer _projectionMatrixBuffer;
+    private readonly ComPtr<ID3D11Buffer> _projectionMatrixBuffer;
 
     private readonly Direct3D11BufferMapper _vtxMapper;
     private readonly Direct3D11BufferMapper _idxMapper;
 
-    private ID3D11ShaderResourceView?[] _boundShaderViews;
-    private ID3D11ShaderResourceView[]  _nullShaderViews;
+    private ComPtr<ID3D11ShaderResourceView>[] _boundShaderViews;
+    private ComPtr<ID3D11ShaderResourceView>[]  _nullShaderViews;
     private VixieTextureD3D11?[]        _boundTextures;
     private int                         _usedTextures;
 
-    private readonly ID3D11SamplerState _samplerState;
+    private readonly ComPtr<ID3D11SamplerState> _samplerState;
 
     private class RenderBuffer : IDisposable {
-        public ID3D11Buffer? Vtx;
-        public ID3D11Buffer? Idx;
+        public ComPtr<ID3D11Buffer> Vtx;
+        public ComPtr<ID3D11Buffer> Idx;
 
         public int                         UsedTextures;
-        public ID3D11ShaderResourceView[]? Textures;
+        public ComPtr<ID3D11ShaderResourceView>[]? Textures;
 
         public uint IndexCount;
 
@@ -48,8 +48,8 @@ public class Direct3D11VixieRenderer : VixieRenderer {
 
             this._isDisposed = true;
 
-            this.Vtx?.Dispose();
-            this.Idx?.Dispose();
+            this.Vtx.Dispose();
+            this.Idx.Dispose();
 
             this.Textures     = null;
             this.UsedTextures = 0;
@@ -58,8 +58,8 @@ public class Direct3D11VixieRenderer : VixieRenderer {
 
     private readonly List<RenderBuffer> _renderBuffers = new();
 
-    private readonly Queue<ID3D11Buffer> _vtxBufferQueue = new();
-    private readonly Queue<ID3D11Buffer> _idxBufferQueue = new();
+    private readonly Queue<ComPtr<ID3D11Buffer>> _vtxBufferQueue = new();
+    private readonly Queue<ComPtr<ID3D11Buffer>> _idxBufferQueue = new();
 
     private const int QUAD_AMOUNT = 256;
 
@@ -67,97 +67,118 @@ public class Direct3D11VixieRenderer : VixieRenderer {
         this._backend = backend;
 
         byte[] vertexShaderData = ResourceHelpers.GetByteResource(
-        "Shaders/VertexShader.obj",
-        typeof(Direct3D11Backend)
+            "Shaders/VertexShader.obj",
+            typeof(Direct3D11Backend)
         );
         byte[] pixelShaderData = ResourceHelpers.GetByteResource("Shaders/PixelShader.obj", typeof(Direct3D11Backend));
 
         //Safety checks for shader data
         Guard.EnsureNonNull(vertexShaderData, "vertexShaderData");
-        Guard.EnsureNonNull(pixelShaderData,  "pixelShaderData");
+        Guard.EnsureNonNull(pixelShaderData, "pixelShaderData");
         Guard.Assert(vertexShaderData.Length != 0, "vertexShaderData.Length != 0");
-        Guard.Assert(pixelShaderData.Length != 0,  "pixelShaderData.Length != 0");
+        Guard.Assert(pixelShaderData.Length  != 0, "pixelShaderData.Length != 0");
 
         //Create shaders
-        this._vertexShader = this._backend.Device.CreateVertexShader(vertexShaderData);
-        this._pixelShader  = this._backend.Device.CreatePixelShader(pixelShaderData);
+        this._backend.Device.CreateVertexShader<byte, ID3D11ClassLinkage, ID3D11VertexShader>(
+            in vertexShaderData[0],
+            (nuint)vertexShaderData.Length,
+            (ID3D11ClassLinkage*)null,
+            ref this._vertexShader
+        );
+        this._backend.Device.CreatePixelShader<byte, ID3D11ClassLinkage, ID3D11PixelShader>(
+            in pixelShaderData[0],
+            (nuint)pixelShaderData.Length,
+            (ID3D11ClassLinkage*)null,
+            ref this._pixelShader
+        );
 
-        InputElementDescription[] inputLayoutDescription = {
+        InputElementDesc[] inputLayoutDesc = {
             new(
-            "POSITION",
-            0,
-            Format.R32G32_Float,
-            InputElementDescription.AppendAligned,
-            0,
-            InputClassification.PerVertexData,
-            0
+                (byte*)SilkMarshal.StringToPtr("POSITION"),
+                0,
+                Format.FormatR32G32Float,
+                0,
+                D3D11.AppendAlignedElement,
+                InputClassification.PerVertexData,
+                0
             ),
             new(
-            "TEXCOORD",
-            0,
-            Format.R32G32_Float,
-            InputElementDescription.AppendAligned,
-            0,
-            InputClassification.PerVertexData,
-            0
+                (byte*)SilkMarshal.StringToPtr("TEXCOORD"),
+                0,
+                Format.FormatR32G32Float,
+                0,
+                D3D11.AppendAlignedElement,
+                InputClassification.PerVertexData,
+                0
             ),
             new(
-            "COLOR",
-            0,
-            Format.R32G32B32A32_Float,
-            InputElementDescription.AppendAligned,
-            0,
-            InputClassification.PerVertexData,
-            0
+                (byte*)SilkMarshal.StringToPtr("COLOR"),
+                0,
+                Format.FormatR32G32B32A32Float,
+                0,
+                D3D11.AppendAlignedElement,
+                InputClassification.PerVertexData,
+                0
             ),
             new(
-            "TEXID",
-            0,
-            Format.R32_UInt,
-            InputElementDescription.AppendAligned,
-            0,
-            InputClassification.PerVertexData,
-            0
+                (byte*)SilkMarshal.StringToPtr("TEXID"),
+                0,
+                Format.FormatR32Uint,
+                0,
+                D3D11.AppendAlignedElement,
+                InputClassification.PerVertexData,
+                0
             ),
             //Note: the reason we add `sizeof(int)` is because in the actual vertex definition it is a long, but HLSL
             //does not have a `long` type, so we just split it into 2 32bit integers
             new(
-            "TEXID",
-            1,
-            Format.R32_UInt,
-            InputElementDescription.AppendAligned,
-            0,
-            InputClassification.PerVertexData,
-            0
+                (byte*)SilkMarshal.StringToPtr("TEXID"),
+                1,
+                Format.FormatR32Uint,
+                0,
+                D3D11.AppendAlignedElement,
+                InputClassification.PerVertexData,
+                0
             )
         };
 
         //Create the input layout for the shader
-        this._inputLayout = this._backend.Device.CreateInputLayout(inputLayoutDescription, vertexShaderData);
+        this._backend.Device.CreateInputLayout(
+            in inputLayoutDesc[0],
+            (uint)inputLayoutDesc.Length,
+            in vertexShaderData[0],
+            (nuint)vertexShaderData.Length,
+            ref this._inputLayout
+        );
 
-        BufferDescription projectionBufferDescription = new() {
-            BindFlags      = BindFlags.ConstantBuffer,
-            ByteWidth      = sizeof(Matrix4x4),
-            CPUAccessFlags = CpuAccessFlags.Write,
-            Usage          = ResourceUsage.Dynamic
+        //Free the strings manually :/
+        foreach (InputElementDesc element in inputLayoutDesc) {
+            SilkMarshal.FreeString((nint)element.SemanticName);
+        }
+
+        BufferDesc projectionBufferDesc = new BufferDesc {
+            BindFlags      = (uint)BindFlag.ConstantBuffer,
+            ByteWidth      = (uint)sizeof(Matrix4x4),
+            CPUAccessFlags = (uint)CpuAccessFlag.Write,
+            Usage          = Usage.Dynamic
         };
 
-        this._projectionMatrixBuffer = this._backend.Device.CreateBuffer(projectionBufferDescription);
+        this._backend.Device.CreateBuffer(projectionBufferDesc, null, ref this._projectionMatrixBuffer);
         this.UpdateProjectionMatrixBuffer();
 
         this._vtxMapper = new Direct3D11BufferMapper(
-        backend,
-        (uint)(sizeof(Vertex) * 4 * QUAD_AMOUNT),
-        BindFlags.VertexBuffer
+            backend,
+            (uint)(sizeof(Vertex) * 4 * QUAD_AMOUNT),
+            BindFlag.VertexBuffer
         );
         this._idxMapper = new Direct3D11BufferMapper(
-        backend,
-        (uint)(sizeof(Vertex) * 6 * QUAD_AMOUNT),
-        BindFlags.IndexBuffer
+            backend,
+            (uint)(sizeof(Vertex) * 6 * QUAD_AMOUNT),
+            BindFlag.IndexBuffer
         );
 
-        this._boundShaderViews = new ID3D11ShaderResourceView[backend.QueryMaxTextureUnits()];
-        this._nullShaderViews  = new ID3D11ShaderResourceView[128];
+        this._boundShaderViews = new ComPtr<ID3D11ShaderResourceView>[backend.QueryMaxTextureUnits()];
+        this._nullShaderViews  = new ComPtr<ID3D11ShaderResourceView>[128];
         this._boundTextures    = new VixieTextureD3D11?[backend.QueryMaxTextureUnits()];
 
         for (int i = 0; i != backend.QueryMaxTextureUnits(); i++) {
@@ -167,47 +188,48 @@ public class Direct3D11VixieRenderer : VixieRenderer {
             this._boundTextures[i]    = vixieTexture;
         }
 
-        SamplerDescription samplerDescription = new() {
-            Filter             = Filter.MinMagMipLinear,
-            AddressU           = TextureAddressMode.Wrap,
-            AddressV           = TextureAddressMode.Wrap,
-            AddressW           = TextureAddressMode.Wrap,
-            ComparisonFunction = ComparisonFunction.Never,
-            MinLOD             = 0,
-            MipLODBias         = 0,
-            MaxLOD             = float.MaxValue
+        SamplerDesc samplerDesc = new() {
+            Filter         = Filter.MinMagMipLinear,
+            AddressU       = TextureAddressMode.Wrap,
+            AddressV       = TextureAddressMode.Wrap,
+            AddressW       = TextureAddressMode.Wrap,
+            ComparisonFunc = ComparisonFunc.Never,
+            MinLOD         = 0,
+            MipLODBias     = 0,
+            MaxLOD         = float.MaxValue
         };
 
-        this._samplerState = this._backend.Device.CreateSamplerState(samplerDescription);
+        this._backend.Device.CreateSamplerState(samplerDesc, ref this._samplerState);
     }
 
     private unsafe void UpdateProjectionMatrixBuffer() {
         //Map the data
-        MappedSubresource map = this._backend.DeviceContext.Map(this._projectionMatrixBuffer, MapMode.WriteDiscard);
+        MappedSubresource map = new MappedSubresource();
+        this._backend.DeviceContext.Map(this._projectionMatrixBuffer, 0, Map.WriteDiscard, 0, ref map);
 
         //Get the projection matrix into a local var so we are able to use the & operator on it
         Matrix4x4 projMatrix = this._backend.ProjectionMatrix;
         //Copy the projection matrix into the mapped buffer
-        Buffer.MemoryCopy(&projMatrix, (void*)map.DataPointer, sizeof(Matrix4x4), sizeof(Matrix4x4));
+        Buffer.MemoryCopy(&projMatrix, map.PData, sizeof(Matrix4x4), sizeof(Matrix4x4));
 
         //Unmap the data
-        this._backend.DeviceContext.Unmap(this._projectionMatrixBuffer);
+        this._backend.DeviceContext.Unmap(this._projectionMatrixBuffer, 0);
     }
 
     private bool _isFirst = true;
-    public override void Begin() {
-        Guard.EnsureNull(this._vtxMapper.Buffer, "this._vtxMapper._buffer");
-        Guard.EnsureNull(this._idxMapper.Buffer, "this._idxMapper._buffer");
+    public override unsafe void Begin() {
+        Guard.EnsureNull(this._vtxMapper.Buffer.Handle, "this._vtxMapper._buffer");
+        Guard.EnsureNull(this._idxMapper.Buffer.Handle, "this._idxMapper._buffer");
 
         bool wasLastEmpty = this._renderBuffers.Count == 0;
 
         //Save all the buffers from the render queue
         foreach (RenderBuffer? x in this._renderBuffers) {
-            Guard.EnsureNonNull(x.Vtx, "x.Vtx");
-            Guard.EnsureNonNull(x.Idx, "x.Idx");
+            Guard.EnsureNonNull(x.Vtx.Handle, "x.Vtx");
+            Guard.EnsureNonNull(x.Idx.Handle, "x.Idx");
 
-            this._vtxBufferQueue.Enqueue(x.Vtx!);
-            this._idxBufferQueue.Enqueue(x.Idx!);
+            this._vtxBufferQueue.Enqueue(x.Vtx);
+            this._idxBufferQueue.Enqueue(x.Idx);
 
             //We set these to null to ensure that they dont get disposed when `RenderBuffer.Dispose` is called by the
             //destructor
@@ -222,20 +244,21 @@ public class Direct3D11VixieRenderer : VixieRenderer {
         if (this._vtxBufferQueue.Count == 0 || wasLastEmpty) {
             Guard.Assert(this._isFirst || wasLastEmpty);
 
-            ID3D11Buffer? vtxBuf = this._vtxMapper.ResetFromFreshBuffer();
-            ID3D11Buffer? idxBuf = this._idxMapper.ResetFromFreshBuffer();
+            ComPtr<ID3D11Buffer> vtxBuf = this._vtxMapper.ResetFromFreshBuffer();
+            ComPtr<ID3D11Buffer> idxBuf = this._idxMapper.ResetFromFreshBuffer();
 
-            if (vtxBuf != null && idxBuf != null) {
+            if (vtxBuf.Handle != null && idxBuf.Handle != null) {
                 this._vtxBufferQueue.Enqueue(vtxBuf);
                 this._idxBufferQueue.Enqueue(idxBuf);
             }
 
             this._isFirst = false;
-        } else {
-            ID3D11Buffer? vtxBuf = this._vtxMapper.ResetFromExistingBuffer(this._vtxBufferQueue.Dequeue());
-            ID3D11Buffer? idxBuf = this._idxMapper.ResetFromExistingBuffer(this._idxBufferQueue.Dequeue());
+        }
+        else {
+            ComPtr<ID3D11Buffer> vtxBuf = this._vtxMapper.ResetFromExistingBuffer(this._vtxBufferQueue.Dequeue());
+            ComPtr<ID3D11Buffer> idxBuf = this._idxMapper.ResetFromExistingBuffer(this._idxBufferQueue.Dequeue());
 
-            if (vtxBuf != null && idxBuf != null) {
+            if (vtxBuf.Handle != null && idxBuf.Handle != null) {
                 this._vtxBufferQueue.Enqueue(vtxBuf);
                 this._idxBufferQueue.Enqueue(idxBuf);
             }
@@ -262,32 +285,33 @@ public class Direct3D11VixieRenderer : VixieRenderer {
         this._idxMapper.Unmap();
     }
 
-    private void DumpToBuffers() {
+    private unsafe void DumpToBuffers() {
         if (this._indexCount == 0)
             return;
 
-        ID3D11Buffer? vtx;
-        ID3D11Buffer? idx;
+        ComPtr<ID3D11Buffer> vtx;
+        ComPtr<ID3D11Buffer> idx;
         if (this._vtxBufferQueue.Count > 0) {
             vtx = this._vtxMapper.ResetFromExistingBuffer(this._vtxBufferQueue.Dequeue());
             idx = this._idxMapper.ResetFromExistingBuffer(this._idxBufferQueue.Dequeue());
-        } else {
+        }
+        else {
             vtx = this._vtxMapper.ResetFromFreshBuffer();
             idx = this._idxMapper.ResetFromFreshBuffer();
         }
 
-        Guard.Assert(vtx != null);
-        Guard.Assert(idx != null);
+        Guard.Assert(vtx.Handle != null);
+        Guard.Assert(idx.Handle != null);
 
         RenderBuffer buf;
         this._renderBuffers.Add(
-        buf = new RenderBuffer {
-            Vtx          = vtx!,
-            Idx          = idx!,
-            IndexCount   = this._indexCount,
-            UsedTextures = this._usedTextures,
-            Textures     = new ID3D11ShaderResourceView[this._boundShaderViews.Length]
-        }
+            buf = new RenderBuffer {
+                Vtx          = vtx!,
+                Idx          = idx!,
+                IndexCount   = this._indexCount,
+                UsedTextures = this._usedTextures,
+                Textures     = new ComPtr<ID3D11ShaderResourceView>[this._boundShaderViews.Length]
+            }
         );
         Array.Copy(this._boundShaderViews, buf.Textures, this._usedTextures);
 
@@ -309,15 +333,15 @@ public class Direct3D11VixieRenderer : VixieRenderer {
     private int _reserveRecursionCount = 0;
     public override unsafe MappedData Reserve(ushort vertexCount, uint indexCount, VixieTexture tex) {
         Guard.Assert(vertexCount != 0, "vertexCount != 0");
-        Guard.Assert(indexCount != 0,  "indexCount != 0");
+        Guard.Assert(indexCount  != 0, "indexCount != 0");
 
         Guard.Assert(
-        vertexCount * sizeof(Vertex) < (int)this._vtxMapper.SizeInBytes,
-        "vertexCount * sizeof(Vertex) < this._vtxMapper.SizeInBytes"
+            vertexCount * sizeof(Vertex) < (int)this._vtxMapper.SizeInBytes,
+            "vertexCount * sizeof(Vertex) < this._vtxMapper.SizeInBytes"
         );
         Guard.Assert(
-        indexCount * sizeof(ushort) < (int)this._idxMapper.SizeInBytes,
-        "indexCount * sizeof(ushort) < (int)this._idxMapper.SizeInBytes"
+            indexCount * sizeof(ushort) < (int)this._idxMapper.SizeInBytes,
+            "indexCount * sizeof(ushort) < (int)this._idxMapper.SizeInBytes"
         );
 
         void* vtx = this._vtxMapper.Reserve((nuint)(vertexCount * sizeof(Vertex)));
@@ -340,12 +364,12 @@ public class Direct3D11VixieRenderer : VixieRenderer {
 
         this._reserveRecursionCount = 0;
         return new MappedData(
-        (Vertex*)vtx,
-        (ushort*)idx,
-        vertexCount,
-        indexCount,
-        (uint)(this._indexOffset - vertexCount),
-        texId
+            (Vertex*)vtx,
+            (ushort*)idx,
+            vertexCount,
+            indexCount,
+            (uint)(this._indexOffset - vertexCount),
+            texId
         );
     }
 
@@ -378,38 +402,38 @@ public class Direct3D11VixieRenderer : VixieRenderer {
     public override unsafe void Draw() {
         this.UpdateProjectionMatrixBuffer();
 
-        this._backend.DeviceContext.VSSetShader(this._vertexShader);
-        this._backend.DeviceContext.VSSetConstantBuffer(0, this._projectionMatrixBuffer);
+        this._backend.DeviceContext.VSSetShader(this._vertexShader, null, 0);
+        this._backend.DeviceContext.VSSetConstantBuffers(0, 1, this._projectionMatrixBuffer);
 
-        this._backend.DeviceContext.PSSetShader(this._pixelShader);
-        this._backend.DeviceContext.PSSetSampler(0, this._samplerState);
+        this._backend.DeviceContext.PSSetShader(this._pixelShader, null, 0);
+        this._backend.DeviceContext.PSSetSamplers(0, 1, this._samplerState);
 
         this._backend.DeviceContext.IASetInputLayout(this._inputLayout);
-        this._backend.DeviceContext.IASetPrimitiveTopology(PrimitiveTopology.TriangleList);
+        this._backend.DeviceContext.IASetPrimitiveTopology(D3DPrimitiveTopology.D3DPrimitiveTopologyTrianglelist);
 
         for (int i = 0; i < this._renderBuffers.Count; i++) {
             RenderBuffer buf = this._renderBuffers[i];
 
-            Guard.EnsureNonNull(buf.Vtx);
-            Guard.EnsureNonNull(buf.Idx);
+            Guard.EnsureNonNull(buf.Vtx.Handle);
+            Guard.EnsureNonNull(buf.Idx.Handle);
 
-            this._backend.DeviceContext.IASetVertexBuffer(0, buf.Vtx!, sizeof(Vertex));
-            this._backend.DeviceContext.IASetIndexBuffer(buf.Idx!, Format.R16_UInt, 0);
+            this._backend.DeviceContext.IASetVertexBuffers(0, 1, ref buf.Vtx, (uint)sizeof(Vertex), 0);
+            this._backend.DeviceContext.IASetIndexBuffer(buf.Idx!, Format.FormatR16Uint, 0);
 
-            this._backend.DeviceContext.PSSetShaderResources(0, buf.UsedTextures, buf.Textures!);
+            this._backend.DeviceContext.PSSetShaderResources(0, (uint)buf.UsedTextures, in buf.Textures![0].Handle);
 
-            this._backend.DeviceContext.DrawIndexed((int)buf.IndexCount, 0, 0);
+            this._backend.DeviceContext.DrawIndexed(buf.IndexCount, 0, 0);
         }
 
-        this._backend.DeviceContext.VSSetShader(null);
-        this._backend.DeviceContext.VSSetConstantBuffer(0, null);
+        this._backend.DeviceContext.VSSetShader(new ComPtr<ID3D11VertexShader>((ID3D11VertexShader*)null), null, 0);
+        this._backend.DeviceContext.VSSetConstantBuffers(0, 0, null);
 
-        this._backend.DeviceContext.PSSetShader(null);
-        this._backend.DeviceContext.PSSetShaderResources(0, 128, this._nullShaderViews);
+        this._backend.DeviceContext.PSSetShader(new ComPtr<ID3D11PixelShader>((ID3D11PixelShader*)null), null, 0);
+        this._backend.DeviceContext.PSSetShaderResources(0, 128, in this._nullShaderViews[0].Handle);
 
-        this._backend.DeviceContext.IASetInputLayout(null);
-        this._backend.DeviceContext.IASetVertexBuffer(0, null!, 0);
-        this._backend.DeviceContext.IASetIndexBuffer(null, Format.R16_UInt, 0);
+        this._backend.DeviceContext.IASetInputLayout((ID3D11InputLayout*)null);
+        this._backend.DeviceContext.IASetVertexBuffers(0, 0, null, 0, 0);
+        this._backend.DeviceContext.IASetIndexBuffer((ID3D11Buffer*)null, Format.FormatR16Uint, 0);
     }
 
     protected override void DisposeInternal() {

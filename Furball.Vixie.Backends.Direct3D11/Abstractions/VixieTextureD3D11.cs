@@ -1,14 +1,14 @@
-using System;
+﻿using System;
 using System.IO;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Helpers;
+using Silk.NET.Core.Native;
+using Silk.NET.Direct3D11;
+using Silk.NET.DXGI;
 using Silk.NET.Maths;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using Vortice.Direct3D11;
-using Vortice.DXGI;
-using Vortice.Mathematics;
-using Rectangle=System.Drawing.Rectangle;
+using Rectangle = System.Drawing.Rectangle;
 #pragma warning disable CS8618
 
 namespace Furball.Vixie.Backends.Direct3D11.Abstractions;
@@ -16,13 +16,13 @@ namespace Furball.Vixie.Backends.Direct3D11.Abstractions;
 internal sealed class VixieTextureD3D11 : VixieTexture {
     private Direct3D11Backend _backend;
 
-    private  ID3D11Texture2D          _texture;
-    internal ID3D11ShaderResourceView TextureView;
-    private  Texture2DDescription     _textureDescription;
+    private  ComPtr<ID3D11Texture2D>          _texture;
+    internal ComPtr<ID3D11ShaderResourceView> TextureView;
+    private  Texture2DDesc                    _textureDesc;
 
     public VixieTextureD3D11(
-        Direct3D11Backend backend, ID3D11Texture2D texture, ID3D11ShaderResourceView shaderResourceView,
-        Vector2D<int> size, Texture2DDescription desc
+        Direct3D11Backend backend, ComPtr<ID3D11Texture2D> texture, ComPtr<ID3D11ShaderResourceView> shaderResourceView,
+        Vector2D<int>     size,    Texture2DDesc           desc
     ) {
         backend.CheckThread();
         this._backend = backend;
@@ -32,7 +32,7 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
         this._texture    = texture;
         this.TextureView = shaderResourceView;
 
-        this._textureDescription = desc;
+        this._textureDesc = desc;
 
         this.GenerateMips();
     }
@@ -41,42 +41,33 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
         backend.CheckThread();
         this._backend = backend;
 
-        Texture2DDescription textureDescription = new() {
+        Texture2DDesc textureDesc = new() {
             Width     = 1,
             Height    = 1,
             MipLevels = 0,
             ArraySize = 1,
-            Format    = Format.R8G8B8A8_UNorm_SRgb,
-            SampleDescription = new SampleDescription {
+            Format    = Format.FormatR8G8B8A8Unorm,
+            SampleDesc = new SampleDesc {
                 Count = 1
             },
-            Usage     = ResourceUsage.Default,
-            BindFlags = BindFlags.ShaderResource
+            Usage     = Usage.Default,
+            BindFlags = (uint)BindFlag.ShaderResource
         };
 
         byte* data = stackalloc byte[] {
             255, 255, 255, 255
         };
 
-        SubresourceData subresourceData = new(data, 4);
+        SubresourceData subresourceData = new SubresourceData(data, 4);
 
-        ID3D11Texture2D texture = this._backend.Device.CreateTexture2D(
-        textureDescription,
-        new[] {
-            subresourceData
-        }
+        this._backend.Device.CreateTexture2D(
+            textureDesc,
+            in subresourceData,
+            ref this._texture
         );
-        ID3D11ShaderResourceView textureView = this._backend.Device.CreateShaderResourceView(texture);
+        this._backend.Device.CreateShaderResourceView(this._texture, null, ref this.TextureView);
 
-
-        this._texture    = texture;
-        this.TextureView = textureView;
-
-        this.TextureView.DebugName = "white pixel";
-
-        this._textureDescription = textureDescription;
-
-        this.GenerateMips();
+        this._textureDesc = textureDesc;
 
         this.Size = Vector2D<int>.One;
     }
@@ -88,13 +79,14 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
         Image<Rgba32> image;
 
         bool qoi = imageData.Length > 3 && imageData[0] == 'q' && imageData[1] == 'o' && imageData[2] == 'i' &&
-                   imageData[3] == 'f';
+                   imageData[3]     == 'f';
 
         if (qoi) {
             (Rgba32[] pixels, QoiLoader.QoiHeader header) data = QoiLoader.Load(imageData);
 
             image = Image.LoadPixelData(data.pixels, (int)data.header.Width, (int)data.header.Height);
-        } else {
+        }
+        else {
             image = Image.Load<Rgba32>(imageData);
         }
 
@@ -113,19 +105,19 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
 
     private unsafe void SetData(Image<Rgba32> image) {
         image.ProcessPixelRows(
-        accessor => {
-            for (int i = 0; i < accessor.Height; i++)
-                fixed (void* ptr = accessor.GetRowSpan(i)) {
-                    this._backend.DeviceContext.UpdateSubresource(
-                    this._texture,
-                    0,
-                    new Box(0, i, 0, accessor.Width, i + 1, 1),
-                    (IntPtr)ptr,
-                    sizeof(Rgba32) * accessor.Width,
-                    sizeof(Rgba32) * accessor.Width
-                    );
-                }
-        }
+            accessor => {
+                for (int i = 0; i < accessor.Height; i++)
+                    fixed (void* ptr = accessor.GetRowSpan(i)) {
+                        this._backend.DeviceContext.UpdateSubresource(
+                            this._texture,
+                            0u,
+                            new Box(0, (uint)i, 0, (uint)accessor.Width, (uint)i + 1, 1),
+                            ptr,
+                            (uint)(sizeof(Rgba32) * accessor.Width),
+                            (uint)(sizeof(Rgba32) * accessor.Width)
+                        );
+                    }
+            }
         );
     }
 
@@ -161,49 +153,46 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
         this.FilterType = parameters.FilterType;
     }
 
-    private void CreateTextureAndView(int width, int height, TextureParameters parameters) {
-        Texture2DDescription textureDescription = new() {
-            Width     = width,
-            Height    = height,
-            MipLevels = parameters.RequestMipmaps ? this.MipMapCount(width, height) : 1,
+    private unsafe void CreateTextureAndView(int width, int height, TextureParameters parameters) {
+        Texture2DDesc textureDesc = new() {
+            Width     = (uint)width,
+            Height    = (uint)height,
+            MipLevels = (uint)(parameters.RequestMipmaps ? this.MipMapCount(width, height) : 1),
             ArraySize = 1,
-            Format    = Format.R8G8B8A8_UNorm,
-            BindFlags = parameters.RequestMipmaps
-                            ? BindFlags.ShaderResource | BindFlags.RenderTarget
-                            : BindFlags.ShaderResource,
-            Usage     = ResourceUsage.Default,
-            MiscFlags = parameters.RequestMipmaps ? ResourceOptionFlags.GenerateMips : ResourceOptionFlags.None,
-            SampleDescription = new SampleDescription {
+            Format    = Format.FormatR8G8B8A8Unorm,
+            BindFlags = (uint)(parameters.RequestMipmaps
+                ? BindFlag.ShaderResource | BindFlag.RenderTarget
+                : BindFlag.ShaderResource),
+            Usage     = Usage.Default,
+            MiscFlags = (uint)(parameters.RequestMipmaps ? ResourceMiscFlag.GenerateMips : ResourceMiscFlag.None),
+            SampleDesc = new SampleDesc {
                 Count   = 1,
                 Quality = 0
             }
         };
 
-        this._textureDescription = textureDescription;
+        this._textureDesc = textureDesc;
 
-        ID3D11Texture2D          texture     = this._backend.Device.CreateTexture2D(textureDescription);
-        ID3D11ShaderResourceView textureView = this._backend.Device.CreateShaderResourceView(texture);
-
-        this._texture    = texture;
-        this.TextureView = textureView;
+        this._backend.Device.CreateTexture2D(textureDesc, null, ref this._texture);
+        this._backend.Device.CreateShaderResourceView(this._texture, null, ref this.TextureView);
     }
 
     ~VixieTextureD3D11() {
         DisposeQueue.Enqueue(this);
     }
 
-    public override bool Mipmaps => this._textureDescription.MipLevels != 1;
+    public override bool Mipmaps => this._textureDesc.MipLevels != 1;
 
-    public override unsafe VixieTexture SetData<pDataType>(ReadOnlySpan<pDataType> data) {
+    public override unsafe VixieTexture SetData <pDataType>(ReadOnlySpan<pDataType> data) {
         this._backend.CheckThread();
         fixed (void* ptr = data) {
             this._backend.DeviceContext.UpdateSubresource(
-            this._texture,
-            0,
-            new Box(0, 0, 0, this.Width, this.Height, 1),
-            (IntPtr)ptr,
-            sizeof(Rgba32) * this.Width,
-            sizeof(Rgba32) * this.Width
+                this._texture,
+                0u,
+                new Box(0, 0, 0, (uint)this.Width, (uint)this.Height, 1),
+                ptr,
+                (uint)(sizeof(Rgba32) * this.Width),
+                (uint)(sizeof(Rgba32) * this.Width)
             );
         }
 
@@ -212,20 +201,20 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
         return this;
     }
 
-    public override unsafe VixieTexture SetData<pDataType>(ReadOnlySpan<pDataType> data, Rectangle rect) {
+    public override unsafe VixieTexture SetData <pDataType>(ReadOnlySpan<pDataType> data, Rectangle rect) {
         this._backend.CheckThread();
         fixed (void* dataPtr = data) {
             this._backend.DeviceContext.UpdateSubresource(
-            this._texture,
-            0,
-            new Box(rect.X, rect.Y, 0, rect.X + rect.Width, rect.Y + rect.Height, 1),
-            (IntPtr)dataPtr,
-            sizeof(Rgba32) * rect.Width,
-            sizeof(Rgba32) * rect.Width * rect.Height
+                this._texture,
+                0,
+                new Box((uint)rect.X, (uint)rect.Y, 0, (uint)(rect.X + rect.Width), (uint)(rect.Y + rect.Height), 1),
+                dataPtr,
+                (uint)(sizeof(Rgba32) * rect.Width),
+                (uint)(sizeof(Rgba32) * rect.Width * rect.Height)
             );
         }
 
-        this._backend.DeviceContext.PSSetShaderResource(0, this.TextureView);
+        this._backend.DeviceContext.PSSetShaderResources(0, 1, this.TextureView);
 
         this.GenerateMips();
 
@@ -233,34 +222,38 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
     }
 
     public override unsafe Rgba32[] GetData() {
-        Texture2DDescription desc = this._textureDescription;
-        desc.Usage          = ResourceUsage.Staging;
-        desc.CPUAccessFlags = CpuAccessFlags.Read;
-        desc.Format         = Format.R8G8B8A8_UNorm_SRgb;
+        Texture2DDesc desc = this._textureDesc;
+        desc.Usage          = Usage.Staging;
+        desc.CPUAccessFlags = (uint)CpuAccessFlag.Read;
+        desc.Format         = Format.FormatR8G8B8A8Unorm;
         desc.MipLevels      = 1;
+        desc.BindFlags      = 0;
 
         //Create staging texture
-        ID3D11Texture2D texture = this._backend.Device.CreateTexture2D(desc);
+        ComPtr<ID3D11Texture2D> stagingTex = null;
+        int ret = this._backend.Device.CreateTexture2D(desc, null, ref stagingTex);
 
         //Copy texture to staging texture
-        this._backend.DeviceContext.CopyResource(texture, this._texture);
+        this._backend.DeviceContext.CopyResource(stagingTex, this._texture);
 
         //Map data
-        MappedSubresource mapped = this._backend.DeviceContext.Map(texture, 0);
+        MappedSubresource mapped = new MappedSubresource();
+        this._backend.DeviceContext.Map(stagingTex, 0, Map.Read, 0, ref mapped);
 
         //Copy into array
-        Span<Rgba32> rawData = mapped.AsSpan<Rgba32>(texture, 0, 0);
-
+        // Span<Rgba32> rawData = mapped.AsSpan<Rgba32>(stagingTex, 0, 0);
+        Span<Rgba32> rawData = new Span<Rgba32>(mapped.PData, (int)(desc.Width * desc.Height));
+        
         //Create new array to store the pixels contiguously
         Rgba32[] data = new Rgba32[desc.Width * desc.Height];
 
         //Copy the data into a contiguous array
         for (int i = 0; i < desc.Height; i++)
-            rawData.Slice(i * (mapped.RowPitch / sizeof(Rgba32)), desc.Width).CopyTo(data.AsSpan(i * desc.Width));
+            rawData.Slice((int)(i * (mapped.RowPitch / sizeof(Rgba32))), (int)desc.Width).CopyTo(data.AsSpan((int)(i * desc.Width)));
 
         //Unmap & dispose
-        this._backend.DeviceContext.Unmap(texture, 0, 0);
-        texture.Dispose();
+        this._backend.DeviceContext.Unmap(stagingTex, 0);
+        stagingTex.Dispose();
 
         return data;
     }
@@ -280,13 +273,6 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
         }
     }
 
-    public VixieTexture BindToPixelShader(int slot) {
-        this._backend.CheckThread();
-        this._backend.DeviceContext.PSSetShaderResource(slot, this.TextureView);
-
-        return this;
-    }
-
     private bool _isDisposed = false;
 
     public override void Dispose() {
@@ -301,7 +287,7 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
             this._texture.Dispose();
             this.TextureView.Dispose();
         }
-        catch (NullReferenceException) {/* Apperantly thing?.Dispose can still throw a NullRefException? */
+        catch (NullReferenceException) { /* Apperantly thing?.Dispose can still throw a NullRefException? */
         }
     }
 }

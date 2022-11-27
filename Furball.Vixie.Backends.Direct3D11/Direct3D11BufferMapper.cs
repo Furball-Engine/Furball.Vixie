@@ -1,23 +1,24 @@
 ﻿using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers;
-using Vortice.Direct3D11;
+using Silk.NET.Core.Native;
+using Silk.NET.Direct3D11;
 
 namespace Furball.Vixie.Backends.Direct3D11;
 
 public class Direct3D11BufferMapper : BufferMapper {
     private readonly Direct3D11Backend _backend;
 
-    private readonly BindFlags _usage;
+    private readonly BindFlag _usage;
 
-    internal ID3D11Buffer? Buffer;
+    internal unsafe ComPtr<ID3D11Buffer> Buffer = new ComPtr<ID3D11Buffer>((ID3D11Buffer*)null);
 
     public unsafe void* Ptr;
 
-    public Direct3D11BufferMapper(Direct3D11Backend backend, uint byteSize, BindFlags usage) {
+    public Direct3D11BufferMapper(Direct3D11Backend backend, uint byteSize, BindFlag usage) {
         this._backend = backend;
 
         Guard.Assert(
-        (usage & ~(BindFlags.IndexBuffer | BindFlags.VertexBuffer)) == 0,
+        (usage & ~(BindFlag.IndexBuffer | BindFlag.VertexBuffer)) == 0,
         "(usage & ~(BindFlags.IndexBuffer | BindFlags.VertexBuffer)) == 0"
         );
 
@@ -26,41 +27,45 @@ public class Direct3D11BufferMapper : BufferMapper {
         this.SizeInBytes = byteSize;
     }
 
-    public unsafe ID3D11Buffer? ResetFromExistingBuffer(ID3D11Buffer buffer) {
+    public unsafe ComPtr<ID3D11Buffer> ResetFromExistingBuffer(ComPtr<ID3D11Buffer> buffer) {
         this.ReservedBytes = 0;
 
         //Get the current buffer
-        ID3D11Buffer? old = this.Buffer;
+        ComPtr<ID3D11Buffer> old = this.Buffer;
 
+        BufferDesc desc = new BufferDesc();
+        buffer.GetDesc(ref desc);
         //Ensure the buffer is dynamic
         Guard.Assert(
-        buffer.Description.Usage.HasFlag(ResourceUsage.Dynamic),
+        desc.Usage.HasFlag(Usage.Dynamic),
         "buffer.Description.Usage.HasFlag(ResourceUsage.Dynamic)"
         );
         //Ensure the bind flags are correct
-        Guard.Assert(buffer.Description.BindFlags == this._usage, "buffer.Description.BindFlags == this.Usage");
+        Guard.Assert((BindFlag)desc.BindFlags == this._usage, "buffer.Description.BindFlags == this.Usage");
 
         //Set the current buffer to the new one
         this.Buffer = buffer;
 
         //Unmap the old buffer
-        if (old != null)
-            this._backend.DeviceContext.Unmap(old);
+        if (old.Handle != null)
+            this._backend.DeviceContext.Unmap(old, 0);
 
         //Map the new buffer
-        MappedSubresource map = this._backend.DeviceContext.Map(this.Buffer, MapMode.WriteDiscard);
+        MappedSubresource map = new MappedSubresource();
+        this._backend.DeviceContext.Map(this.Buffer, 0u, Silk.NET.Direct3D11.Map.WriteDiscard, 0, &map);
 
         //Set the data ptr
-        this.Ptr = (void*)map.DataPointer;
+        this.Ptr = map.PData;
 
         return old;
     }
 
-    public ID3D11Buffer? ResetFromFreshBuffer() {
-        BufferDescription desc = new((int)this.SizeInBytes, this._usage, ResourceUsage.Dynamic) {
-            CPUAccessFlags = CpuAccessFlags.Write
+    public unsafe ComPtr<ID3D11Buffer> ResetFromFreshBuffer() {
+        BufferDesc desc = new BufferDesc((uint?)this.SizeInBytes, Usage.Dynamic, (uint?)this._usage) {
+            CPUAccessFlags = (uint)CpuAccessFlag.Write
         };
-        ID3D11Buffer buf = this._backend.Device.CreateBuffer(desc);
+        ComPtr<ID3D11Buffer> buf = null;
+        this._backend.Device.CreateBuffer(in desc, null, ref buf);
 
         return this.ResetFromExistingBuffer(buf);
     }
@@ -73,9 +78,9 @@ public class Direct3D11BufferMapper : BufferMapper {
         Guard.EnsureNonNull(this.Buffer, "this.Buffer");
 
         //Unmap the buffer
-        this._backend.DeviceContext.Unmap(this.Buffer!);
+        this._backend.DeviceContext.Unmap(this.Buffer, 0);
 
-        this.Buffer!.Dispose();
+        this.Buffer.Dispose();
 
         //Say we no longer are using any buffers
         this.Buffer = null;
@@ -94,6 +99,6 @@ public class Direct3D11BufferMapper : BufferMapper {
     }
 
     protected override void DisposeInternal() {
-        this.Buffer?.Dispose();
+        this.Buffer.Dispose();
     }
 }

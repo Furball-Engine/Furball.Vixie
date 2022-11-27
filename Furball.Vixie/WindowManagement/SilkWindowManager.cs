@@ -418,6 +418,9 @@ public class SilkWindowManager : IWindowManager {
             this._window = Window.Create(options);
         }
         catch {
+#if DEBUG
+            throw;
+#endif
             throw new WindowCreationFailedException();
         }
 

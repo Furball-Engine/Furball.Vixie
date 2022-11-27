@@ -46,6 +46,11 @@ public abstract class Game : IDisposable {
     }
 
     private void RunInternal(Backend backend) {
+        string backendForce = Environment.GetEnvironmentVariable("VIXIE_BACKEND_FORCE");
+
+        if ((backendForce is not "OpenGL" or "OpenGLES") && backendForce != null)
+            goto skipGLCheck;
+
         try {
             Backends.Shared.Global.LatestSupportedGl = OpenGLDetector.OpenGLDetector.GetLatestSupported();
         }
@@ -55,6 +60,7 @@ public abstract class Game : IDisposable {
             Backends.Shared.Global.LatestSupportedGl.GL   = new APIVersion(2, 0);
             Backends.Shared.Global.LatestSupportedGl.GLES = new APIVersion(0, 0);
         }
+skipGLCheck:
 
         if (backend == Backend.None)
             backend = GraphicsBackendState.GetReccomendedBackend();

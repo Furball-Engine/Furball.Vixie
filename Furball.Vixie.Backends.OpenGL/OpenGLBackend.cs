@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -209,7 +209,7 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
         this.gl.Enable(EnableCap.ScissorTest);
 
         this.gl.Enable(EnableCap.CullFace);
-        this.gl.CullFace(CullFaceMode.Back);
+        this.gl.CullFace(TriangleFace.Back);
         
 #if USE_IMGUI
         OpenGlType type = this.CreationBackend switch {

@@ -9,9 +9,9 @@
 
     <ItemGroup>
       <PackageReference Include="Kettu" Version="1.4.0" />
-      <PackageReference Include="Silk.NET.Vulkan" Version="2.16.0" />
-      <PackageReference Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.16.0" />
-      <PackageReference Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.16.0" />
+      <PackageReference Include="Silk.NET.Vulkan" Version="2.17.0-build2669.0" />
+      <PackageReference Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.17.0-build2669.0" />
+      <PackageReference Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.17.0-build2669.0" />
     </ItemGroup>
 
     <ItemGroup>
