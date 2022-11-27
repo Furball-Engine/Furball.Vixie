@@ -18,19 +18,37 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
     public ComPtr<ID3D12Device>  Device;
     public ComPtr<IDXGIFactory4> DXGIFactory;
 
+    private IView _view;
+
     public ComPtr<ID3D12Debug1>      Debug;
     public ComPtr<ID3D12DebugDevice> DebugDevice;
     public ComPtr<ID3D12InfoQueue>   DebugInfoQueue;
 
-    public  ComPtr<ID3D12CommandQueue>     CommandQueue;
-    private ComPtr<ID3D12CommandAllocator> CommandAllocator;
+    public ComPtr<ID3D12CommandQueue>     CommandQueue;
+    public ComPtr<ID3D12CommandAllocator> CommandAllocator;
 
-    private ComPtr<ID3D12Fence> Fence;
+    public uint                FrameIndex;
+    public void*               FenceEvent;
+    public ulong               FenceValue;
+    public ComPtr<ID3D12Fence> Fence;
+
+    const uint BackbufferCount = 2;
+
+    private uint                         _currentBuffer = 0;
+    private ComPtr<ID3D12DescriptorHeap> _renderTargetViewHeap;
+    private ComPtr<ID3D12Resource>[]     _renderTargets = new ComPtr<ID3D12Resource>[BackbufferCount];
+    private uint                         rtvDescriptorSize;
+
+    private ComPtr<IDXGISwapChain3> _swapchain;
+    private Viewport                _viewport;
+    private Box2D<long>             _surfaceSize;
 
     public override void Initialize(IView view, IInputContext inputContext) {
         //Get the D3D12 and DXGI APIs
         this.D3D12 = D3D12.GetApi();
         this.DXGI  = DXGI.GetApi();
+
+        this._view = view;
 
         uint factoryFlags = 0;
 #if DEBUG
@@ -59,6 +77,55 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
 
         //Create the fence to do CPU/GPU synchronization
         this.CreateFence();
+
+        //Create the swapchain we render to
+        this.CreateSwapchain();
+    }
+
+    private void CreateSwapchain() {
+        this._surfaceSize = new Box2D<long>(0, 0, this._view.FramebufferSize.X, this._view.FramebufferSize.Y);
+
+        this._viewport.TopLeftX = 0;
+        this._viewport.TopLeftY = 0;
+        this._viewport.Width    = this._view.FramebufferSize.X;
+        this._viewport.Height   = this._view.FramebufferSize.Y;
+        this._viewport.MinDepth = 0;
+        this._viewport.MaxDepth = 1;
+
+        if (this._swapchain.Handle != null) {
+            this._swapchain.ResizeBuffers(
+                BackbufferCount,
+                (uint)this._view.FramebufferSize.X,
+                (uint)this._view.FramebufferSize.Y,
+                Format.FormatR8G8B8A8Unorm,
+                0
+            );
+        }
+        else {
+            SwapChainDesc1 desc = new SwapChainDesc1 {
+                BufferCount = BackbufferCount,
+                Width = (uint)this._view.FramebufferSize.X,
+                Height = (uint)this._view.FramebufferSize.Y,
+                Format = Format.FormatR8G8B8A8Unorm,
+                BufferUsage = DXGI.UsageRenderTargetOutput,
+                SwapEffect = SwapEffect.FlipDiscard,
+                SampleDesc = new SampleDesc {
+                    Count = 1
+                }
+            };
+
+            ComPtr<IDXGISwapChain1> newSwapchain = null;
+            this._view.CreateDxgiSwapchain(
+                (IDXGIFactory2*)this.DXGIFactory.Handle,
+                (IUnknown*)this.CommandQueue.Handle,
+                &desc,
+                pFullscreenDesc: null,
+                pRestrictToOutput: null,
+                newSwapchain.GetAddressOf()
+            );
+            
+            this._swapchain = newSwapchain.QueryInterface<IDXGISwapChain3>();
+        }
     }
 
     private void CreateFence() {
