@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.Runtime.InteropServices;
+using Furball.Vixie.Backends.Direct3D12;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Helpers;
 using Silk.NET.Core;
@@ -43,10 +44,10 @@ namespace Furball.Vixie.WindowManagement;
 
 public class SilkWindowManager : IWindowManager {
     //Input context is public so that the engine can use it to get input
-    public  IInputContext InputContext;
-    
-    private IWindow       _window;
-    private WindowState   _windowState = WindowState.Windowed;
+    public IInputContext InputContext;
+
+    private IWindow     _window;
+    private WindowState _windowState = WindowState.Windowed;
 
     public SilkWindowManager(Backend backend) {
         this.Backend = backend;
@@ -67,7 +68,7 @@ public class SilkWindowManager : IWindowManager {
         ContextAPI api = this.Backend switch {
 #if VIXIE_BACKEND_OPENGL
             Backend.OpenGLES => ContextAPI.OpenGLES,
-            Backend.OpenGL => ContextAPI.OpenGL,
+            Backend.OpenGL   => ContextAPI.OpenGL,
 #endif
 #if VIXIE_BACKEND_VELDRID
             Backend.Veldrid => ContextAPI.None, //Veldrid handles this internally
@@ -78,7 +79,10 @@ public class SilkWindowManager : IWindowManager {
 #if VIXIE_BACKEND_D3D11
             Backend.Direct3D11 => RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
                 ? ContextAPI.Vulkan //If we are on linux and using d3d11, we likely want DXVK-native, so we use vulkan
-                : ContextAPI.None, //If we are on windows, we specify none
+                : ContextAPI.None,  //If we are on windows, we specify none
+#endif
+#if VIXIE_BACKEND_D3D12
+            Backend.Direct3D12 => ContextAPI.None, //We specify none here
 #endif
 #if VIXIE_BACKEND_DUMMY
             Backend.Dummy => ContextAPI.None, //Dummy backend is just a dummy, so we specify none
@@ -95,20 +99,23 @@ public class SilkWindowManager : IWindowManager {
 
         ContextProfile profile = this.Backend switch {
 #if VIXIE_BACKEND_OPENGL
-            Backend.OpenGLES   => ContextProfile.Core, //OpenGLES is always core
-            Backend.OpenGL     => ContextProfile.Core, //OpenGL is always core
+            Backend.OpenGLES => ContextProfile.Core, //OpenGLES is always core
+            Backend.OpenGL   => ContextProfile.Core, //OpenGL is always core
 #endif
 #if VIXIE_BACKEND_VELDRID
-            Backend.Veldrid    => ContextProfile.Core, //This doesnt matter for Veldrid
+            Backend.Veldrid => ContextProfile.Core, //This doesnt matter for Veldrid
 #endif
 #if VIXIE_BACKEND_VULKAN
-            Backend.Vulkan     => ContextProfile.Core, //This doesnt matter for Vulkan
+            Backend.Vulkan => ContextProfile.Core, //This doesnt matter for Vulkan
 #endif
 #if VIXIE_BACKEND_D3D11
             Backend.Direct3D11 => ContextProfile.Core, //This doesnt matter for D3D11
 #endif
+#if VIXIE_BACKEND_D3D12
+            Backend.Direct3D12 => ContextProfile.Core,
+#endif
 #if VIXIE_BACKEND_DUMMY
-            Backend.Dummy      => ContextProfile.Core, //This doesnt matter for Dummy
+            Backend.Dummy => ContextProfile.Core, //This doesnt matter for Dummy
 #endif
 #if VIXIE_BACKEND_MOLA
             Backend.Mola => ContextProfile.Core, //This doesnt matter for Mola, as it is software rendering
@@ -116,7 +123,7 @@ public class SilkWindowManager : IWindowManager {
 #if VIXIE_BACKEND_WEBGPU
             Backend.WebGPU => ContextProfile.Core, //This doesnt matter for Mola, as it is software rendering
 #endif
-            _                  => throw new Exception("Invalid API chosen...")
+            _ => throw new Exception("Invalid API chosen...")
         };
 
         const bool debug
@@ -130,9 +137,12 @@ public class SilkWindowManager : IWindowManager {
 #if VIXIE_BACKEND_D3D11
             Backend.Direct3D11 => debug ? ContextFlags.Debug : ContextFlags.Default,
 #endif
+#if VIXIE_BACKEND_D3D12
+            Backend.Direct3D12 => debug ? ContextFlags.Debug : ContextFlags.Default,
+#endif
 #if VIXIE_BACKEND_OPENGL
-            Backend.OpenGL     => debug ? ContextFlags.Debug : ContextFlags.Default,
-            Backend.OpenGLES   => debug ? ContextFlags.Debug : ContextFlags.Default,
+            Backend.OpenGL   => debug ? ContextFlags.Debug : ContextFlags.Default,
+            Backend.OpenGLES => debug ? ContextFlags.Debug : ContextFlags.Default,
 #endif
 #if VIXIE_BACKEND_VELDRID
             Backend.Veldrid => debug ? ContextFlags.Debug | ContextFlags.ForwardCompatible
@@ -142,7 +152,7 @@ public class SilkWindowManager : IWindowManager {
             Backend.Vulkan => debug ? ContextFlags.Debug : ContextFlags.Default,
 #endif
 #if VIXIE_BACKEND_MOLA
-            Backend.Mola   => debug ? ContextFlags.Debug : ContextFlags.Default,
+            Backend.Mola => debug ? ContextFlags.Debug : ContextFlags.Default,
 #endif
 #if VIXIE_BACKEND_DUMMY
             Backend.Dummy => debug ? ContextFlags.Debug : ContextFlags.Default,
@@ -160,7 +170,7 @@ public class SilkWindowManager : IWindowManager {
                 //If the user's GPU doesnt support GLES 3.0, force 3.0 and mark we are in unsupported mode
                 if (Backends.Shared.Global.LatestSupportedGl.GLES.MajorVersion < 3) {
                     Backends.Shared.Global.LatestSupportedGl.GLES = new APIVersion(3, 0);
-                    GraphicsBackendState.IsOnUnsupportedPlatform = true; //mark us as running on an unsupported 
+                    GraphicsBackendState.IsOnUnsupportedPlatform  = true; //mark us as running on an unsupported 
                 }
 
                 version = Backends.Shared.Global.LatestSupportedGl.GLES;
@@ -184,6 +194,11 @@ public class SilkWindowManager : IWindowManager {
 #if VIXIE_BACKEND_D3D11
             case Backend.Direct3D11:
                 version = new APIVersion(11, 0);
+                break;
+#endif
+#if VIXIE_BACKEND_D3D12
+            case Backend.Direct3D12:
+                version = new APIVersion(12, 0);
                 break;
 #endif
 #if VIXIE_BACKEND_VULKAN
@@ -250,9 +265,9 @@ public class SilkWindowManager : IWindowManager {
         get => this._windowSize;
         set => this._window.Size = value;
     }
-    
+
     private Vector2D<int> _framebufferSize = new Vector2D<int>(0, 0);
-    public Vector2D<int> FramebufferSize => this._framebufferSize;
+    public  Vector2D<int> FramebufferSize => this._framebufferSize;
 
     public Vector2D<int> WindowPosition {
         get => this._window.Position;
@@ -313,9 +328,9 @@ public class SilkWindowManager : IWindowManager {
             this._window.VSync = this._vsync;
         }
         else {
-            if(this.UnfocusFramerateCap) {
-                this._window.FramesPerSecond = this.TargetUnfocusedFramerate;
-                this._window.UpdatesPerSecond  = this.TargetUnfocusedUpdaterate;
+            if (this.UnfocusFramerateCap) {
+                this._window.FramesPerSecond  = this.TargetUnfocusedFramerate;
+                this._window.UpdatesPerSecond = this.TargetUnfocusedUpdaterate;
             }
             else {
                 this._window.FramesPerSecond  = 0;
@@ -360,7 +375,7 @@ public class SilkWindowManager : IWindowManager {
 
         byte[] imgData = new byte[image.Width * image.Height * sizeof(Rgba32)];
         image.CopyPixelDataTo(imgData);
-        
+
         RawImage rawImage = new RawImage(image.Width, image.Height, new Memory<byte>(imgData));
 
         this._window.SetWindowIcon(ref rawImage);
@@ -466,7 +481,7 @@ public class SilkWindowManager : IWindowManager {
 
     private void SilkWindowFramebufferResize(Vector2D<int> obj) {
         this._framebufferSize = obj;
-        
+
         this.FramebufferResize?.Invoke(obj);
     }
 
@@ -474,7 +489,7 @@ public class SilkWindowManager : IWindowManager {
         this.Focused = obj;
 
         this.UpdateFpsCapState();
-        
+
         this.FocusChanged?.Invoke(obj);
     }
 
@@ -495,50 +510,53 @@ public class SilkWindowManager : IWindowManager {
     private void SilkWindowLoad() {
         this._windowSize      = this._window.Size;
         this._framebufferSize = this._window.FramebufferSize;
-        
+
         // ReSharper disable once SwitchExpressionHandlesSomeKnownEnumValuesWithExceptionInDefault
         this.GraphicsBackend = this.Backend switch {
 #if VIXIE_BACKEND_OPENGL
-            Backend.OpenGLES   => new OpenGLBackend(this.Backend),
+            Backend.OpenGLES => new OpenGLBackend(this.Backend),
 #endif
 #if VIXIE_BACKEND_D3D11
             Backend.Direct3D11 => new Direct3D11Backend(),
 #endif
+#if VIXIE_BACKEND_D3D12
+            Backend.Direct3D12 => new Direct3D12Backend(),
+#endif
 #if VIXIE_BACKEND_OPENGL
-            Backend.OpenGL     => new OpenGLBackend(this.Backend),
+            Backend.OpenGL => new OpenGLBackend(this.Backend),
 #endif
 #if VIXIE_BACKEND_VELDRID
-            Backend.Veldrid    => new VeldridBackend(),
+            Backend.Veldrid => new VeldridBackend(),
 #endif
 #if VIXIE_BACKEND_VULKAN
-            Backend.Vulkan     => new VulkanBackend(),
+            Backend.Vulkan => new VulkanBackend(),
 #endif
 #if VIXIE_BACKEND_DUMMY
-            Backend.Dummy      => new DummyBackend(),
+            Backend.Dummy => new DummyBackend(),
 #endif
 #if VIXIE_BACKEND_MOLA
-            Backend.Mola       => new MolaBackend(),
+            Backend.Mola => new MolaBackend(),
 #endif
 #if VIXIE_BACKEND_WEBGPU
-            Backend.WebGPU     => new WebGPUBackend(),      
+            Backend.WebGPU => new WebGPUBackend(),
 #endif
-            _                  => throw new Exception("Invalid Backend Selected...")
+            _ => throw new Exception("Invalid Backend Selected...")
         };
 
         this.InputContext = this._window.CreateInput();
 
         //Set the main thread of the graphics backend to the current thread
-        this.GraphicsBackend.SetMainThread(); 
-        
+        this.GraphicsBackend.SetMainThread();
+
         //Initialize the backend
         this.GraphicsBackend.Initialize(this._window, this.InputContext);
-        
+
         //Immediately notify the backend of a framebuffer resize, so it knows incase the window is already resized
         this.GraphicsBackend.HandleFramebufferResize(this.FramebufferSize.X, this.FramebufferSize.Y);
 
         //Update the fps cap state, as the window will have bogus values on creation
         this.UpdateFpsCapState();
-        
+
         this.WindowLoad?.Invoke();
     }
 

@@ -29,4 +29,7 @@ public enum Backend {
 #if VIXIE_BACKEND_WEBGPU
     WebGPU     = 1 << 8,
 #endif
+#if VIXIE_BACKEND_D3D12
+    Direct3D12 = 1 << 9
+#endif
 }
