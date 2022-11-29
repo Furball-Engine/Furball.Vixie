@@ -5,11 +5,11 @@
 "RootFlags( ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT ), " \
 "DescriptorTable( CBV(b0) ), " \
 "DescriptorTable( " \
-"    SRV(t0, space = 1, numDescriptors = unbounded ), " \
+"    SRV(t0, numDescriptors = unbounded ), " \
 "    visibility = SHADER_VISIBILITY_PIXEL" \
 ")," \
 "DescriptorTable( " \
-"    Sampler(s0, space = 1, numDescriptors = unbounded), " \
+"    Sampler(s0, numDescriptors = unbounded), " \
 "    visibility = SHADER_VISIBILITY_PIXEL" \
 ")"
 
@@ -47,8 +47,8 @@ VS_Output VS_Main(const VS_Input input)
     return output;
 }
 
-Texture2D Textures[] : register(t0, textureSpace);
-SamplerState Samplers[] : register(s0, samplerSpace);
+Texture2D Textures[] : register(t0);
+SamplerState Samplers[] : register(s0);
 
 [RootSignature(RootSignatureDef)]
 float4 PS_Main(const VS_Output input) : SV_Target
