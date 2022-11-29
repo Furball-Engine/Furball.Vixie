@@ -1,33 +1,37 @@
 #define textureSpace space1
 #define samplerSpace space1
 
-#define RootSignatureDef "RootFlags( ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT ), " \
-              "DescriptorTable( CBV(b0) ), " \
-              "DescriptorTable( " \
-              "    SRV(t0, space = 1, numDescriptors = unbounded ), " \
-              "    Sampler(s0, space = 1, numDescriptors = unbounded), " \
-              "    visibility = SHADER_VISIBILITY_PIXEL" \
-              ")"
+#define RootSignatureDef "" \
+"RootFlags( ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT ), " \
+"DescriptorTable( CBV(b0) ), " \
+"DescriptorTable( " \
+"    SRV(t0, space = 1, numDescriptors = unbounded ), " \
+"    visibility = SHADER_VISIBILITY_PIXEL" \
+")," \
+"DescriptorTable( " \
+"    Sampler(s0, space = 1, numDescriptors = unbounded), " \
+"    visibility = SHADER_VISIBILITY_PIXEL" \
+")"
 
 struct VS_Input
 {
-                    float2  Position : POSITION;
-                    float2  TexCoord : TEXCOORD;
-                    float4  Color    : COLOR;
-    nointerpolation uint    InstanceTextureId2 : TEXID;
-    nointerpolation uint    InstanceTextureId1 : TEXID1;
+    float2 Position : POSITION;
+    float2 TexCoord : TEXCOORD;
+    float4 Color : COLOR;
+    nointerpolation uint InstanceTextureId2 : TEXID;
+    nointerpolation uint InstanceTextureId1 : TEXID1;
 };
 
 struct VS_Output
 {
-    float4               Position  : SV_Position;
-    float2               TexCoord  : TEXCOORD;
-    float4               Color     : COLOR;
+    float4 Position : SV_Position;
+    float2 TexCoord : TEXCOORD;
+    float4 Color : COLOR;
     nointerpolation uint TextureId : TEXID;
 };
 
 cbuffer VS_ConstantBuffer : register(b0) {
-    float4x4 ProjectionMatrix;
+float4x4 ProjectionMatrix;
 }
 
 [RootSignature(RootSignatureDef)]
@@ -43,7 +47,7 @@ VS_Output VS_Main(const VS_Input input)
     return output;
 }
 
-Texture2D    Textures[] : register(t0, textureSpace);
+Texture2D Textures[] : register(t0, textureSpace);
 SamplerState Samplers[] : register(s0, samplerSpace);
 
 [RootSignature(RootSignatureDef)]

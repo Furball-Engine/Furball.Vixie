@@ -1,2 +1,2 @@
-dxc -E PS_Main -T lib_6_3 -Fo PixelShader.dxil Shader.hlsl
-dxc -E VS_Main -T lib_6_3 -Fo VertexShader.dxil Shader.hlsl
+dxc -E PS_Main -T ps_6_3 -Fo PixelShader.dxil Shader.hlsl
+dxc -E VS_Main -T vs_6_3 -Fo VertexShader.dxil Shader.hlsl
