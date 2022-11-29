@@ -1,0 +1,1 @@
+dxc -T lib_6_3 -Fo Shader.dxil Shader.hlsl

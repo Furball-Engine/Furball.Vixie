@@ -2,23 +2,29 @@
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.Renderers;
+using Furball.Vixie.Helpers.Helpers;
 using Silk.NET.Core.Native;
+using Silk.NET.Direct3D.Compilers;
 using Silk.NET.Direct3D12;
 using Silk.NET.DXGI;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
+using Buffer=System.Buffer;
 using Rectangle=SixLabors.ImageSharp.Rectangle;
 
 namespace Furball.Vixie.Backends.Direct3D12;
 
 public unsafe class Direct3D12Backend : GraphicsBackend {
-    public D3D12                 D3D12 = null!;
-    public DXGI                  DXGI  = null!;
-    public ComPtr<ID3D12Device>  Device;
-    public ComPtr<IDXGIFactory4> DXGIFactory;
+    public D3D12       D3D12       = null!;
+    public DXGI        DXGI        = null!;
+    public D3DCompiler D3DCompiler = null!;
 
-    private IView _view;
+    public ComPtr<ID3D12Device>        Device;
+    public ComPtr<IDXGIFactory4>       DXGIFactory;
+    public ComPtr<ID3D12PipelineState> PipelineState;
+
+    private IView _view = null!;
 
     public ComPtr<ID3D12Debug1>      Debug;
     public ComPtr<ID3D12DebugDevice> DebugDevice;
@@ -44,8 +50,9 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
 
     public override void Initialize(IView view, IInputContext inputContext) {
         //Get the D3D12 and DXGI APIs
-        this.D3D12 = D3D12.GetApi();
-        this.DXGI  = DXGI.GetApi();
+        this.D3D12       = D3D12.GetApi();
+        this.DXGI        = DXGI.GetApi();
+        this.D3DCompiler = D3DCompiler.GetApi();
 
         this._view = view;
 
@@ -68,17 +75,192 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         //Create a new device with feature level 12.0, and no specified adapter
         this.Device = this.D3D12.CreateDevice<ID3D12Device>(ref Unsafe.NullRef<IUnknown>(), D3DFeatureLevel.Level120);
 
+#if DEBUG
         //Get the devices debug device
         this.DebugDevice = this.Device.QueryInterface<ID3D12DebugDevice>();
 
-        //Create the command queue we will use throughout the application
-        this.CreateCommandQueueAndAllocator();
+        //Get the debug info queue
+        this.DebugInfoQueue = this.Device.QueryInterface<ID3D12InfoQueue>();
+#endif
 
-        //Create the fence to do CPU/GPU synchronization
-        this.CreateFence();
+        try {
+            //Create the command queue we will use throughout the application
+            this.CreateCommandQueueAndAllocator();
+        }
+        catch {
+            this.PrintInfoQueue();
+        }
 
-        //Create the swapchain we render to
-        this.CreateSwapchain();
+        try {
+            //Create the fence to do CPU/GPU synchronization
+            this.CreateFence();
+        }
+        catch {
+            this.PrintInfoQueue();
+        }
+
+        try {
+            //Create the swapchain we render to
+            this.CreateSwapchain();
+        }
+        catch {
+            this.PrintInfoQueue();
+        }
+
+        try {
+            //Create the shader we use for rendering
+            this.CreatePipelineState();
+        }
+        catch {
+            this.PrintInfoQueue();
+        }
+    }
+
+    public void PrintInfoQueue() {
+        if (this.DebugInfoQueue.Handle == null)
+            return;
+        
+        ulong messages = this.DebugInfoQueue.GetNumStoredMessages();
+    
+        for(ulong i = 0; i < messages; i++) {
+            nuint length = 0;
+            this.DebugInfoQueue.GetMessageA(i, null, ref length);
+
+            Message* message = (Message*)SilkMarshal.Allocate((int)length);
+
+            this.DebugInfoQueue.GetMessageA(i, message, ref length);
+
+            Console.WriteLine($"Debug Message: {SilkMarshal.PtrToString((nint)message->PDescription)}");
+
+            SilkMarshal.Free((nint)message);
+        }
+
+        this.DebugInfoQueue.ClearStoredMessages();
+    }
+    
+    private void CreatePipelineState() {
+        byte[] shaderDxil = ResourceHelpers.GetByteResource(@"Shaders/Shader.dxil", typeof(Direct3D12Backend));
+
+        ComPtr<ID3D10Blob> shaderBlob = null;
+        SilkMarshal.ThrowHResult(this.D3DCompiler.CreateBlob((nuint)shaderDxil.Length, ref shaderBlob));
+
+        //Copy the shader to the blob
+        fixed (void* ptr = shaderDxil)
+            Buffer.MemoryCopy(ptr, shaderBlob.GetBufferPointer(), shaderDxil.Length, shaderDxil.Length);
+        
+        GraphicsPipelineStateDesc desc = new GraphicsPipelineStateDesc {
+            VS = new ShaderBytecode {
+                BytecodeLength = shaderBlob.GetBufferSize(),
+                PShaderBytecode = shaderBlob.GetBufferPointer()
+            },
+            PS = new ShaderBytecode {
+                BytecodeLength  = shaderBlob.GetBufferSize(),
+                PShaderBytecode = shaderBlob.GetBufferPointer()
+            }
+        };
+        
+        const int         inputElementDescCount   = 5;
+        InputElementDesc* inputElementDescriptors = stackalloc InputElementDesc[inputElementDescCount];
+        inputElementDescriptors[0] = new InputElementDesc {
+            SemanticName         = (byte*)SilkMarshal.StringToPtr("POSITION"),
+            AlignedByteOffset    = D3D12.AppendAlignedElement,
+            Format               = Format.FormatR32G32Float,
+            InputSlot            = 0,
+            SemanticIndex        = 0,
+            InputSlotClass       = InputClassification.PerVertexData,
+            InstanceDataStepRate = 0
+        };
+        inputElementDescriptors[1] = new InputElementDesc {
+            SemanticName         = (byte*)SilkMarshal.StringToPtr("TEXCOORD"),
+            AlignedByteOffset    = D3D12.AppendAlignedElement,
+            Format               = Format.FormatR32G32Float,
+            InputSlot            = 0,
+            SemanticIndex        = 0,
+            InputSlotClass       = InputClassification.PerVertexData,
+            InstanceDataStepRate = 0
+        };
+        inputElementDescriptors[2] = new InputElementDesc {
+            SemanticName         = (byte*)SilkMarshal.StringToPtr("COLOR"),
+            AlignedByteOffset    = D3D12.AppendAlignedElement,
+            Format               = Format.FormatR32G32B32A32Float,
+            InputSlot            = 0,
+            SemanticIndex        = 0,
+            InputSlotClass       = InputClassification.PerVertexData,
+            InstanceDataStepRate = 0
+        };
+        inputElementDescriptors[3] = new InputElementDesc {
+            SemanticName         = (byte*)SilkMarshal.StringToPtr("TEXID"),
+            AlignedByteOffset    = D3D12.AppendAlignedElement,
+            Format               = Format.FormatR32Uint,
+            InputSlot            = 0,
+            SemanticIndex        = 0,
+            InputSlotClass       = InputClassification.PerVertexData,
+            InstanceDataStepRate = 0
+        };
+        inputElementDescriptors[4] = new InputElementDesc {
+            SemanticName         = (byte*)SilkMarshal.StringToPtr("TEXID"),
+            AlignedByteOffset    = D3D12.AppendAlignedElement,
+            Format               = Format.FormatR32Uint,
+            InputSlot            = 0,
+            SemanticIndex        = 1,
+            InputSlotClass       = InputClassification.PerVertexData,
+            InstanceDataStepRate = 0
+        };
+
+        desc.InputLayout.PInputElementDescs = inputElementDescriptors;
+        desc.InputLayout.NumElements        = inputElementDescCount;
+
+        desc.PRootSignature = this.Device.CreateRootSignature<ID3D12RootSignature>(0, shaderBlob.GetBufferPointer(), shaderBlob.GetBufferSize());
+
+        desc.RasterizerState = new RasterizerDesc {
+            FillMode = FillMode.Solid,
+            CullMode = CullMode.None, //TODO: this should not be None
+            FrontCounterClockwise = false,
+            DepthBias = D3D12.DefaultDepthBias,
+            DepthBiasClamp = 0, //D3D12_DEFAULT_DEPTH_BIAS_CLAMP
+            SlopeScaledDepthBias = 0, //D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS
+            DepthClipEnable = false,
+            MultisampleEnable = false,
+            AntialiasedLineEnable = false,
+            ForcedSampleCount = 0,
+            ConservativeRaster = ConservativeRasterizationMode.Off
+        };
+
+        desc.PrimitiveTopologyType = PrimitiveTopologyType.Triangle;
+
+        desc.BlendState = new BlendDesc {
+            AlphaToCoverageEnable  = false,
+            IndependentBlendEnable = false,
+        };
+        for (int i = 0; i < D3D12.SimultaneousRenderTargetCount; i++) {
+            desc.BlendState.RenderTarget[i] = new RenderTargetBlendDesc {
+                BlendEnable           = true,
+                SrcBlend              = Blend.SrcAlpha,
+                DestBlend             = Blend.InvSrcAlpha,
+                BlendOp               = BlendOp.Add,
+                SrcBlendAlpha         = Blend.One,
+                DestBlendAlpha        = Blend.InvSrcAlpha,
+                BlendOpAlpha          = BlendOp.Add,
+                RenderTargetWriteMask = (byte)ColorWriteEnable.All,
+            };
+        }
+
+        desc.DepthStencilState.DepthEnable   = false;
+        desc.DepthStencilState.StencilEnable = false;
+        
+        desc.SampleMask                      = uint.MaxValue;
+
+        desc.NumRenderTargets = 1;
+        desc.RTVFormats[0]    = Format.FormatR8G8B8A8Unorm;
+        desc.SampleDesc.Count = 1;
+        
+        //Create the pipeline state
+        this.PipelineState = this.Device.CreateGraphicsPipelineState<ID3D12PipelineState>(in desc);
+
+        //Free the strings in the semantic names
+        for (int i = 0; i < inputElementDescCount; i++) {
+            SilkMarshal.FreeString((nint)inputElementDescriptors[i].SemanticName);
+        }
     }
 
     private void CreateSwapchain() {
@@ -139,10 +321,10 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         uint rtvDescriptorSize = this.Device.GetDescriptorHandleIncrementSize(DescriptorHeapType.Rtv);
 
         //Create frame resources
-        
+
         //BROKEN
         // CpuDescriptorHandle rtvHandle = this._renderTargetViewHeap.GetCPUDescriptorHandleForHeapStart();
-        
+
         //WORKING
         ID3D12DescriptorHeap* rtvHeap   = this._renderTargetViewHeap;
         CpuDescriptorHandle   rtvHandle = rtvHeap->GetCPUDescriptorHandleForHeapStart();
