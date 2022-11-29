@@ -119,10 +119,10 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
     public void PrintInfoQueue() {
         if (this.DebugInfoQueue.Handle == null)
             return;
-        
+
         ulong messages = this.DebugInfoQueue.GetNumStoredMessages();
-    
-        for(ulong i = 0; i < messages; i++) {
+
+        for (ulong i = 0; i < messages; i++) {
             nuint length = 0;
             this.DebugInfoQueue.GetMessageA(i, null, ref length);
 
@@ -137,13 +137,13 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
 
         this.DebugInfoQueue.ClearStoredMessages();
     }
-    
+
     private void CreatePipelineState() {
         byte[] vertexShaderDxil = ResourceHelpers.GetByteResource(@"Shaders/VertexShader.dxil", typeof(Direct3D12Backend));
-        byte[] pixelShaderDxil = ResourceHelpers.GetByteResource(@"Shaders/PixelShader.dxil", typeof(Direct3D12Backend));
+        byte[] pixelShaderDxil  = ResourceHelpers.GetByteResource(@"Shaders/PixelShader.dxil", typeof(Direct3D12Backend));
 
         ComPtr<ID3D10Blob> vertexShaderBlob = null;
-        ComPtr<ID3D10Blob> pixelShaderBlob = null;
+        ComPtr<ID3D10Blob> pixelShaderBlob  = null;
         SilkMarshal.ThrowHResult(this.D3DCompiler.CreateBlob((nuint)vertexShaderDxil.Length, ref vertexShaderBlob));
         SilkMarshal.ThrowHResult(this.D3DCompiler.CreateBlob((nuint)pixelShaderDxil.Length, ref pixelShaderBlob));
 
@@ -155,7 +155,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
 
         GraphicsPipelineStateDesc desc = new GraphicsPipelineStateDesc {
             VS = new ShaderBytecode {
-                BytecodeLength = vertexShaderBlob.GetBufferSize(),
+                BytecodeLength  = vertexShaderBlob.GetBufferSize(),
                 PShaderBytecode = vertexShaderBlob.GetBufferPointer()
             },
             PS = new ShaderBytecode {
@@ -163,7 +163,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
                 PShaderBytecode = pixelShaderBlob.GetBufferPointer()
             }
         };
-        
+
         const int         inputElementDescCount   = 5;
         InputElementDesc* inputElementDescriptors = stackalloc InputElementDesc[inputElementDescCount];
         inputElementDescriptors[0] = new InputElementDesc {
@@ -218,17 +218,17 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         desc.PRootSignature = this.Device.CreateRootSignature<ID3D12RootSignature>(0, vertexShaderBlob.GetBufferPointer(), vertexShaderBlob.GetBufferSize());
 
         desc.RasterizerState = new RasterizerDesc {
-            FillMode = FillMode.Solid,
-            CullMode = CullMode.None, //TODO: this should not be None
+            FillMode              = FillMode.Solid,
+            CullMode              = CullMode.None, //TODO: this should not be None
             FrontCounterClockwise = false,
-            DepthBias = D3D12.DefaultDepthBias,
-            DepthBiasClamp = 0, //D3D12_DEFAULT_DEPTH_BIAS_CLAMP
-            SlopeScaledDepthBias = 0, //D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS
-            DepthClipEnable = false,
-            MultisampleEnable = false,
+            DepthBias             = D3D12.DefaultDepthBias,
+            DepthBiasClamp        = 0, //D3D12_DEFAULT_DEPTH_BIAS_CLAMP
+            SlopeScaledDepthBias  = 0, //D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS
+            DepthClipEnable       = false,
+            MultisampleEnable     = false,
             AntialiasedLineEnable = false,
-            ForcedSampleCount = 0,
-            ConservativeRaster = ConservativeRasterizationMode.Off
+            ForcedSampleCount     = 0,
+            ConservativeRaster    = ConservativeRasterizationMode.Off
         };
 
         desc.PrimitiveTopologyType = PrimitiveTopologyType.Triangle;
@@ -252,13 +252,13 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
 
         desc.DepthStencilState.DepthEnable   = false;
         desc.DepthStencilState.StencilEnable = false;
-        
-        desc.SampleMask                      = uint.MaxValue;
+
+        desc.SampleMask = uint.MaxValue;
 
         desc.NumRenderTargets = 1;
         desc.RTVFormats[0]    = Format.FormatR8G8B8A8Unorm;
         desc.SampleDesc.Count = 1;
-        
+
         //Create the pipeline state
         this.PipelineState = this.Device.CreateGraphicsPipelineState<ID3D12PipelineState>(in desc);
 
