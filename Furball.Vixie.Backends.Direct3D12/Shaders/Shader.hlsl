@@ -3,7 +3,7 @@
 
 #define RootSignatureDef "" \
 "RootFlags( ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT ), " \
-"DescriptorTable( CBV(b0) ), " \
+"RootConstants( b0, num32BitConstants = 16 ), " \
 "DescriptorTable( " \
 "    SRV(t0, numDescriptors = unbounded ), " \
 "    visibility = SHADER_VISIBILITY_PIXEL" \
@@ -31,7 +31,7 @@ struct VS_Output
 };
 
 cbuffer VS_ConstantBuffer : register(b0) {
-float4x4 ProjectionMatrix;
+    float4x4 ProjectionMatrix;
 }
 
 [RootSignature(RootSignatureDef)]
