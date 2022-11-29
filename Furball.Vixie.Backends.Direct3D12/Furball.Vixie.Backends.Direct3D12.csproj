@@ -23,7 +23,13 @@
 
     <ItemGroup>
       <None Remove="Shaders\Shader.dxil" />
-      <EmbeddedResource Include="Shaders\Shader.dxil" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Shaders\PixelShader.dxil" />
+      <EmbeddedResource Include="Shaders\PixelShader.dxil" />
+      <None Remove="Shaders\VertexShader.dxil" />
+      <EmbeddedResource Include="Shaders\VertexShader.dxil" />
     </ItemGroup>
 
 </Project>

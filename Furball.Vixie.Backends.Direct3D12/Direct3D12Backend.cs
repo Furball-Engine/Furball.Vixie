@@ -139,23 +139,28 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
     }
     
     private void CreatePipelineState() {
-        byte[] shaderDxil = ResourceHelpers.GetByteResource(@"Shaders/Shader.dxil", typeof(Direct3D12Backend));
+        byte[] vertexShaderDxil = ResourceHelpers.GetByteResource(@"Shaders/VertexShader.dxil", typeof(Direct3D12Backend));
+        byte[] pixelShaderDxil = ResourceHelpers.GetByteResource(@"Shaders/PixelShader.dxil", typeof(Direct3D12Backend));
 
-        ComPtr<ID3D10Blob> shaderBlob = null;
-        SilkMarshal.ThrowHResult(this.D3DCompiler.CreateBlob((nuint)shaderDxil.Length, ref shaderBlob));
+        ComPtr<ID3D10Blob> vertexShaderBlob = null;
+        ComPtr<ID3D10Blob> pixelShaderBlob = null;
+        SilkMarshal.ThrowHResult(this.D3DCompiler.CreateBlob((nuint)vertexShaderDxil.Length, ref vertexShaderBlob));
+        SilkMarshal.ThrowHResult(this.D3DCompiler.CreateBlob((nuint)pixelShaderDxil.Length, ref pixelShaderBlob));
 
         //Copy the shader to the blob
-        fixed (void* ptr = shaderDxil)
-            Buffer.MemoryCopy(ptr, shaderBlob.GetBufferPointer(), shaderDxil.Length, shaderDxil.Length);
-        
+        fixed (void* ptr = vertexShaderDxil)
+            Buffer.MemoryCopy(ptr, vertexShaderBlob.GetBufferPointer(), vertexShaderDxil.Length, vertexShaderDxil.Length);
+        fixed (void* ptr = pixelShaderDxil)
+            Buffer.MemoryCopy(ptr, pixelShaderBlob.GetBufferPointer(), pixelShaderDxil.Length, pixelShaderDxil.Length);
+
         GraphicsPipelineStateDesc desc = new GraphicsPipelineStateDesc {
             VS = new ShaderBytecode {
-                BytecodeLength = shaderBlob.GetBufferSize(),
-                PShaderBytecode = shaderBlob.GetBufferPointer()
+                BytecodeLength = vertexShaderBlob.GetBufferSize(),
+                PShaderBytecode = vertexShaderBlob.GetBufferPointer()
             },
             PS = new ShaderBytecode {
-                BytecodeLength  = shaderBlob.GetBufferSize(),
-                PShaderBytecode = shaderBlob.GetBufferPointer()
+                BytecodeLength  = pixelShaderBlob.GetBufferSize(),
+                PShaderBytecode = pixelShaderBlob.GetBufferPointer()
             }
         };
         
@@ -210,7 +215,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         desc.InputLayout.PInputElementDescs = inputElementDescriptors;
         desc.InputLayout.NumElements        = inputElementDescCount;
 
-        desc.PRootSignature = this.Device.CreateRootSignature<ID3D12RootSignature>(0, shaderBlob.GetBufferPointer(), shaderBlob.GetBufferSize());
+        desc.PRootSignature = this.Device.CreateRootSignature<ID3D12RootSignature>(0, vertexShaderBlob.GetBufferPointer(), vertexShaderBlob.GetBufferSize());
 
         desc.RasterizerState = new RasterizerDesc {
             FillMode = FillMode.Solid,

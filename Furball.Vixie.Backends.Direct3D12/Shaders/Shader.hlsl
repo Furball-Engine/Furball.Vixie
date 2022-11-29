@@ -1,6 +1,14 @@
 #define textureSpace space1
 #define samplerSpace space1
 
+#define RootSignatureDef "RootFlags( ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT ), " \
+              "DescriptorTable( CBV(b0) ), " \
+              "DescriptorTable( " \
+              "    SRV(t0, space = 1, numDescriptors = unbounded ), " \
+              "    Sampler(s0, space = 1, numDescriptors = unbounded), " \
+              "    visibility = SHADER_VISIBILITY_PIXEL" \
+              ")"
+
 struct VS_Input
 {
                     float2  Position : POSITION;
@@ -22,6 +30,7 @@ cbuffer VS_ConstantBuffer : register(b0) {
     float4x4 ProjectionMatrix;
 }
 
+[RootSignature(RootSignatureDef)]
 VS_Output VS_Main(const VS_Input input)
 {
     VS_Output output;
@@ -37,6 +46,7 @@ VS_Output VS_Main(const VS_Input input)
 Texture2D    Textures[] : register(t0, textureSpace);
 SamplerState Samplers[] : register(s0, samplerSpace);
 
+[RootSignature(RootSignatureDef)]
 float4 PS_Main(const VS_Output input) : SV_Target
 {
     return Textures[input.TextureId].Sample(Samplers[input.TextureId], input.TexCoord) * input.Color;
