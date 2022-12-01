@@ -60,6 +60,9 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         this.DXGI        = DXGI.GetApi();
         this.D3DCompiler = D3DCompiler.GetApi();
 
+        view.ShouldSwapAutomatically  = false;
+        view.IsContextControlDisabled = true;
+
         this._view = view;
 
         uint factoryFlags = 0;
