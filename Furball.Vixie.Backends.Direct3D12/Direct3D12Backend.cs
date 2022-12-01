@@ -499,11 +499,11 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
     }
 
     public override ulong GetVramUsage() {
-        throw new NotImplementedException();
+        return 0;
     }
 
     public override ulong GetTotalVram() {
-        throw new NotImplementedException();
+        return 0;
     }
 
     public override VixieTextureRenderTarget CreateRenderTarget(uint width, uint height) {
