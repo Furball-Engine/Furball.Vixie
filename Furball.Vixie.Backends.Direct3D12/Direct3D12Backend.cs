@@ -118,6 +118,10 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
             this.PrintInfoQueue();
             throw;
         }
+        
+#if USE_IMGUI
+        throw new NotImplementedException("ImGui is not implemented on Direct3D12!");
+#endif
     }
 
     public void PrintInfoQueue() {
@@ -425,6 +429,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         throw new NotImplementedException();
     }
 
+#if USE_IMGUI
     public override void ImGuiUpdate(double deltaTime) {
         throw new NotImplementedException();
     }
@@ -432,4 +437,5 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
     public override void ImGuiDraw(double deltaTime) {
         throw new NotImplementedException();
     }
+#endif
 }
