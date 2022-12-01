@@ -20,9 +20,10 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
     public DXGI        DXGI        = null!;
     public D3DCompiler D3DCompiler = null!;
 
-    public ComPtr<ID3D12Device>        Device;
-    public ComPtr<IDXGIFactory4>       DXGIFactory;
-    public ComPtr<ID3D12PipelineState> PipelineState;
+    public  ComPtr<ID3D12Device>        Device;
+    public  ComPtr<IDXGIFactory4>       DXGIFactory;
+    public  ComPtr<ID3D12PipelineState> PipelineState;
+    private ComPtr<ID3D12RootSignature> RootSignature;
 
     private IView _view = null!;
 
@@ -30,8 +31,9 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
     public ComPtr<ID3D12DebugDevice> DebugDevice;
     public ComPtr<ID3D12InfoQueue>   DebugInfoQueue;
 
-    public ComPtr<ID3D12CommandQueue>     CommandQueue;
-    public ComPtr<ID3D12CommandAllocator> CommandAllocator;
+    public ComPtr<ID3D12CommandQueue>         CommandQueue;
+    public ComPtr<ID3D12CommandAllocator>     CommandAllocator;
+    public ComPtr<ID3D12GraphicsCommandList> CommandList;
 
     public uint                FrameIndex;
     public void*               FenceEvent;
@@ -42,13 +44,15 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
 
     private uint                         _currentBuffer = 0;
     private ComPtr<ID3D12DescriptorHeap> _renderTargetViewHeap;
+    private uint                         _rtvDescriptorSize;
     private ComPtr<ID3D12Resource>[]     _renderTargets = new ComPtr<ID3D12Resource>[BackbufferCount];
 
     private ComPtr<IDXGISwapChain3> _swapchain;
     private Viewport                _viewport;
     private Box2D<long>             _surfaceSize;
 
-    private Rectangle CurrentScissorRect;
+    private Box2D<int>          CurrentScissorRect;
+    private CpuDescriptorHandle _currentRtvHandle;
 
     public override void Initialize(IView view, IInputContext inputContext) {
         //Get the D3D12 and DXGI APIs
@@ -225,7 +229,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         desc.InputLayout.PInputElementDescs = inputElementDescriptors;
         desc.InputLayout.NumElements        = inputElementDescCount;
 
-        desc.PRootSignature = this.Device.CreateRootSignature<ID3D12RootSignature>(0, vertexShaderBlob.GetBufferPointer(), vertexShaderBlob.GetBufferSize());
+        desc.PRootSignature = this.RootSignature = this.Device.CreateRootSignature<ID3D12RootSignature>(0, vertexShaderBlob.GetBufferPointer(), vertexShaderBlob.GetBufferSize());
 
         desc.RasterizerState = new RasterizerDesc {
             FillMode              = FillMode.Solid,
@@ -333,7 +337,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         };
         this._renderTargetViewHeap = this.Device.CreateDescriptorHeap<ID3D12DescriptorHeap>(rtvHeapDesc);
 
-        uint rtvDescriptorSize = this.Device.GetDescriptorHandleIncrementSize(DescriptorHeapType.Rtv);
+        this._rtvDescriptorSize = this.Device.GetDescriptorHandleIncrementSize(DescriptorHeapType.Rtv);
 
         //Create frame resources
 
@@ -348,7 +352,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         for (uint i = 0; i < BackbufferCount; i++) {
             this._renderTargets[i] = this._swapchain.GetBuffer<ID3D12Resource>(i);
             this.Device.CreateRenderTargetView(this._renderTargets[i], null, rtvHandle);
-            rtvHandle.Ptr += 1 * rtvDescriptorSize;
+            rtvHandle.Ptr += 1 * this._rtvDescriptorSize;
         }
     }
 
@@ -369,6 +373,14 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         this.CommandQueue = this.Device.CreateCommandQueue<ID3D12CommandQueue>(&commandQueueDesc);
 
         this.CommandAllocator = this.Device.CreateCommandAllocator<ID3D12CommandAllocator>(CommandListType.Direct);
+
+        SilkMarshal.ThrowHResult(this.Device.CreateCommandList(
+                                     0,
+                                     CommandListType.Direct,
+                                     this.CommandAllocator,
+                                     this.PipelineState,
+                                     out this.CommandList
+                                 ));
     }
 
     public override void Cleanup() {
@@ -390,8 +402,84 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
 
     public override Vector2D<int> MaxTextureSize { get; }
 
+    public override void BeginScene() {
+        base.BeginScene();
+
+        //Reset the command allocator and command list
+        this.CommandAllocator.Reset();
+        this.CommandList.Reset(this.CommandAllocator, this.PipelineState);
+
+        this.CommandList.SetGraphicsRootSignature(this.RootSignature);
+        // this.CommandList.SetDescriptorHeaps();
+        // D3D12_GPU_DESCRIPTOR_HANDLE cbvHandle(constantBufferHeap->GetGPUDescriptorHandleForHeapStart());
+        // this.CommandList.SetGraphicsRootDescriptorTable(0, cbvHandle);
+
+        //Indicate that the back buffer will be used as a render target
+        ResourceBarrier renderTargetBarrier = new ResourceBarrier {
+            Type  = ResourceBarrierType.Transition,
+            Flags = ResourceBarrierFlags.None
+        };
+        renderTargetBarrier.Anonymous.Transition.PResource   = this._renderTargets[this.FrameIndex];
+        renderTargetBarrier.Anonymous.Transition.StateBefore = ResourceStates.Present;
+        renderTargetBarrier.Anonymous.Transition.StateAfter  = ResourceStates.RenderTarget;
+        renderTargetBarrier.Anonymous.Transition.Subresource = D3D12.ResourceBarrierAllSubresources;
+
+        this.CommandList.ResourceBarrier(1, &renderTargetBarrier);
+
+        ID3D12DescriptorHeap* rtvHeap = this._renderTargetViewHeap;
+        this._currentRtvHandle     =  rtvHeap->GetCPUDescriptorHandleForHeapStart();
+        this._currentRtvHandle.Ptr += this.FrameIndex * this._rtvDescriptorSize;
+        this.CommandList.OMSetRenderTargets(
+            1,
+            in this._currentRtvHandle,
+            false,
+            null
+        );
+
+        this.CommandList.RSSetViewports(1, in this._viewport);
+        this.CommandList.RSSetScissorRects(1, in this.CurrentScissorRect);
+        this.CommandList.IASetPrimitiveTopology(D3DPrimitiveTopology.D3DPrimitiveTopologyTrianglelist);
+    }
+
+    public override void Present() {
+        base.Present();
+
+        //Indicate that the back buffer will be used as a render target
+        ResourceBarrier presentBarrier = new ResourceBarrier {
+            Type  = ResourceBarrierType.Transition,
+            Flags = ResourceBarrierFlags.None
+        };
+        presentBarrier.Anonymous.Transition.PResource   = this._renderTargets[this.FrameIndex];
+        presentBarrier.Anonymous.Transition.StateBefore = ResourceStates.RenderTarget;
+        presentBarrier.Anonymous.Transition.StateAfter  = ResourceStates.Present;
+        presentBarrier.Anonymous.Transition.Subresource = D3D12.ResourceBarrierAllSubresources;
+
+        this.CommandList.ResourceBarrier(1, &presentBarrier);
+
+        SilkMarshal.ThrowHResult(this.CommandList.Close());
+
+        this.CommandQueue.ExecuteCommandLists(1, ref this.CommandList);
+
+        //TODO: check if vsync or not, if not vsync, then swap interval should be 0
+        //else: it should be 1, but lets assume no Vsync for now.
+        SilkMarshal.ThrowHResult(this._swapchain.Present(0, 0));
+
+        ulong fence = this.FenceValue;
+        SilkMarshal.ThrowHResult(this.CommandQueue.Signal(this.Fence, fence));
+        this.FenceValue++;
+
+        if (this.Fence.GetCompletedValue() < fence) {
+            this.Fence.SetEventOnCompletion(fence, this.FenceEvent);
+            SilkMarshal.WaitWindowsObjects((nint)this.FenceEvent);
+        }
+
+        this.FrameIndex = this._swapchain.GetCurrentBackBufferIndex();
+    }
+
     public override void Clear() {
-        throw new NotImplementedException();
+        D3Dcolorvalue clear = new D3Dcolorvalue(0, 0, 0, 0);
+
+        this.CommandList.ClearRenderTargetView(this._currentRtvHandle, (float*)&clear, 1u, in this.CurrentScissorRect);
     }
 
     public override void TakeScreenshot() {
@@ -399,12 +487,12 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
     }
 
     public override Rectangle ScissorRect {
-        get => this.CurrentScissorRect;
-        set => this.CurrentScissorRect = value;
+        get => new Rectangle(this.CurrentScissorRect.Min.X, this.CurrentScissorRect.Min.Y, this.CurrentScissorRect.Size.X, this.CurrentScissorRect.Size.Y);
+        set => this.CurrentScissorRect = new Box2D<int>(value.X, value.Y, value.Right, value.Bottom);
     }
 
     public override void SetFullScissorRect() {
-        this.CurrentScissorRect = new Rectangle(0, 0, this._view.FramebufferSize.X, this._view.FramebufferSize.Y);
+        this.CurrentScissorRect = new Box2D<int>(0, 0, this._view.FramebufferSize.X, this._view.FramebufferSize.Y);
     }
 
     public override ulong GetVramUsage() {
