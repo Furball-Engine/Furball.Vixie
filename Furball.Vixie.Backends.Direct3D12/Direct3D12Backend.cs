@@ -48,6 +48,8 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
     private Viewport                _viewport;
     private Box2D<long>             _surfaceSize;
 
+    private Rectangle CurrentScissorRect;
+
     public override void Initialize(IView view, IInputContext inputContext) {
         //Get the D3D12 and DXGI APIs
         this.D3D12       = D3D12.GetApi();
@@ -118,7 +120,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
             this.PrintInfoQueue();
             throw;
         }
-        
+
 #if USE_IMGUI
         throw new NotImplementedException("ImGui is not implemented on Direct3D12!");
 #endif
@@ -379,6 +381,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
 
     public override void HandleFramebufferResize(int width, int height) {
         this.CreateSwapchain();
+        this.SetFullScissorRect();
     }
 
     public override VixieRenderer CreateRenderer() {
@@ -395,10 +398,13 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         throw new NotImplementedException();
     }
 
-    public override Rectangle ScissorRect { get; set; }
+    public override Rectangle ScissorRect {
+        get => this.CurrentScissorRect;
+        set => this.CurrentScissorRect = value;
+    }
 
     public override void SetFullScissorRect() {
-        throw new NotImplementedException();
+        this.CurrentScissorRect = new Rectangle(0, 0, this._view.FramebufferSize.X, this._view.FramebufferSize.Y);
     }
 
     public override ulong GetVramUsage() {
