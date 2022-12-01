@@ -89,6 +89,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         }
         catch {
             this.PrintInfoQueue();
+            throw;
         }
 
         try {
@@ -97,6 +98,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         }
         catch {
             this.PrintInfoQueue();
+            throw;
         }
 
         try {
@@ -105,6 +107,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         }
         catch {
             this.PrintInfoQueue();
+            throw;
         }
 
         try {
@@ -113,6 +116,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         }
         catch {
             this.PrintInfoQueue();
+            throw;
         }
     }
 
@@ -370,7 +374,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
     }
 
     public override void HandleFramebufferResize(int width, int height) {
-        throw new NotImplementedException();
+        this.CreateSwapchain();
     }
 
     public override VixieRenderer CreateRenderer() {

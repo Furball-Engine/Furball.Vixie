@@ -1,2 +1,7 @@
+//broken
 dxc -E VS_Main -T vs_5_1 -Fo VertexShader.dxil Shader.hlsl
 dxc -E PS_Main -T ps_5_1 -Fo PixelShader.dxil Shader.hlsl
+
+//working
+fxc -E VS_Main -T vs_5_1 -Fo VertexShader.dxil Shader.hlsl
+fxc -E PS_Main -T ps_5_1 /enable_unbounded_descriptor_tables -Fo PixelShader.dxil Shader.hlsl

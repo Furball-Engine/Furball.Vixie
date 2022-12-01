@@ -50,7 +50,6 @@ VS_Output VS_Main(const VS_Input input)
 Texture2D Textures[] : register(t0);
 SamplerState Samplers[] : register(s0);
 
-[RootSignature(RootSignatureDef)]
 float4 PS_Main(const VS_Output input) : SV_Target
 {
     return Textures[input.TextureId].Sample(Samplers[input.TextureId], input.TexCoord) * input.Color;
