@@ -33,6 +33,10 @@
     <ItemGroup>
       <EmbeddedResource Include="Shaders\VertexShader.glsl" />
       <EmbeddedResource Include="Shaders\FragmentShader.glsl" />
+      <None Remove="Shaders\BindlessTexturing\VertexShader.vert" />
+      <EmbeddedResource Include="Shaders\BindlessTexturing\VertexShader.vert" />
+      <None Remove="Shaders\BindlessTexturing\FragmentShader.frag" />
+      <EmbeddedResource Include="Shaders\BindlessTexturing\FragmentShader.frag" />
     </ItemGroup>
 
     <ItemGroup>

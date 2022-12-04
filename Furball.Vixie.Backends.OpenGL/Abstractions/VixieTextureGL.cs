@@ -14,62 +14,8 @@ namespace Furball.Vixie.Backends.OpenGL.Abstractions;
 
 internal sealed class VixieTextureGl : VixieTexture {
     private readonly OpenGLBackend _backend;
-    /// <summary>
-    /// All the Currently Bound Textures
-    /// </summary>
-    internal static Dictionary<TextureUnit, uint> BoundTextures = new() {
-        { TextureUnit.Texture0,  0 },
-        { TextureUnit.Texture1,  0 },
-        { TextureUnit.Texture2,  0 },
-        { TextureUnit.Texture3,  0 },
-        { TextureUnit.Texture4,  0 },
-        { TextureUnit.Texture5,  0 },
-        { TextureUnit.Texture6,  0 },
-        { TextureUnit.Texture7,  0 },
-        { TextureUnit.Texture8,  0 },
-        { TextureUnit.Texture9,  0 },
-        { TextureUnit.Texture10, 0 },
-        { TextureUnit.Texture11, 0 },
-        { TextureUnit.Texture12, 0 },
-        { TextureUnit.Texture13, 0 },
-        { TextureUnit.Texture14, 0 },
-        { TextureUnit.Texture15, 0 },
-        { TextureUnit.Texture16, 0 },
-        { TextureUnit.Texture17, 0 },
-        { TextureUnit.Texture18, 0 },
-        { TextureUnit.Texture19, 0 },
-        { TextureUnit.Texture20, 0 },
-        { TextureUnit.Texture21, 0 },
-        { TextureUnit.Texture22, 0 },
-        { TextureUnit.Texture23, 0 },
-        { TextureUnit.Texture24, 0 },
-        { TextureUnit.Texture25, 0 },
-        { TextureUnit.Texture26, 0 },
-        { TextureUnit.Texture27, 0 },
-        { TextureUnit.Texture28, 0 },
-        { TextureUnit.Texture29, 0 },
-        { TextureUnit.Texture30, 0 },
-        { TextureUnit.Texture31, 0 },
-    };
-
-    internal int BoundId = -1;
-    
-    public bool Bound {
-        get {
-            this._backend.GlCheckThread();
-            uint texFound;
-
-            if (BoundTextures.TryGetValue(this.BoundAt, out texFound)) {
-                return texFound == this.TextureId;
-            }
-
-            return false;
-        }
-    }
 
     private readonly bool _mipmaps = false;
-
-    internal TextureUnit BoundAt;
 
     public void SetFlip() {
         this.InternalFlip = true;
@@ -357,9 +303,6 @@ internal sealed class VixieTextureGl : VixieTexture {
         this._backend.BindTexture(TextureTarget.Texture2D, this.TextureId);
         this._backend.CheckError("bind tex with tex slot");
 
-        BoundTextures[textureSlot] = this.TextureId;
-        this.BoundAt               = textureSlot;
-
         return this;
     }
 
@@ -422,11 +365,8 @@ internal sealed class VixieTextureGl : VixieTexture {
         if (this.Locked)
             return null;
 
-        this._backend.ActiveTexture(this.BoundAt);
         this._backend.BindTexture(TextureTarget.Texture2D, 0);
         this._backend.CheckError("unbind texture");
-
-        BoundTextures[this.BoundAt] = 0;
 
         return this;
     }
@@ -459,8 +399,6 @@ internal sealed class VixieTextureGl : VixieTexture {
     /// </summary>
     public override void Dispose() {
         this._backend.GlCheckThread();
-        if (this.Bound)
-            this.UnlockingUnbind();
 
         if (this._isDisposed)
             return;

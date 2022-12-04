@@ -143,8 +143,6 @@ internal unsafe class OpenGlVixieRenderer : VixieRenderer {
         //Clear the `boundat` stuff
         for (int i = 0; i < this._usedTextures; i++) {
             VixieTextureGl tex = this._texHandles[i];
-
-            tex.BoundId = -1;
         }
         this._usedTextures = 0;
 

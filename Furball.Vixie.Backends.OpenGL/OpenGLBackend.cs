@@ -15,13 +15,14 @@ using Silk.NET.Core.Native;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
+using Silk.NET.OpenGL.Extensions.ARB;
 using Silk.NET.OpenGL.Legacy.Extensions.APPLE;
 using Silk.NET.OpenGL.Legacy.Extensions.EXT;
 using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using Rectangle=SixLabors.ImageSharp.Rectangle;
+using Rectangle = SixLabors.ImageSharp.Rectangle;
 #if USE_IMGUI
 #endif
 
@@ -85,27 +86,35 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
             }
         }, {
             "VertexArrayObjects", new FeatureLevel {
-                Name = "Use Vertex Array Objects",
+                Name        = "Use Vertex Array Objects",
                 Description = "Whether to use Vertex array objects when rendering",
-                Value = false
+                Value       = false
             }
         }, {
             "AppleVertexArrayObjects", new FeatureLevel {
                 Name = "Use the apple specific VAO extension",
-                Description = "Whether to use the APPLE_vertex_array_object extension in place of ARB_vertex_array_object",
+                Description =
+                    "Whether to use the APPLE_vertex_array_object extension in place of ARB_vertex_array_object",
                 Value = false
             }
         }, {
             "FixedFunctionPipeline", new FeatureLevel {
-                Name = "Requires Fixed Function Pipeline",
+                Name        = "Requires Fixed Function Pipeline",
                 Description = "Whether to use the fixed function pipeline",
-                Value = false
+                Value       = false
+            }
+        }, {
+            "BindlessTexturing", new FeatureLevel {
+                Name        = "Use ARB_bindless_texture",
+                Description = "Whether to use ARB_bindless_texture",
+                Value       = false
             }
         }
     };
 
     private ExtFramebufferObject   _framebufferObjectExt;
     private AppleVertexArrayObject _appleVao;
+    public  ArbBindlessTexture     BindlessTexturingExtension;
 
     private readonly  FeatureLevel _glBindTexturesFeatureLevel;
     private readonly  FeatureLevel _needsFrameBufferExtensionFeatureLevel;
@@ -114,11 +123,12 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     internal readonly FeatureLevel VaoFeatureLevel;
     internal readonly FeatureLevel AppleVaoFeatureLevel;
     internal readonly FeatureLevel FixedFunctionPipeline;
+    internal readonly FeatureLevel BindlessTexturing;
 
     public readonly Backend CreationBackend;
     private         bool    _isFbProjMatrix;
 #if USE_IMGUI
-    private OpenGlImGuiController  _imgui;
+    private OpenGlImGuiController _imgui;
 #endif
 
     public OpenGLBackend(Backend backend) {
@@ -134,13 +144,15 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
         this.VaoFeatureLevel                          = FeatureLevels["VertexArrayObjects"];
         this.AppleVaoFeatureLevel                     = FeatureLevels["AppleVertexArrayObjects"];
         this.FixedFunctionPipeline                    = FeatureLevels["FixedFunctionPipeline"];
+        this.BindlessTexturing                        = FeatureLevels["BindlessTexturing"];
 
         if (backend == Backend.OpenGLES) {
             if (Global.LatestSupportedGl.GLES.MajorVersion >= 2) {
                 FeatureLevels["NeedsCustomMipmapGeneration"].Value = false;
                 Logger.Log("Marking that we dont need custom mipmap generation!", LoggerLevelOpenGl.InstanceInfo);
             }
-        } else {
+        }
+        else {
             if (Global.LatestSupportedGl.GL.MajorVersion < 3 || Global.LatestSupportedGl.GL.MajorVersion == 3 &&
                 Global.LatestSupportedGl.GL.MinorVersion                                                 < 2) {
                 FeatureLevels["NeedsFramebufferExtension"].Value = true;
@@ -155,7 +167,7 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
 
             if (Global.LatestSupportedGl.GL.MajorVersion >= 3) {
                 this.VaoFeatureLevel.Value = true;
-                
+
                 FeatureLevels["NeedsCustomMipmapGeneration"].Value = false;
                 Logger.Log("Marking that we dont need custom mipmap generation!", LoggerLevelOpenGl.InstanceInfo);
             }
@@ -174,7 +186,7 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
                 Logger.Log("Marking that we need to use the fixed function pipeline!", LoggerLevelOpenGl.InstanceInfo);
             }
         }
-        #endif
+#endif
     }
 
     /// <summary>
@@ -210,14 +222,14 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
 
         this.gl.Enable(EnableCap.CullFace);
         this.gl.CullFace(TriangleFace.Back);
-        
+
 #if USE_IMGUI
         OpenGlType type = this.CreationBackend switch {
 #if VIXIE_BACKEND_OPENGL
             Backend.OpenGL when Global.LatestSupportedGl.GL.MajorVersion < 3 => OpenGlType.Legacy,
             Backend.OpenGLES                                                 => OpenGlType.Es,
 #endif
-            _                                                                => OpenGlType.Modern
+            _ => OpenGlType.Modern
         };
 
         this._imgui = new OpenGlImGuiController(this.gl, type, view, inputContext);
@@ -237,7 +249,7 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
         if (Global.LatestSupportedGl.GL.MajorVersion >= 3) {
             bool foundExtFramebufferObject = false;
             Exception ex = new(
-            "Your OpenGL version is too old and does not support the EXT_framebuffer_object extension! Try updating your video card drivers or try the Direct3D 11 and Vulkan backends!"
+                "Your OpenGL version is too old and does not support the EXT_framebuffer_object extension! Try updating your video card drivers or try the Direct3D 11 and Vulkan backends!"
             );
 
             this.gl.GetInteger(GetPName.NumExtensions, out int numExtensions);
@@ -249,22 +261,34 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
                     foundExtFramebufferObject = true;
 
                 if (extension.Contains(AppleVertexArrayObject.ExtensionName) && !this.VaoFeatureLevel.Boolean) {
-                    Logger.Log("Marking that we should be using the APPLE_vertex_array_object extension!", LoggerLevelOpenGl.InstanceInfo);
+                    Logger.Log("Marking that we should be using the APPLE_vertex_array_object extension!",
+                               LoggerLevelOpenGl.InstanceInfo);
 
                     this.AppleVaoFeatureLevel.Value = true;
                 }
-                
+
                 //If we have the ARB_vertex_array_object extension, always enable use of VAOs
                 if (extension.Contains("ARB_vertex_array_object")) {
-                    Logger.Log("Marking that we have the ARB_vertex_array_object extension!", LoggerLevelOpenGl.InstanceInfo);
+                    Logger.Log("Marking that we have the ARB_vertex_array_object extension!",
+                               LoggerLevelOpenGl.InstanceInfo);
 
                     this.VaoFeatureLevel.Value = true;
 
                     if (this.AppleVaoFeatureLevel.Boolean) {
-                        Logger.Log("Using the ARB extension over the APPLE extension for VAOs!", LoggerLevelOpenGl.InstanceInfo);
+                        Logger.Log("Using the ARB extension over the APPLE extension for VAOs!",
+                                   LoggerLevelOpenGl.InstanceInfo);
 
                         this.AppleVaoFeatureLevel.Value = false;
                     }
+                }
+
+                if (extension.Contains("ARB_bindless_texture")) {
+                    Logger.Log("Marking that we have the ARB_bindless_texture extension!",
+                               LoggerLevelOpenGl.InstanceInfo);
+
+                    this.BindlessTexturing.Value = true;
+
+                    this.BindlessTexturingExtension = new ArbBindlessTexture(this.gl.Context);
                 }
             }
 
@@ -273,9 +297,10 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
 
             if (this._needsFrameBufferExtensionFeatureLevel.Boolean)
                 this._framebufferObjectExt = new ExtFramebufferObject(this._legacyGl.Context);
-        } else {
+        }
+        else {
             Exception ex = new(
-            "Your OpenGL version is too old and does not support the EXT_framebuffer_object extension! Try updating your video card drivers or try the Direct3D 11 and Vulkan backends!"
+                "Your OpenGL version is too old and does not support the EXT_framebuffer_object extension! Try updating your video card drivers or try the Direct3D 11 and Vulkan backends!"
             );
 
             string extensions = this.gl.GetStringS(StringName.Extensions);
@@ -283,24 +308,27 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
                 throw ex;
 
             if (extensions.Contains(AppleVertexArrayObject.ExtensionName) && !this.VaoFeatureLevel.Boolean) {
-                Logger.Log("Marking that we should be using the APPLE_vertex_array_object extension!", LoggerLevelOpenGl.InstanceInfo);
+                Logger.Log("Marking that we should be using the APPLE_vertex_array_object extension!",
+                           LoggerLevelOpenGl.InstanceInfo);
 
                 this.AppleVaoFeatureLevel.Value = true;
             }
-            
+
             if (extensions.Contains("ARB_vertex_array_object")) {
-                Logger.Log("Marking that we have the ARB_vertex_array_object extension!", LoggerLevelOpenGl.InstanceInfo);
+                Logger.Log("Marking that we have the ARB_vertex_array_object extension!",
+                           LoggerLevelOpenGl.InstanceInfo);
                 this.VaoFeatureLevel.Value = true;
-                
+
                 if (this.AppleVaoFeatureLevel.Boolean) {
-                    Logger.Log("Using the ARB extension over the APPLE extension for VAOs!", LoggerLevelOpenGl.InstanceInfo);
+                    Logger.Log("Using the ARB extension over the APPLE extension for VAOs!",
+                               LoggerLevelOpenGl.InstanceInfo);
 
                     this.AppleVaoFeatureLevel.Value = false;
                 }
             }
-                
+
             this._framebufferObjectExt = new ExtFramebufferObject(this._legacyGl.Context);
-            this._appleVao              = new AppleVertexArrayObject(this._legacyGl.Context);
+            this._appleVao             = new AppleVertexArrayObject(this._legacyGl.Context);
         }
         this.CheckError("check extensions");
         this.InfoSections.Add(mainSection);
@@ -328,9 +356,37 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
             this.gl.Enable(EnableCap.Texture2D);
         }
     }
-    private void CreateShaders() {
-        Guard.Assert(!this.FixedFunctionPipeline.Boolean, "Cannot create shaders when fixed function pipeline is enabled!");
 
+    private void CreateBindlessShaders() {
+        string vtxShader = ResourceHelpers.GetStringResource("Shaders/BindlessTexturing/VertexShader.vert", typeof(OpenGLBackend));
+        string frgShader = ResourceHelpers.GetStringResource("Shaders/BindlessTexturing/FragmentShader.frag", typeof(OpenGLBackend));
+ 
+        this.Shader = new ShaderGl(this);
+        this.Shader.AttachShader(ShaderType.VertexShader, vtxShader);
+        this.Shader.AttachShader(ShaderType.FragmentShader, frgShader);
+        this.Shader.Link();
+        this.CheckError("link bindless shader");
+
+        this.Shader.Bind();
+        
+        this.gl.BindAttribLocation(this.Shader.ProgramId, 0, "VertexPosition");
+        this.gl.BindAttribLocation(this.Shader.ProgramId, 1, "TextureCoordinate");
+        this.gl.BindAttribLocation(this.Shader.ProgramId, 2, "VertexColor");
+        this.gl.BindAttribLocation(this.Shader.ProgramId, 3, "TextureHandle");
+
+        this.Shader.Unbind();
+    }
+    
+    private void CreateShaders() {
+        Guard.Assert(!this.FixedFunctionPipeline.Boolean,
+                     "Cannot create shaders when fixed function pipeline is enabled!");
+
+        //Divert this call to bindless if enabled
+        if (this.BindlessTexturing.Boolean) {
+            this.CreateBindlessShaders();
+            return;
+        }
+        
         string vtxShader = ResourceHelpers.GetStringResource("Shaders/VertexShader.glsl", typeof(OpenGLBackend));
         string frgShader = RendererShaderGenerator.GetFragment(this);
 
@@ -338,11 +394,11 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
             vtxShader = vtxShader.Replace("#version 110", "#version 100\nprecision mediump float;");
             frgShader = frgShader.Replace("#version 110", "#version 100\nprecision mediump float;");
         }
-        
+
         this.Shader = new ShaderGl(this);
         this.Shader.AttachShader(
-        ShaderType.VertexShader,
-        vtxShader
+            ShaderType.VertexShader,
+            vtxShader
         );
         this.Shader.AttachShader(ShaderType.FragmentShader, frgShader);
         this.Shader.Link();
@@ -359,7 +415,7 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
         this.gl.BindAttribLocation(this.Shader.ProgramId, 3, "TextureId2");
         this.gl.BindAttribLocation(this.Shader.ProgramId, 4, "TextureId");
         this.CheckError("bind attrib location");
-        
+
         this.Shader.Unbind();
     }
 
@@ -381,10 +437,12 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     void IGlBasedBackend.GenerateMipmaps(VixieTextureGl vixieTextureGl) {
         if (this._needsCustomMipmapGenerationFeatureLevel.Boolean) {
             //TODO
-        } else {
+        }
+        else {
             if (this._bindlessMipmapGenerationFeatureLevel.Boolean) {
                 this.gl.GenerateTextureMipmap(vixieTextureGl.TextureId);
-            } else {
+            }
+            else {
                 vixieTextureGl.Bind();
                 this.gl.GenerateMipmap(TextureTarget.Texture2D);
             }
@@ -445,20 +503,21 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
 
         //Copy it to a local var so we can get a reference to it
         Matrix4x4 mat = this.ProjectionMatrix;
-        
+
         if (this.FixedFunctionPipeline.Boolean) {
             this._legacyGl.MatrixMode(Silk.NET.OpenGL.Legacy.MatrixMode.Projection);
             this._legacyGl.LoadIdentity();
             this._legacyGl.LoadMatrix((float*)&mat);
-            
+
             this._legacyGl.MatrixMode(Silk.NET.OpenGL.Legacy.MatrixMode.Modelview);
             this._legacyGl.LoadIdentity();
-        } else {
+        }
+        else {
             this.Shader.Bind();
             this.Shader.SetUniform("ProjectionMatrix", this.ProjectionMatrix);
             this.Shader.Unbind();
         }
-        
+
         //Reset the scissor when the framebuffer we are rendering to changes
         this.ScissorRect = new(0, 0, width, height);
     }
@@ -467,10 +526,10 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
         get => this._lastScissor;
         set {
             this.gl.Scissor(
-            value.X,
-            this.CurrentViewport.Y - value.Height - value.Y,
-            (uint)value.Width,
-            (uint)value.Height
+                value.X,
+                this.CurrentViewport.Y - value.Height - value.Y,
+                (uint)value.Width,
+                (uint)value.Height
             );
             this._lastScissor = value;
         }
@@ -482,11 +541,17 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
         //TODO: figure out a way to get this info, AMD has dropped the ATI_meminfo extension
         //and Nvidia has not updated the NVX_gpu_memory_info to the modern core profile
         0;
-    public override ulong    GetTotalVram()   => 0;
-    public override VixieRenderer CreateRenderer() => this.FixedFunctionPipeline.Boolean 
-        ? new FixedFunctionOpenGlVixieRenderer(this) 
-        : new OpenGlVixieRenderer(this);
-    public override Vector2D<int> MaxTextureSize => new Vector2D<int>(this.gl.GetInteger((GLEnum)GetPName.MaxTextureSize));
+    public override ulong GetTotalVram() => 0;
+    public override VixieRenderer CreateRenderer() {
+        if (this.FixedFunctionPipeline.Boolean)
+            return new FixedFunctionOpenGlVixieRenderer(this);
+        else if (this.BindlessTexturing.Boolean)
+            return new BindlessTexturingOpenGLRenderer(this);
+        else
+            return new OpenGlVixieRenderer(this);
+    }
+    public override Vector2D<int> MaxTextureSize
+        => new Vector2D<int>(this.gl.GetInteger((GLEnum)GetPName.MaxTextureSize));
     /// <summary>
     ///     Gets the Amount of Texture Units available for use
     /// </summary>
@@ -522,13 +587,13 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
 
             fixed (void* ptr = colorArr) {
                 this.gl.ReadPixels(
-                viewport[0],
-                viewport[1],
-                (uint)viewport[2],
-                (uint)viewport[3],
-                PixelFormat.Rgba,
-                PixelType.UnsignedByte,
-                ptr
+                    viewport[0],
+                    viewport[1],
+                    (uint)viewport[2],
+                    (uint)viewport[3],
+                    PixelFormat.Rgba,
+                    PixelType.UnsignedByte,
+                    ptr
                 );
             }
 
@@ -674,8 +739,8 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     public void BindFramebuffer(FramebufferTarget framebuffer, uint frameBufferId) {
         if (this._needsFrameBufferExtensionFeatureLevel.Boolean) {
             this._framebufferObjectExt.BindFramebuffer(
-            (Silk.NET.OpenGL.Legacy.FramebufferTarget)framebuffer,
-            frameBufferId
+                (Silk.NET.OpenGL.Legacy.FramebufferTarget)framebuffer,
+                frameBufferId
             );
             return;
         }
@@ -683,7 +748,7 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     }
 
     public uint GenFramebuffer() => this._needsFrameBufferExtensionFeatureLevel.Boolean
-                                        ? this._framebufferObjectExt.GenFramebuffer() : this.gl.GenFramebuffer();
+        ? this._framebufferObjectExt.GenFramebuffer() : this.gl.GenFramebuffer();
 
     public void BindTexture(TextureTarget target, uint textureId) {
         this.gl.BindTexture(target, textureId);
@@ -711,7 +776,7 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     }
 
     public uint GenRenderbuffer() => this._needsFrameBufferExtensionFeatureLevel.Boolean
-                                         ? this._framebufferObjectExt.GenRenderbuffer() : this.gl.GenRenderbuffer();
+        ? this._framebufferObjectExt.GenRenderbuffer() : this.gl.GenRenderbuffer();
 
     public void Viewport(int x, int y, uint width, uint height) {
         this.gl.Viewport(x, y, width, height);
@@ -734,10 +799,10 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     public void RenderbufferStorage(RenderbufferTarget target, InternalFormat format, uint width, uint height) {
         if (this._needsFrameBufferExtensionFeatureLevel.Boolean) {
             this._framebufferObjectExt.RenderbufferStorage(
-            (Silk.NET.OpenGL.Legacy.RenderbufferTarget)target,
-            (Silk.NET.OpenGL.Legacy.InternalFormat)format,
-            width,
-            height
+                (Silk.NET.OpenGL.Legacy.RenderbufferTarget)target,
+                (Silk.NET.OpenGL.Legacy.InternalFormat)format,
+                width,
+                height
             );
             return;
         }
@@ -749,10 +814,10 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     ) {
         if (this._needsFrameBufferExtensionFeatureLevel.Boolean) {
             this._framebufferObjectExt.FramebufferRenderbuffer(
-            (Silk.NET.OpenGL.Legacy.FramebufferTarget)target,
-            (Silk.NET.OpenGL.Legacy.FramebufferAttachment)attachment,
-            (Silk.NET.OpenGL.Legacy.RenderbufferTarget)rbTarget,
-            id
+                (Silk.NET.OpenGL.Legacy.FramebufferTarget)target,
+                (Silk.NET.OpenGL.Legacy.FramebufferAttachment)attachment,
+                (Silk.NET.OpenGL.Legacy.RenderbufferTarget)rbTarget,
+                id
             );
             return;
         }
@@ -764,11 +829,11 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     ) {
         if (this._needsFrameBufferExtensionFeatureLevel.Boolean) {
             this._framebufferObjectExt.FramebufferTexture2D(
-            (Silk.NET.OpenGL.Legacy.FramebufferTarget)target,
-            (Silk.NET.OpenGL.Legacy.FramebufferAttachment)colorAttachment0,
-            Silk.NET.OpenGL.Legacy.TextureTarget.Texture2D,
-            textureId,
-            level
+                (Silk.NET.OpenGL.Legacy.FramebufferTarget)target,
+                (Silk.NET.OpenGL.Legacy.FramebufferAttachment)colorAttachment0,
+                Silk.NET.OpenGL.Legacy.TextureTarget.Texture2D,
+                textureId,
+                level
             );
             return;
         }
@@ -778,7 +843,7 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     public GLEnum CheckFramebufferStatus(FramebufferTarget target) {
         if (this._needsFrameBufferExtensionFeatureLevel.Boolean)
             return (GLEnum)this._framebufferObjectExt.CheckFramebufferStatus(
-            (Silk.NET.OpenGL.Legacy.FramebufferTarget)target
+                (Silk.NET.OpenGL.Legacy.FramebufferTarget)target
             );
         return this.gl.CheckFramebufferStatus(target);
     }
@@ -888,12 +953,12 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
         uint getStride, void* offset
     ) {
         this.gl.VertexAttribPointer(
-        u,
-        currentElementCount,
-        (GLEnum)currentElementType,
-        currentElementNormalized,
-        getStride,
-        offset
+            u,
+            currentElementCount,
+            (GLEnum)currentElementType,
+            currentElementNormalized,
+            getStride,
+            offset
         );
     }
 
