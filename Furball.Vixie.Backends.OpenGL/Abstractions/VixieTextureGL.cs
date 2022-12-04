@@ -392,7 +392,8 @@ internal sealed class VixieTextureGl : VixieTexture {
         }
     }
     
-    private bool _isDisposed = false;
+    private bool  _isDisposed = false;
+    public  ulong BindlessHandle;
 
     /// <summary>
     /// Disposes the Texture and the Local Image Buffer
@@ -405,6 +406,10 @@ internal sealed class VixieTextureGl : VixieTexture {
 
         this._isDisposed = true;
 
+        if (this.BindlessHandle != 0) {
+            this._backend.BindlessTexturingExtension.MakeTextureHandleNonResident(this.BindlessHandle);
+        }
+        
         this._backend.DeleteTexture(this.TextureId);
         this._backend.CheckError("dispose texture");
         GC.SuppressFinalize(this);
