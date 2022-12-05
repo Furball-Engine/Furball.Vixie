@@ -103,6 +103,20 @@ internal sealed class BufferObjectGl : IDisposable {
 
         return this;
     }
+    
+    public unsafe BufferObjectGl SetSubData<pDataType>(Span<pDataType> data, int count) where pDataType : unmanaged {
+        this._backend.GlCheckThread();
+        
+        //Make sure that the count is not bigger than the span
+        Guard.Assert(data.Length >= count, "data.Length >= count");
+        
+        fixed (void* d = data) {
+            this.SetSubData(d, (nuint)(count * sizeof(pDataType)));
+        }
+        this._backend.CheckError("set sub buffer data 2");
+
+        return this;
+    }
 
     /// <summary>
     /// Puts data into the buffer in a easier way

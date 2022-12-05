@@ -282,7 +282,8 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
                     }
                 }
 
-                if (extension.Contains("ARB_bindless_texture")) {
+                if (extension.Contains("ARB_bindless_texture") && 
+                    Global.LatestSupportedGl.GL is { MajorVersion: >= 4, MinorVersion: >= 1 }) {
                     Logger.Log("Marking that we have the ARB_bindless_texture extension!",
                                LoggerLevelOpenGl.InstanceInfo);
 
