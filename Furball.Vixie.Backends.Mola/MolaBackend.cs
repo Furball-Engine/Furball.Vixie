@@ -5,6 +5,7 @@ using Furball.Mola.Bindings;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.Renderers;
+using Furball.Vixie.Helpers;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
@@ -65,6 +66,38 @@ public unsafe class MolaBackend : GraphicsBackend {
 
     public override void Present() {
         base.Present();
+
+        if (this._screenshotQueued) {
+            switch (this._renderBitmap->PixelType) {
+                case PixelType.Rgba32: {
+                    Guard.EnsureNonNull(this._renderBitmap);
+                    Guard.EnsureNonNull(this._renderBitmap->Rgba32Ptr);
+
+                    Image<Rgba32> screenshot = Image.Load<Rgba32>(
+                        new ReadOnlySpan<byte>(
+                            this._renderBitmap->Rgba32Ptr,
+                            (int)(this._renderBitmap->Width * this._renderBitmap->Height * sizeof(Rgba32))
+                        ));
+
+                    this.InvokeScreenshotTaken(screenshot);
+                    break;
+                }
+                case PixelType.Argb32: {
+                    Guard.EnsureNonNull(this._renderBitmap);
+                    Guard.EnsureNonNull(this._renderBitmap->Argb32Ptr);
+                    
+                    Image<Rgba32> screenshot = Image.Load<Rgba32>(
+                        new ReadOnlySpan<byte>(
+                            this._renderBitmap->Argb32Ptr,
+                            (int)(this._renderBitmap->Width * this._renderBitmap->Height * sizeof(Argb32))
+                        ));
+
+                    this.InvokeScreenshotTaken(screenshot);
+                    break;
+                }
+            }
+            this._screenshotQueued = false;
+        }
         
         Console.WriteLine($"Frame took {(Stopwatch.GetTimestamp() / (double)Stopwatch.Frequency - this.startTime) * 1000}ms");
 

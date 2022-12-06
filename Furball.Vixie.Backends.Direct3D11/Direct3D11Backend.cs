@@ -35,8 +35,8 @@ public unsafe class Direct3D11Backend : GraphicsBackend {
 
     private ComPtr<IDXGIFactory3> _dxgiFactory;
 
-    private D3D11 d3d11;
-    private DXGI  dxgi;
+    private D3D11 d3d11 = null!;
+    private DXGI  dxgi  = null!;
 
     private D3Dcolorvalue _clearColor;
 
@@ -119,7 +119,7 @@ public unsafe class Direct3D11Backend : GraphicsBackend {
                                                .ToString(CultureInfo.InvariantCulture);
 
                 BackendInfoSection section = new($"Adapter [{i}]");
-                section.Contents.Add(("Adapter Desc", SilkMarshal.PtrToString((nint)Desc.Description)));
+                section.Contents.Add(("Adapter Desc", SilkMarshal.PtrToString((nint)Desc.Description)!));
                 section.Contents.Add(("Revision", Desc.Revision.ToString()));
                 section.Contents.Add(("PCI Vendor ID", Desc.VendorId.ToString()));
                 section.Contents.Add(("PCI Device ID", Desc.DeviceId.ToString()));

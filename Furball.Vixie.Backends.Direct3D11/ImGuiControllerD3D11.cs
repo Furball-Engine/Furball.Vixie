@@ -715,9 +715,9 @@ public class ImGuiControllerD3D11 : IDisposable {
         return imGuiId;
     }
 
-    private void ReleaseAndNullify <pT>(ref pT? o) where pT : IDisposable {
-        o.Dispose();
-        o = default(pT);
+    private void ReleaseAndNullify <T>(ref T? o) where T : IDisposable {
+        o?.Dispose();
+        o = default(T);
     }
 
     private void InvalidateDeviceObjects() {
