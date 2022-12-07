@@ -12,7 +12,6 @@ namespace Furball.Vixie.TestApplication.Tests;
 
 public unsafe class TestNewRenderer : Screen {
     private Texture   _texture;
-    private Texture[] _textureArr;
     private Renderer _vixieRenderer;
 
     private float   _scale = 0.5f;
@@ -22,12 +21,6 @@ public unsafe class TestNewRenderer : Screen {
         this._texture =
             Game.ResourceFactory.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
         this._whitePixel = Game.ResourceFactory.CreateWhitePixelTexture();
-
-        // this._textureArr = new Texture[64];
-        // for (int i = 0; i < this._textureArr.Length; i++) {
-            // this._textureArr[i] =
-                // Texture.CreateTextureFromByteArray(ResourceHelpers.GetByteResource("Resources/pippidonclear0.png"));
-        // }
 
         this._vixieRenderer = Game.ResourceFactory.CreateRenderer();
 

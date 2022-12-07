@@ -14,11 +14,6 @@ namespace Furball.Vixie;
 
 public abstract class Game : IDisposable {
     /// <summary>
-    ///     Window Input Context
-    /// </summary>
-    internal IInputContext InputContext;
-
-    /// <summary>
     ///     Is the Window Active/Focused?
     /// </summary>
     public bool IsActive { get; private set; }

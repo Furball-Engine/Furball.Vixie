@@ -447,14 +447,16 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
         Matrix4x4 mat = this.ProjectionMatrix;
         
         if (this.FixedFunctionPipeline.Boolean) {
-#pragma warning disable CS0618 CS0612
+#pragma warning disable CS0618 
+#pragma warning disable CS0612
             this._legacyGl.MatrixMode(Silk.NET.OpenGL.Legacy.MatrixMode.Projection);
             this._legacyGl.LoadIdentity();
             this._legacyGl.LoadMatrix((float*)&mat);
             
             this._legacyGl.MatrixMode(Silk.NET.OpenGL.Legacy.MatrixMode.Modelview);
             this._legacyGl.LoadIdentity();
-#pragma warning restore CS0618 CS0612
+#pragma warning restore CS0612
+#pragma warning restore CS0618
         } else {
             this.Shader.Bind();
             this.Shader.SetUniform("ProjectionMatrix", this.ProjectionMatrix);

@@ -44,9 +44,9 @@ namespace Furball.Vixie.WindowManagement;
 
 public class SilkWindowManager : IWindowManager {
     //Input context is public so that the engine can use it to get input
-    public IInputContext InputContext;
+    public IInputContext InputContext = null!;
 
-    private IWindow     _window;
+    private IWindow     _window      = null!;
     private WindowState _windowState = WindowState.Windowed;
 
     public SilkWindowManager(Backend backend) {
@@ -401,7 +401,7 @@ public class SilkWindowManager : IWindowManager {
     public GraphicsBackend GraphicsBackend {
         get;
         private set;
-    }
+    } = null!;
 
     public void CreateWindow() {
         WindowOptions options = WindowOptions.Default;
@@ -461,6 +461,8 @@ public class SilkWindowManager : IWindowManager {
                 Silk.NET.Windowing.WindowState.Normal     => WindowState.Windowed,
                 _                                         => this.WindowState
             };
+
+            this.StateChanged?.Invoke(this.WindowState);
         };
 
         this._window.FileDrop += paths => {

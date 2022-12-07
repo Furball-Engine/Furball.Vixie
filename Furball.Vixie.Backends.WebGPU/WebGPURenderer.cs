@@ -74,17 +74,17 @@ public unsafe class WebGPURenderer : VixieRenderer {
         Buffer* lastIdx = null;
         //Save all the buffers from the render queue
         foreach (RenderBuffer? x in this._renderBuffers) {
-            Guard.EnsureNonNull(x.Vtx, "x.Vtx");
-            Guard.EnsureNonNull(x.Idx, "x.Idx");
+            Guard.EnsureNonNull(x.Vtx!, "x.Vtx");
+            Guard.EnsureNonNull(x.Idx!, "x.Idx");
 
-            if(lastVtx == x.Vtx.Buffer && lastIdx == x.Idx.Buffer)
+            if(lastVtx == x.Vtx!.Buffer && lastIdx == x.Idx!.Buffer)
                 continue;
 
             this._vtxBufferQueue.Enqueue(x.Vtx!);
             this._idxBufferQueue.Enqueue(x.Idx!);
 
-            lastVtx = x.Vtx.Buffer;
-            lastIdx = x.Idx.Buffer;
+            lastVtx = x.Vtx!.Buffer;
+            lastIdx = x.Idx!.Buffer;
             
             //We set these to null to ensure that they dont get disposed when `RenderBuffer.Dispose` is called by the
             //destructor

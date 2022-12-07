@@ -15,8 +15,6 @@ public class RenderTarget : IDisposable {
     
     public Vector2D<int> Size;
     
-    private Rgba32[]? _dataCache;
-
     public RenderTarget(GraphicsBackend backend, uint width, uint height) {
         this._target  = backend.CreateRenderTarget(width, height);
         this._texture = this._target.GetTexture();

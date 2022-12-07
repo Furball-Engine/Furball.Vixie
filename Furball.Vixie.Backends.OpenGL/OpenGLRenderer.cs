@@ -27,8 +27,8 @@ internal unsafe class OpenGlVixieRenderer : VixieRenderer {
         public BufferObjectGl?      Idx;
         public uint                 IndexCount;
 
-        public VixieTextureGl[] TexArray;
-        public int              UsedTextures;
+        public VixieTextureGl[]? TexArray;
+        public int               UsedTextures;
         
         private bool _isDisposed = false;
         public void Dispose() {
@@ -142,9 +142,9 @@ internal unsafe class OpenGlVixieRenderer : VixieRenderer {
 
         //Clear the `boundat` stuff
         for (int i = 0; i < this._usedTextures; i++) {
-            VixieTextureGl tex = this._texHandles[i];
-
-            tex.BoundId = -1;
+            VixieTextureGl? tex = this._texHandles[i];
+            
+            tex!.BoundId = -1;
         }
         this._usedTextures = 0;
 
@@ -252,7 +252,7 @@ internal unsafe class OpenGlVixieRenderer : VixieRenderer {
             }
 
             for (int i2 = 0; i2 < buf.UsedTextures; i2++) {
-                VixieTextureGl tex = buf.TexArray[i2];
+                VixieTextureGl tex = buf.TexArray![i2];
 
                 tex.Bind(TextureUnit.Texture0 + i2);
             }

@@ -16,7 +16,7 @@ namespace Furball.Vixie.TestApplication;
 public class TestGame : Game {
     public TestGame() {}
     
-    public static TestGame Instance;
+    public static TestGame Instance = null!;
 
     private Screen? _runningScreen;
     public void ChangeScreen(Screen screen) {
@@ -45,7 +45,7 @@ public class TestGame : Game {
     private       long   _alloccedMemory;
         
     
-    public void Run(Backend backend = Backend.None) {
+    public new void Run(Backend backend = Backend.None) {
         base.Run(backend);
     }
 

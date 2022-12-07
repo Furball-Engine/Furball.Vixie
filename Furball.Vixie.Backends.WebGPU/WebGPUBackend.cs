@@ -12,7 +12,6 @@ using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.Disposal;
-using Silk.NET.WebGPU.Extensions.WGPU;
 using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -56,7 +55,6 @@ public unsafe class WebGPUBackend : GraphicsBackend {
     public ShaderModule* Shader;
 
     public WebGPUDisposal Disposal;
-    public Wgpu           Wgpu;
 
     public override void Initialize(IView view, IInputContext inputContext) {
         this._view = view;
@@ -66,7 +64,7 @@ public unsafe class WebGPUBackend : GraphicsBackend {
         this._view.ShouldSwapAutomatically  = false; //Stop silk from attempting to swap buffers, we do that
 
 #if USE_IMGUI
-            throw new NotImplementedException();
+        // throw new NotImplementedException();
 #endif
 
         this.WebGPU = Silk.NET.WebGPU.WebGPU.GetApi();

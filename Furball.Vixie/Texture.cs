@@ -27,10 +27,6 @@ public class Texture : IDisposable {
         set => this._texture.FilterType = value;
     }
 
-    private Rgba32[]?         _dataCache = null;
-    private bool              _mipmapCache;
-    private TextureFilterType _filterTypeCache;
-
     public static Texture CreateTextureFromByteArray(GraphicsBackend backend, byte[] imageData, TextureParameters
                                                          parameters = default(TextureParameters)) {
         VixieTexture tex = backend.CreateTextureFromByteArray(imageData, parameters);

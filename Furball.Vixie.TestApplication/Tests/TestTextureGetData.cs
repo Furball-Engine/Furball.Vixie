@@ -19,7 +19,6 @@ public class TestTextureGetData : Screen {
         FontResolutionFactor = 2f,
         KernelWidth          = 2,
         KernelHeight         = 2,
-        Effect               = FontSystemEffect.None
     });
     private DynamicSpriteFont _font;
     private Renderer     _vixieRenderer;
