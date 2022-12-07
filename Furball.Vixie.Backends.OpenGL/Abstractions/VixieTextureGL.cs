@@ -471,4 +471,10 @@ internal sealed class VixieTextureGl : VixieTexture {
         this._backend.CheckError("dispose texture");
         GC.SuppressFinalize(this);
     }
+
+    public override unsafe int GetHashCode() {
+        // ReSharper disable once NonReadonlyMemberInGetHashCode
+        uint texId = this.TextureId;
+        return *(int*)&texId;
+    }
 }
