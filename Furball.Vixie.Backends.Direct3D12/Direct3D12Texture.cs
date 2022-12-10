@@ -112,5 +112,8 @@ public unsafe class Direct3D12Texture : VixieTexture {
     }
     public override VixieTexture SetData <pT>(ReadOnlySpan<pT> data)                 => throw new NotImplementedException();
     public override VixieTexture SetData <pT>(ReadOnlySpan<pT> data, Rectangle rect) => throw new NotImplementedException();
-    public override Rgba32[]     GetData() => throw new NotImplementedException();
+    public override Rgba32[]     GetData()                => throw new NotImplementedException();
+    public override void CopyTo(VixieTexture tex) {
+        throw new NotImplementedException();
+    }
 }

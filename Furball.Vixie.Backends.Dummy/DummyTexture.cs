@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.Shared;
+using Furball.Vixie.Helpers;
 using Kettu;
 using Silk.NET.Maths;
 using SixLabors.ImageSharp.PixelFormats;
@@ -44,5 +45,13 @@ public sealed class DummyTexture : VixieTexture {
     public override Rgba32[] GetData() {
         // throw new NotImplementedException();
         return this.Data;
+    }
+    public override void CopyTo(VixieTexture tex) {
+        Guard.Assert(tex.Size == this.Size);
+
+        if (tex is not DummyTexture dummyTex)
+            Guard.Fail($"Texture must of type {typeof(DummyTexture)}");
+        else
+            this.Data.CopyTo(dummyTex.Data.AsSpan());
     }
 }

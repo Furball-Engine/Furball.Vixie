@@ -36,6 +36,12 @@ public abstract class VixieTexture : IDisposable {
     /// </summary>
     /// <returns>The raw pixels of the texture</returns>
     public abstract Rgba32[] GetData();
+
+    /// <summary>
+    /// Copies the data of one texture to another
+    /// </summary>
+    /// <param name="tex"></param>
+    public abstract void CopyTo(VixieTexture tex);
     
     public virtual  void    Dispose() {}
 }

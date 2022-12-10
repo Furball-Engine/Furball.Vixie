@@ -127,6 +127,10 @@ public class Texture : IDisposable {
         return this._texture.GetData();
     }
 
+    public void CopyTo(Texture texture) {
+        this._texture.CopyTo(texture._texture);
+    }
+
     private bool _isDisposed;
     public void Dispose() {
         if (this._isDisposed)

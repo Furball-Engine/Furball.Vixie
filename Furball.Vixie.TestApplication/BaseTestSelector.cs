@@ -43,6 +43,10 @@ public class BaseTestSelector : Screen {
             TestGame.Instance.ChangeScreen(new TestTextureGetData());
         }
         
+        if (ImGui.Button("Test Texture.CopyTo")) {
+            TestGame.Instance.ChangeScreen(new TestCopyTexture());
+        }
+        
         if (ImGui.Button("Test New Renderer")) {
             TestGame.Instance.ChangeScreen(new TestNewRenderer());
         }

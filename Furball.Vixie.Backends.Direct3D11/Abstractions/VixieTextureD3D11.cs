@@ -257,6 +257,15 @@ internal sealed class VixieTextureD3D11 : VixieTexture {
 
         return data;
     }
+    
+    public override void CopyTo(VixieTexture tex) {
+        Guard.Assert(tex.Size == this.Size, "tex.Size == this.Size");
+
+        if (tex is not VixieTextureD3D11 d3d11Tex)
+            Guard.Fail($"Texture must be of type {typeof(VixieTextureD3D11)}");
+        else
+            this._backend.DeviceContext.CopyResource(d3d11Tex._texture, this._texture);
+    }
 
     private void GenerateMips() {
         this._backend.DeviceContext.GenerateMips(this.TextureView);

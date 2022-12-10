@@ -57,6 +57,20 @@ public unsafe class MolaTexture : VixieTexture {
 
         return arr;
     }
+    
+    public override void CopyTo(VixieTexture tex) {
+        Guard.Assert(tex.Size == this.Size);
+
+        if (tex is not MolaTexture molaTex)
+            Guard.Fail($"Texture must be of type {typeof(MolaTexture)}");
+        else
+            Buffer.MemoryCopy(
+                this.RenderBitmap->Rgba32Ptr,
+                molaTex.RenderBitmap->Rgba32Ptr,
+                sizeof(Rgba32) * this.Width * this.Height,
+                sizeof(Rgba32) * this.Width * this.Height
+            );
+    }
 
     ~MolaTexture() {
         DisposeQueue.Enqueue(this);

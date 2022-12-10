@@ -340,6 +340,58 @@ internal sealed class VixieTextureGl : VixieTexture {
         
         return arr;
     }
+    
+    public override unsafe void CopyTo(VixieTexture tex) {
+        Guard.Assert(tex.Size == this.Size);
+
+        if (tex is not VixieTextureGl glTex)
+            Guard.Fail($"Texture must be of type {nameof (VixieTextureGl)}");
+        else {
+            if (Global.LatestSupportedGl.GL is { MajorVersion: 4, MinorVersion: >= 3 }) {
+                this._backend.gl.CopyImageSubData(
+                    this.TextureId,
+                    CopyImageSubDataTarget.Texture2D,
+                    0,
+                    0,
+                    0,
+                    0,
+                    glTex.TextureId,
+                    CopyImageSubDataTarget.Texture2D,
+                    0,
+                    0,
+                    0,
+                    0,
+                    (uint)this.Width,
+                    (uint)this.Height,
+                    1
+                );
+            }
+            else {
+                this._backend.gl.GetInteger(GetPName.DrawFramebufferBinding, out int currFbo);
+                
+                uint fbo = this._backend.GenFramebuffer(); 
+                this._backend.BindFramebuffer(FramebufferTarget.Framebuffer, fbo);
+                this._backend.FramebufferTexture(FramebufferTarget.Framebuffer, FramebufferAttachment
+                                                    .ColorAttachment0, this.TextureId, 0);
+
+                glTex.Bind();
+                this._backend.gl.CopyTexImage2D(
+                    TextureTarget.Texture2D,
+                    0,
+                    InternalFormat.Rgba8,
+                    0,
+                    0,
+                    (uint)this.Width,
+                    (uint)this.Height,
+                    0
+                );
+                glTex.Unbind();
+
+                this._backend.gl.BindFramebuffer(FramebufferTarget.Framebuffer, (uint)currFbo);
+                this._backend.gl.DeleteFramebuffers(1, &fbo);
+            }
+        }
+    }
 
     /// <summary>
     /// Binds the Texture to a certain Texture Slot

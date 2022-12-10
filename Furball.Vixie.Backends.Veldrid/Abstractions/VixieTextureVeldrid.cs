@@ -206,6 +206,16 @@ internal sealed class VixieTextureVeldrid : VixieTexture {
 
         return data;
     }
+    
+    public override void CopyTo(VixieTexture tex) {
+        Guard.Assert(tex.Size == this.Size, "tex.Size == this.Size");
+        this._backend.CheckThread();
+
+        if(tex is not VixieTextureVeldrid veldridTex)
+            Guard.Fail($"Texture must be a {typeof(VixieTextureVeldrid)}!");
+        else
+            this._backend.CommandList.CopyTexture(this.Texture, veldridTex.Texture);
+    }
 
     ~VixieTextureVeldrid() {
         DisposeQueue.Enqueue(this);

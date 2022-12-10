@@ -1,5 +1,6 @@
 ﻿using System;
 using Furball.Vixie.Backends.Shared;
+using Furball.Vixie.Helpers;
 using Silk.NET.Maths;
 using Silk.NET.WebGPU;
 using SixLabors.ImageSharp.PixelFormats;
@@ -135,6 +136,30 @@ public unsafe class WebGPUTexture : VixieTexture {
 
         // this._webGpu.CommandEncoderCopyTextureToBuffer(encoder, texture, buffer, new Extent3D());
         return Array.Empty<Rgba32>();
+    }
+    
+    public override void CopyTo(VixieTexture tex) {
+        Guard.Assert(tex.Size == this.Size, "tex.Size == this.Size");
+
+        if (tex is not WebGPUTexture webGpuTex)
+            Guard.Fail($"Texture must be a {typeof(WebGPUTexture)}");
+        else
+            this._backend.WebGPU.CommandEncoderCopyTextureToTexture(
+                this._backend.CommandEncoder,
+                new ImageCopyTexture {
+                    MipLevel = 0,
+                    Texture  = this.Texture,
+                },
+                new ImageCopyTexture {
+                    MipLevel = 0,
+                    Texture  = webGpuTex.Texture
+                },
+                new Extent3D {
+                    DepthOrArrayLayers = 1,
+                    Height             = (uint)this.Height,
+                    Width              = (uint)this.Width
+                }
+            );
     }
 
     private bool       _isDisposed;
