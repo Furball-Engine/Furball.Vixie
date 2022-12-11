@@ -21,7 +21,7 @@ public class TestTextureEffect : Screen {
 
         this._blur = new OpenCLBoxBlurTextureEffect(TestGame.Instance.WindowManager.GraphicsBackend, this._sourceTexture);
 
-        const int n = 1;
+        const int n = 50;
 
         long start = Stopwatch.GetTimestamp();
         for (int i = 0; i < n; i++) {

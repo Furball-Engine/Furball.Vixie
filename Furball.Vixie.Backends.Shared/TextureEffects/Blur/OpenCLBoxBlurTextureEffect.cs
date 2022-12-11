@@ -97,23 +97,18 @@ public unsafe class OpenCLBoxBlurTextureEffect : BoxBlurTextureEffect {
 
         ImageFormat imgFormat = new ImageFormat(ChannelOrder.Rgba, ChannelType.UnsignedInt8);
 
-        //TODO: pull this in UpdateTexture() so it can be updated
-        //TODO: we should read directly from a GL texture if possible
-        Rgba32[] data = sourceTex.GetData();
-        fixed (void* ptr = data)
-            this._sourceImage = this._cl.CreateImage2D(
-                this._context,
-                MemFlags.ReadOnly | MemFlags.CopyHostPtr,
-                &imgFormat,
-                (nuint)this._sourceTex.Width,
-                (nuint)this._sourceTex.Height,
-                0,
-                ptr,
-                &err
-            );
+        this._sourceImage = this._cl.CreateImage2D(
+            this._context,
+            MemFlags.ReadOnly | MemFlags.HostWriteOnly,
+            &imgFormat,
+            (nuint)this._sourceTex.Width,
+            (nuint)this._sourceTex.Height,
+            0,
+            null,
+            &err
+        );
         ThrowIfError(err);
 
-        //TODO: we should write directly to a GL texture if possible
         this._destImage = this._cl.CreateImage2D(
             this._context,
             MemFlags.WriteOnly | MemFlags.HostReadOnly,
@@ -132,7 +127,7 @@ public unsafe class OpenCLBoxBlurTextureEffect : BoxBlurTextureEffect {
         byte* name = stackalloc byte[(int)size];
         this._cl.GetDeviceInfo(this._device, DeviceInfo.Name, size, name, null);
         Console.WriteLine($"Using OpenCL device {SilkMarshal.PtrToString((nint)name)}");
-        
+
         this._cl.GetDeviceInfo(this._device, DeviceInfo.MaxReadImageArgs, 0, null, out size);
         int* maxReadImageArgs = stackalloc int[(int)size];
         this._cl.GetDeviceInfo(this._device, DeviceInfo.MaxReadImageArgs, size, maxReadImageArgs, null);
@@ -142,7 +137,6 @@ public unsafe class OpenCLBoxBlurTextureEffect : BoxBlurTextureEffect {
     private static void ThrowIfError(int code) {
         if (code != 0)
             throw new Exception($"OpenCL Error: {(ErrorCodes)code}");
-        // Console.WriteLine($"OpenCL Error: {(ErrorCodes)code}");
     }
 
     private static void NotifyFunc(byte* errorInfo, void* privateInfo, nuint cb, void* userdata) {
@@ -150,6 +144,32 @@ public unsafe class OpenCLBoxBlurTextureEffect : BoxBlurTextureEffect {
     }
 
     public override void UpdateTexture() {
+        Rgba32[] data = this._sourceTex.GetData();
+
+        nuint* origin = stackalloc nuint[3];
+        nuint* region = stackalloc nuint[3];
+        origin[0] = 0;
+        origin[1] = 0;
+        origin[2] = 0;
+        region[0] = (nuint)this._sourceTex.Width;
+        region[1] = (nuint)this._sourceTex.Height;
+        region[2] = 1;
+
+        fixed (void* ptr = data)
+            this._cl.EnqueueWriteImage(
+                this._commandQueue,
+                this._sourceImage,
+                false,
+                origin,
+                region,
+                0,
+                0,
+                ptr,
+                0,
+                null,
+                null
+            );
+
         ThrowIfError(this._cl.SetKernelArg(this._kernel, 0, sizeof(int), in this.KernelRadius));
         ThrowIfError(this._cl.SetKernelArg(this._kernel, 1, (nuint)sizeof(nint), in this._sourceImage));
         ThrowIfError(this._cl.SetKernelArg(this._kernel, 2, (nuint)sizeof(nint), in this._destImage));
@@ -158,31 +178,41 @@ public unsafe class OpenCLBoxBlurTextureEffect : BoxBlurTextureEffect {
         globalWorkSize[0] = (nuint)this._sourceTex.Width;
         globalWorkSize[1] = (nuint)this._sourceTex.Height;
 
-        this._cl.Finish(this._commandQueue);
-        
-        ThrowIfError(this._cl.EnqueueNdrangeKernel(
-                         this._commandQueue,
-                         this._kernel,
-                         2,
-                         null,
-                         globalWorkSize,
-                         null,
-                         0,
-                         null,
-                         null
-                     ));
-        
-        ThrowIfError(this._cl.Finish(this._commandQueue));
+        void DoPass(bool last) {
+            ThrowIfError(this._cl.EnqueueNdrangeKernel(
+                             this._commandQueue,
+                             this._kernel,
+                             2,
+                             null,
+                             globalWorkSize,
+                             null,
+                             0,
+                             null,
+                             null
+                         ));
 
-        nuint* origin = stackalloc nuint[3];
-        origin[0] = 0;
-        origin[1] = 0;
-        origin[2] = 0;
-        
-        nuint* region = stackalloc nuint[3];
-        region[0] = (nuint)this.Texture.Width;
-        region[1] = (nuint)this.Texture.Height;
-        region[2] = 1;
+            if (last)
+                return;
+
+            this._cl.EnqueueCopyImage(
+                this._commandQueue,
+                this._destImage,
+                this._sourceImage,
+                origin,
+                origin,
+                region,
+                0,
+                null,
+                null
+            );
+        }
+
+        for (int i = 0; i < this.Passes - 1; i++) {
+            DoPass(false);
+        }
+        DoPass(true);
+
+        ThrowIfError(this._cl.Finish(this._commandQueue));
 
         Rgba32[] results = new Rgba32[this.Texture.Width * this.Texture.Height];
         fixed (void* ptr = results)

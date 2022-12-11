@@ -14,28 +14,26 @@ __kernel void box_blur(int kernel_radius, read_only image2d_t src, write_only im
     if(x >= width || y >= height || x < 0 || y < 0)
         return;
 
-    float4 accum = (float4)(0, 0, 0, 0);
+    uint4 accum = (uint4)(0, 0, 0, 0);
 
     int kernel_width = kernel_radius * 2 + 1;
-    int kernel_size = kernel_width * kernel_width;
+    float kernel_size = kernel_width * kernel_width;
 
     for(int xOffset = -kernel_radius; xOffset <= kernel_radius; xOffset++) {
         for(int yOffset = -kernel_radius; yOffset <= kernel_radius; yOffset++) {
-            float4 pix = read_imagef(src, image_sampler, (int2)(x + xOffset, y + yOffset));
-
-            accum.x += pix.x * pix.w;
-            accum.y += pix.y * pix.w;
-            accum.z += pix.z * pix.w;
+            uint4 pix = read_imageui(src, image_sampler, (int2)(x + xOffset, y + yOffset));
+            
+            accum.x += (uint)(pix.x * ((float)pix.w / 255));
+            accum.y += (uint)(pix.y * ((float)pix.w / 255));
+            accum.z += (uint)(pix.z * ((float)pix.w / 255));
             accum.w += pix.w;
         }
     }
     
-    write_imagef(dst, (int2)(x, y), (float4)(
+    write_imageui(dst, (int2)(x, y), (uint4)(
         accum.x / kernel_size, 
         accum.y / kernel_size, 
         accum.z / kernel_size, 
         accum.w / kernel_size
     ));
-
-    // write_imagef(dst, (int2)(x, y), read_imagef(src, image_sampler, (int2)(x, y)));
 }

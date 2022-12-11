@@ -29,5 +29,14 @@
       <None Remove="TextureEffects\Blur\BoxBlur.cl" />
       <EmbeddedResource Include="TextureEffects\Blur\BoxBlur.cl" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Furball.Vixie.Backends.OpenGL">
+        <HintPath>..\Furball.Vixie.TestApplication.Desktop\bin\Debug\net6.0\Furball.Vixie.Backends.OpenGL.dll</HintPath>
+      </Reference>
+      <Reference Include="Silk.NET.OpenGL">
+        <HintPath>..\..\..\..\..\.nuget\packages\silk.net.opengl\2.17.0-build2693.0\lib\netstandard2.0\Silk.NET.OpenGL.dll</HintPath>
+      </Reference>
+    </ItemGroup>
     
 </Project>
