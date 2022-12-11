@@ -73,16 +73,12 @@ public class CpuBoxBlurTextureEffect : BoxBlurTextureEffect {
                         accumA += pixel.A;
                     }
 
-                    result[(y * width) + x].R = (byte)(accumR / kernelSize);
-                    result[(y * width) + x].G = (byte)(accumG / kernelSize);
-                    result[(y * width) + x].B = (byte)(accumB / kernelSize);
-                    result[(y * width) + x].A = (byte)(accumA / kernelSize);
+                    data[(y * width) + x].R = (byte)(accumR / kernelSize);
+                    data[(y * width) + x].G = (byte)(accumG / kernelSize);
+                    data[(y * width) + x].B = (byte)(accumB / kernelSize);
+                    data[(y * width) + x].A = (byte)(accumA / kernelSize);
                 }
             }
-
-            if (!lastPass)
-                //Copy the result back to the original array
-                Array.Copy(result, data, data.Length);
         }
 
         for (int i = 0; i < this.Passes - 1; i++) {
@@ -90,7 +86,7 @@ public class CpuBoxBlurTextureEffect : BoxBlurTextureEffect {
         }
         DoPass(true);
 
-        this.Texture.SetData<Rgba32>(result);
+        this.Texture.SetData<Rgba32>(data);
     }
 
     public override VixieTexture Texture {
