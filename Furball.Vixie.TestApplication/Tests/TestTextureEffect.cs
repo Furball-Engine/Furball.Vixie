@@ -11,7 +11,7 @@ public class TestTextureEffect : Screen {
     private Renderer _renderer;
     private Texture  _sourceTexture;
 
-    private CpuBoxBlurTextureEffect _blur;
+    private BoxBlurTextureEffect _blur;
     public override void Initialize() {
         base.Initialize();
 
@@ -19,7 +19,7 @@ public class TestTextureEffect : Screen {
         this._sourceTexture = Game.ResourceFactory.CreateTextureFromByteArray(
             ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame)));
 
-        this._blur = new CpuBoxBlurTextureEffect(TestGame.Instance.WindowManager.GraphicsBackend, this._sourceTexture);
+        this._blur = new OpenCLBoxBlurTextureEffect(TestGame.Instance.WindowManager.GraphicsBackend, this._sourceTexture);
 
         const int n = 50;
 
