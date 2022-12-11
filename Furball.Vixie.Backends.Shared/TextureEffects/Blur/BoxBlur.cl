@@ -1,5 +1,7 @@
+__constant sampler_t image_sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
+
 //Do a 2 dimensional box blur
-__kernel void box_blur(int kernel_radius, sampler_t image_sampler, read_only image2d_t src, write_only image2d_t dst)
+__kernel void box_blur(int kernel_radius, read_only image2d_t src, write_only image2d_t dst)
 {
     //Get the X and Y coordinates of the pixel to edit
     int x = get_global_id(0);
