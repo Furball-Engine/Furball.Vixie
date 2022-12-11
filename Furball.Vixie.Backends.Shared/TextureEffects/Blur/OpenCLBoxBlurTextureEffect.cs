@@ -95,16 +95,6 @@ public unsafe class OpenCLBoxBlurTextureEffect : BoxBlurTextureEffect {
         this._kernel = this._cl.CreateKernel(this._program, "box_blur", &err);
         ThrowIfError(err);
 
-        int radius = this.KernelRadius;
-        this._radiusBuffer = this._cl.CreateBuffer(
-            this._context,
-            MemFlags.ReadOnly | MemFlags.CopyHostPtr,
-            sizeof(int),
-            &radius,
-            &err
-        );
-        ThrowIfError(err);
-
         ImageFormat imgFormat = new ImageFormat(ChannelOrder.Rgba, ChannelType.UnsignedInt8);
 
         //TODO: pull this in UpdateTexture() so it can be updated
@@ -160,7 +150,7 @@ public unsafe class OpenCLBoxBlurTextureEffect : BoxBlurTextureEffect {
     }
 
     public override void UpdateTexture() {
-        ThrowIfError(this._cl.SetKernelArg(this._kernel, 0, sizeof(int), in this._radiusBuffer));
+        ThrowIfError(this._cl.SetKernelArg(this._kernel, 0, sizeof(int), in this.KernelRadius));
         ThrowIfError(this._cl.SetKernelArg(this._kernel, 1, (nuint)sizeof(nint), in this._sourceImage));
         ThrowIfError(this._cl.SetKernelArg(this._kernel, 2, (nuint)sizeof(nint), in this._destImage));
 
@@ -181,7 +171,7 @@ public unsafe class OpenCLBoxBlurTextureEffect : BoxBlurTextureEffect {
                          null,
                          null
                      ));
-
+        
         ThrowIfError(this._cl.Finish(this._commandQueue));
 
         nuint* origin = stackalloc nuint[3];
