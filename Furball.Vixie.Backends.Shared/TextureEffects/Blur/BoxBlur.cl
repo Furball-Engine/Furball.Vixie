@@ -11,6 +11,9 @@ __kernel void box_blur(int kernel_radius, read_only image2d_t src, write_only im
     int width = get_image_width(src);
     int height = get_image_height(src); 
 
+    if(x >= width || y >= height || x < 0 || y < 0)
+        return;
+
     float4 accum = (float4)(0, 0, 0, 0);
 
     int kernel_width = kernel_radius * 2 + 1;
@@ -20,12 +23,10 @@ __kernel void box_blur(int kernel_radius, read_only image2d_t src, write_only im
         for(int yOffset = -kernel_radius; yOffset <= kernel_radius; yOffset++) {
             float4 pix = read_imagef(src, image_sampler, (int2)(x + xOffset, y + yOffset));
 
-            accum += (float4)(
-                pix.x * pix.w, 
-                pix.y * pix.w, 
-                pix.z * pix.w, 
-                pix.w
-            );
+            accum.x += pix.x * pix.w;
+            accum.y += pix.y * pix.w;
+            accum.z += pix.z * pix.w;
+            accum.w += pix.w;
         }
     }
     
@@ -35,4 +36,6 @@ __kernel void box_blur(int kernel_radius, read_only image2d_t src, write_only im
         accum.z / kernel_size, 
         accum.w / kernel_size
     ));
+
+    // write_imagef(dst, (int2)(x, y), read_imagef(src, image_sampler, (int2)(x, y)));
 }
