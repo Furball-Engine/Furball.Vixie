@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.Renderers;
+using Furball.Vixie.Backends.Shared.TextureEffects.Blur;
 using Furball.Vixie.Backends.Veldrid.Abstractions;
 using Furball.Vixie.Helpers;
 using Silk.NET.Input;
@@ -281,7 +282,15 @@ public class VeldridBackend : GraphicsBackend {
 
         this.SetFullScissorRect();
     }
-    public override VixieRenderer CreateRenderer() => new VixieRendererVeldrid(this);
+    public override VixieRenderer        CreateRenderer()                                => new VixieRendererVeldrid(this);
+    public override BoxBlurTextureEffect CreateBoxBlurTextureEffect(VixieTexture source) {
+        try {
+            return new OpenCLBoxBlurTextureEffect(this, source);
+        }
+        catch {
+            return new CpuBoxBlurTextureEffect(this, source);
+        }
+    }
 
     public override Vector2D<int> MaxTextureSize {
         get {

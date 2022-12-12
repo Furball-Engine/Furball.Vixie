@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using Furball.Vixie.Backends.Shared.Renderers;
+using Furball.Vixie.Backends.Shared.TextureEffects.Blur;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
@@ -37,6 +38,7 @@ public abstract class GraphicsBackend {
     /// </summary>
     /// <returns>Returns the new renderer</returns>
     public abstract VixieRenderer CreateRenderer();
+    public abstract BoxBlurTextureEffect CreateBoxBlurTextureEffect(VixieTexture source);
     /// <summary>
     /// The maximum texture size supported by the backend
     /// </summary>

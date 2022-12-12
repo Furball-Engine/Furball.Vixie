@@ -5,6 +5,7 @@ using Furball.Mola.Bindings;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.Renderers;
+using Furball.Vixie.Backends.Shared.TextureEffects.Blur;
 using Furball.Vixie.Helpers;
 using Silk.NET.Input;
 using Silk.NET.Maths;
@@ -49,7 +50,15 @@ public unsafe class MolaBackend : GraphicsBackend {
     public override VixieRenderer CreateRenderer() {
         return new MolaVixieRenderer(this);
     }
-    
+    public override BoxBlurTextureEffect CreateBoxBlurTextureEffect(VixieTexture source) {
+        try {
+            return new OpenCLBoxBlurTextureEffect(this, source);
+        }
+        catch {
+            return new CpuBoxBlurTextureEffect(this, source);
+        }
+    }
+
     //This is defined this small because anything larger gets increasingly silly memory wise
     public override Vector2D<int> MaxTextureSize => new Vector2D<int>(2048);
 

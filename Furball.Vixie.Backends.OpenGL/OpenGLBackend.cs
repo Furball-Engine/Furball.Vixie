@@ -8,6 +8,7 @@ using Furball.Vixie.Backends.OpenGL.Abstractions;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.Renderers;
+using Furball.Vixie.Backends.Shared.TextureEffects.Blur;
 using Furball.Vixie.Helpers;
 using Furball.Vixie.Helpers.Helpers;
 using Kettu;
@@ -490,7 +491,15 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     public override VixieRenderer CreateRenderer() => this.FixedFunctionPipeline.Boolean 
         ? new FixedFunctionOpenGlVixieRenderer(this) 
         : new OpenGlVixieRenderer(this);
-    public override Vector2D<int> MaxTextureSize => new Vector2D<int>(this.gl.GetInteger((GLEnum)GetPName.MaxTextureSize));
+    public override BoxBlurTextureEffect CreateBoxBlurTextureEffect(VixieTexture source) {
+        try {
+            return new OpenCLBoxBlurTextureEffect(this, source);
+        }
+        catch {
+            return new CpuBoxBlurTextureEffect(this, source);
+        }
+    }
+    public override Vector2D<int>        MaxTextureSize                                  => new Vector2D<int>(this.gl.GetInteger((GLEnum)GetPName.MaxTextureSize));
     /// <summary>
     ///     Gets the Amount of Texture Units available for use
     /// </summary>

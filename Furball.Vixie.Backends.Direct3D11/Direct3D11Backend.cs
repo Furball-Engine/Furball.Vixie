@@ -9,6 +9,7 @@ using Furball.Vixie.Backends.Direct3D11.Abstractions;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.Renderers;
+using Furball.Vixie.Backends.Shared.TextureEffects.Blur;
 using Kettu;
 using Silk.NET.Core.Native;
 using Silk.NET.Direct3D11;
@@ -305,7 +306,15 @@ public unsafe class Direct3D11Backend : GraphicsBackend {
         this.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0, right, bottom, 0, 1f, 0f);
     }
 
-    public override VixieRenderer CreateRenderer() => new Direct3D11VixieRenderer(this);
+    public override VixieRenderer        CreateRenderer()                                => new Direct3D11VixieRenderer(this);
+    public override BoxBlurTextureEffect CreateBoxBlurTextureEffect(VixieTexture source) {
+        try {
+            return new OpenCLBoxBlurTextureEffect(this, source);
+        }
+        catch {
+            return new CpuBoxBlurTextureEffect(this, source);
+        }
+    }
 
     //According to the docs, this is always 16384 for feature level 11 hardware: https://learn.microsoft.com/en-us/windows/win32/direct3d11/overviews-direct3d-11-resources-limits#resource-limits-for-feature-level-11-hardware
     public override Vector2D<int> MaxTextureSize => new Vector2D<int>(16384);
