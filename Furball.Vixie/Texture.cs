@@ -83,7 +83,7 @@ public class Texture : IDisposable {
         return managedTex;
     }
 
-    internal Texture(VixieTexture texture) {
+    public Texture(VixieTexture texture) {
         this._texture = texture;
 
         this.Size = this._texture.Size;
