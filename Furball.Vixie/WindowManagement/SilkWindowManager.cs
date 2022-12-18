@@ -1,7 +1,6 @@
 ﻿#nullable enable
 using System;
 using System.Runtime.InteropServices;
-using Furball.Vixie.Backends.Direct3D12;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Helpers;
 using Silk.NET.Core;
@@ -36,6 +35,9 @@ using Silk.NET.Windowing.Extensions.Veldrid;
 #endif
 #if VIXIE_BACKEND_VULKAN
 using Furball.Vixie.Backends.Vulkan;
+#endif
+#if VIXIE_BACKEND_D3D12
+using Furball.Vixie.Backends.Direct3D12;
 #endif
 // ReSharper disable HeuristicUnreachableCode
 #pragma warning disable CS0162
