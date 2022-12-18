@@ -9,14 +9,14 @@ using System.Runtime.Intrinsics;
 
 namespace Furball.Vixie.Backends.Shared.TextureEffects.Blur;
 
-public class CpuBoxBlurTextureEffect : BoxBlurTextureEffect {
+public sealed class CpuBoxBlurTextureEffect : BoxBlurTextureEffect {
     private readonly GraphicsBackend _backend;
-    private readonly VixieTexture    _sourceTex;
+    private VixieTexture    _sourceTex;
+    private VixieTexture? _texture;
 
     public CpuBoxBlurTextureEffect(GraphicsBackend backend, VixieTexture sourceTex) : base(sourceTex) {
         this._backend   = backend;
-        this._sourceTex = sourceTex;
-        this.Texture    = backend.CreateEmptyTexture((uint)sourceTex.Width, (uint)sourceTex.Height);
+        this.SetSourceTexture(sourceTex);
     }
 
     public override void UpdateTexture() {
@@ -89,9 +89,16 @@ public class CpuBoxBlurTextureEffect : BoxBlurTextureEffect {
         this.Texture.SetData<Rgba32>(data);
     }
 
-    public override VixieTexture Texture {
-        get;
+    public override void SetSourceTexture(VixieTexture tex) {
+        this._sourceTex = tex;
+        
+        if (this._texture != null && tex.Size == this.Texture.Size) return;
+        
+        this.Texture?.Dispose();
+        this._texture = this._backend.CreateEmptyTexture((uint)tex.Width, (uint)tex.Height);
     }
+
+    public override VixieTexture Texture => _texture;
 
     public override void Dispose() {
         this.Texture.Dispose();

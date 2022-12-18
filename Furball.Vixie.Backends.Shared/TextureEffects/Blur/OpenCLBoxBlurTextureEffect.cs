@@ -8,10 +8,10 @@ using SixLabors.ImageSharp.PixelFormats;
 namespace Furball.Vixie.Backends.Shared.TextureEffects.Blur;
 
 // ReSharper disable once InconsistentNaming
-public unsafe class OpenCLBoxBlurTextureEffect : BoxBlurTextureEffect {
+public sealed unsafe class OpenCLBoxBlurTextureEffect : BoxBlurTextureEffect {
     private readonly GraphicsBackend _backend;
     private readonly CL              _cl;
-    private readonly VixieTexture    _sourceTex;
+    private VixieTexture    _sourceTex;
 
     private nint _device;
     private nint _platform;
@@ -22,14 +22,12 @@ public unsafe class OpenCLBoxBlurTextureEffect : BoxBlurTextureEffect {
     private readonly nint _kernel;
 
     private readonly nint _radiusBuffer;
-    private readonly nint _sourceImage;
-    private readonly nint _destImage;
+    private nint? _sourceImage;
+    private nint? _destImage;
+    private VixieTexture? _texture;
 
     public OpenCLBoxBlurTextureEffect(GraphicsBackend backend, VixieTexture sourceTex) : base(sourceTex) {
         this._backend   = backend;
-        this._sourceTex = sourceTex;
-
-        this.Texture = backend.CreateEmptyTexture((uint)sourceTex.Width, (uint)sourceTex.Height);
 
         this._cl = CL.GetApi();
 
@@ -95,31 +93,7 @@ public unsafe class OpenCLBoxBlurTextureEffect : BoxBlurTextureEffect {
         this._kernel = this._cl.CreateKernel(this._program, "box_blur", &err);
         ThrowIfError(err);
 
-        ImageFormat imgFormat = new ImageFormat(ChannelOrder.Rgba, ChannelType.UnsignedInt8);
-
-        this._sourceImage = this._cl.CreateImage2D(
-            this._context,
-            MemFlags.ReadOnly | MemFlags.HostWriteOnly,
-            &imgFormat,
-            (nuint)this._sourceTex.Width,
-            (nuint)this._sourceTex.Height,
-            0,
-            null,
-            &err
-        );
-        ThrowIfError(err);
-
-        this._destImage = this._cl.CreateImage2D(
-            this._context,
-            MemFlags.WriteOnly | MemFlags.HostReadOnly,
-            &imgFormat,
-            (nuint)this._sourceTex.Width,
-            (nuint)this._sourceTex.Height,
-            0,
-            null,
-            &err
-        );
-        ThrowIfError(err);
+        this.SetSourceTexture(sourceTex);
     }
 
     private void PrintDeviceInfo() {
@@ -158,7 +132,7 @@ public unsafe class OpenCLBoxBlurTextureEffect : BoxBlurTextureEffect {
         fixed (void* ptr = data)
             this._cl.EnqueueWriteImage(
                 this._commandQueue,
-                this._sourceImage,
+                this._sourceImage.Value,
                 false,
                 origin,
                 region,
@@ -170,9 +144,12 @@ public unsafe class OpenCLBoxBlurTextureEffect : BoxBlurTextureEffect {
                 null
             );
 
+        nint src = this._sourceImage.Value;
+        nint dst = this._destImage.Value;
+        
         ThrowIfError(this._cl.SetKernelArg(this._kernel, 0, sizeof(int), in this.KernelRadius));
-        ThrowIfError(this._cl.SetKernelArg(this._kernel, 1, (nuint)sizeof(nint), in this._sourceImage));
-        ThrowIfError(this._cl.SetKernelArg(this._kernel, 2, (nuint)sizeof(nint), in this._destImage));
+        ThrowIfError(this._cl.SetKernelArg(this._kernel, 1, (nuint)sizeof(nint), in src));
+        ThrowIfError(this._cl.SetKernelArg(this._kernel, 2, (nuint)sizeof(nint), in dst));
 
         nuint* globalWorkSize = stackalloc nuint[2];
         globalWorkSize[0] = (nuint)this._sourceTex.Width;
@@ -196,8 +173,8 @@ public unsafe class OpenCLBoxBlurTextureEffect : BoxBlurTextureEffect {
 
             this._cl.EnqueueCopyImage(
                 this._commandQueue,
-                this._destImage,
-                this._sourceImage,
+                this._destImage.Value,
+                this._sourceImage.Value,
                 origin,
                 origin,
                 region,
@@ -218,7 +195,7 @@ public unsafe class OpenCLBoxBlurTextureEffect : BoxBlurTextureEffect {
         fixed (void* ptr = results)
             ThrowIfError(this._cl.EnqueueReadImage(
                              this._commandQueue,
-                             this._destImage,
+                             this._destImage.Value,
                              true,
                              origin,
                              region,
@@ -235,9 +212,50 @@ public unsafe class OpenCLBoxBlurTextureEffect : BoxBlurTextureEffect {
         this.Texture.SetData<Rgba32>(results);
     }
 
-    public override VixieTexture Texture {
-        get;
+    public override void SetSourceTexture(VixieTexture tex) {
+        this._sourceTex = tex;
+
+        if (this._texture != null && tex.Size == this._texture.Size) return;
+        
+        this._texture?.Dispose();
+        this._texture = this._backend.CreateEmptyTexture((uint)tex.Width, (uint)tex.Height);
+        
+        ImageFormat imgFormat = new ImageFormat(ChannelOrder.Rgba, ChannelType.UnsignedInt8);
+
+        int err;
+
+        if (this._sourceImage.HasValue)
+            this._cl.ReleaseMemObject(this._sourceImage.Value);
+        if (this._destImage.HasValue)
+            this._cl.ReleaseMemObject(this._destImage.Value);
+        
+        this._sourceImage = this._cl.CreateImage2D(
+            this._context,
+            MemFlags.ReadOnly | MemFlags.HostWriteOnly,
+            &imgFormat,
+            (nuint)this._sourceTex.Width,
+            (nuint)this._sourceTex.Height,
+            0,
+            null,
+            &err
+        );
+        ThrowIfError(err);
+
+        this._destImage = this._cl.CreateImage2D(
+            this._context,
+            MemFlags.WriteOnly | MemFlags.HostReadOnly,
+            &imgFormat,
+            (nuint)this._sourceTex.Width,
+            (nuint)this._sourceTex.Height,
+            0,
+            null,
+            &err
+        );
+        ThrowIfError(err);
     }
+
+    public override VixieTexture Texture => _texture;
+
     public override void Dispose() {
         this.Texture.Dispose();
         this._cl.Dispose();
