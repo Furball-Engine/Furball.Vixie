@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
+using Furball.Vixie.Backends.Shared.ImGuiController;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Backends.Shared.TextureEffects.Blur;
 using Furball.Vixie.Backends.Veldrid.Abstractions;
@@ -172,8 +173,8 @@ public class VeldridBackend : GraphicsBackend {
         );
 
 #if USE_IMGUI
-        this._imgui =
- new ImGuiController(this.GraphicsDevice, this.RenderFramebuffer!.OutputDescription, view, inputContext);
+        this._imgui = new ImGuiControllerShared(this, view, inputContext);
+        this._imgui.Initialize();
 #endif
 
         for (int i = 0; i < MAX_TEXTURE_UNITS; i++) {
@@ -434,7 +435,7 @@ public class VeldridBackend : GraphicsBackend {
         this._imgui.Update((float)deltaTime);
     }
     public override void ImGuiDraw(double deltaTime) {
-        this._imgui.Render(this.GraphicsDevice, this.CommandList);
+        this._imgui.Render();
     }
 #endif
 }

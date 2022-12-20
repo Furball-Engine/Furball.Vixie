@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.Direct3D11.Abstractions;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
+using Furball.Vixie.Backends.Shared.ImGuiController;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Backends.Shared.TextureEffects.Blur;
 using Kettu;
@@ -47,7 +48,7 @@ public unsafe class Direct3D11Backend : GraphicsBackend {
     internal ComPtr<ID3D11RenderTargetView> CurrentlyBoundTarget = null!;
 
 #if USE_IMGUI
-    private ImGuiControllerD3D11 _imGuiController = null!;
+    private ImGuiControllerShared _imGuiController = null!;
 #endif
 
     private  VixieTextureD3D11 _privateWhitePixelVixieTexture = null!;
@@ -199,7 +200,8 @@ public unsafe class Direct3D11Backend : GraphicsBackend {
         // this.DeviceContext.OMSetBlendState(ref this.DefaultBlendState, blendColor);
 
 #if USE_IMGUI
-        this._imGuiController = new ImGuiControllerD3D11(this, view, inputContext, null);
+        this._imGuiController = new ImGuiControllerShared(this, view, inputContext);
+        this._imGuiController.Initialize();
 #endif
 
         this._privateWhitePixelVixieTexture = (VixieTextureD3D11)this.CreateWhitePixelTexture();

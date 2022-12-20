@@ -45,7 +45,7 @@ internal unsafe class OpenGlVixieRenderer : VixieRenderer {
 
     private readonly List<BufferData> _bufferList = new();
 
-    private const int QUAD_COUNT = 256;
+    private const int QUAD_COUNT = 1024;
     
     public OpenGlVixieRenderer(OpenGLBackend backend) {
         this._backend = backend;
