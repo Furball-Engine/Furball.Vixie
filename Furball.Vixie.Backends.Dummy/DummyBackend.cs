@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
+using Furball.Vixie.Backends.Shared.ImGuiController;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Backends.Shared.TextureEffects.Blur;
 using Furball.Vixie.Helpers;
@@ -16,12 +17,12 @@ namespace Furball.Vixie.Backends.Dummy;
 
 public class DummyBackend : GraphicsBackend {
 #if USE_IMGUI
-        private DummyImGuiController _imgui;
+        private ImGuiControllerShared _imgui;
 #endif
     public override void Initialize(IView view, IInputContext inputContext) {
 #if USE_IMGUI
         Guard.Fail("ImGui is currently broken on the Dummy backend! Please disable ImGui in `Directory.Build.props`!");
-        this._imgui = new DummyImGuiController(view, inputContext);
+        this._imgui = new ImGuiControllerShared(this, view, inputContext);
         this._imgui.Initialize();
 #endif
 

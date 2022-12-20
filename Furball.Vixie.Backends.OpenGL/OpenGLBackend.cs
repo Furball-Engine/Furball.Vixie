@@ -214,14 +214,6 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
         this.gl.CullFace(TriangleFace.Back);
         
 #if USE_IMGUI
-        OpenGlType type = this.CreationBackend switch {
-#if VIXIE_BACKEND_OPENGL
-            Backend.OpenGL when Global.LatestSupportedGl.GL.MajorVersion < 3 => OpenGlType.Legacy,
-            Backend.OpenGLES                                                 => OpenGlType.Es,
-#endif
-            _                                                                => OpenGlType.Modern
-        };
-
         // this._imgui = new OpenGlImGuiController(this.gl, type, view, inputContext);
         this._imgui = new ImGuiControllerShared(this, view, inputContext);
         this._imgui.Initialize();
