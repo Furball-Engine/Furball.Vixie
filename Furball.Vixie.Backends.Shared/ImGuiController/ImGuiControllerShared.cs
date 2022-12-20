@@ -72,41 +72,6 @@ public sealed unsafe class ImGuiControllerShared : ImGuiController {
                 map.VertexPtr[i].TextureCoordinate = vert.uv;
                 map.VertexPtr[i].TexId             = map.TextureId;
             }
-            // this._gl.BufferData(GLEnum.ArrayBuffer, (nuint)(cmdListPtr.VtxBuffer.Size * sizeof(ImDrawVert)),
-            // (void*)cmdListPtr.VtxBuffer.Data, GLEnum.StreamDraw);
-            // this._gl.BufferData(GLEnum.ElementArrayBuffer, (nuint)(cmdListPtr.IdxBuffer.Size * sizeof(ushort)),
-            // (void*)cmdListPtr.IdxBuffer.Data, GLEnum.StreamDraw);
-
-            // for (int cmdI = 0; cmdI < cmdListPtr.CmdBuffer.Size; cmdI++) {
-            //     ImDrawCmdPtr cmdPtr = cmdListPtr.CmdBuffer[cmdI];
-            //
-            //     if (cmdPtr.UserCallback != IntPtr.Zero)
-            //         throw new NotImplementedException();
-            //     Vector4 clipRect;
-            //     clipRect.X = (cmdPtr.ClipRect.X - clipOff.X) * clipScale.X;
-            //     clipRect.Y = (cmdPtr.ClipRect.Y - clipOff.Y) * clipScale.Y;
-            //     clipRect.Z = (cmdPtr.ClipRect.Z - clipOff.X) * clipScale.X;
-            //     clipRect.W = (cmdPtr.ClipRect.W - clipOff.Y) * clipScale.Y;
-            //
-            //     if (clipRect.X < framebufferWidth && clipRect.Y < framebufferHeight && clipRect.Z >= 0.0f &&
-            //         clipRect.W >= 0.0f) {
-            //         // Apply scissor/clipping rectangle
-            //         // this._gl.Scissor((int)clipRect.X, (int)(framebufferHeight - clipRect.W),
-            //         // (uint)(clipRect.Z - clipRect.X), (uint)(clipRect.W - clipRect.Y));
-            //         this._backend.ScissorRect = new Rectangle(
-            //             (int)clipRect.X, (int)(clipRect.W),
-            //             (int)(clipRect.Z                         - clipRect.X), (int)(clipRect.W - clipRect.Y));
-            //
-            //
-            //
-            //         
-            //         // Bind texture, Draw
-            //         this._gl.BindTexture(GLEnum.Texture2D, (uint)cmdPtr.TextureId);
-            //
-            //         this._gl.DrawElementsBaseVertex(GLEnum.Triangles, cmdPtr.ElemCount, GLEnum.UnsignedShort,
-            //                                         (void*)(cmdPtr.IdxOffset * sizeof(ushort)));
-            //     }
-            // }
         }
 
         this._renderer.End();
