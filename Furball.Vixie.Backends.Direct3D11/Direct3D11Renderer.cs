@@ -217,7 +217,7 @@ public class Direct3D11VixieRenderer : VixieRenderer {
     }
 
     private bool _isFirst = true;
-    public override unsafe void Begin() {
+    public override unsafe void Begin(CullFace cullFace = CullFace.CCW) {
         Guard.EnsureNull(this._vtxMapper.Buffer.Handle, "this._vtxMapper._buffer");
         Guard.EnsureNull(this._idxMapper.Buffer.Handle, "this._idxMapper._buffer");
 

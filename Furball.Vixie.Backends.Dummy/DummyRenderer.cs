@@ -12,7 +12,7 @@ public class DummyVixieRenderer : VixieRenderer {
     public DummyVixieRenderer(DummyBackend backend) {
         Logger.Log("Creating Dummy renderer!", LoggerLevelDummy.InstanceInfo);
     }
-    public override unsafe void Begin() {
+    public override unsafe void Begin(CullFace cullFace = CullFace.CCW) {
         // throw new System.NotImplementedException();
         this._dataHandle = (void*)SilkMarshal.Allocate(sizeof(Vertex) * 4 * 128);
     }

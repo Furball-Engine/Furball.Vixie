@@ -151,7 +151,9 @@ internal unsafe class OpenGlVixieRenderer : VixieRenderer {
         this._texDict.Clear();
     }
     
-    public override void Begin() {
+    public override void Begin(CullFace cullFace = CullFace.CCW) {
+        this._cullFace = cullFace;
+        
         this._texDict.Clear();
         
         this._bufferList.ForEach(x => {
@@ -237,8 +239,11 @@ internal unsafe class OpenGlVixieRenderer : VixieRenderer {
 
     private int               _usedTextures;
     private VixieTextureGl?[] _texHandles;
+    private CullFace          _cullFace;
     public override void Draw() {
         this._backend.Shader.Bind();
+
+        this._backend.SetCullMode(this._cullFace);
 
         for (int i = 0; i < this._bufferList.Count; i++) {
             BufferData buf = this._bufferList[i];

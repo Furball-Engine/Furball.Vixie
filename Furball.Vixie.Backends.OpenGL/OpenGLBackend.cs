@@ -919,4 +919,17 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     public void BindVertexArray(uint arrayId) {
         this.gl.BindVertexArray(arrayId);
     }
+    public void SetCullMode(CullFace cullFace) {
+        if (cullFace == CullFace.None)
+            this.gl.Disable(EnableCap.CullFace);
+        else
+            this.gl.Enable(EnableCap.CullFace);
+        
+        this.gl.CullFace(cullFace switch {
+            CullFace.None => TriangleFace.FrontAndBack,
+            CullFace.CW   => TriangleFace.Front,
+            CullFace.CCW  => TriangleFace.Back,
+            _             => throw new ArgumentOutOfRangeException()
+        });
+    }
 }

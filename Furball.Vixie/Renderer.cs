@@ -25,8 +25,8 @@ public class Renderer {
         this.FontRenderer = new VixieFontStashRenderer(this._backend, this);
     }
 
-    public void Begin() {
-        this.VixieRenderer.Begin();
+    public void Begin(CullFace cullFace = CullFace.CCW) {
+        this.VixieRenderer.Begin(cullFace);
     }
     
     public void End() {

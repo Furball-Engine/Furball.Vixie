@@ -8,7 +8,8 @@ public abstract class VixieRenderer : IDisposable {
     /// <summary>
     /// Begins collecting draw calls
     /// </summary>
-    public abstract void Begin();
+    /// <param name="cullFace"></param>
+    public abstract void Begin(CullFace cullFace = CullFace.CCW);
     /// <summary>
     /// Ends collecting draw calls
     /// </summary>
@@ -39,7 +40,7 @@ public abstract class VixieRenderer : IDisposable {
         this._isDisposed = true;
 
         this.DisposeInternal();
-        
+
         GC.SuppressFinalize(this);
     }
 

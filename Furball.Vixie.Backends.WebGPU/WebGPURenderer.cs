@@ -64,7 +64,7 @@ public unsafe class WebGPURenderer : VixieRenderer {
     }
 
     private bool _isFirst = true;
-    public override void Begin() {
+    public override void Begin(CullFace cullFace = CullFace.CCW) {
         // Guard.EnsureNull(this._vtxMapper.Buffer, "this._vtxMapper._buffer");
         // Guard.EnsureNull(this._idxMapper.Buffer, "this._idxMapper._buffer");
 

@@ -48,6 +48,7 @@ public abstract class Game : IDisposable {
 
         try {
             Backends.Shared.Global.LatestSupportedGl = OpenGLDetector.OpenGLDetector.GetLatestSupported();
+            // Backends.Shared.Global.LatestSupportedGl = (new APIVersion(4, 6), new APIVersion(0, 0));
         }
         catch {
             //if an error occurs detecting the OpenGL version, fallback to legacy gl

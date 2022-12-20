@@ -37,7 +37,7 @@ public class MolaVixieRenderer : VixieRenderer {
         this._currentBatch.IndexPtr  = (ushort*)SilkMarshal.Allocate(IdxBufSize);
     }
 
-    public override unsafe void Begin() {
+    public override unsafe void Begin(CullFace cullFace = CullFace.CCW) {
         //If we are able to, reuse the first batch
         if (this._batches.Count != 0) {
             this._currentBatch = this._batches[0];

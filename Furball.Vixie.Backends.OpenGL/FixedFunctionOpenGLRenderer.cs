@@ -23,6 +23,7 @@ public class FixedFunctionOpenGlVixieRenderer : VixieRenderer {
     private bool   _isBegun;
     
     private List<MappedData> _mappedDataList = new List<MappedData>(1);
+    private CullFace         _cullFace;
 
     public FixedFunctionOpenGlVixieRenderer(OpenGLBackend backend) {
         this._backend = backend;
@@ -33,8 +34,9 @@ public class FixedFunctionOpenGlVixieRenderer : VixieRenderer {
         this._backend.CheckError("Failed to generate list");
     }
 
-    public override void Begin() {
-        this._isBegun = true;
+    public override void Begin(CullFace cullFace = CullFace.CCW) {
+        this._isBegun  = true;
+        this._cullFace = cullFace;
     }
     public override unsafe void End() {
         Guard.Assert(this._isBegun, "Renderer is not begun!");
@@ -101,6 +103,8 @@ public class FixedFunctionOpenGlVixieRenderer : VixieRenderer {
     public override void Draw() {
         //Assert we arent still collection data
         Guard.Assert(!this._isBegun);
+
+        this._backend.SetCullMode(this._cullFace);
         
         //Call the list to draw to the screen
         this._gl.CallList(this._list);
