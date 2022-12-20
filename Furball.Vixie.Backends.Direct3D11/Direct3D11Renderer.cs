@@ -220,6 +220,7 @@ public class Direct3D11VixieRenderer : VixieRenderer {
     public override unsafe void Begin(CullFace cullFace = CullFace.CCW) {
         Guard.EnsureNull(this._vtxMapper.Buffer.Handle, "this._vtxMapper._buffer");
         Guard.EnsureNull(this._idxMapper.Buffer.Handle, "this._idxMapper._buffer");
+        this._cullFace = cullFace;
 
         bool wasLastEmpty = this._renderBuffers.Count == 0;
 
@@ -374,6 +375,7 @@ public class Direct3D11VixieRenderer : VixieRenderer {
     }
 
     private Dictionary<VixieTexture, int> _texDict = new Dictionary<VixieTexture, int>();
+    private CullFace                      _cullFace;
     private long GetTextureId(VixieTexture texOrig) {
         this._backend.CheckThread();
 
@@ -411,6 +413,8 @@ public class Direct3D11VixieRenderer : VixieRenderer {
         this._backend.DeviceContext.IASetInputLayout(this._inputLayout);
         this._backend.DeviceContext.IASetPrimitiveTopology(D3DPrimitiveTopology.D3DPrimitiveTopologyTrianglelist);
 
+        this._backend.SetCullFace(this._cullFace);
+        
         for (int i = 0; i < this._renderBuffers.Count; i++) {
             RenderBuffer buf = this._renderBuffers[i];
 

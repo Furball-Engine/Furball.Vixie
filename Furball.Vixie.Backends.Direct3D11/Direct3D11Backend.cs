@@ -173,21 +173,8 @@ public unsafe class Direct3D11Backend : GraphicsBackend {
 
         this._clearColor = new D3Dcolorvalue(0.0f, 0.0f, 0.0f, 1.0f);
 
-        RasterizerDesc rasterizerDesc = new() {
-            FillMode              = FillMode.Solid,
-            CullMode              = CullMode.None,
-            FrontCounterClockwise = true,
-            DepthClipEnable       = false, 
-            ScissorEnable         = true, 
-            MultisampleEnable     = true,
-            AntialiasedLineEnable = true  
-        };
-
-        ComPtr<ID3D11RasterizerState> rasterizerState = null;
-        this.Device.CreateRasterizerState(in rasterizerDesc, ref rasterizerState);
-
-        this.DeviceContext.RSSetState(rasterizerState);
-
+        this.CreateRasterizerStates();
+        
         BlendDesc blendDesc = new() {
             AlphaToCoverageEnable  = false,
             IndependentBlendEnable = false,
@@ -220,6 +207,40 @@ public unsafe class Direct3D11Backend : GraphicsBackend {
         this.InfoSections.ForEach(x => x.Log(LoggerLevelD3D11.InstanceInfo));
 
         this.ScissorRect = new Rectangle(0, 0, view.FramebufferSize.X, view.FramebufferSize.Y);
+    }
+    
+    private ComPtr<ID3D11RasterizerState>[] _rasterizerStates = new ComPtr<ID3D11RasterizerState>[(int)CullFace.Last];
+    private void CreateRasterizerStates() {
+        for (int i = 0; i < this._rasterizerStates.Length; i++) {
+            // ReSharper disable once SwitchExpressionHandlesSomeKnownEnumValuesWithExceptionInDefault
+            CullMode mode = (CullFace)i switch {
+                CullFace.None => CullMode.None,
+                CullFace.CW   => CullMode.Front,
+                CullFace.CCW  => CullMode.Back,
+                _             => throw new ArgumentOutOfRangeException()
+            };
+            
+            RasterizerDesc rasterizerDesc = new() {
+                FillMode              = FillMode.Solid,
+                CullMode              = mode,
+                FrontCounterClockwise = true,
+                DepthClipEnable       = false, 
+                ScissorEnable         = true, 
+                MultisampleEnable     = true,
+                AntialiasedLineEnable = true  
+            };
+
+            ComPtr<ID3D11RasterizerState> rasterizerState = null;
+            this.Device.CreateRasterizerState(in rasterizerDesc, ref rasterizerState);
+
+            this._rasterizerStates[i] = rasterizerState;
+        }
+
+        this.DeviceContext.RSSetState(this._rasterizerStates[(int)CullFace.CCW]);
+    }
+
+    public void SetCullFace(CullFace face) {
+        this.DeviceContext.RSSetState(this._rasterizerStates[(int)face]);
     }
 
     public void PrintInfoLog() {
