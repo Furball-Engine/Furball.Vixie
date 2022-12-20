@@ -20,6 +20,8 @@ public abstract class ImGuiController : IDisposable {
 
     public IntPtr Context;
 
+    protected abstract bool VtxOffset { get; }
+    
     /// <summary>
     ///     Constructs a new ImGuiController with font configuration and onConfigure Action.
     /// </summary>
@@ -40,7 +42,7 @@ public abstract class ImGuiController : IDisposable {
 
         this._onConfigureIo?.Invoke();
 
-        io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;
+        io.BackendFlags |= this.VtxOffset ? ImGuiBackendFlags.RendererHasVtxOffset : 0;
 
         this.CreateDeviceResources();
 

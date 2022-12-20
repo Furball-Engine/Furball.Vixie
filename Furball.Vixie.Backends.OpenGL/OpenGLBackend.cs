@@ -7,6 +7,7 @@ using System.Numerics;
 using Furball.Vixie.Backends.OpenGL.Abstractions;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
+using Furball.Vixie.Backends.Shared.ImGuiController;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Backends.Shared.TextureEffects.Blur;
 using Furball.Vixie.Helpers;
@@ -119,7 +120,7 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
     public readonly Backend CreationBackend;
     private         bool    _isFbProjMatrix;
 #if USE_IMGUI
-    private OpenGlImGuiController  _imgui;
+    private ImGuiController  _imgui;
 #endif
 
     public OpenGLBackend(Backend backend) {
@@ -209,8 +210,8 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
 
         this.gl.Enable(EnableCap.ScissorTest);
 
-        this.gl.Enable(EnableCap.CullFace);
-        this.gl.CullFace(TriangleFace.Back);
+        // this.gl.Enable(EnableCap.CullFace);
+        // this.gl.CullFace(TriangleFace.Back);
         
 #if USE_IMGUI
         OpenGlType type = this.CreationBackend switch {
@@ -221,7 +222,8 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
             _                                                                => OpenGlType.Modern
         };
 
-        this._imgui = new OpenGlImGuiController(this.gl, type, view, inputContext);
+        // this._imgui = new OpenGlImGuiController(this.gl, type, view, inputContext);
+        this._imgui = new ImGuiControllerShared(this, view, inputContext);
         this._imgui.Initialize();
         this.CheckError("create imguicontroller");
 #endif

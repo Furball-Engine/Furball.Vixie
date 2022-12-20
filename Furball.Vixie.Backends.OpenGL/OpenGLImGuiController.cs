@@ -61,6 +61,7 @@ public class OpenGlImGuiController : ImGuiController {
         this._type = type;
     }
 
+    protected override bool VtxOffset => true;
     protected override unsafe void SetupRenderState(ImDrawDataPtr drawDataPtr, int framebufferWidth,
                                                     int           framebufferHeight) {
         // Setup render state: alpha-blending enabled, no face culling, no depth testing, scissor enabled, polygon fill

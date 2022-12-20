@@ -10,6 +10,7 @@ namespace Furball.Vixie.Backends.Dummy {
     public class DummyImGuiController : ImGuiController {
         public DummyImGuiController([NotNull] IView            view,        [NotNull] IInputContext input,            ImGuiFontConfig? imGuiFontConfig
  = null, [CanBeNull] Action onConfigureIo = null) : base(view, input, imGuiFontConfig, onConfigureIo) {}
+        protected override bool VtxOffset => false;
         protected override void SetupRenderState(ImDrawDataPtr drawDataPtr, int framebufferWidth, int framebufferHeight) {
             // throw new NotImplementedException();
         }

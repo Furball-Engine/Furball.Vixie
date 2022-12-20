@@ -4,6 +4,7 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
+using Furball.Vixie.Backends.Shared.ImGuiController;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Backends.Shared.TextureEffects.Blur;
 using Furball.Vixie.Helpers.Helpers;
@@ -63,10 +64,6 @@ public unsafe class WebGPUBackend : GraphicsBackend {
         //These parameters are required for the WebGPU backend
         this._view.IsContextControlDisabled = true;  //Stop Silk from managing the GL context, WebGPU does that
         this._view.ShouldSwapAutomatically  = false; //Stop silk from attempting to swap buffers, we do that
-
-#if USE_IMGUI
-        // throw new NotImplementedException();
-#endif
 
         this.WebGPU = Silk.NET.WebGPU.WebGPU.GetApi();
 
@@ -174,6 +171,9 @@ public unsafe class WebGPUBackend : GraphicsBackend {
         this.Disposal = new WebGPUDisposal(this.WebGPU);
         
         this.InfoSections.ForEach(x => x.Log(LoggerLevelWebGPU.InstanceInfo));
+        
+        this._imgui = new ImGuiControllerShared(this, view, inputContext);
+        this._imgui.Initialize();
     }
 
     private void CreateShaders() {
@@ -345,7 +345,8 @@ public unsafe class WebGPUBackend : GraphicsBackend {
                 AlphaToCoverageEnabled = false
             },
             Primitive = new PrimitiveState {
-                CullMode  = CullMode.Back,
+                // CullMode  = CullMode.Back,
+                CullMode  = CullMode.None,
                 Topology  = PrimitiveTopology.TriangleList,
                 FrontFace = FrontFace.Ccw
             },
@@ -487,8 +488,9 @@ public unsafe class WebGPUBackend : GraphicsBackend {
         this._commandBuffersUsed = 0;
     }
 
-    private CommandBuffer*[] _commandBuffers = new CommandBuffer*[100];
-    private uint             _commandBuffersUsed;
+    private CommandBuffer*[]      _commandBuffers = new CommandBuffer*[100];
+    private uint                  _commandBuffersUsed;
+    private ImGuiControllerShared _imgui;
     public void AddCommandBuffer(CommandBuffer* commandBuffer) {
         if (this._commandBuffersUsed == this._commandBuffers.Length) {
             //Resize _commandBuffers array to be 10 larger than it currently is if we dont have the space for any more
@@ -655,10 +657,10 @@ public unsafe class WebGPUBackend : GraphicsBackend {
 
 #if USE_IMGUI
         public override void ImGuiUpdate(double deltaTime) {
-            throw new NotImplementedException();
+            this._imgui.Update((float)deltaTime);
         }
         public override void ImGuiDraw(double deltaTime) {
-            throw new NotImplementedException();
+            this._imgui.Render();
         }
 #endif
 }
