@@ -61,12 +61,7 @@ public sealed unsafe class ImGuiControllerShared : ImGuiController {
 
             MappedData map =
                 this._renderer.Reserve((ushort)cmdListPtr.VtxBuffer.Size, (uint)cmdListPtr.IdxBuffer.Size, tex);
-            Buffer.MemoryCopy(
-                (void*)cmdListPtr.IdxBuffer.Data,
-                map.IndexPtr,
-                cmdListPtr.IdxBuffer.Size * sizeof(ushort),
-                cmdListPtr.IdxBuffer.Size * sizeof(ushort)
-            );
+            new Span<ushort>((void*)cmdListPtr.IdxBuffer.Data, cmdListPtr.IdxBuffer.Size).CopyTo(new Span<ushort>(map.IndexPtr, cmdListPtr.IdxBuffer.Size));
             for (int i = 0; i < cmdListPtr.IdxBuffer.Size; i++) {
                 map.IndexPtr[i] += (ushort)map.IndexOffset;
             }
