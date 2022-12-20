@@ -36,13 +36,6 @@ public sealed unsafe class ImGuiControllerShared : ImGuiController {
     }
 
     protected override void Draw(ImDrawDataPtr drawDataPtr) {
-        // int framebufferWidth  = (int)(drawDataPtr.DisplaySize.X * drawDataPtr.FramebufferScale.X);
-        // int framebufferHeight = (int)(drawDataPtr.DisplaySize.Y * drawDataPtr.FramebufferScale.Y);
-
-        // Will project scissor/clipping rectangles into framebuffer space
-        // Vector2 clipOff   = drawDataPtr.DisplayPos;       // (0,0) unless using multi-viewports
-        // Vector2 clipScale = drawDataPtr.FramebufferScale; // (1,1) unless using retina display which are often (2,2)
-
         this._renderer.Begin(CullFace.None);
 
         // Render command lists
