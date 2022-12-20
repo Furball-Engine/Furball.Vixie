@@ -345,8 +345,8 @@ public unsafe class WebGPUBackend : GraphicsBackend {
                 AlphaToCoverageEnabled = false
             },
             Primitive = new PrimitiveState {
-                // CullMode  = CullMode.Back,
-                CullMode  = CullMode.None,
+                CullMode  = CullMode.Back,
+                // CullMode  = CullMode.None,
                 Topology  = PrimitiveTopology.TriangleList,
                 FrontFace = FrontFace.Ccw
             },

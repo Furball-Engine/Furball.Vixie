@@ -43,7 +43,7 @@ public sealed unsafe class ImGuiControllerShared : ImGuiController {
         Vector2 clipOff   = drawDataPtr.DisplayPos;       // (0,0) unless using multi-viewports
         Vector2 clipScale = drawDataPtr.FramebufferScale; // (1,1) unless using retina display which are often (2,2)
 
-        this._renderer.Begin();
+        this._renderer.Begin(CullFace.None);
 
         // Render command lists
         for (int n = 0; n < drawDataPtr.CmdListsCount; n++) {

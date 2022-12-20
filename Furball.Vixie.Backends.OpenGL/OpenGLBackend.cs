@@ -210,8 +210,8 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
 
         this.gl.Enable(EnableCap.ScissorTest);
 
-        // this.gl.Enable(EnableCap.CullFace);
-        // this.gl.CullFace(TriangleFace.Back);
+        this.gl.Enable(EnableCap.CullFace);
+        this.gl.CullFace(TriangleFace.Back);
         
 #if USE_IMGUI
         OpenGlType type = this.CreationBackend switch {
