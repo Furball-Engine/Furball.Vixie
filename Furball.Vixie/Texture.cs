@@ -144,5 +144,13 @@ public class Texture : IDisposable {
         return tex._texture;
     }
 
+    public static bool operator ==(Texture tex1, VixieTexture tex) {
+        return tex1._texture == tex;
+    }
+
+    public static bool operator !=(Texture tex1, VixieTexture tex) {
+        return !(tex1 == tex);
+    }
+
     public override string ToString() => string.IsNullOrWhiteSpace(this.Name) ? base.ToString() : this.Name;
 }
