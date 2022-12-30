@@ -47,14 +47,15 @@ public abstract class Game : IDisposable {
             goto skipGLCheck;
 
         try {
-            Backends.Shared.Global.LatestSupportedGl = OpenGLDetector.OpenGLDetector.GetLatestSupported();
+            Backends.Shared.Global.LatestSupportedGl 
+                = new Lazy<(APIVersion GL, APIVersion GLES)>(() => OpenGLDetector.OpenGLDetector.GetLatestSupported());
             // Backends.Shared.Global.LatestSupportedGl = (new APIVersion(4, 6), new APIVersion(0, 0));
         }
         catch {
             //if an error occurs detecting the OpenGL version, fallback to legacy gl
             //todo make this logic smarter
-            Backends.Shared.Global.LatestSupportedGl.GL   = new APIVersion(2, 0);
-            Backends.Shared.Global.LatestSupportedGl.GLES = new APIVersion(0, 0);
+            Backends.Shared.Global.LatestSupportedGl 
+                = new Lazy<(APIVersion GL, APIVersion GLES)>(() => (new APIVersion(2, 0), new APIVersion(0, 0)));
         }
 skipGLCheck:
 

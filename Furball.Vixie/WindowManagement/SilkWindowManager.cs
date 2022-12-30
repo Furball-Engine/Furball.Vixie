@@ -170,22 +170,28 @@ public class SilkWindowManager : IWindowManager {
 #if VIXIE_BACKEND_OPENGL
             case Backend.OpenGLES:
                 //If the user's GPU doesnt support GLES 3.0, force 3.0 and mark we are in unsupported mode
-                if (Backends.Shared.Global.LatestSupportedGl.GLES.MajorVersion < 3) {
-                    Backends.Shared.Global.LatestSupportedGl.GLES = new APIVersion(3, 0);
-                    GraphicsBackendState.IsOnUnsupportedPlatform  = true; //mark us as running on an unsupported 
+                if (Backends.Shared.Global.LatestSupportedGl.Value.GLES.MajorVersion < 3) {
+                    (APIVersion GL, APIVersion GLES) gl = Backends.Shared.Global.LatestSupportedGl.Value;
+                    gl.GLES                                      = new APIVersion(3, 0);
+                    Backends.Shared.Global.LatestSupportedGl     = new(() => gl);
+                    GraphicsBackendState.IsOnUnsupportedPlatform = true; //mark us as running on an unsupported 
                 }
 
-                version = Backends.Shared.Global.LatestSupportedGl.GLES;
+                version = Backends.Shared.Global.LatestSupportedGl.Value.GLES;
                 break;
             case Backend.OpenGL:
                 //If the user's GPU doesnt support GL 2.0, force 2.0 and mark we are in unsupported mode
-                if (Backends.Shared.Global.LatestSupportedGl.GL.MajorVersion < 2) {
-                    Backends.Shared.Global.LatestSupportedGl.GL = new APIVersion(2, 0);
+                if (Backends.Shared.Global.LatestSupportedGl.Value.GL.MajorVersion < 2) {
+                    (APIVersion GL, APIVersion GLES) gl = Backends.Shared.Global.LatestSupportedGl.Value;
+                    gl.GL = new APIVersion(2, 0);
+
+                    Backends.Shared.Global.LatestSupportedGl = new(() => gl);
+
                     GraphicsBackendState.IsOnUnsupportedPlatform =
                         true; //mark us as running on an unsupported configuration
                 }
 
-                version = Backends.Shared.Global.LatestSupportedGl.GL;
+                version = Backends.Shared.Global.LatestSupportedGl.Value.GL;
                 break;
 #endif
 #if VIXIE_BACKEND_VELDRID

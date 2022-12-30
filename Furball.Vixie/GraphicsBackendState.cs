@@ -29,8 +29,8 @@ public static class GraphicsBackendState {
         bool preferOpenGl             = PrefferedBackends.HasFlag(Backend.OpenGL);
         bool preferOpenGlesOverOpenGl = PrefferedBackends.HasFlag(Backend.OpenGLES);
 
-        bool supportsGl   = Backends.Shared.Global.LatestSupportedGl.GL.MajorVersion   != 0;
-        bool supportsGles = Backends.Shared.Global.LatestSupportedGl.GLES.MajorVersion != 0;
+        Lazy<bool> supportsGl   = new(() => Backends.Shared.Global.LatestSupportedGl.Value.GL.MajorVersion   != 0);
+        Lazy<bool> supportsGles = new(() => Backends.Shared.Global.LatestSupportedGl.Value.GLES.MajorVersion != 0);
 #endif
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("BROWSER"))) {
@@ -56,26 +56,26 @@ public static class GraphicsBackendState {
 #endif
 
 #if VIXIE_BACKEND_OPENGL
-            if (preferOpenGl) {
-                if ((!supportsGl && supportsGles) || (supportsGles))
-                    if (preferOpenGlesOverOpenGl) {
-                        if (Backends.Shared.Global.LatestSupportedGl.GLES.MajorVersion < 3)
-                            throw new NotSupportedException("Your GPU does not support OpenGLES version 3.0 or above!");
+            if (!preferOpenGl)
+                return Backend.Direct3D11;
+            
+            if ((!supportsGl.Value && supportsGles.Value) || (supportsGles.Value))
+                if (preferOpenGlesOverOpenGl) {
+                    if (Backends.Shared.Global.LatestSupportedGl.Value.GLES.MajorVersion < 3)
+                        throw new NotSupportedException("Your GPU does not support OpenGLES version 3.0 or above!");
 
-                        return Backend.OpenGLES;
-                    }
-
-                if (supportsGl) {
-                    if (Backends.Shared.Global.LatestSupportedGl.GL.MajorVersion >= 2)
-                        return Backend.OpenGL;
+                    return Backend.OpenGLES;
                 }
 
-                throw new NotSupportedException("Your GPU does not support OpenGL!");
+            if (supportsGl.Value) {
+                if (Backends.Shared.Global.LatestSupportedGl.Value.GL.MajorVersion >= 2)
+                    return Backend.OpenGL;
             }
+
+            throw new NotSupportedException("Your GPU does not support OpenGL!");
 #endif
 
 #if VIXIE_BACKEND_D3D11
-            return Backend.Direct3D11;
 #endif
         }
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("ANDROID"))) {
@@ -85,9 +85,9 @@ public static class GraphicsBackendState {
 #endif
 
 #if VIXIE_BACKEND_OPENGL
-            if (supportsGles)
+            if (supportsGles.Value)
                 if (preferOpenGlesOverOpenGl) {
-                    if (Backends.Shared.Global.LatestSupportedGl.GLES.MajorVersion < 3)
+                    if (Backends.Shared.Global.LatestSupportedGl.Value.GLES.MajorVersion < 3)
                         throw new NotSupportedException("Your GPU does not support OpenGLES version 3.0 or above!");
 
                     return Backend.OpenGLES;
@@ -103,16 +103,16 @@ public static class GraphicsBackendState {
 #endif
 
 #if VIXIE_BACKEND_OPENGL
-            if ((!supportsGl && supportsGles) || (supportsGles))
+            if ((!supportsGl.Value && supportsGles.Value) || (supportsGles.Value))
                 if (preferOpenGlesOverOpenGl) {
-                    if (Backends.Shared.Global.LatestSupportedGl.GLES.MajorVersion < 3)
+                    if (Backends.Shared.Global.LatestSupportedGl.Value.GLES.MajorVersion < 3)
                         throw new NotSupportedException("Your GPU does not support OpenGLES version 3.0 or above!");
 
                     return Backend.OpenGLES;
                 }
 
-            if (supportsGl) {
-                if(Backends.Shared.Global.LatestSupportedGl.GL.MajorVersion >= 2)
+            if (supportsGl.Value) {
+                if(Backends.Shared.Global.LatestSupportedGl.Value.GL.MajorVersion >= 2)
                     return Backend.OpenGL;
             }
 
@@ -125,16 +125,16 @@ public static class GraphicsBackendState {
                 if (preferOpenGlesOverOpenGl)
                     Logger.Log("OpenGLES is considered unsupported on MacOS!", LoggerLevelDebugMessageCallback.InstanceNotification);
 
-                if ((!supportsGl && supportsGles) || (supportsGles))
+                if ((!supportsGl.Value && supportsGles.Value) || (supportsGles.Value))
                     if (preferOpenGlesOverOpenGl) {
-                        if (Backends.Shared.Global.LatestSupportedGl.GLES.MajorVersion < 3)
+                        if (Backends.Shared.Global.LatestSupportedGl.Value.GLES.MajorVersion < 3)
                             throw new NotSupportedException("Your GPU does not support OpenGLES version 3.0 or above!");
 
                         return Backend.OpenGLES;
                     }
 
-                if (supportsGl) {
-                    if(Backends.Shared.Global.LatestSupportedGl.GL.MajorVersion >= 2)
+                if (supportsGl.Value) {
+                    if(Backends.Shared.Global.LatestSupportedGl.Value.GL.MajorVersion >= 2)
                         return Backend.OpenGL;
                 }
 
@@ -148,16 +148,16 @@ public static class GraphicsBackendState {
         }
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("FREEBSD"))) {
 #if VIXIE_BACKEND_OPENGL
-            if ((!supportsGl && supportsGles) || (supportsGles))
+            if ((!supportsGl.Value && supportsGles.Value) || (supportsGles.Value))
                 if (preferOpenGlesOverOpenGl) {
-                    if (Backends.Shared.Global.LatestSupportedGl.GLES.MajorVersion < 3)
+                    if (Backends.Shared.Global.LatestSupportedGl.Value.GLES.MajorVersion < 3)
                         throw new NotSupportedException("Your GPU does not support OpenGLES version 3.0 or above!");
 
                     return Backend.OpenGLES;
                 }
 
-            if (supportsGl) {
-                if(Backends.Shared.Global.LatestSupportedGl.GL.MajorVersion >= 2)
+            if (supportsGl.Value) {
+                if(Backends.Shared.Global.LatestSupportedGl.Value.GL.MajorVersion >= 2)
                     return Backend.OpenGL;
             }
 

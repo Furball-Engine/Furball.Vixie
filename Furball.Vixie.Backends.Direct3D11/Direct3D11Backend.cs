@@ -64,18 +64,48 @@ public unsafe class Direct3D11Backend : GraphicsBackend {
         deviceFlags |= CreateDeviceFlag.Debug;
 #endif
 
-        this.d3d11.CreateDevice(
-            default(ComPtr<IDXGIAdapter>),
-            D3DDriverType.Hardware,
-            default(nint),
-            (uint)deviceFlags,
-            &featureLevel,
-            1,
-            D3D11.SdkVersion,
-            ref this.Device,
-            null,
-            ref this.DeviceContext
-        );
+        while (this.Device.Handle == null) {
+            try {
+                SilkMarshal.ThrowHResult(this.d3d11.CreateDevice(
+                                             default(ComPtr<IDXGIAdapter>),
+                                             D3DDriverType.Hardware,
+                                             default(nint),
+                                             (uint)deviceFlags,
+                                             &featureLevel,
+                                             1,
+                                             D3D11.SdkVersion,
+                                             ref this.Device,
+                                             null,
+                                             ref this.DeviceContext
+                                         ));
+            }
+            catch (Exception ex) {
+                if (deviceFlags == CreateDeviceFlag.None) {
+                    //Rethrow if there are no flags
+                    throw;
+                }
+
+                //If we have the debug flag, disable it
+                if ((deviceFlags & CreateDeviceFlag.Debug) != 0) {
+                    Logger.Log(
+                        $"Unable to create D3D11 device with flags {deviceFlags} (err: {ex}), disabling debug and trying again...",
+                        LoggerLevelD3D11.InstanceWarning);
+
+                    //If an exception was thrown, just disabled the debug flag and try again
+                    deviceFlags &= ~CreateDeviceFlag.Debug;
+
+                    continue;
+                }
+                
+                Logger.Log(
+                    $"Unable to create D3D11 device with flags {deviceFlags} (err: {ex}), disabling *all flags* and trying again...",
+                    LoggerLevelD3D11.InstanceWarning);
+
+                //If an exception was thrown, just disable all flags and try again
+                deviceFlags = CreateDeviceFlag.None;
+            }
+        }
+        
 
 #if DEBUG
         try {

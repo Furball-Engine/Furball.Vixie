@@ -347,7 +347,7 @@ internal sealed class VixieTextureGl : VixieTexture {
         if (tex is not VixieTextureGl glTex)
             Guard.Fail($"Texture must be of type {nameof (VixieTextureGl)}");
         else {
-            if (Global.LatestSupportedGl.GL is { MajorVersion: 4, MinorVersion: >= 3 }) {
+            if (Global.LatestSupportedGl.Value.GL is { MajorVersion: 4, MinorVersion: >= 3 }) {
                 this._backend.gl.CopyImageSubData(
                     this.TextureId,
                     CopyImageSubDataTarget.Texture2D,

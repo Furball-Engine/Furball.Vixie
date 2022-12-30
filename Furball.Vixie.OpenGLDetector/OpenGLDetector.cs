@@ -10,9 +10,6 @@ public static class OpenGLDetector {
     private static unsafe Window* CreateWindow(Sdl sdl) {
         var window = sdl.CreateWindow("", 0, 0, 1, 1, (uint)(WindowFlags.Hidden | WindowFlags.Opengl));
 
-        if (window == (Window*)0)
-            throw new Exception("Unable to create SDL window for OpenGL detection");
-
         return window;
     }
 
@@ -119,12 +116,19 @@ public static class OpenGLDetector {
         string err = sdl.GetErrorS();
         if (err.Length != 0) {
             sdl.ClearError();
-            sdl.DestroyWindow(_window);
-            if (err.Contains("GLXBadFBConfig")) {
-                sdl.Quit();
-                sdl.Init(Sdl.InitVideo);
+            if (_window != null) {
+                sdl.DestroyWindow(_window);
+                if (err.Contains("GLXBadFBConfig")) {
+                    sdl.Quit();
+                    sdl.Init(Sdl.InitVideo);
+                }
+
+                _window = null;
             }
+
             _window = CreateWindow(sdl);
+            if (_window == null)
+                return false;
 
             return false;
         }

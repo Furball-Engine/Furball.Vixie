@@ -137,24 +137,24 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
         this.FixedFunctionPipeline                    = FeatureLevels["FixedFunctionPipeline"];
 
         if (backend == Backend.OpenGLES) {
-            if (Global.LatestSupportedGl.GLES.MajorVersion >= 2) {
+            if (Global.LatestSupportedGl.Value.GLES.MajorVersion >= 2) {
                 FeatureLevels["NeedsCustomMipmapGeneration"].Value = false;
                 Logger.Log("Marking that we dont need custom mipmap generation!", LoggerLevelOpenGl.InstanceInfo);
             }
         } else {
-            if (Global.LatestSupportedGl.GL.MajorVersion < 3 || Global.LatestSupportedGl.GL.MajorVersion == 3 &&
-                Global.LatestSupportedGl.GL.MinorVersion                                                 < 2) {
+            if (Global.LatestSupportedGl.Value.GL.MajorVersion < 3 || Global.LatestSupportedGl.Value.GL.MajorVersion == 3 &&
+                Global.LatestSupportedGl.Value.GL.MinorVersion                                                 < 2) {
                 FeatureLevels["NeedsFramebufferExtension"].Value = true;
                 Logger.Log("Marking that we require the ExtFramebufferObject!", LoggerLevelOpenGl.InstanceInfo);
             }
 
-            if (Global.LatestSupportedGl.GL.MajorVersion >= 4 && Global.LatestSupportedGl.GL.MinorVersion >= 4 ||
-                Global.LatestSupportedGl.GL.MajorVersion > 4) {
+            if (Global.LatestSupportedGl.Value.GL.MajorVersion >= 4 && Global.LatestSupportedGl.Value.GL.MinorVersion >= 4 ||
+                Global.LatestSupportedGl.Value.GL.MajorVersion > 4) {
                 FeatureLevels["glBindTextures"].Value = true;
                 Logger.Log("Enabling multi-texture bind!", LoggerLevelOpenGl.InstanceInfo);
             }
 
-            if (Global.LatestSupportedGl.GL.MajorVersion >= 3) {
+            if (Global.LatestSupportedGl.Value.GL.MajorVersion >= 3) {
                 this.VaoFeatureLevel.Value = true;
                 
                 FeatureLevels["NeedsCustomMipmapGeneration"].Value = false;
@@ -164,13 +164,13 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
                 Logger.Log("We need the ARB_vertex_array_object extension!", LoggerLevelOpenGl.InstanceInfo);
             }
 
-            if (Global.LatestSupportedGl.GL.MajorVersion > 4 || Global.LatestSupportedGl.GL.MajorVersion == 4 &&
-                Global.LatestSupportedGl.GL.MinorVersion                                                 >= 5) {
+            if (Global.LatestSupportedGl.Value.GL.MajorVersion > 4 || Global.LatestSupportedGl.Value.GL.MajorVersion == 4 &&
+                Global.LatestSupportedGl.Value.GL.MinorVersion                                                 >= 5) {
                 FeatureLevels["BindlessMipmapGeneration"].Value = true;
                 Logger.Log("Marking that we can use bindless mipmap generation!", LoggerLevelOpenGl.InstanceInfo);
             }
 
-            if (Global.LatestSupportedGl.GL.MajorVersion < 2) {
+            if (Global.LatestSupportedGl.Value.GL.MajorVersion < 2) {
                 this.FixedFunctionPipeline.Value = true;
                 Logger.Log("Marking that we need to use the fixed function pipeline!", LoggerLevelOpenGl.InstanceInfo);
             }
@@ -215,7 +215,7 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
 #if USE_IMGUI
         OpenGlType type = this.CreationBackend switch {
 #if VIXIE_BACKEND_OPENGL
-            Backend.OpenGL when Global.LatestSupportedGl.GL.MajorVersion < 3 => OpenGlType.Legacy,
+            Backend.OpenGL when Global.LatestSupportedGl.Value.GL.MajorVersion < 3 => OpenGlType.Legacy,
             Backend.OpenGLES                                                 => OpenGlType.Es,
 #endif
             _                                                                => OpenGlType.Modern
@@ -235,7 +235,7 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
         this.CheckError("check check vendor");
         mainSection.Contents.Add(("Renderer", this.gl.GetStringS(StringName.Renderer)));
         this.CheckError("check check renderer");
-        if (Global.LatestSupportedGl.GL.MajorVersion >= 3) {
+        if (Global.LatestSupportedGl.Value.GL.MajorVersion >= 3) {
             bool foundExtFramebufferObject = false;
             Exception ex = new(
             "Your OpenGL version is too old and does not support the EXT_framebuffer_object extension! Try updating your video card drivers or try the Direct3D 11 and Vulkan backends!"
