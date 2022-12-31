@@ -48,7 +48,13 @@ public unsafe class Direct3D12Texture : VixieTexture {
             VisibleNodeMask      = 0,
             MemoryPoolPreference = MemoryPool.None
         };
-        this._texture = this._backend.Device.CreateCommittedResource<ID3D12Resource>(&textureHeapProperties, HeapFlags.None, &textureDesc, ResourceStates.CopyDest | ResourceStates.CopySource, null);
+        this._texture = this._backend.Device.CreateCommittedResource<ID3D12Resource>(
+            &textureHeapProperties, 
+            HeapFlags.None, 
+            &textureDesc, 
+            ResourceStates.CopyDest | ResourceStates.CopySource, 
+            null
+        );
 
         ulong uploadBufferSize = (ulong)(sizeof(Rgba32) * img.Width * img.Height);
 
@@ -100,7 +106,7 @@ public unsafe class Direct3D12Texture : VixieTexture {
             ViewDimension = SrvDimension.Texture2D
         };
         srvDesc.Anonymous.Texture2D.MipLevels = textureDesc.MipLevels;
-        // this._backend.Device.CreateShaderResourceView(this._texture, &srvDesc, );
+        this._backend.Device.CreateShaderResourceView(this._texture, &srvDesc, new CpuDescriptorHandle());
     }
 
     public override TextureFilterType FilterType {

@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using Furball.Vixie.Backends.Direct3D12.Abstractions;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.Renderers;
@@ -127,6 +128,33 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
             this.PrintInfoQueue();
             throw;
         }
+
+        //Find the largest heap we can create, going from 2^20, all the way down until we can create one
+        Direct3D12DescriptorHeap? heap = null;
+        int pow = 20;
+        while (heap == null && pow > 0) {
+            try {
+                uint sizeToTry = (uint)Math.Pow(2, pow);
+
+                heap = new Direct3D12DescriptorHeap(this, DescriptorHeapType.Sampler, sizeToTry);
+
+                heap.Dispose();
+
+                break;
+            }
+            catch {
+                heap = null;
+
+                pow--;
+            }
+        }
+
+        if (pow == 0) {
+            throw new Exception("Unable to create *any* size of heap! Try updating your graphics drivers!");
+        }
+
+        Direct3D12DescriptorHeap testHeap = new(this, DescriptorHeapType.Sampler);
+        Direct3D12DescriptorHeap testHeap2 = new(this, DescriptorHeapType.Sampler);
 
 #if USE_IMGUI
         throw new NotImplementedException("ImGui is not implemented on Direct3D12!");
@@ -488,7 +516,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
     }
 
     public override void Clear() {
-        D3Dcolorvalue clear = new D3Dcolorvalue(0, 0, 0, 0);
+        D3Dcolorvalue clear = new D3Dcolorvalue(0, 1, 0, 0);
 
         this.CommandList.ClearRenderTargetView(this._currentRtvHandle, (float*)&clear, 1u, in this.CurrentScissorRect);
     }
