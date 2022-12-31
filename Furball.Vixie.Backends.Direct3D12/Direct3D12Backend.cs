@@ -12,6 +12,8 @@ using Silk.NET.DXGI;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using Buffer=System.Buffer;
 using Rectangle=SixLabors.ImageSharp.Rectangle;
 
@@ -52,8 +54,11 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
     private Viewport                _viewport;
     private Box2D<long>             _surfaceSize;
 
-    private Box2D<int>          CurrentScissorRect;
-    private CpuDescriptorHandle _currentRtvHandle;
+    private Box2D<int>               CurrentScissorRect;
+    private CpuDescriptorHandle      _currentRtvHandle;
+    
+    public Direct3D12DescriptorHeap SamplerHeap;
+    public Direct3D12DescriptorHeap CbvSrvUavHeap;
 
     public override void Initialize(IView view, IInputContext inputContext) {
         //Get the D3D12 and DXGI APIs
@@ -149,12 +154,18 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
             }
         }
 
+        Direct3D12DescriptorHeap.DefaultSlotAmount = (uint)Math.Pow(2, pow);
+        
         if (pow == 0) {
             throw new Exception("Unable to create *any* size of heap! Try updating your graphics drivers!");
         }
 
-        Direct3D12DescriptorHeap testHeap = new(this, DescriptorHeapType.Sampler);
-        Direct3D12DescriptorHeap testHeap2 = new(this, DescriptorHeapType.Sampler);
+        this.SamplerHeap   = new Direct3D12DescriptorHeap(this, DescriptorHeapType.Sampler);
+        this.CbvSrvUavHeap = new Direct3D12DescriptorHeap(this, DescriptorHeapType.CbvSrvUav);
+
+        Image<Rgba32> img = new Image<Rgba32>(100, 100, new Rgba32(0, 255, 0));
+
+        Direct3D12Texture tex = new Direct3D12Texture(this, img, default);
 
 #if USE_IMGUI
         throw new NotImplementedException("ImGui is not implemented on Direct3D12!");

@@ -1,4 +1,5 @@
-﻿using Furball.Vixie.Backends.Shared;
+﻿using Furball.Vixie.Backends.Direct3D12.Abstractions;
+using Furball.Vixie.Backends.Shared;
 using Silk.NET.Core.Native;
 using Silk.NET.Direct3D12;
 using Silk.NET.DXGI;
@@ -12,6 +13,9 @@ public unsafe class Direct3D12Texture : VixieTexture {
     private readonly Direct3D12Backend _backend;
 
     private readonly ComPtr<ID3D12Resource> _texture;
+
+    public readonly Direct3D12DescriptorHeap Heap;
+    public readonly int                      HeapSlot;
 
     public uint Shader4ComponentMapping(uint src0, uint src1, uint src2, uint src3) {
         return src0 & 0x7            |
@@ -49,21 +53,33 @@ public unsafe class Direct3D12Texture : VixieTexture {
             MemoryPoolPreference = MemoryPool.None
         };
         this._texture = this._backend.Device.CreateCommittedResource<ID3D12Resource>(
-            &textureHeapProperties, 
-            HeapFlags.None, 
-            &textureDesc, 
-            ResourceStates.CopyDest | ResourceStates.CopySource, 
+            &textureHeapProperties,
+            HeapFlags.None,
+            &textureDesc,
+            ResourceStates.CopyDest, //TODO: figure out how to use a texture as a copy source
             null
         );
-
-        ulong uploadBufferSize = (ulong)(sizeof(Rgba32) * img.Width * img.Height);
-
+        
+        SubresourceFootprint footprint = new SubresourceFootprint {
+            Format   = Format.FormatR8G8B8A8Unorm,
+            Width    = (uint)img.Width,
+            Height   = (uint)img.Height,
+            Depth    = 1,
+            RowPitch = Align((uint)(img.Width * sizeof(Rgba32)), D3D12.TextureDataPitchAlignment)
+        };
+        
+        ulong uploadBufferSize = (ulong)(footprint.RowPitch * img.Height);
+        
         ResourceDesc uploadBufferDesc = new ResourceDesc {
             Dimension        = ResourceDimension.Buffer,
             Width            = uploadBufferSize,
+            Height           = 1,
             Format           = Format.FormatUnknown,
             DepthOrArraySize = 1,
-            Flags            = ResourceFlags.None
+            Flags            = ResourceFlags.None,
+            MipLevels        = 1,
+            SampleDesc       = new SampleDesc(1, 0),
+            Layout           = TextureLayout.LayoutRowMajor
         };
 
         HeapProperties uploadBufferHeapProperties = new HeapProperties {
@@ -73,19 +89,53 @@ public unsafe class Direct3D12Texture : VixieTexture {
             VisibleNodeMask      = 0,
             MemoryPoolPreference = MemoryPool.None
         };
-        ComPtr<ID3D12Resource> uploadBuffer = this._backend.Device.CreateCommittedResource<ID3D12Resource>(&uploadBufferHeapProperties, HeapFlags.None, &uploadBufferDesc, ResourceStates.GenericRead, null);
+        ComPtr<ID3D12Resource> uploadBuffer = this._backend.Device.CreateCommittedResource<ID3D12Resource>(
+            &uploadBufferHeapProperties, HeapFlags.None, &uploadBufferDesc, ResourceStates.GenericRead, null);
 
         //Declare the pointer which will point to our mapped data
-        void* mappedPtr = null;
+        void* mapBegin = null;
+        
         //Map the resource with no read range
-        SilkMarshal.ThrowHResult(uploadBuffer.Map(0, new Range(0, 0), &mappedPtr));
-        //Copy the image pixel data to the mapped pointer
-        img.CopyPixelDataTo(new Span<Rgba32>(mappedPtr, (int)uploadBufferSize));
+        SilkMarshal.ThrowHResult(uploadBuffer.Map(0, new Range(0, 0), &mapBegin));
+        void* mapCurrent = mapBegin;
+        void* mapEnd     = (void*)((ulong)mapBegin + uploadBufferDesc.Width);
+        
+        PlacedSubresourceFootprint placedTexture2D = new PlacedSubresourceFootprint {
+            Offset = (ulong)mapCurrent - (ulong)mapBegin,
+            Footprint = footprint
+        };
+
+        void* mapBegin2 = mapBegin;
+        
+        //Copy all the pixel data to the placed mapped pointer
+        img.ProcessPixelRows(imgAccessor => {
+            for (int y = 0; y < imgAccessor.Height; y++) {
+                imgAccessor.GetRowSpan(y).CopyTo(
+                    new Span<Rgba32>((void*)((nint)mapBegin2 + (nint)placedTexture2D.Offset + y * footprint.RowPitch),
+                                     sizeof(Rgba32) * imgAccessor.Width));
+            }
+        });
+        
         //Unmap the buffer
         uploadBuffer.Unmap(0, (Range*)null);
 
-        //Copy the upload buffer into the texture
-        this._backend.CommandList.CopyResource(this._texture, uploadBuffer);
+        this._backend.CommandList.CopyTextureRegion(
+            new TextureCopyLocation(
+                this._texture,
+                TextureCopyType.SubresourceIndex,
+                new TextureCopyLocationUnion(null, 0),
+                null,
+                0
+            ),
+            0, 0, 0,
+            new TextureCopyLocation(
+                uploadBuffer,
+                TextureCopyType.PlacedFootprint,
+                new TextureCopyLocationUnion(placedTexture2D),
+                placedTexture2D
+            ),
+            null
+        );
 
         //Tell the command list to wait for the texture to be copied before using it as a pixel shader resource
         ResourceBarrier copyBarrier = new ResourceBarrier {
@@ -102,11 +152,27 @@ public unsafe class Direct3D12Texture : VixieTexture {
 
         ShaderResourceViewDesc srvDesc = new ShaderResourceViewDesc {
             Shader4ComponentMapping = this.Shader4ComponentMapping(0, 1, 2, 3),
-            Format = textureDesc.Format,
-            ViewDimension = SrvDimension.Texture2D
+            Format                  = textureDesc.Format,
+            ViewDimension           = SrvDimension.Texture2D
         };
         srvDesc.Anonymous.Texture2D.MipLevels = textureDesc.MipLevels;
-        this._backend.Device.CreateShaderResourceView(this._texture, &srvDesc, new CpuDescriptorHandle());
+
+        this.Heap     = this._backend.CbvSrvUavHeap;
+        this.HeapSlot = this._backend.CbvSrvUavHeap.GetSlot();
+        (CpuDescriptorHandle Cpu, GpuDescriptorHandle Gpu) handles =
+            this._backend.CbvSrvUavHeap.GetHandlesForSlot(this.HeapSlot);
+
+        this._backend.Device.CreateShaderResourceView(this._texture, &srvDesc, handles.Cpu);
+    }
+
+    static uint Align(uint uValue, uint uAlign) {
+        // Assert power of 2 alignment
+        // Guard.Assert(0 == (uAlign & (uAlign - 1)));
+        uint uMask   = uAlign - 1;
+        uint uResult = (uValue + uMask) & ~uMask;
+        // Guard.Assert(uResult >= uValue);
+        // Guard.Assert(0       == (uResult % uAlign));
+        return uResult;
     }
 
     public override TextureFilterType FilterType {
@@ -116,9 +182,10 @@ public unsafe class Direct3D12Texture : VixieTexture {
     public override bool Mipmaps {
         get;
     }
-    public override VixieTexture SetData <pT>(ReadOnlySpan<pT> data)                 => throw new NotImplementedException();
-    public override VixieTexture SetData <pT>(ReadOnlySpan<pT> data, Rectangle rect) => throw new NotImplementedException();
-    public override Rgba32[]     GetData()                => throw new NotImplementedException();
+    public override VixieTexture SetData <pT>(ReadOnlySpan<pT> data) => throw new NotImplementedException();
+    public override VixieTexture SetData <pT>(ReadOnlySpan<pT> data, Rectangle rect) =>
+        throw new NotImplementedException();
+    public override Rgba32[] GetData() => throw new NotImplementedException();
     public override void CopyTo(VixieTexture tex) {
         throw new NotImplementedException();
     }
