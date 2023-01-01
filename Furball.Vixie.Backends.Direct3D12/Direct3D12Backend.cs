@@ -170,6 +170,8 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
 #if USE_IMGUI
         throw new NotImplementedException("ImGui is not implemented on Direct3D12!");
 #endif
+
+        this.PrintInfoQueue();
     }
 
     public void PrintInfoQueue() {
