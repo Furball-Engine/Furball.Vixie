@@ -619,7 +619,11 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         => new Direct3D12Texture(this, (int)width, (int)height, parameters);
 
     public override VixieTexture CreateWhitePixelTexture() {
-        throw new NotImplementedException();
+        Direct3D12Texture tex = new Direct3D12Texture(this, 1, 1, default);
+        tex.SetData<Rgba32>(new[] {
+            new Rgba32(255, 255, 255, 255)
+        });
+        return tex;
     }
 
 #if USE_IMGUI
