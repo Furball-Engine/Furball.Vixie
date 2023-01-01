@@ -181,9 +181,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         this.SamplerHeap   = new Direct3D12DescriptorHeap(this, DescriptorHeapType.Sampler, Direct3D12DescriptorHeap.DefaultSamplerSlotAmount);
         this.CbvSrvUavHeap = new Direct3D12DescriptorHeap(this, DescriptorHeapType.CbvSrvUav, Direct3D12DescriptorHeap.DefaultCbvSrvUavSlotAmount);
 
-        Image<Rgba32> img = new Image<Rgba32>(100, 100, new Rgba32(0, 255, 0));
-
-        Direct3D12Texture tex = new Direct3D12Texture(this, img, default);
+        Direct3D12Texture tex = new Direct3D12Texture(this, 100, 100, default);
 
 #if USE_IMGUI
         throw new NotImplementedException("ImGui is not implemented on Direct3D12!");
@@ -578,16 +576,47 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
     }
 
     public override VixieTexture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default) {
-        throw new NotImplementedException();
+        Image<Rgba32> image;
+
+        bool qoi = imageData.Length > 3 && imageData[0] == 'q' && imageData[1] == 'o' && imageData[2] == 'i' &&
+                   imageData[3]     == 'f';
+
+        if (qoi) {
+            (Rgba32[] pixels, QoiLoader.QoiHeader header) data = QoiLoader.Load(imageData);
+
+            image = Image.LoadPixelData(data.pixels, (int)data.header.Width, (int)data.header.Height);
+        }
+        else {
+            image = Image.Load<Rgba32>(imageData);
+        }
+
+        Direct3D12Texture texture = new Direct3D12Texture(this, image.Width, image.Height, parameters);
+
+        Rgba32[] arr = new Rgba32[texture.Width * texture.Height];
+        image.CopyPixelDataTo(arr);
+
+        texture.SetData<Rgba32>(arr);
+        
+        image.Dispose();
+
+        return texture;
     }
 
     public override VixieTexture CreateTextureFromStream(Stream stream, TextureParameters parameters = default) {
-        throw new NotImplementedException();
+        using Image<Rgba32> image = Image.Load<Rgba32>(stream);
+
+        Direct3D12Texture texture = new Direct3D12Texture(this, image.Width, image.Height, parameters);
+
+        Rgba32[] arr = new Rgba32[texture.Width * texture.Height];
+        image.CopyPixelDataTo(arr);
+
+        texture.SetData<Rgba32>(arr);
+        
+        return texture;
     }
 
-    public override VixieTexture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default) {
-        throw new NotImplementedException();
-    }
+    public override VixieTexture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default) 
+        => new Direct3D12Texture(this, (int)width, (int)height, parameters);
 
     public override VixieTexture CreateWhitePixelTexture() {
         throw new NotImplementedException();

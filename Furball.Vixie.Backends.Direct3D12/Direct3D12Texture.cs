@@ -25,8 +25,7 @@ public unsafe class Direct3D12Texture : VixieTexture {
                1            << 3 * 4;
     }
 
-
-    public Direct3D12Texture(Direct3D12Backend backend, Image<Rgba32> img, TextureParameters parameters) {
+    public Direct3D12Texture(Direct3D12Backend backend, int width, int height, TextureParameters parameters) {
         this._backend = backend;
 
         //Store whether or not we are using mipmaps
@@ -34,10 +33,10 @@ public unsafe class Direct3D12Texture : VixieTexture {
 
         //Create a description of the texture resource
         ResourceDesc textureDesc = new ResourceDesc {
-            MipLevels        = (ushort)(parameters.RequestMipmaps ? this.MipMapCount(img.Width, img.Height) : 1),
+            MipLevels        = (ushort)(parameters.RequestMipmaps ? this.MipMapCount(width, height) : 1),
             Format           = Format.FormatR8G8B8A8Unorm,
-            Width            = (ulong)img.Width,
-            Height           = (uint)img.Height,
+            Width            = (ulong)width,
+            Height           = (uint)height,
             Flags            = ResourceFlags.None,
             DepthOrArraySize = 1,
             Dimension        = ResourceDimension.Texture2D,
@@ -64,17 +63,59 @@ public unsafe class Direct3D12Texture : VixieTexture {
             null
         );
         
-        //Create the subresource footprint of the texture
+        //The description for the shader resource view of the texture
+        ShaderResourceViewDesc srvDesc = new ShaderResourceViewDesc {
+            Shader4ComponentMapping = this.Shader4ComponentMapping(0, 1, 2, 3),
+            Format                  = textureDesc.Format,
+            ViewDimension           = SrvDimension.Texture2D
+        };
+        srvDesc.Anonymous.Texture2D.MipLevels = textureDesc.MipLevels;
+
+        //Get the heap that this texture is stored in
+        this.Heap     = this._backend.CbvSrvUavHeap;
+        //Get the slot in the heap this texture is in
+        this.HeapSlot = this._backend.CbvSrvUavHeap.GetSlot();
+        //Get the handles of this slot
+        (CpuDescriptorHandle Cpu, GpuDescriptorHandle Gpu) handles =
+            this._backend.CbvSrvUavHeap.GetHandlesForSlot(this.HeapSlot);
+
+        //Create the shader resource view for this texture
+        this._backend.Device.CreateShaderResourceView(this._texture, &srvDesc, handles.Cpu);
+        
+        //TODO: create the sampler
+    }
+
+    static uint Align(uint uValue, uint uAlign) {
+        // Assert power of 2 alignment
+        // Guard.Assert(0 == (uAlign & (uAlign - 1)));
+        uint uMask   = uAlign - 1;
+        uint uResult = (uValue + uMask) & ~uMask;
+        // Guard.Assert(uResult >= uValue);
+        // Guard.Assert(0       == (uResult % uAlign));
+        return uResult;
+    }
+
+    public override TextureFilterType FilterType {
+        get;
+        set;
+    }
+    
+    public override bool Mipmaps {
+        get;
+    }
+    
+    public override VixieTexture SetData <pT>(ReadOnlySpan<pT> data) {
+       //Create the subresource footprint of the texture
         SubresourceFootprint footprint = new SubresourceFootprint {
             Format   = Format.FormatR8G8B8A8Unorm,
-            Width    = (uint)img.Width,
-            Height   = (uint)img.Height,
+            Width    = (uint)this.Width,
+            Height   = (uint)this.Height,
             Depth    = 1,
-            RowPitch = Align((uint)(img.Width * sizeof(Rgba32)), D3D12.TextureDataPitchAlignment)
+            RowPitch = Align((uint)(this.Width * sizeof(Rgba32)), D3D12.TextureDataPitchAlignment)
         };
         
         //The size of our upload buffer
-        ulong uploadBufferSize = (ulong)(footprint.RowPitch * img.Height);
+        ulong uploadBufferSize = (ulong)(footprint.RowPitch * this.Height);
         
         //The description of the upload buffer
         ResourceDesc uploadBufferDesc = new ResourceDesc {
@@ -118,18 +159,17 @@ public unsafe class Direct3D12Texture : VixieTexture {
             Footprint = footprint
         };
 
-        //Copy the mapBegin variable so we can use it inside of the lambda
-        void* mapBegin2 = mapBegin;
-        
-        //Copy all the pixel data to the placed mapped pointer
-        img.ProcessPixelRows(imgAccessor => {
-            for (int y = 0; y < imgAccessor.Height; y++) {
-                imgAccessor.GetRowSpan(y).CopyTo(
-                    new Span<Rgba32>((void*)((nint)mapBegin2 + (nint)placedTexture2D.Offset + y * footprint.RowPitch),
-                                     sizeof(Rgba32) * imgAccessor.Width));
+        fixed (void* dataPtr = data) {
+            Span<Rgba32> rgbaSpan = new Span<Rgba32>(dataPtr, data.Length * sizeof(pT));
+            for (int y = 0; y < this.Height; y++) {
+                rgbaSpan.Slice(this.Width * y, this.Width)
+                        .CopyTo(
+                             new Span<Rgba32>(
+                                 (void*)((nint)mapBegin + (nint)placedTexture2D.Offset + y * footprint.RowPitch),
+                                 sizeof(Rgba32) * this.Width));
             }
-        });
-        
+        }
+
         //Unmap the buffer
         uploadBuffer.Unmap(0, (Range*)null);
 
@@ -163,53 +203,16 @@ public unsafe class Direct3D12Texture : VixieTexture {
         this._backend.CommandList.ResourceBarrier(1, &copyBarrier);
 
         //Release the upload buffer as we no longer need it
-        uploadBuffer.Release();
+        uploadBuffer.Dispose();
 
-        //The description for the shader resource view of the texture
-        ShaderResourceViewDesc srvDesc = new ShaderResourceViewDesc {
-            Shader4ComponentMapping = this.Shader4ComponentMapping(0, 1, 2, 3),
-            Format                  = textureDesc.Format,
-            ViewDimension           = SrvDimension.Texture2D
-        };
-        srvDesc.Anonymous.Texture2D.MipLevels = textureDesc.MipLevels;
-
-        //Get the heap that this texture is stored in
-        this.Heap     = this._backend.CbvSrvUavHeap;
-        //Get the slot in the heap this texture is in
-        this.HeapSlot = this._backend.CbvSrvUavHeap.GetSlot();
-        //Get the handles of this slot
-        (CpuDescriptorHandle Cpu, GpuDescriptorHandle Gpu) handles =
-            this._backend.CbvSrvUavHeap.GetHandlesForSlot(this.HeapSlot);
-
-        //Create the shader resource view for this texture
-        this._backend.Device.CreateShaderResourceView(this._texture, &srvDesc, handles.Cpu);
-        
-        //TODO: create the sampler
+        return this; 
     }
 
-    static uint Align(uint uValue, uint uAlign) {
-        // Assert power of 2 alignment
-        // Guard.Assert(0 == (uAlign & (uAlign - 1)));
-        uint uMask   = uAlign - 1;
-        uint uResult = (uValue + uMask) & ~uMask;
-        // Guard.Assert(uResult >= uValue);
-        // Guard.Assert(0       == (uResult % uAlign));
-        return uResult;
-    }
-
-    public override TextureFilterType FilterType {
-        get;
-        set;
+    public override VixieTexture SetData <pT>(ReadOnlySpan<pT> data, Rectangle rect) {
+        //TODO
+        return this;
     }
     
-    public override bool Mipmaps {
-        get;
-    }
-    
-    public override VixieTexture SetData <pT>(ReadOnlySpan<pT> data) => throw new NotImplementedException();
-    
-    public override VixieTexture SetData <pT>(ReadOnlySpan<pT> data, Rectangle rect) =>
-        throw new NotImplementedException();
     public override Rgba32[] GetData() => throw new NotImplementedException();
     
     public override void CopyTo(VixieTexture tex) {
