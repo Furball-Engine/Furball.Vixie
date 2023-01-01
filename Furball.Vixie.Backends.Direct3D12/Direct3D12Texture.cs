@@ -3,6 +3,7 @@ using Furball.Vixie.Backends.Shared;
 using Silk.NET.Core.Native;
 using Silk.NET.Direct3D12;
 using Silk.NET.DXGI;
+using Silk.NET.Maths;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using Rectangle=System.Drawing.Rectangle;
@@ -27,6 +28,7 @@ public unsafe class Direct3D12Texture : VixieTexture {
 
     public Direct3D12Texture(Direct3D12Backend backend, int width, int height, TextureParameters parameters) {
         this._backend = backend;
+        this.Size     = new Vector2D<int>(width, height);
 
         //Store whether or not we are using mipmaps
         this.Mipmaps = parameters.RequestMipmaps;

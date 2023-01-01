@@ -35,8 +35,8 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
     public ComPtr<ID3D12DebugDevice> DebugDevice;
     public ComPtr<ID3D12InfoQueue>   DebugInfoQueue;
 
-    public ComPtr<ID3D12CommandQueue>         CommandQueue;
-    public ComPtr<ID3D12CommandAllocator>     CommandAllocator;
+    public ComPtr<ID3D12CommandQueue>        CommandQueue;
+    public ComPtr<ID3D12CommandAllocator>    CommandAllocator;
     public ComPtr<ID3D12GraphicsCommandList> CommandList;
 
     public uint                FrameIndex;
@@ -54,9 +54,9 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
     private Viewport                _viewport;
     private Box2D<long>             _surfaceSize;
 
-    private Box2D<int>               CurrentScissorRect;
-    private CpuDescriptorHandle      _currentRtvHandle;
-    
+    private Box2D<int>          CurrentScissorRect;
+    private CpuDescriptorHandle _currentRtvHandle;
+
     public Direct3D12DescriptorHeap SamplerHeap;
     public Direct3D12DescriptorHeap CbvSrvUavHeap;
 
@@ -136,7 +136,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
 
         //Find the largest heap we can create, going from 2^20, all the way down until we can create one
         Direct3D12DescriptorHeap? heap = null;
-        int pow = 20;
+        int                       pow  = 20;
         while (heap == null && pow > 0) {
             try {
                 uint sizeToTry = (uint)Math.Pow(2, pow);
@@ -154,7 +154,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
             }
         }
         Direct3D12DescriptorHeap.DefaultSamplerSlotAmount = (uint)Math.Pow(2, pow);
- 
+
         pow = 20;
         while (heap == null && pow > 0) {
             try {
@@ -173,13 +173,15 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
             }
         }
         Direct3D12DescriptorHeap.DefaultCbvSrvUavSlotAmount = (uint)Math.Pow(2, pow);
-        
+
         if (pow == 0) {
             throw new Exception("Unable to create *any* size of heap! Try updating your graphics drivers!");
         }
 
-        this.SamplerHeap   = new Direct3D12DescriptorHeap(this, DescriptorHeapType.Sampler, Direct3D12DescriptorHeap.DefaultSamplerSlotAmount);
-        this.CbvSrvUavHeap = new Direct3D12DescriptorHeap(this, DescriptorHeapType.CbvSrvUav, Direct3D12DescriptorHeap.DefaultCbvSrvUavSlotAmount);
+        this.SamplerHeap = new Direct3D12DescriptorHeap(this, DescriptorHeapType.Sampler,
+                                                        Direct3D12DescriptorHeap.DefaultSamplerSlotAmount);
+        this.CbvSrvUavHeap = new Direct3D12DescriptorHeap(this, DescriptorHeapType.CbvSrvUav,
+                                                          Direct3D12DescriptorHeap.DefaultCbvSrvUavSlotAmount);
 
         Direct3D12Texture tex = new Direct3D12Texture(this, 100, 100, default);
 
@@ -213,8 +215,10 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
     }
 
     private void CreatePipelineState() {
-        byte[] vertexShaderDxil = ResourceHelpers.GetByteResource(@"Shaders/VertexShader.dxil", typeof(Direct3D12Backend));
-        byte[] pixelShaderDxil  = ResourceHelpers.GetByteResource(@"Shaders/PixelShader.dxil", typeof(Direct3D12Backend));
+        byte[] vertexShaderDxil =
+            ResourceHelpers.GetByteResource(@"Shaders/VertexShader.dxil", typeof(Direct3D12Backend));
+        byte[] pixelShaderDxil =
+            ResourceHelpers.GetByteResource(@"Shaders/PixelShader.dxil", typeof(Direct3D12Backend));
 
         ComPtr<ID3D10Blob> vertexShaderBlob = null;
         ComPtr<ID3D10Blob> pixelShaderBlob  = null;
@@ -223,7 +227,8 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
 
         //Copy the shader to the blob
         fixed (void* ptr = vertexShaderDxil)
-            Buffer.MemoryCopy(ptr, vertexShaderBlob.GetBufferPointer(), vertexShaderDxil.Length, vertexShaderDxil.Length);
+            Buffer.MemoryCopy(ptr, vertexShaderBlob.GetBufferPointer(), vertexShaderDxil.Length,
+                              vertexShaderDxil.Length);
         fixed (void* ptr = pixelShaderDxil)
             Buffer.MemoryCopy(ptr, pixelShaderBlob.GetBufferPointer(), pixelShaderDxil.Length, pixelShaderDxil.Length);
 
@@ -289,7 +294,9 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         desc.InputLayout.PInputElementDescs = inputElementDescriptors;
         desc.InputLayout.NumElements        = inputElementDescCount;
 
-        desc.PRootSignature = this.RootSignature = this.Device.CreateRootSignature<ID3D12RootSignature>(0, vertexShaderBlob.GetBufferPointer(), vertexShaderBlob.GetBufferSize());
+        desc.PRootSignature = this.RootSignature =
+            this.Device.CreateRootSignature<ID3D12RootSignature>(0, vertexShaderBlob.GetBufferPointer(),
+                                                                 vertexShaderBlob.GetBufferSize());
 
         desc.RasterizerState = new RasterizerDesc {
             FillMode              = FillMode.Solid,
@@ -456,9 +463,8 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         this.SetFullScissorRect();
     }
 
-    public override VixieRenderer CreateRenderer() {
-        throw new NotImplementedException();
-    }
+    public override VixieRenderer CreateRenderer() => new Direct3D12Renderer(this);
+
     public override BoxBlurTextureEffect CreateBoxBlurTextureEffect(VixieTexture source) {
         try {
             return new OpenCLBoxBlurTextureEffect(this, source);
@@ -470,12 +476,16 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
 
     public override Vector2D<int> MaxTextureSize { get; }
 
+    private bool _firstFrame = true;
     public override void BeginScene() {
         base.BeginScene();
 
-        //Reset the command allocator and command list
-        this.CommandAllocator.Reset();
-        this.CommandList.Reset(this.CommandAllocator, this.PipelineState);
+        if (!this._firstFrame) {
+            //Reset the command allocator and command list
+            this.CommandList.Reset(this.CommandAllocator, this.PipelineState);
+            this.CommandAllocator.Reset();
+        }
+        this._firstFrame = false;
 
         this.CommandList.SetGraphicsRootSignature(this.RootSignature);
         // this.CommandList.SetDescriptorHeaps();
@@ -542,6 +552,10 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         }
 
         this.FrameIndex = this._swapchain.GetCurrentBackBufferIndex();
+
+#if DEBUG
+        this.PrintInfoQueue();
+#endif
     }
 
     public override void Clear() {
@@ -555,7 +569,8 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
     }
 
     public override Rectangle ScissorRect {
-        get => new Rectangle(this.CurrentScissorRect.Min.X, this.CurrentScissorRect.Min.Y, this.CurrentScissorRect.Size.X, this.CurrentScissorRect.Size.Y);
+        get => new Rectangle(this.CurrentScissorRect.Min.X, this.CurrentScissorRect.Min.Y,
+                             this.CurrentScissorRect.Size.X, this.CurrentScissorRect.Size.Y);
         set => this.CurrentScissorRect = new Box2D<int>(value.X, value.Y, value.Right, value.Bottom);
     }
 
@@ -596,7 +611,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         image.CopyPixelDataTo(arr);
 
         texture.SetData<Rgba32>(arr);
-        
+
         image.Dispose();
 
         return texture;
@@ -611,11 +626,11 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         image.CopyPixelDataTo(arr);
 
         texture.SetData<Rgba32>(arr);
-        
+
         return texture;
     }
 
-    public override VixieTexture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default) 
+    public override VixieTexture CreateEmptyTexture(uint width, uint height, TextureParameters parameters = default)
         => new Direct3D12Texture(this, (int)width, (int)height, parameters);
 
     public override VixieTexture CreateWhitePixelTexture() {

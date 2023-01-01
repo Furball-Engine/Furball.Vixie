@@ -18,8 +18,8 @@ struct VS_Input
     float2 Position : POSITION;
     float2 TexCoord : TEXCOORD;
     float4 Color : COLOR;
-    nointerpolation uint InstanceTextureId2 : TEXID;
-    nointerpolation uint InstanceTextureId1 : TEXID1;
+    nointerpolation uint SamplerId : TEXID1;
+    nointerpolation uint TextureId : TEXID;
 };
 
 struct VS_Output
@@ -28,6 +28,7 @@ struct VS_Output
     float2 TexCoord : TEXCOORD;
     float4 Color : COLOR;
     nointerpolation uint TextureId : TEXID;
+    nointerpolation uint SamplerId : TEXID1;
 };
 
 cbuffer VS_ConstantBuffer : register(b0) {
@@ -42,7 +43,8 @@ VS_Output VS_Main(const VS_Input input)
     output.Position = mul(ProjectionMatrix, float4(input.Position.x, input.Position.y, 0, 1));
     output.Color = input.Color;
     output.TexCoord = input.TexCoord;
-    output.TextureId = input.InstanceTextureId1 + input.InstanceTextureId2;
+    output.TextureId = input.TextureId;
+    output.SamplerId = input.SamplerId;
 
     return output;
 }
@@ -52,5 +54,5 @@ SamplerState Samplers[] : register(s0);
 
 float4 PS_Main(const VS_Output input) : SV_Target
 {
-    return Textures[input.TextureId].Sample(Samplers[input.TextureId], input.TexCoord) * input.Color;
+    return Textures[input.TextureId].Sample(Samplers[input.SamplerId], input.TexCoord) * input.Color;
 }
