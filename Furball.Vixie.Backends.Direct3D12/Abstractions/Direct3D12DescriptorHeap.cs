@@ -4,7 +4,8 @@ using Silk.NET.Direct3D12;
 namespace Furball.Vixie.Backends.Direct3D12.Abstractions;
 
 public unsafe class Direct3D12DescriptorHeap : IDisposable {
-    public static uint DefaultSlotAmount = 2048;
+    public static uint DefaultSamplerSlotAmount   = 2048;
+    public static uint DefaultCbvSrvUavSlotAmount = 1048576;
 
     private readonly Direct3D12Backend  _backend;
     private readonly DescriptorHeapType _type;
@@ -18,10 +19,6 @@ public unsafe class Direct3D12DescriptorHeap : IDisposable {
     private readonly uint                _slotSize;
     private readonly CpuDescriptorHandle CpuHandle;
     private readonly GpuDescriptorHandle GpuHandle;
-
-    public Direct3D12DescriptorHeap(Direct3D12Backend backend, DescriptorHeapType type) :
-        this(backend, type, DefaultSlotAmount) {
-    }
 
     public Direct3D12DescriptorHeap(Direct3D12Backend backend, DescriptorHeapType type, uint slots) {
         this._backend = backend;

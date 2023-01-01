@@ -153,15 +153,33 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
                 pow--;
             }
         }
+        Direct3D12DescriptorHeap.DefaultSamplerSlotAmount = (uint)Math.Pow(2, pow);
+ 
+        pow = 20;
+        while (heap == null && pow > 0) {
+            try {
+                uint sizeToTry = (uint)Math.Pow(2, pow);
 
-        Direct3D12DescriptorHeap.DefaultSlotAmount = (uint)Math.Pow(2, pow);
+                heap = new Direct3D12DescriptorHeap(this, DescriptorHeapType.CbvSrvUav, sizeToTry);
+
+                heap.Dispose();
+
+                break;
+            }
+            catch {
+                heap = null;
+
+                pow--;
+            }
+        }
+        Direct3D12DescriptorHeap.DefaultCbvSrvUavSlotAmount = (uint)Math.Pow(2, pow);
         
         if (pow == 0) {
             throw new Exception("Unable to create *any* size of heap! Try updating your graphics drivers!");
         }
 
-        this.SamplerHeap   = new Direct3D12DescriptorHeap(this, DescriptorHeapType.Sampler);
-        this.CbvSrvUavHeap = new Direct3D12DescriptorHeap(this, DescriptorHeapType.CbvSrvUav);
+        this.SamplerHeap   = new Direct3D12DescriptorHeap(this, DescriptorHeapType.Sampler, Direct3D12DescriptorHeap.DefaultSamplerSlotAmount);
+        this.CbvSrvUavHeap = new Direct3D12DescriptorHeap(this, DescriptorHeapType.CbvSrvUav, Direct3D12DescriptorHeap.DefaultCbvSrvUavSlotAmount);
 
         Image<Rgba32> img = new Image<Rgba32>(100, 100, new Rgba32(0, 255, 0));
 
