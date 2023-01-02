@@ -394,7 +394,8 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
                 SwapEffect  = SwapEffect.FlipDiscard,
                 SampleDesc = new SampleDesc {
                     Count = 1
-                }
+                }, 
+                Scaling = Scaling.None
             };
 
             ComPtr<IDXGISwapChain1> newSwapchain = null;
