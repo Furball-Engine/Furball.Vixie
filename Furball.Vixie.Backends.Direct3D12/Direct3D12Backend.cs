@@ -376,7 +376,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
             
             this._renderTargetViewHeap.Dispose();
             
-            Console.WriteLine(this._swapchain.ResizeBuffers(
+            SilkMarshal.ThrowHResult(this._swapchain.ResizeBuffers(
                 BackbufferCount,
                 width,
                 height,
@@ -398,14 +398,14 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
             };
 
             ComPtr<IDXGISwapChain1> newSwapchain = null;
-            this._view.CreateDxgiSwapchain(
+            SilkMarshal.ThrowHResult(this._view.CreateDxgiSwapchain(
                 (IDXGIFactory2*)this.DXGIFactory.Handle,
                 (IUnknown*)this.CommandQueue.Handle,
                 &desc,
                 pFullscreenDesc: null,
                 pRestrictToOutput: null,
                 newSwapchain.GetAddressOf()
-            );
+            ));
 
             this._swapchain = newSwapchain.QueryInterface<IDXGISwapChain3>();
         }
@@ -613,7 +613,6 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
     public override void Clear() {
         D3Dcolorvalue clear = new D3Dcolorvalue(0, 1, 0, 0);
 
-        Console.WriteLine($"{this._view.FramebufferSize}:{this.CurrentScissorRect.Size}");
         this.CommandList.ClearRenderTargetView(this._currentRtvHandle, (float*)&clear, 1u, in this.CurrentScissorRect);
     }
 
