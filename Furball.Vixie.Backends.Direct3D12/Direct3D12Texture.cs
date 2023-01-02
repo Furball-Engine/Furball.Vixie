@@ -16,6 +16,7 @@ public unsafe class Direct3D12Texture : VixieTexture {
     private readonly ComPtr<ID3D12Resource> _texture;
 
     public readonly Direct3D12DescriptorHeap Heap;
+    public readonly Direct3D12DescriptorHeap SamplerHeap;
 
     public readonly int SRVHeapSlot;
     public readonly int SamplerHeapSlot;
@@ -86,9 +87,31 @@ public unsafe class Direct3D12Texture : VixieTexture {
         //Create the shader resource view for this texture
         this._backend.Device.CreateShaderResourceView(this._texture, &srvDesc, handles.Cpu);
 
-        this._texture.SetName("texture");
+        this._texture.SetName("bro WHAT ARE YOU ON");
 
-        //TODO: create the sampler
+        //Get the slot and heap for the sampler
+        this.SamplerHeap     = this._backend.SamplerHeap;
+        this.SamplerHeapSlot = this.SamplerHeap.GetSlot();
+
+        //Get the CPU and GPU handles for the sampler
+        handles = this.SamplerHeap.GetHandlesForSlot(this.SamplerHeapSlot);
+
+        //Set the details of the sampler
+        SamplerDesc samplerDesc = new SamplerDesc {
+            Filter = Filter.MinMagMipLinear, //TODO: set the filter properly, and re-use samplers as much as possible
+            //                                       currently we create a new sampler for every texture, when in D3D12, 
+            //                                       samplers arent bound to textures, so we can re-use them
+            AddressU       = TextureAddressMode.Wrap,
+            AddressW       = TextureAddressMode.Wrap,
+            AddressV       = TextureAddressMode.Wrap,
+            ComparisonFunc = ComparisonFunc.Never,
+            MinLOD         = 0,
+            MipLODBias     = 0,
+            MaxLOD         = float.MaxValue,
+            MaxAnisotropy  = 16
+        };
+
+        this._backend.Device.CreateSampler(in samplerDesc, handles.Cpu);
     }
 
     static uint Align(uint uValue, uint uAlign) {
