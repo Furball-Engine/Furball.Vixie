@@ -1,5 +1,6 @@
 ﻿using Furball.Vixie.Backends.Direct3D12.Abstractions;
 using Furball.Vixie.Backends.Shared;
+using Furball.Vixie.Helpers;
 using Silk.NET.Core.Native;
 using Silk.NET.Direct3D12;
 using Silk.NET.DXGI;
@@ -114,16 +115,6 @@ public unsafe class Direct3D12Texture : VixieTexture {
         this._backend.Device.CreateSampler(in samplerDesc, handles.Cpu);
     }
 
-    static uint Align(uint uValue, uint uAlign) {
-        // Assert power of 2 alignment
-        // Guard.Assert(0 == (uAlign & (uAlign - 1)));
-        uint uMask   = uAlign - 1;
-        uint uResult = (uValue + uMask) & ~uMask;
-        // Guard.Assert(uResult >= uValue);
-        // Guard.Assert(0       == (uResult % uAlign));
-        return uResult;
-    }
-
     public override TextureFilterType FilterType {
         get;
         set;
@@ -140,7 +131,7 @@ public unsafe class Direct3D12Texture : VixieTexture {
             Width    = (uint)this.Width,
             Height   = (uint)this.Height,
             Depth    = 1,
-            RowPitch = Align((uint)(this.Width * sizeof(Rgba32)), D3D12.TextureDataPitchAlignment)
+            RowPitch = Direct3D12Backend.Align((uint)(this.Width * sizeof(Rgba32)), D3D12.TextureDataPitchAlignment)
         };
 
         //The size of our upload buffer

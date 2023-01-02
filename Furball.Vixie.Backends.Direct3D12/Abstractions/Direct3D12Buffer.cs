@@ -72,6 +72,10 @@ public unsafe class Direct3D12Buffer {
     }
 
     public void BarrierTransition(ResourceStates stateTo) {
+        //Dont barrier transition if we are *already* in said state
+        if (this.CurrentResourceState == stateTo)
+            return; //NOTE: should this be allowed? i dont see a reason but maybe there is
+        
         //Tell the command list that this resource is now in use for `stateTo` purpose
         ResourceBarrier copyBarrier = new ResourceBarrier {
             Type = ResourceBarrierType.Transition

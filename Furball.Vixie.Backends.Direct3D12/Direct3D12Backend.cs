@@ -1,9 +1,11 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Numerics;
+using System.Runtime.CompilerServices;
 using Furball.Vixie.Backends.Direct3D12.Abstractions;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Backends.Shared.TextureEffects.Blur;
+using Furball.Vixie.Helpers;
 using Furball.Vixie.Helpers.Helpers;
 using Silk.NET.Core.Native;
 using Silk.NET.Direct3D.Compilers;
@@ -45,11 +47,11 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
     public ulong               FenceValue;
     public ComPtr<ID3D12Fence> Fence;
 
-    const uint BACKBUFFER_COUNT = 2;
+    private const uint BackbufferCount = 2;
 
     private ComPtr<ID3D12DescriptorHeap> _renderTargetViewHeap;
     private uint                         _rtvDescriptorSize;
-    private ComPtr<ID3D12Resource>[]     _renderTargets = new ComPtr<ID3D12Resource>[BACKBUFFER_COUNT];
+    private ComPtr<ID3D12Resource>[]     _renderTargets = new ComPtr<ID3D12Resource>[BackbufferCount];
 
     private ComPtr<IDXGISwapChain3> _swapchain;
     private Viewport                _viewport;
@@ -60,6 +62,10 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
 
     public Direct3D12DescriptorHeap SamplerHeap;
     public Direct3D12DescriptorHeap CbvSrvUavHeap;
+    
+    public  Stack<IDisposable> GraphicsItemsToGo = new Stack<IDisposable>();
+
+    private Matrix4x4                  _projectionMatrixValue;
 
     public override void Initialize(IView view, IInputContext inputContext) {
         //Get the D3D12 and DXGI APIs
@@ -184,7 +190,10 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         this.CbvSrvUavHeap = new Direct3D12DescriptorHeap(this, DescriptorHeapType.CbvSrvUav,
                                                           Direct3D12DescriptorHeap.DefaultCbvSrvUavSlotAmount);
 
-        Direct3D12Texture tex = new Direct3D12Texture(this, 100, 100, default);
+        this.SamplerHeap.Heap.SetName("SamplerHeap");
+        this.CbvSrvUavHeap.Heap.SetName("CbvSrvUavHeap");
+
+        this.CreateProjectionMatrixBuffers();
 
 #if USE_IMGUI
         throw new NotImplementedException("ImGui is not implemented on Direct3D12!");
@@ -362,7 +371,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
 
         if (this._swapchain.Handle != null) {
             this._swapchain.ResizeBuffers(
-                BACKBUFFER_COUNT,
+                BackbufferCount,
                 (uint)this._view.FramebufferSize.X,
                 (uint)this._view.FramebufferSize.Y,
                 Format.FormatR8G8B8A8Unorm,
@@ -371,7 +380,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         }
         else {
             SwapChainDesc1 desc = new SwapChainDesc1 {
-                BufferCount = BACKBUFFER_COUNT,
+                BufferCount = BackbufferCount,
                 Width       = (uint)this._view.FramebufferSize.X,
                 Height      = (uint)this._view.FramebufferSize.Y,
                 Format      = Format.FormatR8G8B8A8Unorm,
@@ -399,7 +408,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
 
         //Describe and create a render target view (RTV) descriptor heap.
         DescriptorHeapDesc rtvHeapDesc = new DescriptorHeapDesc {
-            NumDescriptors = BACKBUFFER_COUNT,
+            NumDescriptors = BackbufferCount,
             Type           = DescriptorHeapType.Rtv,
             Flags          = DescriptorHeapFlags.None
         };
@@ -411,7 +420,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         CpuDescriptorHandle rtvHandle = this._renderTargetViewHeap.GetCPUDescriptorHandleForHeapStart();
 
         // Create a RTV for each frame.
-        for (uint i = 0; i < BACKBUFFER_COUNT; i++) {
+        for (uint i = 0; i < BackbufferCount; i++) {
             this._renderTargets[i] = this._swapchain.GetBuffer<ID3D12Resource>(i);
             this.Device.CreateRenderTargetView(this._renderTargets[i], null, rtvHandle);
             rtvHandle.Ptr += 1 * this._rtvDescriptorSize;
@@ -444,6 +453,8 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
                                      out this.CommandList
                                  ));
 
+        this.CommandList.SetName("cmdlist");
+
         // SilkMarshal.ThrowHResult(this.CommandList.Close());
     }
 
@@ -456,8 +467,32 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
     }
 
     public override void HandleFramebufferResize(int width, int height) {
+        this.UpdateProjectionMatrix(width, height, false);
+        
         this.CreateSwapchain();
         this.SetFullScissorRect();
+    }
+
+    private void CreateProjectionMatrixBuffers() {
+        uint size = Align((uint)sizeof(Matrix4x4), D3D12.ConstantBufferDataPlacementAlignment);
+        
+    }
+    
+    public static uint Align(uint uValue, uint uAlign) {
+        // Assert power of 2 alignment
+        Guard.Assert(0 == (uAlign & (uAlign - 1)));
+        uint uMask   = uAlign - 1;
+        uint uResult = (uValue + uMask) & ~uMask;
+        Guard.Assert(uResult >= uValue);
+        Guard.Assert(0       == (uResult % uAlign));
+        return uResult;
+    }
+    
+    public void UpdateProjectionMatrix(int width, int height, bool fbProjMatrix) {
+        float right  = fbProjMatrix ? width : width / (float)height * 720f;
+        float bottom = fbProjMatrix ? height : 720f;
+
+        this._projectionMatrixValue = Matrix4x4.CreateOrthographicOffCenter(0, right, bottom, 0, 1f, 0f);
     }
 
     public override VixieRenderer CreateRenderer() => new Direct3D12Renderer(this);
@@ -473,7 +508,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
 
     public override Vector2D<int> MaxTextureSize { get; }
 
-    private bool _firstFrame = true;
+    private bool      _firstFrame = true;
     public override void BeginScene() {
         base.BeginScene();
         
@@ -481,6 +516,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         // this.CommandList.SetDescriptorHeaps();
         // D3D12_GPU_DESCRIPTOR_HANDLE cbvHandle(constantBufferHeap->GetGPUDescriptorHandleForHeapStart());
         // this.CommandList.SetGraphicsRootDescriptorTable(0, cbvHandle);
+
 
         //Indicate that the back buffer will be used as a render target
         ResourceBarrier renderTargetBarrier = new ResourceBarrier {
@@ -506,6 +542,20 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         this.CommandList.RSSetViewports(1, in this._viewport);
         this.CommandList.RSSetScissorRects(1, in this.CurrentScissorRect);
         this.CommandList.IASetPrimitiveTopology(D3DPrimitiveTopology.D3DPrimitiveTopologyTrianglelist);
+
+        Matrix4x4 projMatrix = this._projectionMatrixValue;
+        this.CommandList.SetGraphicsRoot32BitConstants(0, 16, &projMatrix, 0);
+        
+        ID3D12DescriptorHeap** heaps = stackalloc ID3D12DescriptorHeap*[2];
+        
+        heaps[0] = this.CbvSrvUavHeap.Heap;
+        heaps[1] = this.SamplerHeap.Heap;
+        
+        //Bind the 2 descriptor heaps
+        this.CommandList.SetDescriptorHeaps(2, heaps);
+        
+        this.CommandList.SetGraphicsRootDescriptorTable(1, this.CbvSrvUavHeap.Heap.GetGPUDescriptorHandleForHeapStart());
+        this.CommandList.SetGraphicsRootDescriptorTable(2, this.SamplerHeap.Heap.GetGPUDescriptorHandleForHeapStart());
     }
 
     public override void Present() {
@@ -553,8 +603,6 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         this.PrintInfoQueue();
 #endif
     }
-
-    public Stack<IDisposable> GraphicsItemsToGo = new Stack<IDisposable>();
 
     public override void Clear() {
         D3Dcolorvalue clear = new D3Dcolorvalue(0, 1, 0, 0);
