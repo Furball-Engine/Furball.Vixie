@@ -125,7 +125,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
 
         try {
             //Create the swapchain we render to
-            this.CreateSwapchain();
+            this.CreateSwapchain((uint)view.FramebufferSize.X, (uint)view.FramebufferSize.Y);
         }
         catch {
             this.PrintInfoQueue();
@@ -359,30 +359,36 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         }
     }
 
-    private void CreateSwapchain() {
+    private void CreateSwapchain(uint width, uint height) {
         this._surfaceSize = new Box2D<long>(0, 0, this._view.FramebufferSize.X, this._view.FramebufferSize.Y);
 
         this._viewport.TopLeftX = 0;
         this._viewport.TopLeftY = 0;
-        this._viewport.Width    = this._view.FramebufferSize.X;
-        this._viewport.Height   = this._view.FramebufferSize.Y;
+        this._viewport.Width    = width;
+        this._viewport.Height   = height;
         this._viewport.MinDepth = 0;
         this._viewport.MaxDepth = 1;
 
         if (this._swapchain.Handle != null) {
-            this._swapchain.ResizeBuffers(
+            foreach (ComPtr<ID3D12Resource> renderTarget in this._renderTargets) {
+                renderTarget.Dispose();
+            }
+            
+            this._renderTargetViewHeap.Dispose();
+            
+            Console.WriteLine(this._swapchain.ResizeBuffers(
                 BackbufferCount,
-                (uint)this._view.FramebufferSize.X,
-                (uint)this._view.FramebufferSize.Y,
+                width,
+                height,
                 Format.FormatR8G8B8A8Unorm,
                 0
-            );
+            ));
         }
         else {
             SwapChainDesc1 desc = new SwapChainDesc1 {
                 BufferCount = BackbufferCount,
-                Width       = (uint)this._view.FramebufferSize.X,
-                Height      = (uint)this._view.FramebufferSize.Y,
+                Width       = width,
+                Height      = height,
                 Format      = Format.FormatR8G8B8A8Unorm,
                 BufferUsage = DXGI.UsageRenderTargetOutput,
                 SwapEffect  = SwapEffect.FlipDiscard,
@@ -469,7 +475,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
     public override void HandleFramebufferResize(int width, int height) {
         this.UpdateProjectionMatrix(width, height, false);
         
-        this.CreateSwapchain();
+        this.CreateSwapchain((uint)width, (uint)height);
         this.SetFullScissorRect();
     }
 
@@ -607,6 +613,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
     public override void Clear() {
         D3Dcolorvalue clear = new D3Dcolorvalue(0, 1, 0, 0);
 
+        Console.WriteLine($"{this._view.FramebufferSize}:{this.CurrentScissorRect.Size}");
         this.CommandList.ClearRenderTargetView(this._currentRtvHandle, (float*)&clear, 1u, in this.CurrentScissorRect);
     }
 
