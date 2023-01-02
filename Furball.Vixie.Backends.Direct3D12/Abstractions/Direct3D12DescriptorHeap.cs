@@ -37,10 +37,8 @@ public unsafe class Direct3D12DescriptorHeap : IDisposable {
 
         this.Heap = backend.Device.CreateDescriptorHeap<ID3D12DescriptorHeap>(in desc);
 
-        ID3D12DescriptorHeap* heap = this.Heap;
-        
-        this.CpuHandle = heap->GetCPUDescriptorHandleForHeapStart();
-        this.GpuHandle = heap->GetGPUDescriptorHandleForHeapStart();
+        this.CpuHandle = this.Heap.GetCPUDescriptorHandleForHeapStart();
+        this.GpuHandle = this.Heap.GetGPUDescriptorHandleForHeapStart();
         
         this._slotSize = this._backend.Device.GetDescriptorHandleIncrementSize(this._type);
     }

@@ -244,7 +244,7 @@ public unsafe class Direct3D12Renderer : VixieRenderer {
         
         //Bind the 2 descriptor heaps
         this._backend.CommandList.SetDescriptorHeaps(2, heaps);
-
+        
         foreach (RenderBuffer buf in this._renderBuffers) {
             this._backend.CommandList.IASetVertexBuffers(0, 1, buf.Vtx!.VertexBufferView);
             this._backend.CommandList.IASetIndexBuffer(buf.Idx!.IndexBufferView);

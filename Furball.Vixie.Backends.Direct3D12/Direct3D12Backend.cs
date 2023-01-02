@@ -408,13 +408,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         this._rtvDescriptorSize = this.Device.GetDescriptorHandleIncrementSize(DescriptorHeapType.Rtv);
 
         //Create frame resources
-
-        //BROKEN
-        // CpuDescriptorHandle rtvHandle = this._renderTargetViewHeap.GetCPUDescriptorHandleForHeapStart();
-
-        //WORKING
-        ID3D12DescriptorHeap* rtvHeap   = this._renderTargetViewHeap;
-        CpuDescriptorHandle   rtvHandle = rtvHeap->GetCPUDescriptorHandleForHeapStart();
+        CpuDescriptorHandle rtvHandle = this._renderTargetViewHeap.GetCPUDescriptorHandleForHeapStart();
 
         // Create a RTV for each frame.
         for (uint i = 0; i < BACKBUFFER_COUNT; i++) {
@@ -500,8 +494,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
 
         this.CommandList.ResourceBarrier(1, &renderTargetBarrier);
 
-        ID3D12DescriptorHeap* rtvHeap = this._renderTargetViewHeap;
-        this._currentRtvHandle     =  rtvHeap->GetCPUDescriptorHandleForHeapStart();
+        this._currentRtvHandle     =  this._renderTargetViewHeap.GetCPUDescriptorHandleForHeapStart();
         this._currentRtvHandle.Ptr += this.FrameIndex * this._rtvDescriptorSize;
         this.CommandList.OMSetRenderTargets(
             1,
