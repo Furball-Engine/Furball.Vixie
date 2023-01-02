@@ -16,7 +16,9 @@ public unsafe class Direct3D12Texture : VixieTexture {
     private readonly ComPtr<ID3D12Resource> _texture;
 
     public readonly Direct3D12DescriptorHeap Heap;
-    public readonly int                      HeapSlot;
+
+    public readonly int SRVHeapSlot;
+    public readonly int SamplerHeapSlot;
 
     public uint Shader4ComponentMapping(uint src0, uint src1, uint src2, uint src3) {
         return src0 & 0x7            |
@@ -64,7 +66,7 @@ public unsafe class Direct3D12Texture : VixieTexture {
             ResourceStates.CopyDest, //TODO: figure out how to use a texture as a copy source
             null
         );
-        
+
         //The description for the shader resource view of the texture
         ShaderResourceViewDesc srvDesc = new ShaderResourceViewDesc {
             Shader4ComponentMapping = this.Shader4ComponentMapping(0, 1, 2, 3),
@@ -74,16 +76,18 @@ public unsafe class Direct3D12Texture : VixieTexture {
         srvDesc.Anonymous.Texture2D.MipLevels = textureDesc.MipLevels;
 
         //Get the heap that this texture is stored in
-        this.Heap     = this._backend.CbvSrvUavHeap;
+        this.Heap = this._backend.CbvSrvUavHeap;
         //Get the slot in the heap this texture is in
-        this.HeapSlot = this._backend.CbvSrvUavHeap.GetSlot();
+        this.SRVHeapSlot = this._backend.CbvSrvUavHeap.GetSlot();
         //Get the handles of this slot
         (CpuDescriptorHandle Cpu, GpuDescriptorHandle Gpu) handles =
-            this._backend.CbvSrvUavHeap.GetHandlesForSlot(this.HeapSlot);
+            this._backend.CbvSrvUavHeap.GetHandlesForSlot(this.SRVHeapSlot);
 
         //Create the shader resource view for this texture
         this._backend.Device.CreateShaderResourceView(this._texture, &srvDesc, handles.Cpu);
-        
+
+        this._texture.SetName("texture");
+
         //TODO: create the sampler
     }
 
@@ -101,13 +105,13 @@ public unsafe class Direct3D12Texture : VixieTexture {
         get;
         set;
     }
-    
+
     public override bool Mipmaps {
         get;
     }
-    
+
     public override VixieTexture SetData <pT>(ReadOnlySpan<pT> data) {
-       //Create the subresource footprint of the texture
+        //Create the subresource footprint of the texture
         SubresourceFootprint footprint = new SubresourceFootprint {
             Format   = Format.FormatR8G8B8A8Unorm,
             Width    = (uint)this.Width,
@@ -115,10 +119,10 @@ public unsafe class Direct3D12Texture : VixieTexture {
             Depth    = 1,
             RowPitch = Align((uint)(this.Width * sizeof(Rgba32)), D3D12.TextureDataPitchAlignment)
         };
-        
+
         //The size of our upload buffer
         ulong uploadBufferSize = (ulong)(footprint.RowPitch * this.Height);
-        
+
         //The description of the upload buffer
         ResourceDesc uploadBufferDesc = new ResourceDesc {
             Dimension        = ResourceDimension.Buffer,
@@ -148,10 +152,11 @@ public unsafe class Direct3D12Texture : VixieTexture {
             ResourceStates.GenericRead,
             null
         );
-
+        uploadBuffer.SetName("upload buf tex");
+        
         //Declare the pointer which will point to our mapped data
         void* mapBegin = null;
-        
+
         //Map the resource with no read range (since we are only going to be writing)
         SilkMarshal.ThrowHResult(uploadBuffer.Map(0, new Range(0, 0), &mapBegin));
 
@@ -205,18 +210,18 @@ public unsafe class Direct3D12Texture : VixieTexture {
         this._backend.CommandList.ResourceBarrier(1, &copyBarrier);
 
         //Release the upload buffer as we no longer need it
-        uploadBuffer.Dispose();
+        this._backend.GraphicsItemsToGo.Push(uploadBuffer);
 
-        return this; 
+        return this;
     }
 
     public override VixieTexture SetData <pT>(ReadOnlySpan<pT> data, Rectangle rect) {
         //TODO
         return this;
     }
-    
+
     public override Rgba32[] GetData() => throw new NotImplementedException();
-    
+
     public override void CopyTo(VixieTexture tex) {
         throw new NotImplementedException();
     }

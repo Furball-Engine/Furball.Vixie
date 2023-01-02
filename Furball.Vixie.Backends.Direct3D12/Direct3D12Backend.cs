@@ -37,6 +37,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
 
     public ComPtr<ID3D12CommandQueue>        CommandQueue;
     public ComPtr<ID3D12CommandAllocator>    CommandAllocator;
+    
     public ComPtr<ID3D12GraphicsCommandList> CommandList;
 
     public uint                FrameIndex;
@@ -448,6 +449,8 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
                                      this.PipelineState,
                                      out this.CommandList
                                  ));
+
+        // SilkMarshal.ThrowHResult(this.CommandList.Close());
     }
 
     public override void Cleanup() {
@@ -479,14 +482,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
     private bool _firstFrame = true;
     public override void BeginScene() {
         base.BeginScene();
-
-        if (!this._firstFrame) {
-            //Reset the command allocator and command list
-            this.CommandList.Reset(this.CommandAllocator, this.PipelineState);
-            this.CommandAllocator.Reset();
-        }
-        this._firstFrame = false;
-
+        
         this.CommandList.SetGraphicsRootSignature(this.RootSignature);
         // this.CommandList.SetDescriptorHeaps();
         // D3D12_GPU_DESCRIPTOR_HANDLE cbvHandle(constantBufferHeap->GetGPUDescriptorHandleForHeapStart());
@@ -553,10 +549,19 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
 
         this.FrameIndex = this._swapchain.GetCurrentBackBufferIndex();
 
+        while (this.GraphicsItemsToGo.Count > 0) {
+            this.GraphicsItemsToGo.Pop().Dispose();
+        }
+        
+        this.CommandAllocator.Reset();
+        this.CommandList.Reset(this.CommandAllocator, this.PipelineState);
+        
 #if DEBUG
         this.PrintInfoQueue();
 #endif
     }
+
+    public Stack<IDisposable> GraphicsItemsToGo = new Stack<IDisposable>();
 
     public override void Clear() {
         D3Dcolorvalue clear = new D3Dcolorvalue(0, 1, 0, 0);

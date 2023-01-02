@@ -1,8 +1,10 @@
 ﻿using Furball.Vixie.Backends.Direct3D12.Abstractions;
+using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers;
 using Silk.NET.Core.Native;
 using Silk.NET.Direct3D12;
+using Silk.NET.DXGI;
 
 namespace Furball.Vixie.Backends.Direct3D12; 
 
@@ -41,8 +43,23 @@ public unsafe class Direct3D12BufferMapper : BufferMapper {
     }
 
     public Direct3D12Buffer CopyMappedDataToNewBuffer() {
-        Direct3D12Buffer buffer = new Direct3D12Buffer(this._backend, this.SizeInBytes, HeapType.Default);
+        Direct3D12Buffer buffer = new Direct3D12Buffer(this._backend, this.SizeInBytes, HeapType.Upload);
 
+        if (this._resourceState == ResourceStates.VertexAndConstantBuffer) {
+            buffer.VertexBufferView = new VertexBufferView {
+                BufferLocation = buffer.Buffer.GetGPUVirtualAddress(), 
+                StrideInBytes = (uint)sizeof(Vertex),
+                SizeInBytes = (uint)this.SizeInBytes
+            };
+        }
+        else if(this._resourceState == ResourceStates.IndexBuffer) {
+            buffer.IndexBufferView = new IndexBufferView {
+                BufferLocation = buffer.Buffer.GetGPUVirtualAddress(), 
+                SizeInBytes    = (uint)this.SizeInBytes, 
+                Format = Format.FormatR16Uint
+            }; 
+        }
+        
         this.CopyMappedDataToExistingBufferAndReset(buffer);
 
         return buffer;

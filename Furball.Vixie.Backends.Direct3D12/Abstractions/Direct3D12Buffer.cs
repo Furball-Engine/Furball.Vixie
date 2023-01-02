@@ -8,9 +8,12 @@ public unsafe class Direct3D12Buffer {
     private readonly Direct3D12Backend _backend;
 
     public ResourceStates CurrentResourceState { get; private set; }
-    
-    private readonly ComPtr<ID3D12Resource> _buffer;
 
+    public readonly ComPtr<ID3D12Resource> Buffer;
+
+    public VertexBufferView VertexBufferView;
+    public IndexBufferView  IndexBufferView;
+    
     public Direct3D12Buffer(Direct3D12Backend backend, ulong size, HeapType type) {
         this._backend = backend;
         //The description of the upload buffer
@@ -29,7 +32,7 @@ public unsafe class Direct3D12Buffer {
         //The heap properties of the upload buffer, being of type `Upload`
         HeapProperties uploadBufferHeapProperties = new HeapProperties {
             Type                 = type,
-            CPUPageProperty      = CpuPageProperty.None,
+            CPUPageProperty      = CpuPageProperty.Unknown,
             CreationNodeMask     = 0,
             VisibleNodeMask      = 0,
             MemoryPoolPreference = MemoryPool.None
@@ -38,13 +41,15 @@ public unsafe class Direct3D12Buffer {
         this.CurrentResourceState = ResourceStates.GenericRead;
         
         //Create the upload buffer
-        this._buffer = this._backend.Device.CreateCommittedResource<ID3D12Resource>(
+        this.Buffer = this._backend.Device.CreateCommittedResource<ID3D12Resource>(
             &uploadBufferHeapProperties,
             HeapFlags.None,
             &uploadBufferDesc,
             this.CurrentResourceState,
             null
         );
+
+        this.Buffer.SetName("buffer waaaa");
     }
 
     /// <summary>
@@ -54,7 +59,7 @@ public unsafe class Direct3D12Buffer {
     /// <returns>A pointer to the mapped data</returns>
     public void* Map(Range readRange = default) {
         void* ptr = null;
-        SilkMarshal.ThrowHResult(this._buffer.Map(0, readRange, &ptr));
+        SilkMarshal.ThrowHResult(this.Buffer.Map(0, new Range(0, 0), &ptr));
         return ptr;
     }
     
@@ -63,7 +68,7 @@ public unsafe class Direct3D12Buffer {
     /// </summary>
     /// <param name="writeRange">An optional range of how much data was actually written, only used for external tooling</param>
     public void Unmap(Range writeRange = default) {
-        this._buffer.Unmap(0, in writeRange);
+        this.Buffer.Unmap(0, in writeRange);
     }
 
     public void BarrierTransition(ResourceStates stateTo) {
@@ -71,7 +76,7 @@ public unsafe class Direct3D12Buffer {
         ResourceBarrier copyBarrier = new ResourceBarrier {
             Type = ResourceBarrierType.Transition
         };
-        copyBarrier.Anonymous.Transition.PResource   = this._buffer;
+        copyBarrier.Anonymous.Transition.PResource   = this.Buffer;
         copyBarrier.Anonymous.Transition.Subresource = 0;
         copyBarrier.Anonymous.Transition.StateAfter  = stateTo;
         copyBarrier.Anonymous.Transition.StateBefore = this.CurrentResourceState;

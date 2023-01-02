@@ -73,7 +73,7 @@ public unsafe class Direct3D12DescriptorHeap : IDisposable {
 
     private void ReleaseUnmanagedResources() {
         if (this.Heap.Handle != null)
-            this.Heap.Dispose();
+            this._backend.GraphicsItemsToGo.Push(this.Heap);
     }
 
     private void Dispose(bool disposing) {
