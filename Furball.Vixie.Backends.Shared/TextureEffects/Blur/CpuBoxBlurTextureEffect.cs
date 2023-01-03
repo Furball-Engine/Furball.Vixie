@@ -1,8 +1,5 @@
 ﻿using Furball.Vixie.Backends.Shared.Backends;
 using SixLabors.ImageSharp.PixelFormats;
-#if NET7_0_OR_GREATER
-using System.Runtime.Intrinsics;
-#endif
 
 namespace Furball.Vixie.Backends.Shared.TextureEffects.Blur;
 
