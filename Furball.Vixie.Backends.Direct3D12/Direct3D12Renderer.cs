@@ -9,7 +9,7 @@ namespace Furball.Vixie.Backends.Direct3D12;
 public unsafe class Direct3D12Renderer : VixieRenderer {
     private readonly Direct3D12Backend _backend;
 
-    private const int QUADS_PER_BUFFER = 512;
+    private const int QUADS_PER_BUFFER = 2048;
 
     private CullFace _cullFace;
 
