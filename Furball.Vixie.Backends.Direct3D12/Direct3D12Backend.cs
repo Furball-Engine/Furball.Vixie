@@ -655,13 +655,17 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         
         this.FrameIndex = this._swapchain.GetCurrentBackBufferIndex();
 
+        this.FrameReset?.Invoke(this, EventArgs.Empty);
+        
         this.ResetCommandListAndAllocator();
 
 #if DEBUG
         this.PrintInfoQueue();
 #endif
     }
-    
+
+    internal event EventHandler? FrameReset; 
+
     public void ResetCommandListAndAllocator() {
         this.CommandList.Reset(this.CommandAllocator, this.PipelineState);
     }

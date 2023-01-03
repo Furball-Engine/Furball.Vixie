@@ -41,6 +41,8 @@ public sealed unsafe class Direct3D12RenderTarget : VixieTextureRenderTarget {
     }
 
     public override void Bind() {
+        this._texture.BarrierTransition(ResourceStates.RenderTarget);
+        
         this._backend.SetRenderTarget(this.Handles.Cpu);
     }
 

@@ -27,11 +27,19 @@ public unsafe class Direct3D12BufferMapper : BufferMapper {
         //Transition the buffer into a generic read state if it isnt already 
         if(buffer.CurrentResourceState != ResourceStates.GenericRead)
             buffer.BarrierTransition(ResourceStates.GenericRead);
+
+        if (buffer.OffsetInBytes + this.ReservedBytes > this.SizeInBytes)
+            throw new NotImplementedException("We dont cleanly handle this...... we need to create a *new* buffer instead here");
         
         //Map the buffer
         void* map = buffer.Map();
-        //Copy our data in
-        Buffer.MemoryCopy(this.Ptr, map, this.ReservedBytes, this.ReservedBytes);
+        //Copy our data in, starting at the buffers offset and ending at the end of the buffer
+        Buffer.MemoryCopy(
+            this.Ptr,
+            (void*)((ulong)map + buffer.OffsetInBytes),
+            this.ReservedBytes,
+            this.ReservedBytes
+        );
         //Unmap the buffer
         buffer.Unmap();
         

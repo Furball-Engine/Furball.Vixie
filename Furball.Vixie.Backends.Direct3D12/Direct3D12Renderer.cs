@@ -24,8 +24,8 @@ public unsafe class Direct3D12Renderer : VixieRenderer {
     private readonly List<RenderBuffer> _workingBuffers = new List<RenderBuffer>();
 
     private class RenderBuffer {
-        public Direct3D12Buffer? Vtx;
-        public Direct3D12Buffer? Idx;
+        public Direct3D12Buffer Vtx = null!;
+        public Direct3D12Buffer Idx = null!;
 
         public uint IndexCount;
 
@@ -47,6 +47,32 @@ public unsafe class Direct3D12Renderer : VixieRenderer {
                 QUADS_PER_BUFFER * 6 * sizeof(ushort),
                 ResourceStates.IndexBuffer
             );
+        
+        this._backend.FrameReset += this.FrameReset;
+    }
+    
+    private void FrameReset(object sender, EventArgs e) {
+        foreach (Direct3D12Buffer buf in this._vtxBufferQueue) {
+            buf.Offset        = 0;
+            buf.OffsetInBytes = 0;
+        }
+        foreach (Direct3D12Buffer buf in this._idxBufferQueue) {
+            buf.Offset        = 0;
+            buf.OffsetInBytes = 0;
+        }
+        
+        foreach (RenderBuffer buf in this._renderBuffers) {
+            buf.Vtx.Offset        = 0;
+            buf.Vtx.OffsetInBytes = 0;
+            buf.Idx.Offset        = 0;
+            buf.Idx.OffsetInBytes = 0;
+        }
+        foreach (RenderBuffer buf in this._workingBuffers) {
+            buf.Vtx.Offset        = 0;
+            buf.Vtx.OffsetInBytes = 0;
+            buf.Idx.Offset        = 0;
+            buf.Idx.OffsetInBytes = 0;
+        }
     }
 
     private bool _isFirst = true;
@@ -73,11 +99,6 @@ public unsafe class Direct3D12Renderer : VixieRenderer {
 
             lastVtx = x.Vtx;
             lastIdx = x.Idx;
-            
-            //We set these to null to ensure that they dont get disposed when `RenderBuffer.Dispose` is called by the
-            //destructor
-            x.Vtx = null;
-            x.Idx = null;
         }
         //Clear the render buffer queue
         this._renderBuffers.Clear();
@@ -115,6 +136,24 @@ public unsafe class Direct3D12Renderer : VixieRenderer {
         this._lastIndexCount  = 0;
         
         this._renderTargetsToTransition.Clear();
+        
+        this.GetNextBufferState();
+    }
+
+    private uint   _nextBufferVertexOffset = 0;
+    private ushort _nextBufferIndexOffset  = 0;
+    private void GetNextBufferState() {
+        if (this._vtxBufferQueue.Count > 0) {
+            Direct3D12Buffer vtx = this._vtxBufferQueue.Peek();
+            Direct3D12Buffer idx = this._idxBufferQueue.Peek();
+
+            this._nextBufferIndexOffset = (ushort)idx.Offset;
+            this._nextBufferVertexOffset   = (uint)vtx.Offset;
+        }
+        else {
+            this._nextBufferIndexOffset  = 0;
+            this._nextBufferVertexOffset = 0;
+        } 
     }
 
     private void DumpToBuffers() {
@@ -126,32 +165,36 @@ public unsafe class Direct3D12Renderer : VixieRenderer {
         if (this._vtxBufferQueue.Count > 0) {
             vtx = this._vtxBufferQueue.Dequeue();
             idx = this._idxBufferQueue.Dequeue();
-            
+
             this._vtxMapper.CopyMappedDataToExistingBufferAndReset(vtx);
             this._idxMapper.CopyMappedDataToExistingBufferAndReset(idx);
+
+            //Index offset is also the amount of vertices
+            vtx.Offset        += this._indexOffset;
+            vtx.OffsetInBytes += (ulong)(this._indexOffset * sizeof(Vertex));
+            //Increment the used indices
+            idx.Offset += this._indexCount;
+            idx.OffsetInBytes += this._indexCount * sizeof(ushort);
         }
         else {
             vtx = this._vtxMapper.CopyMappedDataToNewBuffer();
             idx = this._idxMapper.CopyMappedDataToNewBuffer();
         }
-
-        Guard.Assert(vtx != null);
-        Guard.Assert(idx != null);
-
+        
         if (this._workingBuffers.Count == 0) {
             this._renderBuffers.Add(
                 new RenderBuffer {
                     Vtx          = vtx,
                     Idx          = idx,
                     IndexCount   = this._indexCount,
-                    IndexOffset  = this._lastIndexOffset
+                    IndexOffset  = this._lastIndexOffset + this._nextBufferIndexOffset
                 }
             );
         }
         else {
             if (this._indexCount != this._lastIndexCount) {
                 RenderBuffer buf = new RenderBuffer {
-                    IndexOffset = this._lastIndexOffset,
+                    IndexOffset = this._lastIndexOffset + this._nextBufferIndexOffset,
                     IndexCount  = this._indexCount - this._lastIndexCount
                 };
 
@@ -171,12 +214,13 @@ public unsafe class Direct3D12Renderer : VixieRenderer {
             this._workingBuffers.Clear();
         }
 
-        this._usedTextures = 0;
         this._indexOffset  = 0;
         this._indexCount   = 0;
 
         this._lastIndexCount  = 0;
         this._lastIndexOffset = 0;
+        
+        this.GetNextBufferState();
     }
     
     public override void End() {
@@ -185,7 +229,6 @@ public unsafe class Direct3D12Renderer : VixieRenderer {
 
     private ushort _indexOffset;
     private uint   _indexCount;
-    private int    _usedTextures;
 
     private uint _lastIndexOffset = 0;
     private uint _lastIndexCount  = 0;
@@ -237,7 +280,7 @@ public unsafe class Direct3D12Renderer : VixieRenderer {
             (ushort*)idx,
             vertexCount,
             indexCount,
-            (uint)(this._indexOffset - vertexCount), 
+            (uint)(this._indexOffset - vertexCount + this._nextBufferVertexOffset), 
             textureId
         );
     }
@@ -255,10 +298,6 @@ public unsafe class Direct3D12Renderer : VixieRenderer {
 
             this._backend.CommandList.DrawIndexedInstanced(buf.IndexCount, 1, buf.IndexOffset, 0, 0);
         }
-        
-        foreach (Direct3D12Texture renderTarget in this._renderTargetsToTransition) {
-            renderTarget.BarrierTransition(ResourceStates.RenderTarget);
-        }
     }
     
     protected override void DisposeInternal() {
@@ -268,5 +307,7 @@ public unsafe class Direct3D12Renderer : VixieRenderer {
         this._renderBuffers.Clear();
         this._idxBufferQueue.Clear();
         this._vtxBufferQueue.Clear();
+
+        this._backend.FrameReset -= this.FrameReset;
     }
 }

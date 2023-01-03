@@ -7,6 +7,9 @@ namespace Furball.Vixie.Backends.Direct3D12.Abstractions;
 public unsafe class Direct3D12Buffer : Direct3D12Resource, IDisposable {
     public VertexBufferView VertexBufferView;
     public IndexBufferView  IndexBufferView;
+
+    public ulong Offset;
+    public ulong OffsetInBytes;
     
     public Direct3D12Buffer(Direct3D12Backend backend, ulong size, HeapType type) {
         this._backend = backend;
