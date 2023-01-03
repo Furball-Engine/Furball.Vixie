@@ -55,7 +55,6 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
 
     private ComPtr<IDXGISwapChain3> _swapchain;
     private Viewport                _viewport;
-    private Box2D<long>             _surfaceSize;
 
     private Box2D<int>          CurrentScissorRect;
     private CpuDescriptorHandle _currentRtvHandle;
@@ -360,8 +359,6 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
     }
 
     private void CreateSwapchain(uint width, uint height) {
-        this._surfaceSize = new Box2D<long>(0, 0, this._view.FramebufferSize.X, this._view.FramebufferSize.Y);
-
         this._viewport.TopLeftX = 0;
         this._viewport.TopLeftY = 0;
         this._viewport.Width    = width;

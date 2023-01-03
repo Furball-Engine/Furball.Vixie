@@ -4,7 +4,7 @@ using Silk.NET.DXGI;
 
 namespace Furball.Vixie.Backends.Direct3D12.Abstractions;
 
-public unsafe class Direct3D12Buffer {
+public unsafe class Direct3D12Buffer : IDisposable {
     private readonly Direct3D12Backend _backend;
 
     public ResourceStates CurrentResourceState { get; private set; }
@@ -87,5 +87,23 @@ public unsafe class Direct3D12Buffer {
         this._backend.CommandList.ResourceBarrier(1, &copyBarrier);
 
         this.CurrentResourceState = stateTo;
+    }
+    
+    private void ReleaseUnmanagedResources() {
+        //If the buffer is null, do nothing here
+        if (this.Buffer.Handle == null)
+            return;
+        
+        //Push the buffer to be disposed
+        this._backend.GraphicsItemsToGo.Push(this.Buffer);
+    }
+    
+    public void Dispose() {
+        ReleaseUnmanagedResources();
+        GC.SuppressFinalize(this);
+    }
+    
+    ~Direct3D12Buffer() {
+        ReleaseUnmanagedResources();
     }
 }
