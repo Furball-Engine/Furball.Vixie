@@ -6,6 +6,7 @@ namespace Furball.Vixie.Backends.Direct3D12.Abstractions;
 public unsafe class Direct3D12DescriptorHeap : IDisposable {
     public static uint DefaultSamplerSlotAmount   = 2048;
     public static uint DefaultCbvSrvUavSlotAmount = 1048576;
+    public static uint DefaultRtvAmount           = 1048576;
 
     private readonly Direct3D12Backend  _backend;
     private readonly DescriptorHeapType _type;
@@ -19,6 +20,7 @@ public unsafe class Direct3D12DescriptorHeap : IDisposable {
     private readonly uint                _slotSize;
     private readonly CpuDescriptorHandle CpuHandle;
     private readonly GpuDescriptorHandle GpuHandle;
+    private readonly bool                _shaderVisible;
 
     public Direct3D12DescriptorHeap(Direct3D12Backend backend, DescriptorHeapType type, uint slots) {
         this._backend = backend;
@@ -34,12 +36,13 @@ public unsafe class Direct3D12DescriptorHeap : IDisposable {
             Type           = type,
             NumDescriptors = slots
         };
+        this._shaderVisible = desc.Flags.HasFlag(DescriptorHeapFlags.ShaderVisible);
 
         this.Heap = backend.Device.CreateDescriptorHeap<ID3D12DescriptorHeap>(in desc);
 
         this.CpuHandle = this.Heap.GetCPUDescriptorHandleForHeapStart();
         this.GpuHandle = this.Heap.GetGPUDescriptorHandleForHeapStart();
-        
+
         this._slotSize = this._backend.Device.GetDescriptorHandleIncrementSize(this._type);
     }
 
@@ -53,7 +56,9 @@ public unsafe class Direct3D12DescriptorHeap : IDisposable {
     public (CpuDescriptorHandle Cpu, GpuDescriptorHandle Gpu) GetHandlesForSlot(int slot) {
         return (
             new CpuDescriptorHandle(this.CpuHandle.Ptr + (nuint)(this._slotSize * slot)),
-            new GpuDescriptorHandle(this.GpuHandle.Ptr + (nuint)(this._slotSize * slot))
+            this._shaderVisible
+                ? new GpuDescriptorHandle(this.GpuHandle.Ptr + (nuint)(this._slotSize * slot))
+                : default
         );
     }
 
@@ -62,7 +67,7 @@ public unsafe class Direct3D12DescriptorHeap : IDisposable {
 
         return (int)(diff / this._slotSize);
     }
-    
+
     public int GetSlotFromHandle(GpuDescriptorHandle handle) {
         ulong diff = handle.Ptr - this.GpuHandle.Ptr;
 

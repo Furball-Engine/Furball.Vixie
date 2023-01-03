@@ -11,8 +11,9 @@ namespace Furball.Vixie.Backends.Direct3D12;
 
 public unsafe class Direct3D12Texture : VixieTexture {
     private readonly Direct3D12Backend _backend;
+    public readonly  bool              RenderTarget;
 
-    private readonly ComPtr<ID3D12Resource> _texture;
+    public readonly ComPtr<ID3D12Resource> Texture;
 
     public readonly Direct3D12DescriptorHeap Heap;
     public readonly Direct3D12DescriptorHeap SamplerHeap;
@@ -28,9 +29,10 @@ public unsafe class Direct3D12Texture : VixieTexture {
                1            << 3 * 4;
     }
 
-    public Direct3D12Texture(Direct3D12Backend backend, int width, int height, TextureParameters parameters) {
-        this._backend = backend;
-        this.Size     = new Vector2D<int>(width, height);
+    public Direct3D12Texture(Direct3D12Backend backend, int width, int height, TextureParameters parameters, bool renderTarget = false) {
+        this._backend      = backend;
+        this.RenderTarget = renderTarget;
+        this.Size          = new Vector2D<int>(width, height);
 
         //Store whether or not we are using mipmaps
         this.Mipmaps = parameters.RequestMipmaps;
@@ -41,7 +43,7 @@ public unsafe class Direct3D12Texture : VixieTexture {
             Format           = Format.FormatR8G8B8A8Unorm,
             Width            = (ulong)width,
             Height           = (uint)height,
-            Flags            = ResourceFlags.None,
+            Flags            = renderTarget ? ResourceFlags.AllowRenderTarget : ResourceFlags.None,
             DepthOrArraySize = 1,
             Dimension        = ResourceDimension.Texture2D,
             SampleDesc = new SampleDesc {
@@ -58,15 +60,15 @@ public unsafe class Direct3D12Texture : VixieTexture {
             VisibleNodeMask      = 0,
             MemoryPoolPreference = MemoryPool.None
         };
+        this.CurrentResourceState = renderTarget ? ResourceStates.RenderTarget : ResourceStates.PixelShaderResource;
         //Create the texture
-        this._texture = this._backend.Device.CreateCommittedResource<ID3D12Resource>(
+        this.Texture = this._backend.Device.CreateCommittedResource<ID3D12Resource>(
             &textureHeapProperties,
             HeapFlags.None,
             &textureDesc,
-            ResourceStates.PixelShaderResource,
+            this.CurrentResourceState,
             null
         );
-        this.CurrentResourceState = ResourceStates.PixelShaderResource;
 
         //The description for the shader resource view of the texture
         ShaderResourceViewDesc srvDesc = new ShaderResourceViewDesc {
@@ -85,9 +87,9 @@ public unsafe class Direct3D12Texture : VixieTexture {
             this._backend.CbvSrvUavHeap.GetHandlesForSlot(this.SRVHeapSlot);
 
         //Create the shader resource view for this texture
-        this._backend.Device.CreateShaderResourceView(this._texture, &srvDesc, handles.Cpu);
+        this._backend.Device.CreateShaderResourceView(this.Texture, &srvDesc, handles.Cpu);
 
-        this._texture.SetName("texture");
+        this.Texture.SetName("texture");
 
         //Get the slot and heap for the sampler
         this.SamplerHeap     = this._backend.SamplerHeap;
@@ -125,7 +127,7 @@ public unsafe class Direct3D12Texture : VixieTexture {
         ResourceBarrier copyBarrier = new ResourceBarrier {
             Type = ResourceBarrierType.Transition
         };
-        copyBarrier.Anonymous.Transition.PResource   = this._texture;
+        copyBarrier.Anonymous.Transition.PResource   = this.Texture;
         copyBarrier.Anonymous.Transition.Subresource = 0;
         copyBarrier.Anonymous.Transition.StateAfter  = stateTo;
         copyBarrier.Anonymous.Transition.StateBefore = this.CurrentResourceState;
@@ -223,7 +225,7 @@ public unsafe class Direct3D12Texture : VixieTexture {
         //Copy the upload buffer into the texture, uploading the whole texture
         this._backend.CommandList.CopyTextureRegion(
             new TextureCopyLocation(
-                this._texture,
+                this.Texture,
                 TextureCopyType.SubresourceIndex,
                 new TextureCopyLocationUnion(null, 0),
                 null,
@@ -242,7 +244,7 @@ public unsafe class Direct3D12Texture : VixieTexture {
         //Release the upload buffer as we no longer need it
         this._backend.GraphicsItemsToGo.Push(uploadBuffer);
         
-        this.BarrierTransition(ResourceStates.PixelShaderResource);
+        this.BarrierTransition(this.RenderTarget ? ResourceStates.RenderTarget : ResourceStates.PixelShaderResource);
         
         return this;
     }
@@ -309,7 +311,7 @@ public unsafe class Direct3D12Texture : VixieTexture {
             ),
             0, 0, 0,
             new TextureCopyLocation(
-                this._texture,
+                this.Texture,
                 TextureCopyType.SubresourceIndex,
                 new TextureCopyLocationUnion(null, 0),
                 null,
@@ -344,7 +346,7 @@ public unsafe class Direct3D12Texture : VixieTexture {
         //Send the readback buffer to be disposed
         this._backend.GraphicsItemsToGo.Push(readbackBuffer);
         
-        this.BarrierTransition(ResourceStates.PixelShaderResource);
+        this.BarrierTransition(this.RenderTarget ? ResourceStates.RenderTarget : ResourceStates.PixelShaderResource);
 
         return pixData;
     }

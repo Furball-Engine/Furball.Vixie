@@ -61,6 +61,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
 
     public Direct3D12DescriptorHeap SamplerHeap;
     public Direct3D12DescriptorHeap CbvSrvUavHeap;
+    public Direct3D12DescriptorHeap RtvHeap;
     
     public  Stack<IDisposable> GraphicsItemsToGo = new Stack<IDisposable>();
 
@@ -160,6 +161,10 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
             }
         }
         Direct3D12DescriptorHeap.DefaultSamplerSlotAmount = (uint)Math.Pow(2, pow);
+        
+        if (pow == 0) {
+            throw new Exception("Unable to create *any* size of heap! Try updating your graphics drivers!");
+        }
 
         pow = 20;
         while (heap == null && pow > 0) {
@@ -179,6 +184,29 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
             }
         }
         Direct3D12DescriptorHeap.DefaultCbvSrvUavSlotAmount = (uint)Math.Pow(2, pow);
+        
+        if (pow == 0) {
+            throw new Exception("Unable to create *any* size of heap! Try updating your graphics drivers!");
+        }
+        
+        pow = 20;
+        while (heap == null && pow > 0) {
+            try {
+                uint sizeToTry = (uint)Math.Pow(2, pow);
+
+                heap = new Direct3D12DescriptorHeap(this, DescriptorHeapType.Rtv, sizeToTry);
+
+                heap.Dispose();
+
+                break;
+            }
+            catch {
+                heap = null;
+
+                pow--;
+            }
+        }
+        Direct3D12DescriptorHeap.DefaultRtvAmount = (uint)Math.Pow(2, pow);
 
         if (pow == 0) {
             throw new Exception("Unable to create *any* size of heap! Try updating your graphics drivers!");
@@ -188,6 +216,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
                                                         Direct3D12DescriptorHeap.DefaultSamplerSlotAmount);
         this.CbvSrvUavHeap = new Direct3D12DescriptorHeap(this, DescriptorHeapType.CbvSrvUav,
                                                           Direct3D12DescriptorHeap.DefaultCbvSrvUavSlotAmount);
+        this.RtvHeap = new Direct3D12DescriptorHeap(this, DescriptorHeapType.Rtv, Direct3D12DescriptorHeap.DefaultRtvAmount);
 
         this.SamplerHeap.Heap.SetName("SamplerHeap");
         this.CbvSrvUavHeap.Heap.SetName("CbvSrvUavHeap");
@@ -528,20 +557,59 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
 
         this.CommandList.ResourceBarrier(1, &renderTargetBarrier);
 
+        //Reset the current render target view, at the beginning of the scene, we should always render to the swapchain
+        this._currentRenderTargetView = default;
         this.SetCommandListProps();
+    }
+
+    /// <summary>
+    /// The current render target view we are rendering to
+    /// <remarks>
+    /// If this == default, than it means render to the swapchain
+    /// </remarks>
+    /// </summary>
+    private CpuDescriptorHandle _currentRenderTargetView;
+
+    private void SetRenderTargetInternal(CpuDescriptorHandle handle) {
+        this.CommandList.OMSetRenderTargets(
+            1,
+            in handle,
+            false,
+            null
+        ); 
+    }
+
+    /// <summary>
+    /// Sets the current render target we are rendering to
+    /// </summary>
+    /// <param name="handle">The CPU handle of the render target, `default` if we should to back to the swapchain</param>
+    public void SetRenderTarget(CpuDescriptorHandle handle) {
+        if (handle.Ptr == default) {
+            this._currentRenderTargetView = default;
+            this.SetRenderTargetInternal(this._currentRtvHandle);
+            return;
+        }
+        
+        //Set the current render target view
+        this._currentRenderTargetView = handle;
+        //Update the command list about the change
+        this.SetRenderTargetInternal(handle);
     }
 
     public void SetCommandListProps() {
         this.CommandList.SetGraphicsRootSignature(this.RootSignature);
 
-        this._currentRtvHandle     =  this._renderTargetViewHeap.GetCPUDescriptorHandleForHeapStart();
-        this._currentRtvHandle.Ptr += this.FrameIndex * this._rtvDescriptorSize;
-        this.CommandList.OMSetRenderTargets(
-            1,
-            in this._currentRtvHandle,
-            false,
-            null
-        );
+        //If no special render target view is bound, just go to the one for the current index of the swapchain
+        //This should always be the case at the start of the frame
+        if (this._currentRenderTargetView.Ptr == default) {
+            this._currentRtvHandle     =  this._renderTargetViewHeap.GetCPUDescriptorHandleForHeapStart();
+            this._currentRtvHandle.Ptr += this.FrameIndex * this._rtvDescriptorSize;
+            this.SetRenderTargetInternal(this._currentRtvHandle);
+        }
+        else {
+            //If we have a special render target bound, use it here
+            this.SetRenderTargetInternal(this._currentRenderTargetView);
+        }
 
         this.CommandList.RSSetViewports(1, in this._viewport);
         this.CommandList.RSSetScissorRects(1, in this.CurrentScissorRect);
@@ -643,9 +711,8 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         return 0;
     }
 
-    public override VixieTextureRenderTarget CreateRenderTarget(uint width, uint height) {
-        throw new NotImplementedException();
-    }
+    public override VixieTextureRenderTarget CreateRenderTarget(uint width, uint height) 
+        => new Direct3D12RenderTarget(this, (int)width, (int)height);
 
     public override VixieTexture CreateTextureFromByteArray(byte[] imageData, TextureParameters parameters = default) {
         Image<Rgba32> image;

@@ -113,6 +113,8 @@ public unsafe class Direct3D12Renderer : VixieRenderer {
 
         this._lastIndexOffset = 0;
         this._lastIndexCount  = 0;
+        
+        this._renderTargetsToTransition.Clear();
     }
 
     private void DumpToBuffers() {
@@ -187,6 +189,8 @@ public unsafe class Direct3D12Renderer : VixieRenderer {
 
     private uint _lastIndexOffset = 0;
     private uint _lastIndexCount  = 0;
+
+    private readonly HashSet<Direct3D12Texture> _renderTargetsToTransition = new();
     
     private int _reserveRecursionCount = 0;
     public override MappedData Reserve(ushort vertexCount, uint indexCount, VixieTexture vixieTex) {
@@ -204,6 +208,10 @@ public unsafe class Direct3D12Renderer : VixieRenderer {
 
         if (vixieTex is not Direct3D12Texture tex)
             throw new Exception($"Texture is not of type {nameof(Direct3D12Texture)}");
+
+        //If its a render target add it to the list of render targets in this frame
+        if (tex.RenderTarget)
+            this._renderTargetsToTransition.Add(tex);
         
         void* vtx = this._vtxMapper.Reserve((nuint)(vertexCount * sizeof(Vertex)));
         void* idx = this._idxMapper.Reserve(indexCount * sizeof(ushort));
@@ -237,12 +245,19 @@ public unsafe class Direct3D12Renderer : VixieRenderer {
     public override void Draw() {
         //TODO: follow the cull mode
 
+        foreach (Direct3D12Texture renderTarget in this._renderTargetsToTransition) {
+            renderTarget.BarrierTransition(ResourceStates.PixelShaderResource);
+        }
+        
         foreach (RenderBuffer buf in this._renderBuffers) {
             this._backend.CommandList.IASetVertexBuffers(0, 1, buf.Vtx!.VertexBufferView);
             this._backend.CommandList.IASetIndexBuffer(buf.Idx!.IndexBufferView);
 
-
             this._backend.CommandList.DrawIndexedInstanced(buf.IndexCount, 1, buf.IndexOffset, 0, 0);
+        }
+        
+        foreach (Direct3D12Texture renderTarget in this._renderTargetsToTransition) {
+            renderTarget.BarrierTransition(ResourceStates.RenderTarget);
         }
     }
     
