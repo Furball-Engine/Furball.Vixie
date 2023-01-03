@@ -28,14 +28,10 @@ public class TestTextureGetData : Screen {
 
         byte[] origData = ResourceHelpers.GetByteResource("Resources/pippidonclear0.png", typeof(TestGame));
 
-        Configuration config = Configuration.Default;
-        config.PreferContiguousImageBuffers = true;
-        
-        Image<Rgba32> image  = Image.Load<Rgba32>(config, origData);
-        if (!image.DangerousTryGetSinglePixelMemory(out Memory<Rgba32> pixels))
-            throw new Exception("Failed to get pixels data");
+        Image<Rgba32> image  = Image.Load<Rgba32>(origData);
 
-        Rgba32[] origPixels = pixels.ToArray();
+        Rgba32[] origPixels = new Rgba32[image.Width * image.Height];
+        image.CopyPixelDataTo(origPixels);
 
         Texture tex = Game.ResourceFactory.CreateTextureFromByteArray(origData);
 
