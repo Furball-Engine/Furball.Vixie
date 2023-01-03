@@ -65,9 +65,10 @@ public unsafe class Direct3D12Texture : VixieTexture {
             &textureHeapProperties,
             HeapFlags.None,
             &textureDesc,
-            ResourceStates.CopyDest, //TODO: figure out how to use a texture as a copy source
+            ResourceStates.PixelShaderResource,
             null
         );
+        this.CurrentResourceState = ResourceStates.PixelShaderResource;
 
         //The description for the shader resource view of the texture
         ShaderResourceViewDesc srvDesc = new ShaderResourceViewDesc {
@@ -88,7 +89,7 @@ public unsafe class Direct3D12Texture : VixieTexture {
         //Create the shader resource view for this texture
         this._backend.Device.CreateShaderResourceView(this._texture, &srvDesc, handles.Cpu);
 
-        this._texture.SetName("bro WHAT ARE YOU ON");
+        this._texture.SetName("texture");
 
         //Get the slot and heap for the sampler
         this.SamplerHeap     = this._backend.SamplerHeap;
@@ -114,6 +115,26 @@ public unsafe class Direct3D12Texture : VixieTexture {
 
         this._backend.Device.CreateSampler(in samplerDesc, handles.Cpu);
     }
+    
+    public ResourceStates CurrentResourceState { get; private set; }
+
+    public unsafe void BarrierTransition(ResourceStates stateTo) {
+        //Dont barrier transition if we are *already* in said state
+        if (this.CurrentResourceState == stateTo)
+            return; //NOTE: should this be allowed? i dont see a reason but maybe there is
+
+        //Tell the command list that this resource is now in use for `stateTo` purpose
+        ResourceBarrier copyBarrier = new ResourceBarrier {
+            Type = ResourceBarrierType.Transition
+        };
+        copyBarrier.Anonymous.Transition.PResource   = this._texture;
+        copyBarrier.Anonymous.Transition.Subresource = 0;
+        copyBarrier.Anonymous.Transition.StateAfter  = stateTo;
+        copyBarrier.Anonymous.Transition.StateBefore = this.CurrentResourceState;
+        this._backend.CommandList.ResourceBarrier(1, &copyBarrier);
+
+        this.CurrentResourceState = stateTo;
+    }
 
     public override TextureFilterType FilterType {
         get;
@@ -124,18 +145,28 @@ public unsafe class Direct3D12Texture : VixieTexture {
         get;
     }
 
-    public override VixieTexture SetData <pT>(ReadOnlySpan<pT> data) {
+    public override VixieTexture SetData <T>(ReadOnlySpan<T> data) {
+        this.SetData(data, new Rectangle(0, 0, this.Width, this.Height));
+
+        return this;
+    }
+
+    public override VixieTexture SetData <T>(ReadOnlySpan<T> data, Rectangle rect) {
+        Console.WriteLine($"Partial set {rect}");
+        
+        this.BarrierTransition(ResourceStates.CopyDest);
+
         //Create the subresource footprint of the texture
         SubresourceFootprint footprint = new SubresourceFootprint {
             Format   = Format.FormatR8G8B8A8Unorm,
-            Width    = (uint)this.Width,
-            Height   = (uint)this.Height,
+            Width    = (uint)rect.Width,
+            Height   = (uint)rect.Height,
             Depth    = 1,
-            RowPitch = Direct3D12Backend.Align((uint)(this.Width * sizeof(Rgba32)), D3D12.TextureDataPitchAlignment)
+            RowPitch = Direct3D12Backend.Align((uint)(rect.Width * sizeof(Rgba32)), D3D12.TextureDataPitchAlignment)
         };
 
         //The size of our upload buffer
-        ulong uploadBufferSize = (ulong)(footprint.RowPitch * this.Height);
+        ulong uploadBufferSize = (ulong)(footprint.RowPitch * rect.Height);
 
         //The description of the upload buffer
         ResourceDesc uploadBufferDesc = new ResourceDesc {
@@ -181,13 +212,13 @@ public unsafe class Direct3D12Texture : VixieTexture {
         };
 
         fixed (void* dataPtr = data) {
-            Span<Rgba32> rgbaSpan = new Span<Rgba32>(dataPtr, data.Length * sizeof(pT));
-            for (int y = 0; y < this.Height; y++) {
-                rgbaSpan.Slice(this.Width * y, this.Width)
+            Span<Rgba32> rgbaSpan = new Span<Rgba32>(dataPtr, data.Length * sizeof(T));
+            for (int y = 0; y < rect.Height; y++) {
+                rgbaSpan.Slice(rect.Width * y, rect.Width)
                         .CopyTo(
                              new Span<Rgba32>(
                                  (void*)((nint)mapBegin + (nint)placedTexture2D.Offset + y * footprint.RowPitch),
-                                 sizeof(Rgba32) * this.Width));
+                                 sizeof(Rgba32) * rect.Width));
             }
         }
 
@@ -203,7 +234,7 @@ public unsafe class Direct3D12Texture : VixieTexture {
                 null,
                 0
             ),
-            0, 0, 0,
+            (uint)rect.X, (uint)rect.Y, 0,
             new TextureCopyLocation(
                 uploadBuffer,
                 TextureCopyType.PlacedFootprint,
@@ -212,25 +243,12 @@ public unsafe class Direct3D12Texture : VixieTexture {
             ),
             null
         );
-
-        //Tell the command list to wait for the texture to be copied before using it as a pixel shader resource
-        ResourceBarrier copyBarrier = new ResourceBarrier {
-            Type = ResourceBarrierType.Transition
-        };
-        copyBarrier.Anonymous.Transition.PResource   = this._texture;
-        copyBarrier.Anonymous.Transition.Subresource = 0;
-        copyBarrier.Anonymous.Transition.StateAfter  = ResourceStates.PixelShaderResource;
-        copyBarrier.Anonymous.Transition.StateBefore = ResourceStates.CopyDest;
-        this._backend.CommandList.ResourceBarrier(1, &copyBarrier);
-
+        
         //Release the upload buffer as we no longer need it
         this._backend.GraphicsItemsToGo.Push(uploadBuffer);
-
-        return this;
-    }
-
-    public override VixieTexture SetData <pT>(ReadOnlySpan<pT> data, Rectangle rect) {
-        //TODO
+        
+        this.BarrierTransition(ResourceStates.PixelShaderResource);
+        
         return this;
     }
 

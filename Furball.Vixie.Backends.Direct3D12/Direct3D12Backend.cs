@@ -609,7 +609,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
     }
 
     public override void Clear() {
-        D3Dcolorvalue clear = new D3Dcolorvalue(0, 1, 0, 0);
+        D3Dcolorvalue clear = new D3Dcolorvalue(0, 0, 0, 0);
 
         this.CommandList.ClearRenderTargetView(this._currentRtvHandle, (float*)&clear, 1u, in this.CurrentScissorRect);
     }

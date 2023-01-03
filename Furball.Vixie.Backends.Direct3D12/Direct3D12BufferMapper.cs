@@ -47,16 +47,16 @@ public unsafe class Direct3D12BufferMapper : BufferMapper {
 
         if (this._resourceState == ResourceStates.VertexAndConstantBuffer) {
             buffer.VertexBufferView = new VertexBufferView {
-                BufferLocation = buffer.Buffer.GetGPUVirtualAddress(), 
+                BufferLocation = buffer.Resource.GetGPUVirtualAddress(), 
                 StrideInBytes = (uint)sizeof(Vertex),
                 SizeInBytes = (uint)this.SizeInBytes
             };
         }
         else if(this._resourceState == ResourceStates.IndexBuffer) {
             buffer.IndexBufferView = new IndexBufferView {
-                BufferLocation = buffer.Buffer.GetGPUVirtualAddress(), 
+                BufferLocation = buffer.Resource.GetGPUVirtualAddress(), 
                 SizeInBytes    = (uint)this.SizeInBytes, 
-                Format = Format.FormatR16Uint
+                Format         = Format.FormatR16Uint
             }; 
         }
         

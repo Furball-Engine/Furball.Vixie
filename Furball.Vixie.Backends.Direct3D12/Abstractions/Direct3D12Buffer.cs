@@ -4,13 +4,7 @@ using Silk.NET.DXGI;
 
 namespace Furball.Vixie.Backends.Direct3D12.Abstractions;
 
-public unsafe class Direct3D12Buffer : IDisposable {
-    private readonly Direct3D12Backend _backend;
-
-    public ResourceStates CurrentResourceState { get; private set; }
-
-    public readonly ComPtr<ID3D12Resource> Buffer;
-
+public unsafe class Direct3D12Buffer : Direct3D12Resource, IDisposable {
     public VertexBufferView VertexBufferView;
     public IndexBufferView  IndexBufferView;
     
@@ -41,7 +35,7 @@ public unsafe class Direct3D12Buffer : IDisposable {
         this.CurrentResourceState = ResourceStates.GenericRead;
         
         //Create the upload buffer
-        this.Buffer = this._backend.Device.CreateCommittedResource<ID3D12Resource>(
+        this.Resource = this._backend.Device.CreateCommittedResource<ID3D12Resource>(
             &uploadBufferHeapProperties,
             HeapFlags.None,
             &uploadBufferDesc,
@@ -49,7 +43,7 @@ public unsafe class Direct3D12Buffer : IDisposable {
             null
         );
 
-        this.Buffer.SetName("buffer waaaa");
+        this.Resource.SetName("buffer waaaa");
     }
 
     /// <summary>
@@ -59,7 +53,7 @@ public unsafe class Direct3D12Buffer : IDisposable {
     /// <returns>A pointer to the mapped data</returns>
     public void* Map(Range readRange = default) {
         void* ptr = null;
-        SilkMarshal.ThrowHResult(this.Buffer.Map(0, new Range(0, 0), &ptr));
+        SilkMarshal.ThrowHResult(this.Resource.Map(0, new Range(0, 0), &ptr));
         return ptr;
     }
     
@@ -68,34 +62,16 @@ public unsafe class Direct3D12Buffer : IDisposable {
     /// </summary>
     /// <param name="writeRange">An optional range of how much data was actually written, only used for external tooling</param>
     public void Unmap(Range writeRange = default) {
-        this.Buffer.Unmap(0, in writeRange);
+        this.Resource.Unmap(0, in writeRange);
     }
 
-    public void BarrierTransition(ResourceStates stateTo) {
-        //Dont barrier transition if we are *already* in said state
-        if (this.CurrentResourceState == stateTo)
-            return; //NOTE: should this be allowed? i dont see a reason but maybe there is
-        
-        //Tell the command list that this resource is now in use for `stateTo` purpose
-        ResourceBarrier copyBarrier = new ResourceBarrier {
-            Type = ResourceBarrierType.Transition
-        };
-        copyBarrier.Anonymous.Transition.PResource   = this.Buffer;
-        copyBarrier.Anonymous.Transition.Subresource = 0;
-        copyBarrier.Anonymous.Transition.StateAfter  = stateTo;
-        copyBarrier.Anonymous.Transition.StateBefore = this.CurrentResourceState;
-        this._backend.CommandList.ResourceBarrier(1, &copyBarrier);
-
-        this.CurrentResourceState = stateTo;
-    }
-    
     private void ReleaseUnmanagedResources() {
         //If the buffer is null, do nothing here
-        if (this.Buffer.Handle == null)
+        if (this.Resource.Handle == null)
             return;
         
         //Push the buffer to be disposed
-        this._backend.GraphicsItemsToGo.Push(this.Buffer);
+        this._backend.GraphicsItemsToGo.Push(this.Resource);
     }
     
     public void Dispose() {
