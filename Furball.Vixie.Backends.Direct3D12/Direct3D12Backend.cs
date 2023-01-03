@@ -515,12 +515,6 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
     private bool      _firstFrame = true;
     public override void BeginScene() {
         base.BeginScene();
-        
-        this.CommandList.SetGraphicsRootSignature(this.RootSignature);
-        // this.CommandList.SetDescriptorHeaps();
-        // D3D12_GPU_DESCRIPTOR_HANDLE cbvHandle(constantBufferHeap->GetGPUDescriptorHandleForHeapStart());
-        // this.CommandList.SetGraphicsRootDescriptorTable(0, cbvHandle);
-
 
         //Indicate that the back buffer will be used as a render target
         ResourceBarrier renderTargetBarrier = new ResourceBarrier {
@@ -533,6 +527,12 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         renderTargetBarrier.Anonymous.Transition.Subresource = D3D12.ResourceBarrierAllSubresources;
 
         this.CommandList.ResourceBarrier(1, &renderTargetBarrier);
+
+        this.SetCommandListProps();
+    }
+
+    public void SetCommandListProps() {
+        this.CommandList.SetGraphicsRootSignature(this.RootSignature);
 
         this._currentRtvHandle     =  this._renderTargetViewHeap.GetCPUDescriptorHandleForHeapStart();
         this._currentRtvHandle.Ptr += this.FrameIndex * this._rtvDescriptorSize;
@@ -549,15 +549,15 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
 
         Matrix4x4 projMatrix = this._projectionMatrixValue;
         this.CommandList.SetGraphicsRoot32BitConstants(0, 16, &projMatrix, 0);
-        
+
         ID3D12DescriptorHeap** heaps = stackalloc ID3D12DescriptorHeap*[2];
-        
+
         heaps[0] = this.CbvSrvUavHeap.Heap;
         heaps[1] = this.SamplerHeap.Heap;
-        
+
         //Bind the 2 descriptor heaps
         this.CommandList.SetDescriptorHeaps(2, heaps);
-        
+
         this.CommandList.SetGraphicsRootDescriptorTable(1, this.CbvSrvUavHeap.Heap.GetGPUDescriptorHandleForHeapStart());
         this.CommandList.SetGraphicsRootDescriptorTable(2, this.SamplerHeap.Heap.GetGPUDescriptorHandleForHeapStart());
     }
@@ -577,14 +577,28 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
 
         this.CommandList.ResourceBarrier(1, &presentBarrier);
 
-        SilkMarshal.ThrowHResult(this.CommandList.Close());
-
-        this.CommandQueue.ExecuteCommandLists(1, ref this.CommandList);
+        this.EndAndExecuteCommandList();
 
         //TODO: check if vsync or not, if not vsync, then swap interval should be 0
         //else: it should be 1, but lets assume no Vsync for now.
         SilkMarshal.ThrowHResult(this._swapchain.Present(0, 0));
 
+        this.FenceCommandList();
+        
+        this.FrameIndex = this._swapchain.GetCurrentBackBufferIndex();
+
+        this.ResetCommandListAndAllocator();
+
+#if DEBUG
+        this.PrintInfoQueue();
+#endif
+    }
+    
+    public void ResetCommandListAndAllocator() {
+        this.CommandList.Reset(this.CommandAllocator, this.PipelineState);
+    }
+
+    public void FenceCommandList() {
         ulong fence = this.FenceValue;
         SilkMarshal.ThrowHResult(this.CommandQueue.Signal(this.Fence, fence));
         this.FenceValue++;
@@ -593,19 +607,12 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
             this.Fence.SetEventOnCompletion(fence, this.FenceEvent);
             SilkMarshal.WaitWindowsObjects((nint)this.FenceEvent);
         }
+    }
 
-        this.FrameIndex = this._swapchain.GetCurrentBackBufferIndex();
+    public void EndAndExecuteCommandList() {
+        SilkMarshal.ThrowHResult(this.CommandList.Close());
 
-        while (this.GraphicsItemsToGo.Count > 0) {
-            this.GraphicsItemsToGo.Pop().Dispose();
-        }
-        
-        this.CommandAllocator.Reset();
-        this.CommandList.Reset(this.CommandAllocator, this.PipelineState);
-        
-#if DEBUG
-        this.PrintInfoQueue();
-#endif
+        this.CommandQueue.ExecuteCommandLists(1, ref this.CommandList);
     }
 
     public override void Clear() {

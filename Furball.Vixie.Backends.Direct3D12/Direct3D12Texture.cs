@@ -1,11 +1,9 @@
 ﻿using Furball.Vixie.Backends.Direct3D12.Abstractions;
 using Furball.Vixie.Backends.Shared;
-using Furball.Vixie.Helpers;
 using Silk.NET.Core.Native;
 using Silk.NET.Direct3D12;
 using Silk.NET.DXGI;
 using Silk.NET.Maths;
-using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using Rectangle=System.Drawing.Rectangle;
 
@@ -152,8 +150,6 @@ public unsafe class Direct3D12Texture : VixieTexture {
     }
 
     public override VixieTexture SetData <T>(ReadOnlySpan<T> data, Rectangle rect) {
-        Console.WriteLine($"Partial set {rect}");
-        
         this.BarrierTransition(ResourceStates.CopyDest);
 
         //Create the subresource footprint of the texture
@@ -217,8 +213,7 @@ public unsafe class Direct3D12Texture : VixieTexture {
                 rgbaSpan.Slice(rect.Width * y, rect.Width)
                         .CopyTo(
                              new Span<Rgba32>(
-                                 (void*)((nint)mapBegin + (nint)placedTexture2D.Offset + y * footprint.RowPitch),
-                                 sizeof(Rgba32) * rect.Width));
+                                 (void*)((nint)mapBegin + (nint)placedTexture2D.Offset + y * footprint.RowPitch), rect.Width));
             }
         }
 
@@ -252,7 +247,107 @@ public unsafe class Direct3D12Texture : VixieTexture {
         return this;
     }
 
-    public override Rgba32[] GetData() => throw new NotImplementedException();
+    public override Rgba32[] GetData() {
+        this.BarrierTransition(ResourceStates.CopySource);
+        
+        //Create the subresource footprint of the texture
+        SubresourceFootprint footprint = new SubresourceFootprint {
+            Format   = Format.FormatR8G8B8A8Unorm,
+            Width    = (uint)this.Width,
+            Height   = (uint)this.Height,
+            Depth    = 1,
+            RowPitch = Direct3D12Backend.Align((uint)(this.Width * sizeof(Rgba32)), D3D12.TextureDataPitchAlignment)
+        };
+
+        //The size of our download buffer
+        ulong readbackBufferSize = footprint.RowPitch * footprint.Height; 
+        
+        //The description of the upload buffer
+        ResourceDesc readbackBufferDesc = new ResourceDesc {
+            Dimension        = ResourceDimension.Buffer,
+            Width            = readbackBufferSize,
+            Height           = 1,
+            Format           = Format.FormatUnknown,
+            DepthOrArraySize = 1,
+            Flags            = ResourceFlags.None,
+            MipLevels        = 1,
+            SampleDesc       = new SampleDesc(1, 0),
+            Layout           = TextureLayout.LayoutRowMajor
+        };
+        
+        //The heap properties of the upload buffer, being of type `Upload`
+        HeapProperties readbackBufferHeapProperties = new HeapProperties {
+            Type                 = HeapType.Readback,
+            CPUPageProperty      = CpuPageProperty.None,
+            CreationNodeMask     = 0,
+            VisibleNodeMask      = 0,
+            MemoryPoolPreference = MemoryPool.None
+        };
+        //Create the upload buffer
+        ComPtr<ID3D12Resource> readbackBuffer = this._backend.Device.CreateCommittedResource<ID3D12Resource>(
+            &readbackBufferHeapProperties,
+            HeapFlags.None,
+            &readbackBufferDesc,
+            ResourceStates.CopyDest,
+            null
+        );
+        readbackBuffer.SetName("texture readback buffer");
+        
+        //Create the placed subresource footprint of the texture
+        PlacedSubresourceFootprint placedTexture2D = new PlacedSubresourceFootprint {
+            Offset    = 0,
+            Footprint = footprint
+        }; 
+        
+        //Copy the texture to the readback buffer
+        this._backend.CommandList.CopyTextureRegion(
+            new TextureCopyLocation(
+                readbackBuffer,
+                TextureCopyType.PlacedFootprint,
+                new TextureCopyLocationUnion(placedTexture2D),
+                placedTexture2D
+            ),
+            0, 0, 0,
+            new TextureCopyLocation(
+                this._texture,
+                TextureCopyType.SubresourceIndex,
+                new TextureCopyLocationUnion(null, 0),
+                null,
+                0
+            ),
+            null
+        );
+        
+        this._backend.EndAndExecuteCommandList();
+        this._backend.FenceCommandList();
+        this._backend.ResetCommandListAndAllocator();
+        this._backend.SetCommandListProps();
+        
+        //Declare the pointer which will point to our mapped data
+        void* mapBegin = null;
+
+        //Map the resource
+        SilkMarshal.ThrowHResult(readbackBuffer.Map(0, new Range(0, (nuint?)readbackBufferSize), &mapBegin));
+
+        Rgba32[]     pixData     = new Rgba32[this.Width * this.Height];
+        Span<Rgba32> pixDataSpan = pixData;
+        
+        //Copy the data from the map into the buffer
+        for (int y = 0; y < this.Height; y++) {
+            new Span<Rgba32>(
+                (void*)((nint)mapBegin + (nint)placedTexture2D.Offset + y * footprint.RowPitch), this.Width)
+               .CopyTo(pixDataSpan.Slice(y * this.Width));
+        }
+        
+        readbackBuffer.Unmap(0, new Range(0, 0));
+        
+        //Send the readback buffer to be disposed
+        this._backend.GraphicsItemsToGo.Push(readbackBuffer);
+        
+        this.BarrierTransition(ResourceStates.PixelShaderResource);
+
+        return pixData;
+    }
 
     public override void CopyTo(VixieTexture tex) {
         throw new NotImplementedException();
