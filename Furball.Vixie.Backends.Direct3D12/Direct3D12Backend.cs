@@ -493,9 +493,9 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
 
     public override void Cleanup() {
         //Release our device and DXGI factory
-        this.Device.Release();
-        this.Debug.Release();
         this.DebugInfoQueue.Release();
+        this.Debug.Release();
+        this.Device.Release();
         this.DXGIFactory.Release();
     }
 
