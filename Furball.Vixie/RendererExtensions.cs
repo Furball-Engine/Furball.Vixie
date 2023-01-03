@@ -4,7 +4,6 @@ using System.Runtime.CompilerServices;
 using FontStashSharp;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Renderers;
-using Furball.Vixie.FontStashSharp;
 using Color = Furball.Vixie.Backends.Shared.Color;
 
 namespace Furball.Vixie;

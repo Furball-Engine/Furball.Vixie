@@ -1,5 +1,4 @@
-﻿using System;
-using Furball.Vixie.Backends.Shared;
+﻿using Furball.Vixie.Backends.Shared;
 using Silk.NET.Maths;
 
 namespace Furball.Vixie.Backends.Mola;

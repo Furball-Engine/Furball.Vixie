@@ -5,7 +5,6 @@ using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Helpers;
 using Furball.Vixie.WindowManagement;
 using Kettu;
-using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
 using WindowState = Furball.Vixie.WindowManagement.WindowState;

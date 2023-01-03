@@ -63,7 +63,7 @@ public class SilkWindowManager : IWindowManager {
         GlfwInput.RegisterPlatform();
 
         //Prioritize GLFW over SDL
-        Window.PrioritizeGlfw();
+        Window.PrioritizeSdl();
     }
 
     private GraphicsAPI GetSilkGraphicsApi() {

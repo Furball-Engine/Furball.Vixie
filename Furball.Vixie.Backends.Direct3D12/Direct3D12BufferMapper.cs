@@ -1,7 +1,6 @@
 ﻿using Furball.Vixie.Backends.Direct3D12.Abstractions;
 using Furball.Vixie.Backends.Shared;
 using Furball.Vixie.Backends.Shared.Renderers;
-using Furball.Vixie.Helpers;
 using Silk.NET.Core.Native;
 using Silk.NET.Direct3D12;
 using Silk.NET.DXGI;

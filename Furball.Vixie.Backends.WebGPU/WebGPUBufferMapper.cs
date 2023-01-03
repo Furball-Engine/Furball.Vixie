@@ -1,5 +1,4 @@
-﻿using System;
-using Furball.Vixie.Backends.Shared.Renderers;
+﻿using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers;
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;

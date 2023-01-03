@@ -1,5 +1,4 @@
 
-using Furball.Vixie.TestApplication.Tests;
 #if USE_IMGUI
 using ImGuiNET;
 #endif

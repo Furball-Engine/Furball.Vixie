@@ -1,6 +1,5 @@
 ﻿#nullable enable
 using System;
-using System.Globalization;
 using Furball.Vixie.Backends.Shared.Backends;
 using Furball.Vixie.Helpers.Helpers;
 using Furball.Vixie.TestApplication.Tests;
@@ -8,7 +7,6 @@ using Furball.Vixie.TestApplication.Tests;
 using ImGuiNET;
 #endif
 using Kettu;
-using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
 
 namespace Furball.Vixie.TestApplication; 

@@ -1,7 +1,5 @@
-using System;
 using System.Drawing;
 using System.Numerics;
-using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers.Helpers;
 #if USE_IMGUI
 using ImGuiNET;

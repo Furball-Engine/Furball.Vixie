@@ -3,7 +3,6 @@ using System.Numerics;
 using FontStashSharp;
 using FontStashSharp.RichText;
 using Furball.Vixie.Backends.Shared;
-using Furball.Vixie.Backends.Shared.Renderers;
 using Furball.Vixie.Helpers.Helpers;
 #if USE_IMGUI
 using ImGuiNET;

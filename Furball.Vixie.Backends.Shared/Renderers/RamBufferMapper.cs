@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using Silk.NET.Core.Native;
 
 namespace Furball.Vixie.Backends.Shared.Renderers; 

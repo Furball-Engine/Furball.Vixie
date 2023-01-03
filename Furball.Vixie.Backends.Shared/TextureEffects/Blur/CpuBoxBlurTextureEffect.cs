@@ -1,7 +1,4 @@
-﻿using System;
-using System.Numerics;
-using System.Runtime.CompilerServices;
-using Furball.Vixie.Backends.Shared.Backends;
+﻿using Furball.Vixie.Backends.Shared.Backends;
 using SixLabors.ImageSharp.PixelFormats;
 #if NET7_0_OR_GREATER
 using System.Runtime.Intrinsics;

@@ -52,7 +52,7 @@ public class Direct3D11BufferMapper : BufferMapper {
 
         //Map the new buffer
         MappedSubresource map = new MappedSubresource();
-        this._backend.DeviceContext.Map(this.Buffer, 0u, Silk.NET.Direct3D11.Map.WriteDiscard, 0, &map);
+        SilkMarshal.ThrowHResult(this._backend.DeviceContext.Map(this.Buffer, 0u, Silk.NET.Direct3D11.Map.WriteDiscard, 0, &map));
 
         //Set the data ptr
         this.Ptr = map.PData;
@@ -65,7 +65,7 @@ public class Direct3D11BufferMapper : BufferMapper {
             CPUAccessFlags = (uint)CpuAccessFlag.Write
         };
         ComPtr<ID3D11Buffer> buf = null;
-        this._backend.Device.CreateBuffer(in desc, null, ref buf);
+        SilkMarshal.ThrowHResult(this._backend.Device.CreateBuffer(in desc, null, ref buf));
 
         return this.ResetFromExistingBuffer(buf);
     }
