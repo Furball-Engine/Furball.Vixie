@@ -395,6 +395,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         this._viewport.MinDepth = 0;
         this._viewport.MaxDepth = 1;
 
+        const uint SwapchainFlags = (uint)SwapChainFlag.AllowTearing;
         if (this._swapchain.Handle != null) {
             foreach (ComPtr<ID3D12Resource> renderTarget in this._renderTargets) {
                 renderTarget.Dispose();
@@ -407,7 +408,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
                 width,
                 height,
                 Format.FormatR8G8B8A8Unorm,
-                0
+                SwapchainFlags
             ));
         }
         else {
@@ -417,7 +418,8 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
                 Height      = height,
                 Format      = Format.FormatR8G8B8A8Unorm,
                 BufferUsage = DXGI.UsageRenderTargetOutput,
-                SwapEffect  = SwapEffect.FlipDiscard,
+                SwapEffect  = SwapEffect.FlipDiscard, 
+                Flags = SwapchainFlags,
                 SampleDesc = new SampleDesc {
                     Count = 1
                 }, 
@@ -647,9 +649,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
 
         this.EndAndExecuteCommandList();
 
-        //TODO: check if vsync or not, if not vsync, then swap interval should be 0
-        //else: it should be 1, but lets assume no Vsync for now.
-        SilkMarshal.ThrowHResult(this._swapchain.Present(0, 0));
+        SilkMarshal.ThrowHResult(this._swapchain.Present(0, this._view.VSync ? 0 : DXGI.PresentAllowTearing));
 
         this.FenceCommandList();
         
@@ -667,6 +667,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
     internal event EventHandler? FrameReset; 
 
     public void ResetCommandListAndAllocator() {
+        this.CommandAllocator.Reset();
         this.CommandList.Reset(this.CommandAllocator, this.PipelineState);
     }
 
