@@ -5,6 +5,7 @@ using Furball.Vixie.Helpers.Helpers;
 using Furball.Vixie.TestApplication.Tests;
 #if USE_IMGUI
 using ImGuiNET;
+using System.Globalization;
 #endif
 using Kettu;
 using SixLabors.ImageSharp;

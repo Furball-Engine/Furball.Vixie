@@ -4,6 +4,7 @@ using Furball.Vixie.Backends.Shared.TextureEffects.Blur;
 using Furball.Vixie.Helpers.Helpers;
 #if USE_IMGUI
 using ImGuiNET;
+using System.Diagnostics;
 #endif
 
 namespace Furball.Vixie.TestApplication.Tests;
