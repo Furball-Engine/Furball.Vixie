@@ -22,9 +22,6 @@ public static class GraphicsBackendState {
             return backend;
         }
             
-#if VIXIE_BACKEND_VELDRID
-        bool preferVeldridOverNative  = PrefferedBackends.HasFlag(Backend.Veldrid);
-#endif
 #if VIXIE_BACKEND_OPENGL
         bool preferOpenGl             = PrefferedBackends.HasFlag(Backend.OpenGL);
         bool preferOpenGlesOverOpenGl = PrefferedBackends.HasFlag(Backend.OpenGLES);
@@ -50,11 +47,6 @@ public static class GraphicsBackendState {
 #endif
         }
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
-#if VIXIE_BACKEND_VELDRID
-            if (preferVeldridOverNative)
-                return Backend.Veldrid;
-#endif
-
 #if VIXIE_BACKEND_OPENGL
             if (!preferOpenGl)
                 return Backend.Direct3D11;
@@ -79,11 +71,6 @@ public static class GraphicsBackendState {
 #endif
         }
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("ANDROID"))) {
-#if VIXIE_BACKEND_VELDRID
-            if (preferVeldridOverNative)
-                return Backend.Veldrid;
-#endif
-
 #if VIXIE_BACKEND_OPENGL
             if (supportsGles.Value)
                 if (preferOpenGlesOverOpenGl) {
@@ -97,11 +84,6 @@ public static class GraphicsBackendState {
 #endif
         }
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
-#if VIXIE_BACKEND_VELDRID
-            if (preferVeldridOverNative)
-                return Backend.Veldrid;
-#endif
-
 #if VIXIE_BACKEND_OPENGL
             if ((!supportsGl.Value && supportsGles.Value) || (supportsGles.Value))
                 if (preferOpenGlesOverOpenGl) {
@@ -141,10 +123,7 @@ public static class GraphicsBackendState {
                 throw new NotSupportedException("Your GPU does not support OpenGL!");
             }
 #endif
-                
-#if VIXIE_BACKEND_VELDRID
-            return Backend.Veldrid;
-#endif
+            return Backend.OpenGL;
         }
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("FREEBSD"))) {
 #if VIXIE_BACKEND_OPENGL

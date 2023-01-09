@@ -14,9 +14,6 @@ public enum Backend {
     OpenGL     = 1 << 2,
     OpenGLES   = 1 << 3,
 #endif
-#if VIXIE_BACKEND_VELDRID
-    Veldrid    = 1 << 4,
-#endif
 #if VIXIE_BACKEND_VULKAN
     Vulkan     = 1 << 5,
 #endif

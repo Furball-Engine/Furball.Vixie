@@ -25,7 +25,6 @@
         <PackageReference Include="Silk.NET.Input" Version="2.17.0-build2818.0" />
         <PackageReference Include="Silk.NET.Input.Extensions" Version="2.17.0-build2818.0" />
         <PackageReference Include="Silk.NET.Windowing" Version="2.17.0-build2818.0" />
-        <PackageReference Include="Silk.NET.Windowing.Extensions.Veldrid" Version="2.17.0-build2818.0" />
         <PackageReference Include="SixLabors.ImageSharp" Version="2.1.3" />
     </ItemGroup>
 
@@ -40,7 +39,6 @@
       <ProjectReference Condition="$(EnabledBackends.Contains('OpenGL'))" Include="..\Furball.Vixie.Backends.OpenGL\Furball.Vixie.Backends.OpenGL.csproj" />
       <ProjectReference Condition="$(EnabledBackends.Contains('Direct3D11'))" Include="..\Furball.Vixie.Backends.Direct3D11\Furball.Vixie.Backends.Direct3D11.csproj" />
       <ProjectReference Condition="$(EnabledBackends.Contains('Vulkan'))" Include="..\Furball.Vixie.Backends.Vulkan\Furball.Vixie.Backends.Vulkan.csproj" />
-      <ProjectReference Condition="$(EnabledBackends.Contains('Veldrid'))" Include="..\Furball.Vixie.Backends.Veldrid\Furball.Vixie.Backends.Veldrid.csproj" />
       <ProjectReference Condition="$(EnabledBackends.Contains('WebGPU'))" Include="..\Furball.Vixie.Backends.WebGPU\Furball.Vixie.Backends.WebGPU.csproj" />
     </ItemGroup>
 

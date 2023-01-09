@@ -21,9 +21,6 @@ public static class Global {
             Backend.OpenGL     => OpenGLBackend.FeatureLevels,
             Backend.OpenGLES   => OpenGLBackend.FeatureLevels,
 #endif
-#if VIXIE_BACKEND_VELDRID
-            Backend.Veldrid    => new Dictionary<string, FeatureLevel>(),
-#endif
 #if VIXIE_BACKEND_VULKAN
             Backend.Vulkan     => new Dictionary<string, FeatureLevel>(),
 #endif

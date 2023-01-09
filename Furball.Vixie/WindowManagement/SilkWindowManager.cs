@@ -29,10 +29,6 @@ using Furball.Vixie.Backends.Mola;
 #if VIXIE_BACKEND_OPENGL
 using Furball.Vixie.Backends.OpenGL;
 #endif
-#if VIXIE_BACKEND_VELDRID
-using Furball.Vixie.Backends.Veldrid;
-using Silk.NET.Windowing.Extensions.Veldrid;
-#endif
 #if VIXIE_BACKEND_VULKAN
 using Furball.Vixie.Backends.Vulkan;
 #endif
@@ -72,9 +68,6 @@ public class SilkWindowManager : IWindowManager {
             Backend.OpenGLES => ContextAPI.OpenGLES,
             Backend.OpenGL   => ContextAPI.OpenGL,
 #endif
-#if VIXIE_BACKEND_VELDRID
-            Backend.Veldrid => ContextAPI.None, //Veldrid handles this internally
-#endif
 #if VIXIE_BACKEND_VULKAN
             Backend.Vulkan => ContextAPI.Vulkan,
 #endif
@@ -103,9 +96,6 @@ public class SilkWindowManager : IWindowManager {
 #if VIXIE_BACKEND_OPENGL
             Backend.OpenGLES => ContextProfile.Core, //OpenGLES is always core
             Backend.OpenGL   => ContextProfile.Core, //OpenGL is always core
-#endif
-#if VIXIE_BACKEND_VELDRID
-            Backend.Veldrid => ContextProfile.Core, //This doesnt matter for Veldrid
 #endif
 #if VIXIE_BACKEND_VULKAN
             Backend.Vulkan => ContextProfile.Core, //This doesnt matter for Vulkan
@@ -145,10 +135,6 @@ public class SilkWindowManager : IWindowManager {
 #if VIXIE_BACKEND_OPENGL
             Backend.OpenGL   => debug ? ContextFlags.Debug : ContextFlags.Default,
             Backend.OpenGLES => debug ? ContextFlags.Debug : ContextFlags.Default,
-#endif
-#if VIXIE_BACKEND_VELDRID
-            Backend.Veldrid => debug ? ContextFlags.Debug | ContextFlags.ForwardCompatible
-                : ContextFlags.Default                    | ContextFlags.ForwardCompatible,
 #endif
 #if VIXIE_BACKEND_VULKAN
             Backend.Vulkan => debug ? ContextFlags.Debug : ContextFlags.Default,
@@ -192,11 +178,6 @@ public class SilkWindowManager : IWindowManager {
                 }
 
                 version = Backends.Shared.Global.LatestSupportedGl.Value.GL;
-                break;
-#endif
-#if VIXIE_BACKEND_VELDRID
-            case Backend.Veldrid:
-                version = new APIVersion(0, 0);
                 break;
 #endif
 #if VIXIE_BACKEND_D3D11
@@ -419,18 +400,6 @@ public class SilkWindowManager : IWindowManager {
         //Disable vsync by default
         options.VSync = false;
 
-#if VIXIE_BACKEND_VELDRID
-        //Veldrid specific hacks
-        if (this.Backend == Backend.Veldrid) {
-            options.API = VeldridBackend.PrefferedBackend.ToGraphicsAPI();
-
-            //Veldrid handles swapping
-            options.ShouldSwapAutomatically = false;
-            //Veldrid handles the context, so we dont want silk managing it
-            options.IsContextControlDisabled = true;
-        }
-#endif
-
         //Explicitly request 0 depth bits, as we dont use depth testing
         options.PreferredDepthBufferBits = 0;
 
@@ -534,9 +503,6 @@ public class SilkWindowManager : IWindowManager {
 #endif
 #if VIXIE_BACKEND_OPENGL
             Backend.OpenGL => new OpenGLBackend(this.Backend),
-#endif
-#if VIXIE_BACKEND_VELDRID
-            Backend.Veldrid => new VeldridBackend(),
 #endif
 #if VIXIE_BACKEND_VULKAN
             Backend.Vulkan => new VulkanBackend(),
