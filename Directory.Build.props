@@ -1,7 +1,7 @@
 <Project>
     <PropertyGroup>
-        <UseImGui>true</UseImGui>
-        <EnabledBackends>Vulkan;Direct3D11;Mola;OpenGL;WebGPU;Dummy;Direct3D12</EnabledBackends>
+        <UseImGui>false</UseImGui>
+        <EnabledBackends>Vulkan;Direct3D11;Mola;OpenGL;Veldrid;WebGPU;Dummy;Direct3D12</EnabledBackends>
     </PropertyGroup>
     
     <PropertyGroup>

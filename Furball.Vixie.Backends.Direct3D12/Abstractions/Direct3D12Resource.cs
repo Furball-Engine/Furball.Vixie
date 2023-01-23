@@ -10,7 +10,7 @@ public abstract class Direct3D12Resource {
 
     public ResourceStates CurrentResourceState { get; protected set; }
 
-    public unsafe void BarrierTransition(ResourceStates stateTo) {
+    public unsafe void BarrierTransition(ResourceStates stateTo, uint subresource = 0) {
         //Dont barrier transition if we are *already* in said state
         if (this.CurrentResourceState == stateTo)
             return; //NOTE: should this be allowed? i dont see a reason but maybe there is
@@ -20,7 +20,7 @@ public abstract class Direct3D12Resource {
             Type = ResourceBarrierType.Transition
         };
         copyBarrier.Anonymous.Transition.PResource   = this.Resource;
-        copyBarrier.Anonymous.Transition.Subresource = 0;
+        copyBarrier.Anonymous.Transition.Subresource = subresource;
         copyBarrier.Anonymous.Transition.StateAfter  = stateTo;
         copyBarrier.Anonymous.Transition.StateBefore = this.CurrentResourceState;
         this._backend.CommandList.ResourceBarrier(1, &copyBarrier);
