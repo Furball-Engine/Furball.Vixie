@@ -395,7 +395,7 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         desc.SampleMask = uint.MaxValue;
 
         desc.NumRenderTargets = 1;
-        desc.RTVFormats[0]    = Format.FormatR8G8B8A8Unorm;
+        desc.RTVFormats[0]    = Format.FormatB8G8R8A8Unorm;
         desc.SampleDesc.Count = 1;
 
         //Create the pipeline state
@@ -424,14 +424,14 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
             this._renderTargetViewHeap.Dispose();
 
             SilkMarshal.ThrowHResult(
-            this._swapchain.ResizeBuffers(BackbufferCount, width, height, Format.FormatR8G8B8A8Unorm, swapchainFlags)
+            this._swapchain.ResizeBuffers(BackbufferCount, width, height, Format.FormatB8G8R8A8Unorm, swapchainFlags)
             );
         } else {
             SwapChainDesc1 desc = new SwapChainDesc1 {
                 BufferCount = BackbufferCount,
                 Width       = width,
                 Height      = height,
-                Format      = Format.FormatR8G8B8A8Unorm,
+                Format      = Format.FormatB8G8R8A8Unorm,
                 BufferUsage = DXGI.UsageRenderTargetOutput,
                 SwapEffect  = SwapEffect.FlipDiscard,
                 Flags       = swapchainFlags,
@@ -652,27 +652,16 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         D3D12.ResourceBarrierAllSubresources
         );
 
-        this.EndAndExecuteCommandList();
-
-        //The frame index before present
-        uint currFrameIndex = this._swapchain.GetCurrentBackBufferIndex();
-
-        SilkMarshal.ThrowHResult(this._swapchain.Present(0, this._view.VSync ? 0 : DXGI.PresentAllowTearing));
-
-        //Fence the command list to wait for its completion
-        this.FenceCommandList();
-
+        //If there is a screenshot queued
         if (this._screenshotQueued) {
-            this.ResetCommandListAndAllocator();
-            this.SetCommandListProps();
-            
             Direct3D12BackBuffer target = this._renderTargets[this.FrameIndex];
 
+            //Transition the backbuffer into a copy source
             target.BarrierTransition(ResourceStates.CopySource, D3D12.ResourceBarrierAllSubresources);
 
-            //Create the subresource footprint of the texture
+            //Create the subresource footprint of the backbuffer
             SubresourceFootprint footprint = new SubresourceFootprint {
-                Format   = Format.FormatR8G8B8A8Unorm,
+                Format   = Format.FormatB8G8R8A8Unorm,
                 Width    = (uint)this._viewport.Width,
                 Height   = (uint)this._viewport.Height,
                 Depth    = 1,
@@ -739,8 +728,13 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
             ),
             null
             );
+            
+            //Transition the backbuffer back to `Present`
+            target.BarrierTransition(ResourceStates.Present, D3D12.ResourceBarrierAllSubresources);
 
+            //End and execute the command list
             this.EndAndExecuteCommandList();
+            //Fence the command list to wait for its completion
             this.FenceCommandList();
 
             //Declare the pointer which will point to our mapped data
@@ -749,26 +743,40 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
             //Map the resource
             SilkMarshal.ThrowHResult(readbackBuffer.Map(0, new Range(0, (nuint?)readbackBufferSize), &mapBegin));
 
-            Rgba32[]     pixData     = new Rgba32[(int)(this._viewport.Width * this._viewport.Height)];
-            Span<Rgba32> pixDataSpan = pixData;
+            Bgra32[]     pixData     = new Bgra32[(int)(this._viewport.Width * this._viewport.Height)];
+            Span<Bgra32> pixDataSpan = pixData;
 
             //Copy the data from the map into the buffer
             for (int y = 0; y < this._viewport.Height; y++) {
-                new Span<Rgba32>(
+                new Span<Bgra32>(
                 (void*)((nint)mapBegin + (nint)placedTexture2D.Offset + y * footprint.RowPitch),
                 (int)this._viewport.Width
                 ).CopyTo(pixDataSpan.Slice((int)(y * this._viewport.Width)));
             }
 
+            //Unmap the readback buffer
             readbackBuffer.Unmap(0, new Range(0, 0));
 
             //Send the readback buffer to be disposed
             this.GraphicsItemsToGo.Push(readbackBuffer);
 
-            this.InvokeScreenshotTaken(Image.LoadPixelData(pixData, (int)this._viewport.Width, (int)this._viewport.Height));
-
-            this._screenshotQueued = false;
+            //Tell all listeners that a screenshot has been taken
+            this.InvokeScreenshotTaken(
+            Image.LoadPixelData(pixData, (int)this._viewport.Width, (int)this._viewport.Height)
+            );
+        } 
+        //If there is no screenshot queued,
+        else {
+            //End and execute the command list like normal
+            this.EndAndExecuteCommandList();
+            
+            //Fence the command list to wait for its completion
+            this.FenceCommandList();
         }
+
+        SilkMarshal.ThrowHResult(this._swapchain.Present(0, this._view.VSync ? 0 : DXGI.PresentAllowTearing));
+
+        this._screenshotQueued = false;
 
         //The new frame index after present
         this.FrameIndex = this._swapchain.GetCurrentBackBufferIndex();
