@@ -15,19 +15,19 @@
 
     <ItemGroup>
         <PackageReference Include="Kettu" Version="1.4.0" />
-        <PackageReference Include="Silk.NET.OpenGL" Version="2.17.0-build2818.0" />
-        <PackageReference Include="Silk.NET.OpenGL.Extensions.AMD" Version="2.17.0-build2818.0" />
-        <PackageReference Include="Silk.NET.OpenGL.Extensions.ARB" Version="2.17.0-build2818.0" />
-        <PackageReference Include="Silk.NET.OpenGL.Extensions.NV" Version="2.17.0-build2818.0" />
-        <PackageReference Include="Silk.NET.OpenGL.Legacy.Extensions.APPLE" Version="2.17.0-build2818.0" />
-        <PackageReference Include="Silk.NET.OpenGL.Legacy.Extensions.EXT" Version="2.17.0-build2818.0" />
-        <PackageReference Include="Silk.NET.OpenGLES" Version="2.17.0-build2818.0" />
+        <PackageReference Include="Silk.NET.OpenGL" Version="2.17.0-build2964.0" />
+        <PackageReference Include="Silk.NET.OpenGL.Extensions.AMD" Version="2.17.0-build2964.0" />
+        <PackageReference Include="Silk.NET.OpenGL.Extensions.ARB" Version="2.17.0-build2964.0" />
+        <PackageReference Include="Silk.NET.OpenGL.Extensions.NV" Version="2.17.0-build2964.0" />
+        <PackageReference Include="Silk.NET.OpenGL.Legacy.Extensions.APPLE" Version="2.17.0-build2964.0" />
+        <PackageReference Include="Silk.NET.OpenGL.Legacy.Extensions.EXT" Version="2.17.0-build2964.0" />
+        <PackageReference Include="Silk.NET.OpenGLES" Version="2.17.0-build2964.0" />
     </ItemGroup>
     
     <ItemGroup Condition="'$(UseImGui)'=='true'">
-        <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.17.0-build2818.0" />
-        <PackageReference Include="Silk.NET.OpenGLES.Extensions.ImGui" Version="2.17.0-build2818.0" />
-        <PackageReference Include="Silk.NET.OpenGL.Legacy.Extensions.ImGui" Version="2.17.0-build2818.0" />
+        <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.17.0-build2964.0" />
+        <PackageReference Include="Silk.NET.OpenGLES.Extensions.ImGui" Version="2.17.0-build2964.0" />
+        <PackageReference Include="Silk.NET.OpenGL.Legacy.Extensions.ImGui" Version="2.17.0-build2964.0" />
     </ItemGroup>
 
     <ItemGroup>

@@ -10,11 +10,11 @@
     <ItemGroup>
         <PackageReference Include="FontStashSharp" Version="1.2.8" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
-        <PackageReference Include="Silk.NET.Input.Extensions" Version="2.17.0-build2818.0" />
-        <PackageReference Include="Silk.NET.OpenCL" Version="2.17.0-build2818.0" />
+        <PackageReference Include="Silk.NET.Input.Extensions" Version="2.17.0-build2964.0" />
+        <PackageReference Include="Silk.NET.OpenCL" Version="2.17.0-build2964.0" />
         <PackageReference Include="SixLabors.ImageSharp" Version="2.1.3" />
-        <PackageReference Include="Silk.NET.Input.Common" Version="2.17.0-build2818.0" />
-        <PackageReference Include="Silk.NET.Windowing.Common" Version="2.17.0-build2818.0" />
+        <PackageReference Include="Silk.NET.Input.Common" Version="2.17.0-build2964.0" />
+        <PackageReference Include="Silk.NET.Windowing.Common" Version="2.17.0-build2964.0" />
     </ItemGroup>
     
     <ItemGroup Condition="'$(UseImGui)'=='true'">
@@ -35,7 +35,7 @@
         <HintPath>..\Furball.Vixie.TestApplication.Desktop\bin\Debug\net6.0\Furball.Vixie.Backends.OpenGL.dll</HintPath>
       </Reference>
       <Reference Include="Silk.NET.OpenGL">
-        <HintPath>..\..\..\..\..\.nuget\packages\silk.net.opengl\2.17.0-build2818.0\lib\netstandard2.0\Silk.NET.OpenGL.dll</HintPath>
+        <HintPath>..\..\..\..\..\.nuget\packages\silk.net.opengl\2.17.0-build2964.0\lib\netstandard2.0\Silk.NET.OpenGL.dll</HintPath>
       </Reference>
     </ItemGroup>
     
