@@ -406,15 +406,8 @@ public class SilkWindowManager : IWindowManager {
         //Specify 4 samples for multisampling
         options.Samples = 4;
 
-        try {
-            this._window = Window.Create(options);
-        }
-        catch {
-#if DEBUG
-            throw;
-#endif
-            throw new WindowCreationFailedException();
-        }
+        //Create the window
+        this._window = Window.Create(options);
 
         //Hook to the window's events
         this.HookEvents();
