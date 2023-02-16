@@ -417,6 +417,9 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
 
         const uint swapchainFlags = (uint)SwapChainFlag.AllowTearing;
         if (this._swapchain.Handle != null) {
+            this.EndAndExecuteCommandList();
+            this.FenceCommandList();
+            
             foreach (Direct3D12BackBuffer renderTarget in this._renderTargets) {
                 renderTarget.Dispose();
             }
@@ -477,6 +480,9 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
             this.Device.CreateRenderTargetView(this._renderTargets[i].Resource, null, rtvHandle);
             rtvHandle.Ptr += 1 * this._rtvDescriptorSize;
         }
+
+        if (this._swapchain.Handle != null)
+            this.ResetCommandListAndAllocator();
     }
 
     private void CreateFence() {
