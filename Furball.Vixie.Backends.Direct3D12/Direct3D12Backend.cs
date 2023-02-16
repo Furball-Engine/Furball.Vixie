@@ -566,7 +566,10 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
         }
     }
 
-    public override Vector2D<int> MaxTextureSize { get; }
+    /// <summary>
+    /// This is a constant for feature level 11_0 hardware and above
+    /// </summary>
+    public override Vector2D<int> MaxTextureSize => new Vector2D<int>(16384);
 
     private bool _firstFrame = true;
     public override void BeginScene() {
