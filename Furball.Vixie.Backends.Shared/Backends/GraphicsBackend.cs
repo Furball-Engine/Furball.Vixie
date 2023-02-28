@@ -149,7 +149,9 @@ public abstract class GraphicsBackend {
     /// <summary>
     /// Presents
     /// </summary>
-    public virtual void Present() {}
+    public virtual void Present() {
+        Tracy.Tracy.EmitFrameMark("Present");
+    }
 
     public virtual void BeginScene() {}
 

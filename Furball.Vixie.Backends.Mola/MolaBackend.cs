@@ -74,8 +74,6 @@ public unsafe class MolaBackend : GraphicsBackend {
     }
 
     public override void Present() {
-        base.Present();
-
         if (this._screenshotQueued) {
             switch (this._renderBitmap->PixelType) {
                 case PixelType.Rgba32: {
@@ -118,6 +116,8 @@ public unsafe class MolaBackend : GraphicsBackend {
         );
         
         img.SaveAsPng("output.png");
+
+        base.Present();
     }
 
     public override void TakeScreenshot() {

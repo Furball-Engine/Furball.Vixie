@@ -454,6 +454,8 @@ public unsafe class Direct3D11Backend : GraphicsBackend {
         }
 
         this.SwapChain.Present(0, 0); //0 = PresentFlags.None
+
+        base.Present();
     }
 
     public override void BeginScene() {

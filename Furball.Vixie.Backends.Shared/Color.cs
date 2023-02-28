@@ -222,4 +222,8 @@ public struct Color {
     public static implicit operator Color(FSColor              color) => new(color.R, color.G, color.B, color.A);
 
     public override string ToString() => $"R: {this.R}; G: {this.G}; B: {this.B}; A: {this.A}";
+
+    public uint ToUint() {
+        return (uint)(this.R << 24 | this.G << 16 | this.B << 8 | this.A);
+    }
 }

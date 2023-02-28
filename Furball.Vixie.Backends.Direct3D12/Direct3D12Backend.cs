@@ -653,7 +653,6 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
     }
 
     public override void Present() {
-        base.Present();
 
         //Indicate that the back buffer will be used as a render target
         this._renderTargets[this.FrameIndex].BarrierTransition(
@@ -797,6 +796,8 @@ public unsafe class Direct3D12Backend : GraphicsBackend {
 #if DEBUG
         this.PrintInfoQueue();
 #endif
+
+        base.Present();
     }
 
     internal event EventHandler? FrameReset;

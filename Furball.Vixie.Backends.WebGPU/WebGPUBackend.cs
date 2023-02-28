@@ -502,8 +502,6 @@ public unsafe class WebGPUBackend : GraphicsBackend {
     }
 
     public override void Present() {
-        base.Present();
-
         this.WebGPU.SwapChainPresent(this.Swapchain);
         
         this.Disposal.Dispose(this.SwapchainTextureView);
@@ -511,6 +509,8 @@ public unsafe class WebGPUBackend : GraphicsBackend {
         this.NumQueuesSubmit = 0;
 
         this.ClearAsap = false;
+
+        base.Present();
     }
 
     public override void Cleanup() {

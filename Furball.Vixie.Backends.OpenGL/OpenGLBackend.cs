@@ -192,6 +192,8 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
 
         this.View = view;
 
+        this.View.ShouldSwapAutomatically = false;
+        
 #if DEBUGWITHGL
         unsafe {
             //Enables Debugging
@@ -552,6 +554,10 @@ public class OpenGLBackend : GraphicsBackend, IGlBasedBackend {
 
             this.InvokeScreenshotTaken(img);
         }
+
+        this.View.SwapBuffers();
+
+        base.Present();
     }
     /// <summary>
     ///     Used to Create a TextureRenderTarget
