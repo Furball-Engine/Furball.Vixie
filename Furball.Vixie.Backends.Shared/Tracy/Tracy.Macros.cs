@@ -6,85 +6,33 @@ namespace Furball.Vixie.Backends.Shared.Tracy;
 
 public unsafe partial class Tracy {
     public static TracyCZoneContext Zone(
-        int active, [CallerMemberName] string functionName = "", [CallerLineNumber] int lineNumber = 0,
-        [CallerFilePath] string file = ""
-    ) {
-        SourceLocationData sourceLocationData = new SourceLocationData {
-            Name     = null,
-            Function = (byte*)SilkMarshal.StringToPtr(functionName),
-            Color    = 0,
-            File     = (byte*)SilkMarshal.StringToPtr(file),
-            Line     = (uint)lineNumber
-        };
-
-        TracyCZoneContext ctx = EmitZoneBegin(&sourceLocationData, active);
-        ctx.SourceLocationData = sourceLocationData;
-
-        return ctx;
-    }
-
-    public static TracyCZoneContext Zone(
         int active, string name, [CallerMemberName] string functionName = "", [CallerLineNumber] int lineNumber = 0,
         [CallerFilePath] string file = ""
     ) {
-        SourceLocationData sourceLocationData = new SourceLocationData {
-            Name     = (byte*)SilkMarshal.StringToPtr(name),
-            Function = (byte*)SilkMarshal.StringToPtr(functionName),
-            Color    = 0,
-            File     = (byte*)SilkMarshal.StringToPtr(file),
-            Line     = (uint)lineNumber
-        };
+        byte* ptrName     = (byte*)SilkMarshal.StringToPtr(name);
+        byte* ptrFunction = (byte*)SilkMarshal.StringToPtr(functionName);
+        byte* ptrFile     = (byte*)SilkMarshal.StringToPtr(file);
 
-        TracyCZoneContext ctx = EmitZoneBegin(&sourceLocationData, active);
-        ctx.SourceLocationData = sourceLocationData;
+        ulong sourceLocation = AllocSourceLocationName(
+        (uint)lineNumber,
+        ptrFile,
+        file.Length,
+        ptrFunction,
+        functionName.Length,
+        ptrName,
+        name.Length
+        );
 
-        return ctx;
-    }
+        SilkMarshal.FreeString((nint)ptrName);
+        SilkMarshal.FreeString((nint)ptrFunction);
+        SilkMarshal.FreeString((nint)ptrFile);
 
-    public static TracyCZoneContext Zone(
-        int                    active,         string name, Color color, [CallerMemberName] string functionName = "",
-        [CallerLineNumber] int lineNumber = 0, [CallerFilePath] string file = ""
-    ) {
-        SourceLocationData sourceLocationData = new SourceLocationData {
-            Name     = (byte*)SilkMarshal.StringToPtr(name),
-            Function = (byte*)SilkMarshal.StringToPtr(functionName),
-            Color    = color.ToUint(),
-            File     = (byte*)SilkMarshal.StringToPtr(file),
-            Line     = (uint)lineNumber
-        };
-
-        TracyCZoneContext ctx = EmitZoneBegin(&sourceLocationData, active);
-        ctx.SourceLocationData = sourceLocationData;
+        TracyCZoneContext ctx = EmitZoneBegin((SourceLocationData*)sourceLocation, active);
 
         return ctx;
     }
 
     public static void EndZone(TracyCZoneContext ctx) {
-        if (ctx.SourceLocationData.Function != null)
-            SilkMarshal.FreeString((nint)ctx.SourceLocationData.Function);
-        if (ctx.SourceLocationData.File != null)
-            SilkMarshal.FreeString((nint)ctx.SourceLocationData.File);
-        if (ctx.SourceLocationData.Name != null)
-            SilkMarshal.FreeString((nint)ctx.SourceLocationData.Name);
-
         EmitZoneEnd(ctx);
-    }
-
-    public static TracyCZoneContext Zone(
-        int active, Color color, [CallerMemberName] string functionName = "", [CallerLineNumber] int lineNumber = 0,
-        [CallerFilePath] string file = ""
-    ) {
-        SourceLocationData sourceLocationData = new SourceLocationData {
-            Name     = null,
-            Function = (byte*)SilkMarshal.StringToPtr(functionName),
-            Color    = color.ToUint(),
-            File     = (byte*)SilkMarshal.StringToPtr(file),
-            Line     = (uint)lineNumber
-        };
-
-        TracyCZoneContext ctx = EmitZoneBegin(&sourceLocationData, active);
-        ctx.SourceLocationData = sourceLocationData;
-
-        return ctx;
     }
 }

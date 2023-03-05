@@ -9,16 +9,13 @@ public static partial class Tracy {
     //TRACY_API uint64_t ___tracy_alloc_srcloc( uint32_t line, const char* source, size_t sourceSz, const char* function, size_t functionSz );
     [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl, EntryPoint = "___tracy_alloc_srcloc")]
     public static extern unsafe ulong AllocSourceLocation(
-        uint                                    line,     [MarshalAs(UnmanagedType.LPStr)] string source, nint sourceSz,
-        [MarshalAs(UnmanagedType.LPStr)] string function, nint                                    functionSz
+        uint line, byte* source, nint sourceSz, byte* function, nint functionSz
     );
 
     //TRACY_API uint64_t ___tracy_alloc_srcloc_name( uint32_t line, const char* source, size_t sourceSz, const char* function, size_t functionSz, const char* name, size_t nameSz );
     [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl, EntryPoint = "___tracy_alloc_srcloc_name")]
     public static extern unsafe ulong AllocSourceLocationName(
-        uint                                    line,     [MarshalAs(UnmanagedType.LPStr)] string source, nint sourceSz,
-        [MarshalAs(UnmanagedType.LPStr)] string function, nint functionSz, [MarshalAs(UnmanagedType.LPStr)] string name,
-        nint                                    nameSz
+        uint line, byte* source, nint sourceSz, byte* function, nint functionSz, byte* name, nint nameSz
     );
 
     //TRACY_API TracyCZoneCtx ___tracy_emit_zone_begin( const struct ___tracy_source_location_data* srcloc, int active );
