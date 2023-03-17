@@ -28,7 +28,6 @@ public interface IWindowManager : IDisposable {
     public double TargetUnfocusedFramerate  { get; set; }
     public double TargetUnfocusedUpdaterate { get; set; }
 
-    public bool FramerateCap        { get; set; }
     public bool UnfocusFramerateCap { get; set; }
 
     public bool Focused { get; }

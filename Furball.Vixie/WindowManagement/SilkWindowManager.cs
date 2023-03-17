@@ -305,14 +305,8 @@ public class SilkWindowManager : IWindowManager {
 
     private void UpdateFpsCapState() {
         if (this.Focused) {
-            if (this.FramerateCap) {
-                this._window.FramesPerSecond  = this.TargetFramerate;
-                this._window.UpdatesPerSecond = this.TargetUpdaterate;
-            }
-            else {
-                this._window.FramesPerSecond  = 0;
-                this._window.UpdatesPerSecond = 0;
-            }
+            this._window.FramesPerSecond  = this.TargetFramerate;
+            this._window.UpdatesPerSecond = this.TargetUpdaterate;
 
             this._window.VSync = this._vsync;
         }
@@ -327,16 +321,6 @@ public class SilkWindowManager : IWindowManager {
             }
 
             this._window.VSync = false;
-        }
-    }
-
-    private bool _framerateCap;
-    public bool FramerateCap {
-        get => this._framerateCap;
-        set {
-            this._framerateCap = value;
-
-            this.UpdateFpsCapState();
         }
     }
 
